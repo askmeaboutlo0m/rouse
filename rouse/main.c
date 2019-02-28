@@ -84,11 +84,11 @@ static void init(const char *title, int width, int height)
     R_seed = time(NULL);
 
 #ifdef ROUSE_MAGIC
-    for (size_t i = 0; i < R_LENGTH(R_magic_numbers); ++i) {
+    for (unsigned int i = 0; i < R_LENGTH(R_magic_numbers); ++i) {
         uint32_t low  = R_rand() % 0xffff;
         uint32_t high = R_rand() % 2 == 0 ? 0xfefeffffu : 0xefefffff;
         R_magic_numbers[i] = high - low;
-        R_debug("magic number %zd = 0x%x", i, R_magic_numbers[i]);
+        R_debug("magic number %u = 0x%x", i, (unsigned int) R_magic_numbers[i]);
     }
 #endif
 

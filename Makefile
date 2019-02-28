@@ -1,28 +1,28 @@
 MODE ?= debug
 
 ifeq ($(MODE),debug)
-    MORE_CFLAGS := -DROUSE_DEBUG -DROUSE_MAGIC -g
+    MODE_CFLAGS := -DROUSE_DEBUG -DROUSE_MAGIC -g
 else ifeq ($(MODE),cover)
-    MORE_CFLAGS := -DROUSE_DEBUG -DROUSE_MAGIC -DROUSE_GCOV -g -fprofile-arcs -ftest-coverage
+    MODE_CFLAGS := -DROUSE_DEBUG -DROUSE_MAGIC -DROUSE_GCOV -g -fprofile-arcs -ftest-coverage
 else
     $(error 'Unknown mode "$(MODE)"')
 endif
 
 
-CC    := gcc
-CXX   := g++
-AR    := ar
-LEX   := lex
-YACC  := yacc
-RM    := rm -f
-PROVE := prove
+CC    ?= gcc
+CXX   ?= g++
+AR    ?= ar
+LEX   ?= lex
+YACC  ?= yacc
+RM    ?= rm -f
+PROVE ?= prove
 
-DEFINES  := -std=c11
-INCLUDES :=
-FEATURES := -fPIC -fno-exceptions -fsanitize=address
-WARNINGS := -Wall -Wextra -Wshadow -Wstrict-prototypes -Wmissing-include-dirs \
-            -pedantic -Werror -Wno-error=unused-parameter
-CFLAGS   := $(DEFINES) $(INCLUDES) $(FEATURES) $(WARNINGS) $(MORE_CFLAGS)
+DEFINES  ?= -std=c11 $(MORE_DEFINES)
+INCLUDES ?= $(MORE_INCLUDES)
+FEATURES ?= -fPIC -fno-exceptions -fsanitize=address $(MORE_FEATURES)
+WARNINGS ?= -Wall -Wextra -Wshadow -Wstrict-prototypes -Wmissing-include-dirs \
+            -pedantic -Werror -Wno-error=unused-parameter $(MORE_WARNINGS)
+CFLAGS   := $(DEFINES) $(INCLUDES) $(FEATURES) $(WARNINGS) $(MODE_CFLAGS)
 ARFLAGS  := rcs
 
 SOURCES := rouse/anim/seq.c \
@@ -67,18 +67,19 @@ TEST_SOURCES := t/common.c \
 EXAMPLE_SOURCES := examples/cube/cube.c \
                    examples/skel/skel.c
 
-BUILDDIR = build/$(MODE)
-OBJECTS  = $(patsubst %.c,$(BUILDDIR)/%.o,$(SOURCES))
-OUTPUT   = $(BUILDDIR)/librouse.a
+BUILDDIR   := build/$(MODE)
+OBJECTS    := $(patsubst %.c,$(BUILDDIR)/%.o,$(SOURCES))
+OUTPUT     := $(BUILDDIR)/librouse.a
+EXE_SUFFIX ?=
 
-TEST_OUTPUTS := $(patsubst %.c,$(BUILDDIR)/%,$(TEST_SOURCES))
-TEST_CFLAGS  := $(CFLAGS) -I. -DTAP_ON_FAIL=1
-TEST_LIBS    := -l:libcglm.a -lSDL2 -lSDL2_image -lGLEW -lGLU -lGL -lz -lm
-TEST_LDFLAGS := -L. -l:$(OUTPUT) $(TEST_LIBS)
+TEST_OUTPUTS := $(patsubst %.c,$(BUILDDIR)/%$(EXE_SUFFIX),$(TEST_SOURCES))
+TEST_CFLAGS  ?= $(CFLAGS) -I. -DTAP_ON_FAIL=1
+TEST_LIBS    ?= -l:libcglm.a -lSDL2 -lSDL2_image -lGLEW -lGLU -lGL -lz -lm
+TEST_LDFLAGS ?= -L. -l:$(OUTPUT) $(TEST_LIBS)
 
-EXAMPLE_OUTPUTS := $(patsubst %.c,$(BUILDDIR)/%,$(EXAMPLE_SOURCES))
-EXAMPLE_CFLAGS  := $(CFLAGS) -I.
-EXAMPLE_LDFLAGS := $(TEST_LDFLAGS)
+EXAMPLE_OUTPUTS := $(patsubst %.c,$(BUILDDIR)/%$(EXE_SUFFIX),$(EXAMPLE_SOURCES))
+EXAMPLE_CFLAGS  ?= $(CFLAGS) -I.
+EXAMPLE_LDFLAGS ?= $(TEST_LDFLAGS)
 
 
 all: $(OUTPUT)
@@ -100,7 +101,7 @@ rouse/geom.h: rouse/geom.pl
 	./$< >$@
 
 
-$(BUILDDIR)/t/%: t/%.c $(OUTPUT)
+$(BUILDDIR)/t/%$(EXE_SUFFIX): t/%.c $(OUTPUT)
 	mkdir -p $(@D)
 	$(CC) $(TEST_CFLAGS) -o $@ $< $(TEST_LDFLAGS)
 
@@ -109,7 +110,7 @@ $(BUILDDIR)/examples/common.o: examples/common.c $(OUTPUT)
 	mkdir -p $(@D)
 	$(CC) $(EXAMPLE_CFLAGS) -c -o $@ $<
 
-$(BUILDDIR)/examples/%: examples/%.c $(OUTPUT) $(BUILDDIR)/examples/common.o
+$(BUILDDIR)/examples/%$(EXE_SUFFIX): examples/%.c $(OUTPUT) $(BUILDDIR)/examples/common.o
 	mkdir -p $(@D)
 	$(CC) $(EXAMPLE_CFLAGS) -o $@ $< $(BUILDDIR)/examples/common.o $(EXAMPLE_LDFLAGS)
 

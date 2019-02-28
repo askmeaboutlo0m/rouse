@@ -74,7 +74,7 @@ void __gcov_flush(void);
 
 
 #define TAP_BEGIN \
-    int main(void) \
+    int main(R_UNUSED int argc, R_UNUSED char **argv) \
     { \
         R_logger_debug = R_log_stdout;
 

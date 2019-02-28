@@ -84,205 +84,205 @@ static inline R_V3 R_v3_zero(void)
 static inline R_V3 R_v3_copy(R_V3 a)
 {
     R_V3 dest;
-    glm_vec_copy(a.a, dest.a);
+    glm_vec3_copy(a.a, dest.a);
     return dest;
 }
 
 static inline float R_v3_dot(R_V3 a, R_V3 b)
 {
-    return glm_vec_dot(a.a, b.a);
+    return glm_vec3_dot(a.a, b.a);
 }
 
 static inline R_V3 R_v3_cross(R_V3 a, R_V3 b)
 {
     R_V3 dest;
-    glm_vec_cross(a.a, b.a, dest.a);
+    glm_vec3_cross(a.a, b.a, dest.a);
     return dest;
 }
 
 static inline float R_v3_norm2(R_V3 v)
 {
-    return glm_vec_norm2(v.a);
+    return glm_vec3_norm2(v.a);
 }
 
 static inline float R_v3_norm(R_V3 vec)
 {
-    return glm_vec_norm(vec.a);
+    return glm_vec3_norm(vec.a);
 }
 
 static inline R_V3 R_v3_add(R_V3 a, R_V3 b)
 {
     R_V3 dest;
-    glm_vec_add(a.a, b.a, dest.a);
+    glm_vec3_add(a.a, b.a, dest.a);
     return dest;
 }
 
 static inline R_V3 R_v3_adds(R_V3 a, float s)
 {
     R_V3 dest;
-    glm_vec_adds(a.a, s, dest.a);
+    glm_vec3_adds(a.a, s, dest.a);
     return dest;
 }
 
 static inline R_V3 R_v3_sub(R_V3 a, R_V3 b)
 {
     R_V3 dest;
-    glm_vec_sub(a.a, b.a, dest.a);
+    glm_vec3_sub(a.a, b.a, dest.a);
     return dest;
 }
 
 static inline R_V3 R_v3_subs(R_V3 a, float s)
 {
     R_V3 dest;
-    glm_vec_subs(a.a, s, dest.a);
+    glm_vec3_subs(a.a, s, dest.a);
     return dest;
 }
 
 static inline R_V3 R_v3_mul(R_V3 a, R_V3 b)
 {
     R_V3 dest;
-    glm_vec_mul(a.a, b.a, dest.a);
+    glm_vec3_mul(a.a, b.a, dest.a);
     return dest;
 }
 
 static inline R_V3 R_v3_scale(R_V3 v, float s)
 {
     R_V3 dest;
-    glm_vec_scale(v.a, s, dest.a);
+    glm_vec3_scale(v.a, s, dest.a);
     return dest;
 }
 
 static inline R_V3 R_v3_scale_as(R_V3 v, float s)
 {
     R_V3 dest;
-    glm_vec_scale_as(v.a, s, dest.a);
+    glm_vec3_scale_as(v.a, s, dest.a);
     return dest;
 }
 
 static inline R_V3 R_v3_div(R_V3 a, R_V3 b)
 {
     R_V3 dest;
-    glm_vec_div(a.a, b.a, dest.a);
+    glm_vec3_div(a.a, b.a, dest.a);
     return dest;
 }
 
 static inline R_V3 R_v3_divs(R_V3 a, float s)
 {
     R_V3 dest;
-    glm_vec_divs(a.a, s, dest.a);
+    glm_vec3_divs(a.a, s, dest.a);
     return dest;
 }
 
 static inline R_V3 R_v3_addadd(R_V3 a, R_V3 b)
 {
     R_V3 dest;
-    glm_vec_addadd(a.a, b.a, dest.a);
+    glm_vec3_addadd(a.a, b.a, dest.a);
     return dest;
 }
 
 static inline R_V3 R_v3_subadd(R_V3 a, R_V3 b)
 {
     R_V3 dest;
-    glm_vec_subadd(a.a, b.a, dest.a);
+    glm_vec3_subadd(a.a, b.a, dest.a);
     return dest;
 }
 
 static inline R_V3 R_v3_muladd(R_V3 a, R_V3 b)
 {
     R_V3 dest;
-    glm_vec_muladd(a.a, b.a, dest.a);
+    glm_vec3_muladd(a.a, b.a, dest.a);
     return dest;
 }
 
 static inline void R_v3_flipsign(R_V3 v)
 {
-    glm_vec_flipsign(v.a);
+    glm_vec3_flipsign(v.a);
 }
 
 static inline void R_v3_inv(R_V3 v)
 {
-    glm_vec_inv(v.a);
+    glm_vec3_inv(v.a);
 }
 
 static inline R_V3 R_v3_inv_to(R_V3 v)
 {
     R_V3 dest;
-    glm_vec_inv_to(v.a, dest.a);
+    glm_vec3_inv_to(v.a, dest.a);
     return dest;
 }
 
 static inline void R_v3_normalize(R_V3 v)
 {
-    glm_vec_normalize(v.a);
+    glm_vec3_normalize(v.a);
 }
 
 static inline R_V3 R_v3_normalize_to(R_V3 vec)
 {
     R_V3 dest;
-    glm_vec_normalize_to(vec.a, dest.a);
+    glm_vec3_normalize_to(vec.a, dest.a);
     return dest;
 }
 
 static inline float R_v3_distance(R_V3 v1, R_V3 v2)
 {
-    return glm_vec_distance(v1.a, v2.a);
+    return glm_vec3_distance(v1.a, v2.a);
 }
 
 static inline float R_v3_angle(R_V3 v1, R_V3 v2)
 {
-    return glm_vec_angle(v1.a, v2.a);
+    return glm_vec3_angle(v1.a, v2.a);
 }
 
 static inline void R_v3_rotate(R_V3 v, float angle, R_V3 axis)
 {
-    glm_vec_rotate(v.a, angle, axis.a);
+    glm_vec3_rotate(v.a, angle, axis.a);
 }
 
 static inline R_V3 R_v3_rotate_m4(R_M4 m, R_V3 v)
 {
     R_V3 dest;
-    glm_vec_rotate_m4(m.a, v.a, dest.a);
+    glm_vec3_rotate_m4(m.a, v.a, dest.a);
     return dest;
 }
 
 static inline R_V3 R_v3_proj(R_V3 a, R_V3 b)
 {
     R_V3 dest;
-    glm_vec_proj(a.a, b.a, dest.a);
+    glm_vec3_proj(a.a, b.a, dest.a);
     return dest;
 }
 
 static inline R_V3 R_v3_center(R_V3 v1, R_V3 v2)
 {
     R_V3 dest;
-    glm_vec_center(v1.a, v2.a, dest.a);
+    glm_vec3_center(v1.a, v2.a, dest.a);
     return dest;
 }
 
 static inline R_V3 R_v3_maxv(R_V3 v1, R_V3 v2)
 {
     R_V3 dest;
-    glm_vec_maxv(v1.a, v2.a, dest.a);
+    glm_vec3_maxv(v1.a, v2.a, dest.a);
     return dest;
 }
 
 static inline R_V3 R_v3_minv(R_V3 v1, R_V3 v2)
 {
     R_V3 dest;
-    glm_vec_minv(v1.a, v2.a, dest.a);
+    glm_vec3_minv(v1.a, v2.a, dest.a);
     return dest;
 }
 
 static inline R_V3 R_v3_ortho(R_V3 v)
 {
     R_V3 dest;
-    glm_vec_ortho(v.a, dest.a);
+    glm_vec3_ortho(v.a, dest.a);
     return dest;
 }
 
 static inline void R_v3_clamp(R_V3 v, float min_val, float max_val)
 {
-    glm_vec_clamp(v.a, min_val, max_val);
+    glm_vec3_clamp(v.a, min_val, max_val);
 }
 
 
@@ -290,43 +290,43 @@ static inline void R_v3_clamp(R_V3 v, float min_val, float max_val)
 static inline R_V3 R_v3_broadcast(float val)
 {
     R_V3 dest;
-    glm_vec_broadcast(val, dest.a);
+    glm_vec3_broadcast(val, dest.a);
     return dest;
 }
 
 static inline bool R_v3_eq(R_V3 v, float val)
 {
-    return glm_vec_eq(v.a, val);
+    return glm_vec3_eq(v.a, val);
 }
 
 static inline bool R_v3_eq_eps(R_V3 v, float val)
 {
-    return glm_vec_eq_eps(v.a, val);
+    return glm_vec3_eq_eps(v.a, val);
 }
 
 static inline bool R_v3_eq_all(R_V3 v)
 {
-    return glm_vec_eq_all(v.a);
+    return glm_vec3_eq_all(v.a);
 }
 
 static inline bool R_v3_eqv(R_V3 v1, R_V3 v2)
 {
-    return glm_vec_eqv(v1.a, v2.a);
+    return glm_vec3_eqv(v1.a, v2.a);
 }
 
 static inline bool R_v3_eqv_eps(R_V3 v1, R_V3 v2)
 {
-    return glm_vec_eqv_eps(v1.a, v2.a);
+    return glm_vec3_eqv_eps(v1.a, v2.a);
 }
 
 static inline float R_v3_max(R_V3 v)
 {
-    return glm_vec_max(v.a);
+    return glm_vec3_max(v.a);
 }
 
 static inline float R_v3_min(R_V3 v)
 {
-    return glm_vec_min(v.a);
+    return glm_vec3_min(v.a);
 }
 
 

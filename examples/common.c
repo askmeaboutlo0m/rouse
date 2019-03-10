@@ -20,6 +20,7 @@ typedef struct CommonData {
     R_FirstPerson   *fp;
     R_Camera        *camera;
     R_Input         *input;
+    R_V3            speed;
     unsigned int    input_flags;
     struct {
         void *data;
@@ -68,7 +69,14 @@ static void move(CommonData *cd)
     if (cd->input_flags & MOVE_UP)   up += 1.0f;
     if (cd->input_flags & MOVE_DOWN) up -= 1.0f;
 
-    R_first_person_move(cd->fp, forward * 0.5f, right * 0.5f, up * 0.5f);
+#   define MOVE(AXIS, DIRECTION) \
+       AXIS(cd->speed) = AXIS(cd->speed) * 0.9f + DIRECTION * 0.05f
+    MOVE(R_X, forward);
+    MOVE(R_Y, right);
+    MOVE(R_Z, up);
+#   undef MOVE_AXIS
+
+    R_first_person_move(cd->fp, R_X(cd->speed), R_Y(cd->speed), R_Z(cd->speed));
 }
 
 static void look(CommonData *cd)
@@ -145,6 +153,7 @@ R_Scene *common_init(void *(*init_fn )(void *), void *user,
     cd->camera      = R_camera_new_perspective(R_to_rad(60.0f), 16.0f / 9.0f,
                                                0.1f, 1000.0f);
     cd->input       = R_input_new();
+    cd->speed       = R_v3_zero();
     cd->input_flags = 0;
 
     cd->custom.data      = init_fn(user);

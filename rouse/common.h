@@ -71,21 +71,23 @@
 
 /* Magic numbers to diagnose memory corruption etc. */
 #ifdef ROUSE_MAGIC
-#   define R_MAGIC_NUMBER_COUNT 8
+#   define R_MAGIC_NUMBER_COUNT 9
 extern uint32_t R_magic_numbers[R_MAGIC_NUMBER_COUNT];
 
 #   define R_MAGIC_OF(EXPR) _Generic((EXPR), \
-        struct R_Scene       *: (R_magic_numbers[0]), \
-        struct R_Model       *: (R_magic_numbers[1]), \
-        struct R_Mesh        *: (R_magic_numbers[2]), \
-        struct R_MeshBuffer  *: (R_magic_numbers[3]), \
-        struct R_Camera      *: (R_magic_numbers[4]), \
-        struct R_FirstPerson *: (R_magic_numbers[5]), \
-        struct R_Input       *: (R_magic_numbers[6]), \
-        struct R_KeyBind     *: (R_magic_numbers[7]))
+        struct R_Scene          *: (R_magic_numbers[0]), \
+        struct R_Model          *: (R_magic_numbers[1]), \
+        struct R_Mesh           *: (R_magic_numbers[2]), \
+        struct R_MeshBuffer     *: (R_magic_numbers[3]), \
+        struct R_Camera         *: (R_magic_numbers[4]), \
+        struct R_FirstPerson    *: (R_magic_numbers[5]), \
+        struct R_Input          *: (R_magic_numbers[6]), \
+        struct R_KeyBind        *: (R_magic_numbers[7]), \
+        struct R_TextureOptions *: (R_magic_numbers[8]))
 
 #   define R_MAGIC_FIELD uint32_t MAGIC;
 #   define R_MAGIC_INIT(EXPR) R_MAGIC_OF(EXPR),
+#   define R_MAGIC_INIT_TYPE(TYPE) R_MAGIC_INIT((TYPE *) NULL)
 #   define R_MAGIC_SET(EXPR)  (EXPR)->MAGIC = R_MAGIC_OF(EXPR)
 
 #   define R_MAGIC_CHECK(PTR) do { \
@@ -98,11 +100,12 @@ extern uint32_t R_magic_numbers[R_MAGIC_NUMBER_COUNT];
         } \
     } while (0)
 #else
-#   define R_MAGIC_FIELD       /* nothing */
-#   define R_MAGIC_OF(EXPR)    /* nothing */
-#   define R_MAGIC_INIT(EXPR)  /* nothing */
-#   define R_MAGIC_SET(EXPR)   /* nothing */
-#   define R_MAGIC_CHECK(EXPR) /* nothing */
+#   define R_MAGIC_FIELD           /* nothing */
+#   define R_MAGIC_OF(EXPR)        /* nothing */
+#   define R_MAGIC_INIT(EXPR)      /* nothing */
+#   define R_MAGIC_INIT_TYPE(TYPE) /* nothing */
+#   define R_MAGIC_SET(EXPR)       /* nothing */
+#   define R_MAGIC_CHECK(EXPR)     /* nothing */
 #endif
 
 #define R_MAGIC_CHECK_2(A, B) \

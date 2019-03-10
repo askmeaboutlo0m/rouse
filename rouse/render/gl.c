@@ -229,9 +229,11 @@ void R_gl_program_free(unsigned int program)
 R_TextureOptions R_texture_options(void)
 {
     return (R_TextureOptions){
-        .format = R_TEXTURE_FORMAT_RGBA,
-        .filter = GL_LINEAR,
-        .slot   = GL_TEXTURE0,
+        R_MAGIC_INIT_TYPE(R_TextureOptions)
+        .format     = R_TEXTURE_FORMAT_RGBA,
+        .min_filter = GL_LINEAR,
+        .mag_filter = GL_LINEAR,
+        .index      = 0,
     };
 }
 
@@ -254,6 +256,8 @@ static SDL_Surface *load_surface(const char *path, Uint32 pixel_format)
 
 unsigned int R_gl_texture_new(const char *path, R_TextureOptions *options)
 {
+    R_MAGIC_CHECK(options);
+
     unsigned int internal_format, format, type;
     Uint32       pixel_format;
     switch (options->format) {
@@ -270,7 +274,7 @@ unsigned int R_gl_texture_new(const char *path, R_TextureOptions *options)
     SDL_Surface *surface = load_surface(path, pixel_format);
 
     GLuint texture;
-    R_GL(glActiveTexture, options->slot);
+    R_GL(glActiveTexture, GL_TEXTURE0 + options->index);
     R_GL(glGenTextures, 1, &texture);
     R_GL(glBindTexture, GL_TEXTURE_2D, texture);
 
@@ -279,8 +283,10 @@ unsigned int R_gl_texture_new(const char *path, R_TextureOptions *options)
 
     SDL_FreeSurface(surface);
 
-    R_GL(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, options->filter);
-    R_GL(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, options->filter);
+    R_GL(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+         options->mag_filter);
+    R_GL(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+         options->min_filter);
 
     return texture;
 }

@@ -132,18 +132,53 @@ typedef enum R_TextureFormat {
 } R_TextureFormat;
 
 typedef struct R_TextureOptions {
+    R_MAGIC_FIELD
+    /* Pixel format of the texture. Default is `R_TEXTURE_FORMAT_RGBA`. */
     R_TextureFormat format;
-    unsigned int    filter;
-    unsigned int    slot;
+    /* Texture filters, default is `GL_LINEAR` */
+    unsigned int mag_filter, min_filter;
+    /*
+     * The slot index to use for loading the texture, default is 0 for
+     * `GL_TEXTURE0`. Higher numbers `n` stand for `GL_TEXTUREn`.
+     */
+    int index;
 } R_TextureOptions;
 
+/* Get the default set of texture options. */
 R_TextureOptions R_texture_options(void);
 
+/*
+ * Load a 2D texture from the given file `path` and return the handle to it.
+ * Use `R_texture_options` to get a default set of texture options, manipulate
+ * them as desired and pass a pointer to them here.
+ *
+ * The image is converted to the appropriate pixel format for you, but it's
+ * not flipped or expanded to powers of two. If you need that, you need to do
+ * it yourself beforehand.
+ *
+ * The texture slot you specify will be used to load the image, so if you had
+ * something in it before it will be clobbered. Although if you're loading
+ * textures in the middle of rendering stuff then you should mabye rethink
+ * what you're doing.
+ */
 unsigned int R_gl_texture_new(const char *path, R_TextureOptions *options);
 
+/* Deletes a texture you loaded via e.g. `R_gl_texture_new`. */
 void R_gl_texture_free(unsigned int texture);
 
+/*
+ * Activate the texture slot specified by `index` (0 means `GL_TEXTURE0`,
+ * 1 means `GL_TEXTURE1` and so on), bind the 2D `texture` to it and then stuff
+ * it into the given uniform `location` (which should be a `sampler2D`).
+ */
 void R_gl_texture_bind(int index, unsigned int texture, int location);
 
-
+/*
+ * Fetch the location of a uniform by `name` in the given shader `program`.
+ * Will `R_die` if that uniform doesn't exist.
+ *
+ * Shader compilers tend to optimize away uniforms that you never use. So if
+ * you get an error telling you that a uniform doesn't exist even though it
+ * clearly does in the source code, that might be the reason why.
+ */
 int R_gl_uniform_location(unsigned int program, const char *name);

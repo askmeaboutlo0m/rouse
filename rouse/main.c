@@ -43,6 +43,10 @@
 #include "stringify.h"
 #include "main.h"
 
+#ifdef __EMSCRIPTEN__
+#   include <emscripten.h>
+#endif
+
 /* Make sure our environment is sane at compile-time. */
 #include <assert.h>
 #include "sanity.h"

@@ -16,7 +16,7 @@
 
 
 #ifndef TAP_FORK
-#   ifdef _WIN32
+#   if defined(_WIN32) || defined(__EMSCRIPTEN__)
 #       define TAP_FORK 0
 #   else
 #       define TAP_FORK 1

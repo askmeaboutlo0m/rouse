@@ -127,7 +127,8 @@ void R_info_fn(const char *file, int line, const char *fmt, ...)
  * The weird parentheses around the name prevent the preprocessor from
  * recognizing this as a macro expansion when debugging isn't enabled.
  */
-void R_debug_fn(const char *file, int line,
+void R_debug_fn(const char *file R_UNUSED_UNLESS_DEBUG,
+                int line R_UNUSED_UNLESS_DEBUG,
                 const char *fmt R_UNUSED_UNLESS_DEBUG, ...)
 {
 #ifdef ROUSE_DEBUG

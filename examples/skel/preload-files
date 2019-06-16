@@ -1,0 +1,4 @@
+glsl/skel.vert
+glsl/skel.frag
+t/data/cuboid.rmodel
+t/data/cuboid.png

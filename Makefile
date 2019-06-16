@@ -1,25 +1,57 @@
-MODE ?= debug
+# Guess if we were run as `emmake make`.
+ifdef EMMAKEN_COMPILER
+    MODE ?= em
+else
+    MODE ?= debug
+endif
+
+R_CC    ?= gcc
+R_CXX   ?= g++
+R_AR    ?= ar
+R_EMCC  ?= emcc
+R_EMCXX ?= em++
+R_EMAR  ?= emar
+R_PROVE ?= prove
+R_NODE  ?= node
+
+DEBUG_CFLAGS := -DROUSE_DEBUG -DROUSE_MAGIC -g -fsanitize=address
 
 ifeq ($(MODE),debug)
-    MODE_CFLAGS := -DROUSE_DEBUG -DROUSE_MAGIC -g
+    MODE_CFLAGS := $(DEBUG_CFLAGS)
 else ifeq ($(MODE),cover)
-    MODE_CFLAGS := -DROUSE_DEBUG -DROUSE_MAGIC -DROUSE_GCOV -g -fprofile-arcs -ftest-coverage
+    MODE_CFLAGS := $(DEBUG_CFLAGS) -DROUSE_GCOV -fprofile-arcs -ftest-coverage
+else ifeq ($(MODE),em)
+    MODE_CFLAGS := -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='["png"]'
 else
     $(error 'Unknown mode "$(MODE)"')
 endif
 
+ifeq ($(MODE),em)
+    CC            := $(R_EMCC)
+    CXX           := $(R_EMCXX)
+    AR            := $(R_EMAR)
+    MODE_LIBS     := -lcglm -lGLEW -lGLU -lGL -lm
+    TEST_EXECUTOR := $(R_NODE)
+    R_CONFIGURE   := emconfigure
+    R_MAKE        := emmake
+    EXE_SUFFIX    := .html
+    # This needs to be = instead of := because $< doesn't exist here yet.
+    MODE_EXAMPLE_LDFLAGS = `./gather-preloads $<`
+else
+    CC            := $(R_CC)
+    CXX           := $(R_CXX)
+    AR            := $(R_AR)
+	MODE_LIBS     := -l:libcglm.a -lSDL2 -lSDL2_image -lGLEW -lGLU -lGL -lm
+    TEST_EXECUTOR := ''
+    R_CONFIGURE   :=
+    R_MAKE        :=
+endif
 
-CC    ?= gcc
-CXX   ?= g++
-AR    ?= ar
-LEX   ?= lex
-YACC  ?= yacc
-RM    ?= rm -f
-PROVE ?= prove
+PROVE := $(R_PROVE)
 
 DEFINES  ?= -std=c11 $(MORE_DEFINES)
 INCLUDES ?= $(MORE_INCLUDES)
-FEATURES ?= -fPIC -fno-exceptions -fsanitize=address $(MORE_FEATURES)
+FEATURES ?= -fPIC -fno-exceptions $(MORE_FEATURES)
 WARNINGS ?= -Wall -Wextra -Wshadow -Wstrict-prototypes -Wmissing-include-dirs \
             -pedantic -Werror -Wno-error=unused-parameter $(MORE_WARNINGS)
 CFLAGS   := $(DEFINES) $(INCLUDES) $(FEATURES) $(WARNINGS) $(MODE_CFLAGS)
@@ -74,18 +106,19 @@ EXE_SUFFIX ?=
 
 TEST_OUTPUTS := $(patsubst %.c,$(BUILDDIR)/%$(EXE_SUFFIX),$(TEST_SOURCES))
 TEST_CFLAGS  ?= $(CFLAGS) -I. -DTAP_ON_FAIL=1
-TEST_LIBS    ?= -l:libcglm.a -lSDL2 -lSDL2_image -lGLEW -lGLU -lGL -lz -lm
-TEST_LDFLAGS ?= -L. -l:$(OUTPUT) $(TEST_LIBS)
+TEST_LIBS    ?= $(MODE_LIBS)
+TEST_LDFLAGS ?= -L$(BUILDDIR) -lrouse $(TEST_LIBS) $(MODE_TEST_LDFLAGS)
 
 EXAMPLE_OUTPUTS := $(patsubst %.c,$(BUILDDIR)/%$(EXE_SUFFIX),$(EXAMPLE_SOURCES))
 EXAMPLE_CFLAGS  ?= $(CFLAGS) -I.
-EXAMPLE_LDFLAGS ?= $(TEST_LDFLAGS)
+EXAMPLE_LIBS    ?= $(TEST_LIBS)
+EXAMPLE_LDFLAGS ?= -L$(BUILDDIR) -lrouse $(EXAMPLE_LIBS) $(MODE_EXAMPLE_LDFLAGS)
 
 
 all: $(OUTPUT)
 
 test: $(TEST_OUTPUTS)
-	$(PROVE) -e '' $(TEST_OUTPUTS)
+	$(PROVE) -e $(TEST_EXECUTOR) $(TEST_OUTPUTS)
 
 examples: $(EXAMPLE_OUTPUTS)
 
@@ -112,7 +145,8 @@ $(BUILDDIR)/examples/common.o: examples/common.c $(OUTPUT)
 
 $(BUILDDIR)/examples/%$(EXE_SUFFIX): examples/%.c $(OUTPUT) $(BUILDDIR)/examples/common.o
 	mkdir -p $(@D)
-	$(CC) $(EXAMPLE_CFLAGS) -o $@ $< $(BUILDDIR)/examples/common.o $(EXAMPLE_LDFLAGS)
+	SOURCE_FILE='$<'; \
+		$(CC) $(EXAMPLE_CFLAGS) -o $@ $< $(BUILDDIR)/examples/common.o $(EXAMPLE_LDFLAGS)
 
 
 $(BUILDDIR)/depend.mk: $(HEADERS) $(SOURCES) Makefile
@@ -132,7 +166,7 @@ endif
 
 
 clean:
-	$(RM) $(OBJECTS) $(TEST_OUTPUTS) $(shell find -name '*.gcda' -or -name '*.gcno' -or -name '*.gcov')
+	rm -f $(OBJECTS) $(TEST_OUTPUTS) $(shell find -name '*.gcda' -or -name '*.gcno' -or -name '*.gcov')
 
 realclean: clean
 	rm -rf build rouse/geom.h
@@ -140,9 +174,9 @@ realclean: clean
 
 sources:
 	@echo
-	@find rouse -name '*.c' | sort | perl -ne 'BEGIN { print "SOURCES := " } next if /3rdparty/; chomp; print " \\\n           " if $$x; $$x = 1; print; END { print "\n" }'
+	@find rouse -name '*.c' | sort | perl -ne 'BEGIN { print "SOURCES := " } chomp; print " \\\n           " if $$x; $$x = 1; print; END { print "\n" }'
 	@echo
-	@find rouse -name '*.h' | sort | perl -ne 'BEGIN { print "HEADERS := " } next if /3rdparty/; chomp; print " \\\n           " if $$x; $$x = 1; print; END { print "\n" }'
+	@find rouse -name '*.h' | sort | perl -ne 'BEGIN { print "HEADERS := " } chomp; print " \\\n           " if $$x; $$x = 1; print; END { print "\n" }'
 	@echo
 	@find t -name '*.c' | sort | perl -ne 'BEGIN { print "TEST_SOURCES := " } chomp; print " \\\n                " if $$x; $$x = 1; print; END { print "\n" }'
 	@echo

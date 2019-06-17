@@ -41,7 +41,7 @@ else
     CC            := $(R_CC)
     CXX           := $(R_CXX)
     AR            := $(R_AR)
-	MODE_LIBS     := -l:libcglm.a -lSDL2 -lSDL2_image -lGLEW -lGLU -lGL -lm
+    MODE_LIBS     := -l:libcglm.a -lSDL2 -lSDL2_image -lGLEW -lGLU -lGL -lm
     TEST_EXECUTOR := ''
     R_CONFIGURE   :=
     R_MAKE        :=
@@ -130,8 +130,8 @@ $(BUILDDIR)/%.o: %.c Makefile
 	mkdir -p $(@D)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-rouse/geom.h: rouse/geom.pl
-	./$< >$@
+rouse/geom.h: generate-geom-h
+	./$< $@
 
 
 $(BUILDDIR)/t/%$(EXE_SUFFIX): t/%.c $(OUTPUT)

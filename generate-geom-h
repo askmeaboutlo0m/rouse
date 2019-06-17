@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 #
-# geom.pl - generates geom.h by wrapping cglm functions
+# generate-geom-h - generates geom.h by wrapping cglm functions
 #
 # Copyright (c) 2019 askmeaboutloom
 #
@@ -24,6 +24,12 @@
 #
 use strict;
 use warnings;
+
+
+die "Usage: $0 OUTPUT-FILE\n" if @ARGV != 1;
+
+my $path = shift;
+open my $out, '>', $path or die "Can't open '$path': $!\n";
 
 
 my %name_types = (
@@ -132,48 +138,48 @@ sub unwrap_arg {
 
 sub print_args {
     my ($fn) = @_;
-    print join ', ', map { unwrap_arg($_) } @{$fn->{wrapped}{args}};
+    print {$out} join ', ', map { unwrap_arg($_) } @{$fn->{wrapped}{args}};
 }
 
 sub print_wrapper {
     my ($fn) = @_;
-    print "static inline $fn->{wrapped}{ret} $fn->{wrapped}{name}(";
+    print {$out} "static inline $fn->{wrapped}{ret} $fn->{wrapped}{name}(";
 
-    print join ', ',
+    print {$out} join ', ',
           map { "$_->{type} $_->{name}" }
           grep { !$_->{dest} } @{$fn->{wrapped}{args}};
 
-    print ")\n";
-    print "{\n";
+    print {$out} ")\n";
+    print {$out} "{\n";
 
     my ($dest) = grep { $_->{dest} } @{$fn->{wrapped}{args}};
     if ($dest) {
-        print "    $dest->{type} dest;\n";
-        print "    $fn->{name}(";
+        print {$out} "    $dest->{type} dest;\n";
+        print {$out} "    $fn->{name}(";
         print_args($fn);
-        print ");\n";
-        print "    return dest;\n";
+        print {$out} ");\n";
+        print {$out} "    return dest;\n";
     }
     else {
-        print '    ';
-        print 'return ' if $fn->{ret} ne 'void';
-        print "$fn->{name}(";
+        print {$out} '    ';
+        print {$out} 'return ' if $fn->{ret} ne 'void';
+        print {$out} "$fn->{name}(";
         print_args($fn);
-        print ");\n";
+        print {$out} ");\n";
     }
 
-    print "}\n";
-    print "\n";
+    print {$out} "}\n";
+    print {$out} "\n";
 }
 
 
 sub print_value {
     my ($ret, $name, $value) = @_;
-    print "static inline $ret \u\L$ret\E_$name(void)\n";
-    print "{\n";
-    print "    return ($ret){$value};\n";
-    print "}\n";
-    print "\n";
+    print {$out} "static inline $ret \u\L$ret\E_$name(void)\n";
+    print {$out} "{\n";
+    print {$out} "    return ($ret){$value};\n";
+    print {$out} "}\n";
+    print {$out} "\n";
 }
 
 
@@ -185,9 +191,11 @@ while (<DATA>) {
         print_wrapper(wrap_cglm_call($1));
     }
     else {
-        print;
+        print {$out} $_;
     }
 }
+
+close $out or warn "Can't close '$path': $!\n";
 
 __DATA__
 /*

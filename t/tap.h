@@ -75,8 +75,7 @@ void __gcov_flush(void);
 
 #define TAP_BEGIN \
     int main(R_UNUSED int argc, R_UNUSED char **argv) \
-    { \
-        R_logger_debug = R_log_stdout;
+    {
 
 #define TAP_END \
         return done_testing(); \
@@ -111,9 +110,9 @@ TAP_FN void tap_vsay(FILE *stream, const char *fmt, va_list ap,
         va_end(ap); \
     }
 
-TAP_PRINT_FN(tap_say, TAP_OUT, "\n",   "\n")
-TAP_PRINT_FN(note,    TAP_OUT, "\n# ", "\n")
-TAP_PRINT_FN(diag,    TAP_ERR, "\n# ", "\n")
+TAP_PRINT_FN(tap_say, TAP_OUT, "",   "\n")
+TAP_PRINT_FN(note,    TAP_OUT, "# ", "\n")
+TAP_PRINT_FN(diag,    TAP_ERR, "# ", "\n")
 
 
 TAP_FN void plan(int n)
@@ -153,7 +152,6 @@ TAP_FN void skip(int count, const char *fmt, ...)
 {
     int i;
     va_list ap;
-    fputs("\n", TAP_OUT);
     for (i = 0; i < count; ++i) {
         fprintf(TAP_OUT, "ok %d SKIP ", ++tap_tests);
         va_start(ap, fmt);
@@ -178,7 +176,6 @@ TAP_FN void tap_handle_fail(void)
 
 TAP_FN int vok(int cond, const char *fmt, va_list ap)
 {
-    fputs("\n", TAP_OUT);
     if (!cond) {
         fputs("not ", TAP_OUT);
     }
@@ -224,7 +221,7 @@ TAP_FN int pass(const char *fmt, ...)
 TAP_FN int tap_report_process_status(pid_t pid, int wstatus)
 {
     int retval;
-    fprintf(TAP_OUT, "\n# child process %ld", (long) pid);
+    fprintf(TAP_OUT, "# child process %ld", (long) pid);
     if (WIFEXITED(wstatus)) {
         retval = WEXITSTATUS(wstatus);
         fprintf(TAP_OUT, " exited with %d", retval);

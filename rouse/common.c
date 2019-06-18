@@ -54,9 +54,9 @@ void R_log_dialog(const char *msg)
 
 
 #ifdef __EMSCRIPTEN__
-#   define R_LOGGER_DEFAULT R_log_stderr
-#else
 #   define R_LOGGER_DEFAULT R_log_stdout
+#else
+#   define R_LOGGER_DEFAULT R_log_stderr
 #endif
 
 R_LogFn R_logger_die   = R_LOGGER_DEFAULT;

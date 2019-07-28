@@ -43,12 +43,13 @@ extern "C" {
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 
-#include <assert.h>
-#include "sanity.h"
-
 #include "common.h"
 #include "stringify.h"
 #include "geom.h"
+
+#include <assert.h>
+#include "sanity.h"
+
 #include "camera.h"
 #include "model.h"
 #include "resource.h"

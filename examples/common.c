@@ -70,13 +70,13 @@ static void move(CommonData *cd)
     if (cd->input_flags & MOVE_DOWN) up -= 1.0f;
 
 #   define MOVE(AXIS, DIRECTION) \
-       AXIS(cd->speed) = AXIS(cd->speed) * 0.9f + DIRECTION * 0.05f
-    MOVE(R_X, forward);
-    MOVE(R_Y, right);
-    MOVE(R_Z, up);
+       cd->speed.AXIS = cd->speed.AXIS * 0.9f + DIRECTION * 0.05f
+    MOVE(x, forward);
+    MOVE(y, right);
+    MOVE(z, up);
 #   undef MOVE_AXIS
 
-    R_first_person_move(cd->fp, R_X(cd->speed), R_Y(cd->speed), R_Z(cd->speed));
+    R_first_person_move(cd->fp, cd->speed.x, cd->speed.y, cd->speed.z);
 }
 
 static void look(CommonData *cd)

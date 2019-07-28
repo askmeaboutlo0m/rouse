@@ -56,12 +56,12 @@ my %arg_types = (
 my %arg_unwrap = (
     int   => '',
     float => '',
-    R_V2  => '.a',
-    R_V3  => '.a',
-    R_V4  => '.a',
-    R_M3  => '.a',
-    R_M4  => '.a',
-    R_Qn  => '.a',
+    R_V2  => '.raw',
+    R_V3  => '.raw',
+    R_V4  => '.raw',
+    R_M3  => '.raw',
+    R_M4  => '.raw',
+    R_Qn  => '.raw',
 );
 
 
@@ -177,7 +177,7 @@ sub print_value {
     my ($ret, $name, $value) = @_;
     print {$out} "static inline $ret \u\L$ret\E_$name(void)\n";
     print {$out} "{\n";
-    print {$out} "    return ($ret){$value};\n";
+    print {$out} "    return ($ret){.raw = $value};\n";
     print {$out} "}\n";
     print {$out} "\n";
 }
@@ -225,20 +225,15 @@ __DATA__
 #define R_PI_2 CGLM_PI_2
 #define R_PI_4 CGLM_PI_4
 
-typedef struct R_V2 { vec2   a; } R_V2;
-typedef struct R_V3 { vec3   a; } R_V3;
-typedef struct R_V4 { vec4   a; } R_V4;
-typedef struct R_M3 { mat3   a; } R_M3;
-typedef struct R_M4 { mat4   a; } R_M4;
-typedef struct R_Qn { versor a; } R_Qn;
+typedef vec2s   R_V2;
+typedef vec3s   R_V3;
+typedef vec4s   R_V4;
+typedef versors R_Qn;
+typedef mat3s   R_M3;
+typedef mat4s   R_M4;
 
-#define R_M3_GL(M) (*(M).a)
-#define R_M4_GL(M) (*(M).a)
-
-#define R_X(V) ((V).a[0])
-#define R_Y(V) ((V).a[1])
-#define R_Z(V) ((V).a[2])
-#define R_W(V) ((V).a[3])
+#define R_M3_GL(M) (*(M).raw)
+#define R_M4_GL(M) (*(M).raw)
 
 static inline float R_to_rad(float deg)
 {
@@ -423,7 +418,7 @@ static inline R_V3 R_v3_right(float hrad)
 
 static inline R_M4 R_m4_rotate_xyz(R_M4 m, R_V3 angles)
 {
-    return R_m4_rotate_z(R_m4_rotate_y(R_m4_rotate_x(m, R_X(angles)),
-                                                        R_Y(angles)),
-                                                        R_Z(angles));
+    return R_m4_rotate_z(R_m4_rotate_y(R_m4_rotate_x(m, angles.x),
+                                                        angles.y),
+                                                        angles.z);
 }

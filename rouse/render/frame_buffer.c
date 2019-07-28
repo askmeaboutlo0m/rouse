@@ -24,7 +24,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdnoreturn.h>
-#include <cglm/cglm.h>
+#include <cglm/struct.h>
 #include <GL/glew.h>
 #include "../common.h"
 #include "../geom.h"

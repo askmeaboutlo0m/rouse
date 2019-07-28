@@ -38,7 +38,7 @@ extern "C" {
 #include <errno.h>
 #include <string.h>
 
-#include <cglm/cglm.h>
+#include <cglm/struct.h>
 #include <GL/glew.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>

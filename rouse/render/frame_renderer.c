@@ -25,7 +25,7 @@
 #include <stdbool.h>
 #include <stdnoreturn.h>
 #include <stdio.h>
-#include <cglm/cglm.h>
+#include <cglm/struct.h>
 #include <GL/glew.h>
 #include "../common.h"
 #include "../geom.h"
@@ -109,7 +109,7 @@ void R_frame_renderer_draw(R_FrameRenderer *fr, R_FrameBuffer *fb)
     R_GL(glUniform1i, fr->u_sampler, 0);
 
     R_V2 ratio = R_frame_buffer_ratio(fb);
-    R_GL(glUniform2f, fr->u_ratio, R_X(ratio), R_Y(ratio));
+    R_GL(glUniform2f, fr->u_ratio, ratio.x, ratio.y);
 
     R_binder_draw(fr->binder, NULL);
     R_binder_end(fr->binder);

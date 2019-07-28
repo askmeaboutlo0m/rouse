@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
-#include <cglm/cglm.h>
+#include <cglm/struct.h>
 #include <SDL2/SDL.h>
 #include "common.h"
 #include "geom.h"

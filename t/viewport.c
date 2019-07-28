@@ -2,6 +2,8 @@
 #include <rouse/rouse.h>
 
 
+#ifdef TAP_CAN_MOCK
+
 static int mock_width  = 0;
 static int mock_height = 0;
 
@@ -90,3 +92,9 @@ TAP_BEGIN
     test_window_viewport_resize();
     test_viewport_set();
 TAP_END
+
+#else
+
+TAP_SKIP_ALL("mocking not available")
+
+#endif

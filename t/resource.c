@@ -47,8 +47,8 @@ static char *make_resource(const char *id, int type)
     return data;
 }
 
-static bool remove_containing(const char *id, int type,
-                              R_UserData user, void *arg)
+static bool remove_containing(const char *id, R_UNUSED int type,
+                              R_UNUSED R_UserData user, void *arg)
 {
     return strstr(arg, id) != NULL;
 }

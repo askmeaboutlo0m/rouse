@@ -6,6 +6,17 @@
 #include <assert.h>
 
 
+/*
+ * Emscripten uses .bc libraries in some places, for which
+ * mocking doesn't work the way it does for regular libs.
+ * You can't just define a function in your executable and
+ * rely on the library version not being pulled in.
+ */
+#ifndef __EMSCRIPTEN__
+#   define TAP_CAN_MOCK
+#endif
+
+
 #define TAP_CONTINUE_ON_FAIL 0
 #define TAP_BAIL_ON_FAIL     1
 #define TAP_TRAP_ON_FAIL     2
@@ -79,6 +90,12 @@ void __gcov_flush(void);
 
 #define TAP_END \
         return done_testing(); \
+    }
+
+#define TAP_SKIP_ALL(MESSAGE) \
+    int main(R_UNUSED int argc, R_UNUSED char **argv) \
+    { \
+        skip_all(MESSAGE); \
     }
 
 

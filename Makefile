@@ -27,14 +27,16 @@ else
 endif
 
 ifeq ($(MODE),em)
-    CC            := $(R_EMCC)
-    CXX           := $(R_EMCXX)
-    AR            := $(R_EMAR)
-    MODE_LIBS     := -lcglm -lGLEW -lGLU -lGL -lm
-    TEST_EXECUTOR := $(R_NODE)
-    R_CONFIGURE   := emconfigure
-    R_MAKE        := emmake
-    EXE_SUFFIX    := .html
+    CC                := $(R_EMCC)
+    CXX               := $(R_EMCXX)
+    AR                := $(R_EMAR)
+    MODE_LIBS         := -lcglm -lGLEW -lGLU -lGL -lm
+    TEST_EXECUTOR     := $(R_NODE)
+    R_CONFIGURE       := emconfigure
+    R_MAKE            := emmake
+    EXE_SUFFIX        := .html
+    TEST_EXE_SUFFIX   := .js
+    MODE_TEST_LDFLAGS := --embed-file t/data -s EXIT_RUNTIME=1
     # This needs to be = instead of := because $< doesn't exist here yet.
     MODE_EXAMPLE_LDFLAGS = `./gather-preloads $<`
 else
@@ -104,10 +106,11 @@ OBJECTS    := $(patsubst %.c,$(BUILDDIR)/%.o,$(SOURCES))
 OUTPUT     := $(BUILDDIR)/librouse.a
 EXE_SUFFIX ?=
 
-TEST_OUTPUTS := $(patsubst %.c,$(BUILDDIR)/%$(EXE_SUFFIX),$(TEST_SOURCES))
-TEST_CFLAGS  ?= $(CFLAGS) -I. -DTAP_ON_FAIL=1
-TEST_LIBS    ?= $(MODE_LIBS)
-TEST_LDFLAGS ?= -L$(BUILDDIR) -lrouse $(TEST_LIBS) $(MODE_TEST_LDFLAGS)
+TEST_EXE_SUFFIX ?= $(EXE_SUFFIX)
+TEST_OUTPUTS    := $(patsubst %.c,$(BUILDDIR)/%$(TEST_EXE_SUFFIX),$(TEST_SOURCES))
+TEST_CFLAGS     ?= $(CFLAGS) -I. -DTAP_ON_FAIL=1
+TEST_LIBS       ?= $(MODE_LIBS)
+TEST_LDFLAGS    ?= -L$(BUILDDIR) -lrouse $(TEST_LIBS) $(MODE_TEST_LDFLAGS)
 
 EXAMPLE_OUTPUTS := $(patsubst %.c,$(BUILDDIR)/%$(EXE_SUFFIX),$(EXAMPLE_SOURCES))
 EXAMPLE_CFLAGS  ?= $(CFLAGS) -I.
@@ -134,7 +137,7 @@ rouse/geom.h: generate-geom-h
 	./$< $@
 
 
-$(BUILDDIR)/t/%$(EXE_SUFFIX): t/%.c $(OUTPUT)
+$(BUILDDIR)/t/%$(TEST_EXE_SUFFIX): t/%.c $(OUTPUT)
 	mkdir -p $(@D)
 	$(CC) $(TEST_CFLAGS) -o $@ $< $(TEST_LDFLAGS)
 

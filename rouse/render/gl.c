@@ -101,8 +101,8 @@ const char *R_gl_strerror(unsigned int err)
 }
 
 
-void R_gl_clear(GLfloat r, GLfloat g, GLfloat b, GLfloat a,
-                GLclampf depth, GLint stencil)
+void R_gl_clear(float r, float g, float b, float a,
+                float depth, int stencil)
 {
     R_GL_CLEAR_ERROR();
     R_GL(glClearColor, r, g, b, a);
@@ -273,7 +273,7 @@ unsigned int R_gl_texture_new(const char *path, R_TextureOptions *options)
 
     SDL_Surface *surface = load_surface(path, pixel_format);
 
-    GLuint texture;
+    unsigned int texture;
     R_GL(glActiveTexture, GL_TEXTURE0 + options->index);
     R_GL(glGenTextures, 1, &texture);
     R_GL(glBindTexture, GL_TEXTURE_2D, texture);

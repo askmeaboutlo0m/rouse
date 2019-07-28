@@ -14,7 +14,7 @@ void SDL_GL_GetDrawableSize(R_UNUSED SDL_Window *window, int *w, int *h)
 
 static R_Viewport mock_gl_viewport = {0, 0, 0, 0};
 
-void glViewport(GLint x, GLint y, GLsizei width, GLsizei height)
+void glViewport(int x, int y, int width, int height)
 {
     mock_gl_viewport = (R_Viewport){x, y, width, height};
 }

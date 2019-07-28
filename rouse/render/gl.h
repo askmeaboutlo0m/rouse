@@ -40,7 +40,7 @@
  * somewhere, which failed but nobody collected its reported error.
  */
 #   define R_GL_CLEAR_ERROR() do { \
-           GLenum glerror; \
+           unsigned int glerror; \
            while ((glerror = glGetError()) != GL_NO_ERROR) { \
                R_gl_warn(glerror, "R_GL_CLEAR_ERROR"); \
            } \
@@ -51,7 +51,7 @@
  * GL function you tried to call, so that it can be included in the message.
  */
 #   define R_GL_CHECK_ERROR(WHERE) do { \
-           GLenum glerror = glGetError(); \
+           unsigned int glerror = glGetError(); \
            if (glerror != GL_NO_ERROR) { \
                R_gl_die(glerror, WHERE); \
            } \
@@ -101,8 +101,8 @@ void R_gl_warn(unsigned int err, const char *where);
 const char *R_gl_strerror(unsigned int err);
 
 /* Do a `glClear` with the given clear color, depth and stencil values. */
-void R_gl_clear(GLfloat r, GLfloat g, GLfloat b, GLfloat a,
-                GLclampf depth, GLint stencil);
+void R_gl_clear(float r, float g, float b, float a,
+                float depth, int stencil);
 
 /*
  * You probably want `R_gl_program_new` instead, but this function loads a

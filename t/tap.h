@@ -264,7 +264,7 @@ TAP_FN int tap_check_child(const char *context, int want_success,
     pid_t pid = fork();
     if (pid == -1) {
         diag("fork: %s", strerror(errno));
-        return fail(message);
+        return fail("%s", message);
     }
     else if (pid == 0) {
         fn(user);
@@ -279,7 +279,7 @@ TAP_FN int tap_check_child(const char *context, int want_success,
             waitpid(pid, &wstatus, 0);
         } while (!WIFEXITED(wstatus) && !WIFSIGNALED(wstatus));
         success = tap_report_process_status(pid, wstatus);
-        return ok(want_success ? success == 0 : success != 0, message);
+        return ok(want_success ? success == 0 : success != 0, "%s", message);
     }
 #else
     skip(1, "%s: avoiding fork(), `#define TAP_FORK 1` to override", context);

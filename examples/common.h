@@ -1,4 +1,4 @@
-#include <rouse/rouse.h>
+#include <rouse.h>
 
 R_Scene *common_init(void *(*init_fn )(void *), void *user,
                      void (*event_fn )(void *, SDL_Event *),

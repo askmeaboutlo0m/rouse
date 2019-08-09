@@ -1,4 +1,4 @@
 glsl/skel.vert
 glsl/skel.frag
-t/data/cuboid.rmodel
-t/data/cuboid.png
+test/data/cuboid.rmodel
+test/data/cuboid.png

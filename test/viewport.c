@@ -1,5 +1,5 @@
 #include "tap.h"
-#include <rouse/rouse.h>
+#include <rouse.h>
 
 
 #ifdef TAP_CAN_MOCK

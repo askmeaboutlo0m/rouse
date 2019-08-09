@@ -1,3 +1,3 @@
-t/data/cube.rmodel
+test/data/cube.rmodel
 glsl/cube.vert
 glsl/cube.frag

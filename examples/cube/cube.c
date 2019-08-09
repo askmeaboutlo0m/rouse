@@ -87,7 +87,7 @@ static R_Binder *init_binder(R_Mesh *mesh)
 static void *on_init(R_UNUSED void *user)
 {
     SceneData *sd   = R_NEW(sd);
-    sd->cube        = R_model_from_file("t/data/cube.rmodel");
+    sd->cube        = R_model_from_file("test/data/cube.rmodel");
     sd->binder      = init_binder(R_model_mesh_by_index(sd->cube, 0));
     sd->rotation_x  = 0.0f;
     sd->rotation_y  = 0.0f;

@@ -1,5 +1,5 @@
 #include "tap.h"
-#include <rouse/rouse.h>
+#include <rouse.h>
 
 
 static void buffer_ok(R_MeshBuffer *mb, const char *name, int type, int count,
@@ -58,7 +58,7 @@ static float cube_normals[] = {
 
 static void test_cube(void)
 {
-    R_Model *cube = R_model_from_file("t/data/cube.rmodel");
+    R_Model *cube = R_model_from_file("test/data/cube.rmodel");
     ok(cube->mesh.count == 1, "cube has 1 mesh");
 
     R_Mesh *mesh = R_model_mesh_by_index(cube, 0);

@@ -1,0 +1,20 @@
+#!/usr/bin/env perl
+# This hacks around CMake conflating multiple occurrences of the same command
+# line argument into one. Specifying `-s USE_SDL=2 -s USE_SDL_IMAGE=2` gets
+# turned into `-s USE_SDL=2 USE_SDL_IMAGE=2` for example and then emcc whines
+# that the latter isn't a source file. The same happens for `--preload-file`
+# and `--embed-file`. So this script allows specifying that stuff as a single
+# argument (without spaces) and splits them up for emcc:
+#
+# * `--preload-file=xyz` to `--preload-file xyz`
+#
+# * `--embed-file=xyz` to `--embed-file xyz`
+#
+# * `-sXYZ` to `-s XYZ`
+#
+exec 'emcc', map {
+    /^--preload-file=/ ? ('--preload-file', substr $_, 15) :
+    /^--embed-file=/   ? ('--embed-file',   substr $_, 13) :
+    /^-s[A-Z]/         ? ('-s',             substr $_,  2) :
+    $_
+} @ARGV;

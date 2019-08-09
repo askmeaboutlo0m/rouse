@@ -43,26 +43,25 @@ extern "C" {
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 
-#include "common.h"
-#include "stringify.h"
-#include "geom.h"
+#include "rouse/common.h"
+#include "rouse/stringify.h"
+#include "rouse/geom.h"
 
 #include <assert.h>
-#include "sanity.h"
+#include "rouse/sanity.h"
 
-#include "camera.h"
-#include "model.h"
-#include "resource.h"
-#include "render/gl.h"
-#include "render/viewport.h"
-#include "render/binder.h"
-#include "render/frame_buffer.h"
-#include "render/frame_renderer.h"
-#include "anim/util.h"
-#include "anim/seq.h"
-#include "interact/input.h"
-#include "main.h"
-
+#include "rouse/camera.h"
+#include "rouse/model.h"
+#include "rouse/resource.h"
+#include "rouse/render/gl.h"
+#include "rouse/render/viewport.h"
+#include "rouse/render/binder.h"
+#include "rouse/render/frame_buffer.h"
+#include "rouse/render/frame_renderer.h"
+#include "rouse/anim/util.h"
+#include "rouse/anim/seq.h"
+#include "rouse/interact/input.h"
+#include "rouse/main.h"
 
 #ifdef __cplusplus
 }

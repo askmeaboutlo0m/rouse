@@ -3,6 +3,5 @@
 *.gcda
 *.gcno
 /.vscode
-/build
+/*build*
 /cover
-/3rdparty/build

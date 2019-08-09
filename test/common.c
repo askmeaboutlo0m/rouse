@@ -1,5 +1,5 @@
 #include "tap.h"
-#include <rouse/rouse.h>
+#include <rouse.h>
 
 
 static void test_format(void)
@@ -28,13 +28,13 @@ static void slurp_nonexistent(void *path)
 
 static void test_slurp(void)
 {
-    char *text = R_slurp("t/data/slurp.txt", NULL);
+    char *text = R_slurp("test/data/slurp.txt", NULL);
     ok(R_str_equal(text, "Some data to slurp.\nFor testing!\n"),
        "slurping text file");
     free(text);
 
     long len;
-    char *bin = R_slurp("t/data/slurp.bin", &len);
+    char *bin = R_slurp("test/data/slurp.bin", &len);
     ok(len == 6, "slurped binary file length %ld == 6", len);
     ok(memcmp(bin, "\1\2\r\n\0\3", 6) == 0, "slurped binary file contents");
     free(bin);

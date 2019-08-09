@@ -90,8 +90,8 @@ static void *on_init(R_UNUSED void *user)
 {
     R_TextureOptions texture_options = R_texture_options();
     SceneData *sd = R_NEW(sd);
-    sd->model     = R_model_from_file("t/data/cuboid.rmodel");
-    sd->texture   = R_gl_texture_new("t/data/cuboid.png", &texture_options);
+    sd->model     = R_model_from_file("test/data/cuboid.rmodel");
+    sd->texture   = R_gl_texture_new("test/data/cuboid.png", &texture_options);
     sd->binder    = init_binder(R_model_mesh_by_index(sd->model, 0));
     sd->u_model   = R_binder_uniform_location(sd->binder, "u_model");
     sd->u_view    = R_binder_uniform_location(sd->binder, "u_view");

@@ -77,7 +77,6 @@ static void mesh_free(R_Mesh *mesh)
         mesh_buffer_free(&mesh->buffer.values[i]);
     }
     free(mesh->buffer.values);
-    free(mesh);
 }
 
 void R_model_free(R_Model *model)

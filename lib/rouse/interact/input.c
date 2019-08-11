@@ -94,6 +94,9 @@ bool R_input_key_unbind(R_Input *in, unsigned int key)
 void R_input_key_clear(R_Input *in)
 {
     R_MAGIC_CHECK(in);
+    /* clang-tidy reports a use-after-free, but that's a false positive. */
+    /* See https://github.com/troydhanson/uthash/issues/128 */
+    /* NOLINTNEXTLINE(clang-analyzer-unix.Malloc) */
     R_HASH_CLEAR(R_KeyBind, in->key_binds, free_key_bind);
 }
 

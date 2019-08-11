@@ -10,6 +10,7 @@ enable_testing()
 
 include(cmake/build_options.cmake)
 include(cmake/warnings.cmake)
+include(cmake/clang_tidy.cmake)
 include(cmake/dependencies.cmake)
 
 

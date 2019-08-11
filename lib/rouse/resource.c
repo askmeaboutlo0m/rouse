@@ -84,6 +84,9 @@ R_UserData R_resource_find_with_type(const char *id, int type,
 static void free_resource(R_Resource *res)
 {
     if (res) {
+        /* clang-tidy reports a use-after-free, but that's a false positive. */
+        /* See https://github.com/troydhanson/uthash/issues/128 */
+        /* NOLINTNEXTLINE(clang-analyzer-unix.Malloc) */
         HASH_DEL(resources, res);
         if (res->on_free) {
             res->on_free(res->user);

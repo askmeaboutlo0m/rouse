@@ -1,7 +1,8 @@
-option(BUILD_SHARED_LIBS "build shared libraries"                    OFF)
-option(BUILD_TESTS       "build tests from the 'test' directory"     ON)
-option(BUILD_EXAMPLES    "build examples from 'examples' directory"  ON)
-option(BUILD_WITH_MAGIC  "enable magic numbers memory sanity checks" ON)
+option(BUILD_SHARED_LIBS "build shared libraries"                      OFF)
+option(BUILD_TESTS       "build tests from the 'test' directory"       ON)
+option(BUILD_EXAMPLES    "build examples from 'examples' directory"    ON)
+option(BUILD_WITH_MAGIC  "enable magic numbers memory sanity checks"   ON)
+option(USE_CLANG_TIDY    "use clang-tidy for all targets if available" ON)
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE DEBUG CACHE STRING "debug or release build" FORCE)

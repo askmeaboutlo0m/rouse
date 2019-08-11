@@ -43,5 +43,6 @@ const char *R_stringify_sdl_window_event_type(Uint32 window_event_type);
     "real_height=%d, handle=%u, color=%u, depth=%u, pixels=%p)"
 
 #define R_FORMAT_ARGS_FRAME_BUFFER(FB) \
-    (FB)->flags, (FB)->width, (FB)->height, (FB)->real_width, \
-    (FB)->real_height, (FB)->handle, (FB)->color, (FB)->depth, (FB)->pixels
+    (FB)->flags, (FB)->width, (FB)->height, \
+    (FB)->real_width, (FB)->real_height, (FB)->handle, \
+    (FB)->color, (FB)->depth, (void *)(FB)->pixels

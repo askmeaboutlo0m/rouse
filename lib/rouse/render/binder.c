@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stdint.h>
+#include <stddef.h>
 #include <stdbool.h>
 #include <stdnoreturn.h>
 #include <stdio.h>
@@ -58,10 +59,12 @@ R_Binder *R_binder_new(unsigned int features, R_BinderDraw draw, R_UserData arg,
     va_end(ap);
 
     if (count > 0) {
+        size_t size = R_int2size(count);
+
         binder->attribute.count   = count;
-        binder->attribute.buffers = R_ANEW(binder->attribute.buffers, count);
-        binder->attribute.fns     = R_ANEW(binder->attribute.fns,     count);
-        binder->attribute.args    = R_ANEW(binder->attribute.args,    count);
+        binder->attribute.buffers = R_ANEW(binder->attribute.buffers, size);
+        binder->attribute.fns     = R_ANEW(binder->attribute.fns,     size);
+        binder->attribute.args    = R_ANEW(binder->attribute.args,    size);
 
         R_GL(glGenBuffers, count, binder->attribute.buffers);
 
@@ -96,7 +99,7 @@ void R_binder_free(R_Binder *binder)
 void R_binder_begin(R_Binder *binder)
 {
     R_GL_CLEAR_ERROR();
-    int features = binder->features;
+    unsigned int features = binder->features;
 
     if (features & R_BINDER_DEPTH_TEST) {
         R_GL(glEnable, GL_DEPTH_TEST);
@@ -126,12 +129,12 @@ void R_binder_begin(R_Binder *binder)
 
     int count = get_vertex_attrib_count(binder);
     for (int i = 0; i < count; ++i) {
-        R_GL(glEnableVertexAttribArray, i);
+        R_GL(glEnableVertexAttribArray, R_int2uint(i));
     }
 
     int max = R_gl_max_vertex_attribs;
     for (int i = count; i < max; ++i) {
-        R_GL(glDisableVertexAttribArray, i);
+        R_GL(glDisableVertexAttribArray, R_int2uint(i));
     }
 }
 
@@ -139,7 +142,7 @@ void R_binder_end(R_Binder *binder)
 {
     int count = get_vertex_attrib_count(binder);
     for (int i = 0; i < count; ++i) {
-        R_GL(glDisableVertexAttribArray, i);
+        R_GL(glDisableVertexAttribArray, R_int2uint(i));
     }
     R_GL(glUseProgram, 0);
 }
@@ -193,7 +196,8 @@ static void bind_index_buffer(R_MeshBuffer *mb, unsigned int buffer)
     R_debug("bind index buffer '%s'", mb->name ? mb->name : "");
     R_GL_CLEAR_ERROR();
     R_GL(glBindBuffer, GL_ELEMENT_ARRAY_BUFFER, buffer);
-    R_GL(glBufferData, GL_ELEMENT_ARRAY_BUFFER, sizeof(*mb->ushorts) * mb->count,
+    size_t bufsize = sizeof(*mb->ushorts) * R_int2size(mb->count);
+    R_GL(glBufferData, GL_ELEMENT_ARRAY_BUFFER, R_size2ptrdiff(bufsize),
                        mb->ushorts, GL_STATIC_DRAW);
 }
 
@@ -223,9 +227,10 @@ static void bind_vertex_buffer(R_MeshBuffer *mb, unsigned int buffer, int index)
     }
 
     R_GL(glBindBuffer, GL_ARRAY_BUFFER, buffer);
-    R_GL(glBufferData, GL_ARRAY_BUFFER, size * mb->count,
+    size_t bufsize = size * R_int2size(mb->count);
+    R_GL(glBufferData, GL_ARRAY_BUFFER, R_size2ptrdiff(bufsize),
                        values, GL_STATIC_DRAW);
-    R_GL(glVertexAttribPointer, index, mb->divisor,
+    R_GL(glVertexAttribPointer, R_int2uint(index), mb->divisor,
                                 type, GL_FALSE, 0, NULL);
 }
 

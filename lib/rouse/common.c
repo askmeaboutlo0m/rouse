@@ -88,12 +88,13 @@ R_LogFn R_logger_debug = R_LOGGER_DEFAULT;
         va_end(ap); \
         int total_len = prefix_len + message_len; \
         /* Not R_malloc, because we don't want to R_die from logging. */ \
-        char *buf = malloc(total_len + 1); \
+        char *buf = malloc(R_int2size(total_len) + 1); \
         if (buf) { \
-            int offset = snprintf(buf, prefix_len + 1, PREFIX_FMT, \
+            int offset = snprintf(buf, R_int2size(prefix_len) + 1, PREFIX_FMT, \
                                   LEVEL, FILE, LINE); \
+            int size = total_len - offset + 1; \
             va_start(ap, LAST); \
-            vsnprintf(buf + offset, total_len - offset + 1, FMT, ap); \
+            vsnprintf(buf + offset, R_int2size(size), FMT, ap); \
             va_end(ap); \
             LOGGER(buf); \
             free(buf); \
@@ -171,9 +172,10 @@ char *R_format(const char *fmt, ...)
     int len = vsnprintf(NULL, 0, fmt, ap);
     va_end(ap);
 
-    char *buf = R_malloc(len + 1);
+    size_t size = R_int2size(len) + 1;
+    char   *buf = R_malloc(size);
     va_start(ap, fmt);
-    vsnprintf(buf, len + 1, fmt, ap);
+    vsnprintf(buf, size, fmt, ap);
     va_end(ap);
 
     return buf;
@@ -216,9 +218,10 @@ char *R_slurp(const char *path, long *out_len)
         R_die("Can't seek start of '%s': %s", path, strerror(errno));
     }
 
-    char *buf = R_malloc(len + 1);
-    memset(buf, 0, len + 1);
-    long got = fread(buf, 1, len, fp);
+    size_t size = R_long2size(len) + 1;
+    char   *buf = R_malloc(size);
+    memset(buf, 0, size);
+    long got = R_size2long(fread(buf, 1, R_long2size(len), fp));
     if (got != len) {
         R_die("Read '%s': expected %ld bytes, but got %ld", path, len, got);
     }

@@ -133,6 +133,90 @@ extern uint32_t R_magic_numbers[R_MAGIC_NUMBER_COUNT];
 
 
 /*
+ * Explicit conversion functions. We build with -Wconversion, so some casts are
+ * simply necessary. Having these functions allows us to ensure both the inputs
+ * and outputs are checked, a raw cast would just blindly cast *any* type away.
+ * On top of that, we could add additional checks here in debug mode, like
+ * checking overflow or trying to turn negative numbers into something unsigned.
+ */
+
+static inline unsigned char R_char2uchar(char x)
+{
+    return (unsigned char) x;
+}
+
+static inline int R_float2int(float x)
+{
+    return (int) x;
+}
+
+static inline uint32_t R_float2uint32(float x)
+{
+    return (uint32_t) x;
+}
+
+static inline float R_int2float(int x)
+{
+    return (float) x;
+}
+
+static inline size_t R_int2size(int x)
+{
+    return (size_t) x;
+}
+
+static inline unsigned int R_int2uint(int x)
+{
+    return (unsigned int) x;
+}
+
+static inline uint32_t R_int2uint32(int x)
+{
+    return (uint32_t) x;
+}
+
+static inline unsigned short R_int2ushort(int x)
+{
+    return (unsigned short) x;
+}
+
+static inline int R_long2int(long x)
+{
+    return (int) x;
+}
+
+static inline size_t R_long2size(long x)
+{
+    return (size_t) x;
+}
+
+static inline int R_size2int(size_t x)
+{
+    return (int) x;
+}
+
+static inline long R_size2long(size_t x)
+{
+    return (long) x;
+}
+
+static inline ptrdiff_t R_size2ptrdiff(size_t x)
+{
+    return (ptrdiff_t) x;
+}
+
+static inline int R_uint2int(unsigned int x)
+{
+    return (int) x;
+}
+
+static inline float R_uint322float(uint32_t x)
+{
+    return (float) x;
+}
+
+
+/*
  * User data that can hold a variety of different number types, or a `void *`.
  * This avoids having to stuff integers into a pointer and then unwrapping them
  * again later. Take care that you only take out the things that you put in.
@@ -144,7 +228,8 @@ typedef union R_UserData {
     void         *data;
 } R_UserData;
 
-static inline R_UserData R_user_int(int i) {
+static inline R_UserData R_user_int(int i)
+{
     return (R_UserData){.i = i};
 }
 

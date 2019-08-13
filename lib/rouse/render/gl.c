@@ -130,7 +130,7 @@ static void dump_info_log(
         void (*get_info_log)(unsigned int, int, int *, char *),
         unsigned int handle, int log_length)
 {
-    char *buffer = R_malloc(log_length);
+    char *buffer = R_malloc(R_int2size(log_length));
 
     int buflen;
     R_GL(get_info_log, handle, log_length, &buflen, buffer);
@@ -237,7 +237,7 @@ R_TextureOptions R_texture_options(void)
     };
 }
 
-static SDL_Surface *load_surface(const char *path, Uint32 pixel_format)
+static SDL_Surface *load_surface(const char *path, uint32_t pixel_format)
 {
     SDL_Surface *original_surface = IMG_Load(path);
     if (!original_surface) {
@@ -258,8 +258,9 @@ unsigned int R_gl_texture_new(const char *path, R_TextureOptions *options)
 {
     R_MAGIC_CHECK(options);
 
-    unsigned int internal_format, format, type;
-    Uint32       pixel_format;
+    int          internal_format;
+    unsigned int format, type;
+    uint32_t     pixel_format;
     switch (options->format) {
         case R_TEXTURE_FORMAT_RGBA:
             internal_format = GL_RGBA;
@@ -274,7 +275,7 @@ unsigned int R_gl_texture_new(const char *path, R_TextureOptions *options)
     SDL_Surface *surface = load_surface(path, pixel_format);
 
     unsigned int texture;
-    R_GL(glActiveTexture, GL_TEXTURE0 + options->index);
+    R_GL(glActiveTexture, GL_TEXTURE0 + R_int2uint(options->index));
     R_GL(glGenTextures, 1, &texture);
     R_GL(glBindTexture, GL_TEXTURE_2D, texture);
 
@@ -300,7 +301,7 @@ void R_gl_texture_free(unsigned int texture)
 void R_gl_texture_bind(int index, unsigned int texture, int location)
 {
     R_GL_CLEAR_ERROR();
-    R_GL(glActiveTexture, GL_TEXTURE0 + index);
+    R_GL(glActiveTexture, GL_TEXTURE0 + R_int2uint(index));
     R_GL(glBindTexture, GL_TEXTURE_2D, texture);
     R_GL(glUniform1i, location, index);
 }

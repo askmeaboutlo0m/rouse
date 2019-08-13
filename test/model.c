@@ -2,8 +2,8 @@
 #include <rouse.h>
 
 
-static void buffer_ok(R_MeshBuffer *mb, const char *name, int type, int count,
-                      int divisor)
+static void buffer_ok(R_MeshBuffer *mb, const char *name, R_BufferType type,
+                      int count, int divisor)
 {
     const char *mq = mb->name ? "\"" : "";
     const char *nq = name     ? "\"" : "";

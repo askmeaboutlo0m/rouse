@@ -70,7 +70,7 @@ static void bind(R_UNUSED void *subject, R_UNUSED R_UserData user,
         {-1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f, -1.0f};
     R_GL(glBindBuffer, GL_ARRAY_BUFFER, buffer);
     R_GL(glBufferData, GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    R_GL(glVertexAttribPointer, index, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+    R_GL(glVertexAttribPointer, R_int2uint(index), 2, GL_FLOAT, GL_FALSE, 0, NULL);
 }
 
 static void draw(R_UNUSED void *subject, R_UNUSED R_UserData user)

@@ -57,26 +57,33 @@ R_Viewport R_window_viewport(void)
     return window_viewport;
 }
 
-void R_window_viewport_resize(void)
+
+static void get_window_size(float *out_w, float *out_h)
 {
     int w, h;
     SDL_GL_GetDrawableSize(R_window, &w, &h);
+    *out_w = R_int2float(w);
+    *out_h = R_int2float(h);
+}
 
-    float x, y;
+void R_window_viewport_resize(void)
+{
+    float x, y, w, h;
+    get_window_size(&w, &h);
 
     if (R_height * (w / R_width) <= h) {
         float ratio = w / R_width;
-        x = 0;
+        x = 0.0f;
         y = h - R_height * ratio;
     }
     else {
         float ratio = h / R_height;
         x = w - R_width * ratio;
-        y = 0;
+        y = 0.0f;
     }
 
-    window_viewport.x = x * 0.5f + 0.5f;
-    window_viewport.y = y * 0.5f + 0.5f;
-    window_viewport.w = w - x + 0.5f;
-    window_viewport.h = h - y + 0.5f;
+    window_viewport.x = R_long2int(lroundf(x * 0.5f));
+    window_viewport.y = R_long2int(lroundf(y * 0.5f));
+    window_viewport.w = R_long2int(lroundf(w - x));
+    window_viewport.h = R_long2int(lroundf(h - y));
 }

@@ -136,7 +136,7 @@ typedef struct R_TextureOptions {
     /* Pixel format of the texture. Default is `R_TEXTURE_FORMAT_RGBA`. */
     R_TextureFormat format;
     /* Texture filters, default is `GL_LINEAR` */
-    unsigned int mag_filter, min_filter;
+    int mag_filter, min_filter;
     /*
      * The slot index to use for loading the texture, default is 0 for
      * `GL_TEXTURE0`. Higher numbers `n` stand for `GL_TEXTUREn`.

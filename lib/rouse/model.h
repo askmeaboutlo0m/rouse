@@ -35,7 +35,7 @@ typedef enum R_BufferType {
 typedef struct R_MeshBuffer {
     R_MAGIC_FIELD
     /* The data type of the buffer, from `R_BufferType`. */
-    int type;
+    R_BufferType type;
     /*
      * Some name to refer to the buffer by. For example "indices", "vertices",
      * "normals", "uvs" etc. is what I like to call mine. May be `NULL`!

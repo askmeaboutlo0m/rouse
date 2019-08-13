@@ -16,7 +16,7 @@ typedef void (*R_BinderBind)(void *, R_UserData, unsigned int, int);
 struct R_Binder {
     R_BinderDraw draw;
     R_UserData   arg;
-    int          features;
+    unsigned int features;
     unsigned int program;
     unsigned int depth_test;
     unsigned int cull_face;

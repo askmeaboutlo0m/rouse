@@ -55,10 +55,10 @@
 SDL_Window    *R_window;
 SDL_GLContext R_glcontext;
 
-float  R_tick_length             = R_TICK_LENGTH_DEFAULT;
-Uint32 R_max_ticks_before_render = R_MAX_TICKS_BEFORE_RENDER_DEFAULT;
-float  R_width                   = R_WIDTH_DEFAULT;
-float  R_height                  = R_HEIGHT_DEFAULT;
+float    R_tick_length             = R_TICK_LENGTH_DEFAULT;
+uint32_t R_max_ticks_before_render = R_MAX_TICKS_BEFORE_RENDER_DEFAULT;
+float    R_width                   = R_WIDTH_DEFAULT;
+float    R_height                  = R_HEIGHT_DEFAULT;
 
 #ifdef ROUSE_MAGIC
 uint32_t R_magic_numbers[R_MAGIC_NUMBER_COUNT];
@@ -85,12 +85,12 @@ static void init(const char *title, int width, int height)
     }
 
     initialized = true;
-    R_seed = time(NULL);
+    R_seed = (unsigned int) time(NULL);
 
 #ifdef ROUSE_MAGIC
     for (unsigned int i = 0; i < R_LENGTH(R_magic_numbers); ++i) {
-        uint32_t low  = R_rand() % 0xffff;
-        uint32_t high = R_rand() % 2 == 0 ? 0xfefeffffu : 0xefefffff;
+        uint32_t low  = R_int2uint32(R_rand()) % 0xffff;
+        uint32_t high = R_int2uint32(R_rand()) % 2 == 0 ? 0xfefeffffu : 0xefefffff;
         R_magic_numbers[i] = high - low;
         R_debug("magic number %u = 0x%x", i, (unsigned int) R_magic_numbers[i]);
     }
@@ -187,8 +187,8 @@ static R_Scene *swap_scene(void)
 }
 
 struct MainLoop {
-    Uint32 last_ms;
-    bool   running;
+    uint32_t last_ms;
+    bool     running;
 };
 
 static bool step_main_loop(struct MainLoop *ml)
@@ -197,14 +197,15 @@ static bool step_main_loop(struct MainLoop *ml)
         ml->running = false;
     }
     else {
-        Uint32 ms    = SDL_GetTicks();
-        Uint32 ticks = (ms - ml->last_ms) / R_tick_length;
-        Uint32 max   = R_MIN(R_max_ticks_before_render, ticks);
-        ml->last_ms += ticks * R_tick_length;
+        uint32_t ms    = SDL_GetTicks();
+        uint32_t delta = ms - ml->last_ms;
+        uint32_t ticks = R_float2uint32(R_uint322float(delta) / R_tick_length);
+        uint32_t max   = R_MIN(R_max_ticks_before_render, ticks);
+        ml->last_ms   += R_float2uint32(R_uint322float(ticks) * R_tick_length);
 
         R_Scene *scene;
 
-        for (Uint32 i = 0; i < max; ++i) {
+        for (uint32_t i = 0; i < max; ++i) {
             scene = swap_scene();
             if (scene) {
                 bool rendered = i == max - 1;
@@ -241,8 +242,10 @@ static void main_loop(void)
 {
     struct MainLoop ml;
     {
-        Uint32 ms  = SDL_GetTicks();
-        ml.last_ms = ms > R_tick_length ? ms - R_tick_length : 0;
+        uint32_t ms  = SDL_GetTicks();
+        ml.last_ms = R_uint322float(ms) > R_tick_length
+                   ? R_float2uint32(R_uint322float(ms) - R_tick_length)
+                   : 0;
         ml.running = true;
     }
 
@@ -257,8 +260,9 @@ static void main_loop(void)
          * application chug. Instead of sleeping for the whole time between
          * frames, it'd be better to track oversleep, sleep conservatively and
          * spend the rest of the delay busy-waiting. */
-        Uint32 ms      = SDL_GetTicks();
-        Uint32 next_ms = ml.last_ms + R_tick_length;
+        uint32_t ms      = SDL_GetTicks();
+        uint32_t next_ms = R_float2uint32(
+                R_uint322float(ml.last_ms) + R_tick_length);
         if (next_ms > ms) {
             SDL_Delay(next_ms - ms);
         }

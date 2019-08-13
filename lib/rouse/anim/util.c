@@ -47,6 +47,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stdint.h>
+#include <stddef.h>
 #include <stdbool.h>
 #include <stdnoreturn.h>
 #include <stdio.h>
@@ -71,13 +72,13 @@ static unsigned int temper(unsigned int x)
 /* Taken from musl libc, see notice above. */
 int R_rand(void)
 {
-    return temper(R_seed = R_seed * 1103515245 + 12345) / 2;
+    return R_uint2int(temper(R_seed = R_seed * 1103515245 + 12345) / 2);
 }
 
-static const float RAND_MAX_FLOAT = RAND_MAX;
+static const float RAND_MAX_FLOAT = (float) RAND_MAX;
 
 float R_rand_between(float a, float b)
 {
     float low = R_MIN(a, b);
-    return low + (R_MAX(a, b) - low) * (rand() / RAND_MAX_FLOAT);
+    return low + (R_MAX(a, b) - low) * (R_int2float(rand()) / RAND_MAX_FLOAT);
 }

@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stdint.h>
+#include <stddef.h>
 #include <stdbool.h>
 #include <stdnoreturn.h>
 #include <stdio.h>
@@ -92,7 +93,7 @@ static char read_char(struct Parse *parse)
 
 static unsigned char read_uchar(struct Parse *parse)
 {
-    return read_char(parse);
+    return R_char2uchar(read_char(parse));
 }
 
 static float read_float(struct Parse *parse)
@@ -120,7 +121,7 @@ static unsigned short read_ushort(struct Parse *parse)
     read_n(parse, 2, 0);
     unsigned short lo = parse->buffer[0],
                    hi = parse->buffer[1];
-    return lo + (hi << 8);
+    return R_int2ushort(lo + (hi << 8));
 }
 
 static int read_count(struct Parse *parse)
@@ -134,7 +135,7 @@ static char *read_string(struct Parse *parse)
     if (len == 0) {
         return NULL;
     }
-    char *buf = R_malloc(len + 1);
+    char *buf = R_malloc(R_int2size(len + 1));
     read_into(parse, (uint8_t *)buf, len);
     buf[len] = '\0';
     return buf;
@@ -165,7 +166,7 @@ DEF_READ_VALUES(read_float,  float)
 static void read_buffer(struct Parse *parse, R_MeshBuffer *mbuf)
 {
     R_MAGIC_SET(mbuf);
-    mbuf->type = read_char(parse);
+    mbuf->type = (R_BufferType) read_char(parse);
     PARSE_DEBUG(parse, "   buffer type: %d", mbuf->type);
     if (mbuf->type != R_BUFFER_TYPE_USHORT && mbuf->type != R_BUFFER_TYPE_FLOAT) {
         PARSE_DIE(parse, "unknown mesh buffer type '%d'", mbuf->type);
@@ -187,11 +188,11 @@ static void read_buffer(struct Parse *parse, R_MeshBuffer *mbuf)
 
     switch (mbuf->type) {
         case R_BUFFER_TYPE_USHORT:
-            mbuf->ushorts = R_ANEW(mbuf->ushorts, mbuf->count);
+            mbuf->ushorts = R_ANEW(mbuf->ushorts, R_int2size(mbuf->count));
             read_ushorts(parse, mbuf->ushorts, mbuf->count);
             break;
         case R_BUFFER_TYPE_FLOAT:
-            mbuf->floats = R_ANEW(mbuf->floats, mbuf->count);
+            mbuf->floats = R_ANEW(mbuf->floats, R_int2size(mbuf->count));
             read_floats(parse, mbuf->floats, mbuf->count);
             break;
         default:
@@ -205,7 +206,7 @@ static void read_buffers(struct Parse *parse, R_Mesh *mesh)
     int bufcount = read_count(parse);
     PARSE_DEBUG(parse, "  buffer count: %d", bufcount);
     mesh->buffer.count  = bufcount;
-    mesh->buffer.values = R_ANEW(mesh->buffer.values, bufcount);
+    mesh->buffer.values = R_ANEW(mesh->buffer.values, R_int2size(bufcount));
     for (int i = 0; i < bufcount; ++i) {
         PARSE_DEBUG(parse, "  buffer %d/%d", i + 1, bufcount);
         read_buffer(parse, &mesh->buffer.values[i]);
@@ -217,7 +218,7 @@ static void read_meshes(struct Parse *parse, R_Model *model)
     int mcount = read_count(parse);
     PARSE_DEBUG(parse, " mesh count: %d", mcount);
     model->mesh.count  = mcount;
-    model->mesh.values = R_ANEW(model->mesh.values, mcount);
+    model->mesh.values = R_ANEW(model->mesh.values, R_int2size(mcount));
     for (int i = 0; i < mcount; ++i) {
         PARSE_DEBUG(parse, " mesh %d/%d", i + 1, mcount);
         read_buffers(parse, &model->mesh.values[i]);

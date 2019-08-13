@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stdint.h>
+#include <stddef.h>
 #include <stdbool.h>
 #include <stdnoreturn.h>
 #include <stdio.h>
@@ -33,7 +34,7 @@
 
 static int read_from_file(uint8_t *out, int size, void *fp)
 {
-    return fread(out, sizeof(*out), size, fp);
+    return R_size2int(fread(out, sizeof(*out), R_int2size(size), fp));
 }
 
 R_Model *R_model_from_file(const char *path)

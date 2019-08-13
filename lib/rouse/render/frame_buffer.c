@@ -66,7 +66,7 @@ static void attach_buffer(unsigned int *buf, unsigned int component,
 }
 
 static void attach_texture(unsigned int *tex, unsigned int attachment,
-                           unsigned int internal_format, unsigned int format,
+                           int internal_format, unsigned int format,
                            int width, int height)
 {
     R_GL(glGenTextures, 1, tex);
@@ -146,14 +146,19 @@ static void check_status(void)
 }
 
 
+static int next_power_of_two(int i)
+{
+    return R_float2int(R_power_of_two(R_int2float(i)));
+}
+
 R_FrameBuffer *R_frame_buffer_new(int flags, int width, int height)
 {
     R_GL_CLEAR_ERROR();
     int previous_handle = get_frame_buffer_binding();
 
     R_FrameBuffer *fb = R_NEW_INIT_STRUCT(fb, R_FrameBuffer,
-            flags, width, height, R_power_of_two(width),
-            R_power_of_two(height), 0, 0, 0, NULL);
+            flags, width, height, next_power_of_two(width),
+            next_power_of_two(height), 0, 0, 0, NULL);
 
     R_GL(glGenFramebuffers, 1, &fb->handle);
     R_GL(glBindFramebuffer, GL_FRAMEBUFFER, fb->handle);
@@ -161,7 +166,7 @@ R_FrameBuffer *R_frame_buffer_new(int flags, int width, int height)
     attach_depth_buffer(fb, flags & R_FRAME_BUFFER_DEPTH_FLAGS);
     check_status();
 
-    R_GL(glBindFramebuffer, GL_FRAMEBUFFER, previous_handle);
+    R_GL(glBindFramebuffer, GL_FRAMEBUFFER, R_int2uint(previous_handle));
     R_debug("R_frame_buffer_new(" R_FORMAT_STRING_FRAME_BUFFER ")",
             R_FORMAT_ARGS_FRAME_BUFFER(fb));
     return fb;
@@ -212,14 +217,15 @@ void R_frame_buffer_unbind(void)
 
 R_V2 R_frame_buffer_ratio(R_FrameBuffer *fb)
 {
-    return R_v2((float) fb->width  / fb->real_width,
-                (float) fb->height / fb->real_height);
+    return R_v2(R_int2float(fb->width)  / R_int2float(fb->real_width),
+                R_int2float(fb->height) / R_int2float(fb->real_height));
 }
 
 unsigned char *R_frame_buffer_read(R_FrameBuffer *fb)
 {
     if (!fb->pixels) {
-        fb->pixels = R_ANEW(fb->pixels, fb->width * fb->height * 4);
+        size_t size = R_int2size(fb->width) * R_int2size(fb->height) * 4;
+        fb->pixels = R_ANEW(fb->pixels, size);
     }
 
     R_GL_CLEAR_ERROR();
@@ -235,6 +241,6 @@ void R_frame_buffer_write(R_FrameBuffer *fb, FILE *fp)
     int w = fb->width, h = fb->height;
     for (int y = 0; y < h; ++y) {
         int offset = (h - y - 1) * w * 4;
-        fwrite(pixels + offset, 1, w * 4, fp);
+        fwrite(pixels + offset, 1, R_int2size(w) * 4, fp);
     }
 }

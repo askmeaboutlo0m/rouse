@@ -49,7 +49,8 @@ static_assert(sizeof(char) == sizeof(uint8_t), "char must be a byte");
     X(float,          GLclampf  ) \
     X(double,         GLdouble  ) \
     X(double,         GLclampd  ) \
-    X(ptrdiff_t,      GLsizeiptr)
+    X(ptrdiff_t,      GLsizeiptr) \
+    X(uint32_t,       Uint32    )
 
 
 #define R_SANITY_CHECK_SIZEOF(A, B) \

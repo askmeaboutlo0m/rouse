@@ -38,7 +38,7 @@
 #define R_CASE_STR(X) case X: return #X;
 
 
-const char *R_stringify_sdl_event_type(Uint32 event_type)
+const char *R_stringify_sdl_event_type(uint32_t event_type)
 {
     switch (event_type) {
         R_CASE_STR(SDL_FIRSTEVENT)
@@ -96,7 +96,7 @@ const char *R_stringify_sdl_event_type(Uint32 event_type)
 }
 
 
-const char *R_stringify_sdl_window_event_type(Uint32 window_event_type)
+const char *R_stringify_sdl_window_event_type(uint32_t window_event_type)
 {
     switch (window_event_type) {
         R_CASE_STR(SDL_WINDOWEVENT_NONE)

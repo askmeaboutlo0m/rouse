@@ -28,13 +28,13 @@
  * Gives a string for an SDL event type. For unknown types, you get
  * "(unknown event)" back.
  */
-const char *R_stringify_sdl_event_type(Uint32 event_type);
+const char *R_stringify_sdl_event_type(uint32_t event_type);
 
 /*
  * Gives a string for an SDL window event type (those constants starting with
  * `SDL_WINDOWEVENT_`). Unknown types get you "(unknown window event)".
  */
-const char *R_stringify_sdl_window_event_type(Uint32 window_event_type);
+const char *R_stringify_sdl_window_event_type(uint32_t window_event_type);
 #endif
 
 

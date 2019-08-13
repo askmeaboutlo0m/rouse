@@ -55,7 +55,7 @@ extern float R_tick_length;
  * frame is rendered, which is probably what you want for video recording, but
  * it's unsuitable for real-time usage since it'll probably cause annoying lag.
  */
-extern Uint32 R_max_ticks_before_render;
+extern uint32_t R_max_ticks_before_render;
 /*
  * The "real" resolution of your application. This is used to set the window
  * viewport sensibly. The default is 1920 by 1080.

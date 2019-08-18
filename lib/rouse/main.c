@@ -201,6 +201,7 @@ static bool step_main_loop(struct MainLoop *ml)
         uint32_t delta = ms - ml->last_ms;
         uint32_t ticks = R_float2uint32(R_uint322float(delta) / R_tick_length);
         uint32_t max   = R_MIN(R_max_ticks_before_render, ticks);
+        float    ratio = 1000.0f / R_tick_length;
         ml->last_ms   += R_float2uint32(R_uint322float(ticks) * R_tick_length);
 
         R_Scene *scene;
@@ -209,7 +210,7 @@ static bool step_main_loop(struct MainLoop *ml)
             scene = swap_scene();
             if (scene) {
                 bool rendered = i == max - 1;
-                R_animator_tick(scene->animator, rendered);
+                R_animator_tick(scene->animator, rendered, ratio);
                 if (scene->on_tick) {
                     scene->on_tick(scene, rendered);
                 }

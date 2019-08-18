@@ -71,19 +71,22 @@
 
 /* Magic numbers to diagnose memory corruption etc. */
 #ifdef ROUSE_MAGIC
-#   define R_MAGIC_NUMBER_COUNT 9
+#   define R_MAGIC_NUMBER_COUNT 12
 extern uint32_t R_magic_numbers[R_MAGIC_NUMBER_COUNT];
 
-#   define R_MAGIC_OF(EXPR) _Generic((EXPR), \
-        struct R_Scene          *: (R_magic_numbers[0]), \
-        struct R_Model          *: (R_magic_numbers[1]), \
-        struct R_Mesh           *: (R_magic_numbers[2]), \
-        struct R_MeshBuffer     *: (R_magic_numbers[3]), \
-        struct R_Camera         *: (R_magic_numbers[4]), \
-        struct R_FirstPerson    *: (R_magic_numbers[5]), \
-        struct R_Input          *: (R_magic_numbers[6]), \
-        struct R_KeyBind        *: (R_magic_numbers[7]), \
-        struct R_TextureOptions *: (R_magic_numbers[8]))
+#   define R_MAGIC_INDEX(EXPR) _Generic((EXPR), \
+        struct R_Scene          *:  0, \
+        struct R_Model          *:  1, \
+        struct R_Mesh           *:  2, \
+        struct R_MeshBuffer     *:  3, \
+        struct R_Camera         *:  4, \
+        struct R_FirstPerson    *:  5, \
+        struct R_Input          *:  6, \
+        struct R_KeyBind        *:  7, \
+        struct R_TextureOptions *:  8, \
+        struct R_Animator       *:  9, \
+        struct R_Sequence       *: 10, \
+        struct R_Step           *: 11)
 
 #   define R_MAGIC_OF(EXPR)        R_magic_numbers[R_MAGIC_INDEX(EXPR)]
 #   define R_MAGIC_FIELD           uint32_t MAGIC;

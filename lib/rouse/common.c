@@ -23,6 +23,7 @@
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdnoreturn.h>
 #include <stdio.h>
 #include <errno.h>

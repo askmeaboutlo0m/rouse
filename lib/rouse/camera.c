@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stdint.h>
+#include <stddef.h>
 #include <stdbool.h>
 #include <stdnoreturn.h>
 #include <cglm/struct.h>
@@ -52,7 +53,7 @@ R_Camera *R_camera_new_perspective(float fov, float aspect_ratio,
 void R_camera_free(R_Camera *camera)
 {
     if (camera) {
-        R_MAGIC_CHECK(camera);
+        R_MAGIC_POISON(camera);
         free(camera);
     }
 }
@@ -87,7 +88,7 @@ R_FirstPerson *R_first_person_new(R_V3 pos, float h, float v)
 void R_first_person_free(R_FirstPerson *fp)
 {
     if (fp) {
-        R_MAGIC_CHECK(fp);
+        R_MAGIC_POISON(fp);
         free(fp);
     }
 }

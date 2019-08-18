@@ -85,18 +85,30 @@ extern uint32_t R_magic_numbers[R_MAGIC_NUMBER_COUNT];
         struct R_KeyBind        *: (R_magic_numbers[7]), \
         struct R_TextureOptions *: (R_magic_numbers[8]))
 
-#   define R_MAGIC_FIELD uint32_t MAGIC;
-#   define R_MAGIC_INIT(EXPR) R_MAGIC_OF(EXPR),
+#   define R_MAGIC_OF(EXPR)        R_magic_numbers[R_MAGIC_INDEX(EXPR)]
+#   define R_MAGIC_FIELD           uint32_t MAGIC;
+#   define R_MAGIC_INIT(EXPR)      R_MAGIC_OF(EXPR),
 #   define R_MAGIC_INIT_TYPE(TYPE) R_MAGIC_INIT((TYPE *) NULL)
-#   define R_MAGIC_SET(EXPR)  (EXPR)->MAGIC = R_MAGIC_OF(EXPR)
+#   define R_MAGIC_SET(EXPR)       (EXPR)->MAGIC = R_MAGIC_OF(EXPR)
+
+#   define R_MAGIC_CHECK_NN(PTR) do { \
+        if ((PTR)->MAGIC != R_MAGIC_OF(PTR)) { \
+            R_die("Bad magic for '%s': 0x%x != 0x%x", \
+                  #PTR, (PTR)->MAGIC, R_MAGIC_OF(PTR)); \
+        } \
+    } while (0)
 
 #   define R_MAGIC_CHECK(PTR) do { \
         if (!(PTR)) { \
             R_die("Bad magic: '%s' is NULL", #PTR); \
         } \
-        if ((PTR)->MAGIC != R_MAGIC_OF(PTR)) { \
-            R_die("Bad magic for '%s': 0x%x != 0x%x", \
-                  #PTR, (PTR)->MAGIC, R_MAGIC_OF(PTR)); \
+        R_MAGIC_CHECK_NN(PTR); \
+    } while (0)
+
+#define R_MAGIC_POISON(PTR) do { \
+        if (PTR) { \
+            R_MAGIC_CHECK_NN(PTR); \
+            PTR->MAGIC = 0xdeaddeadu; \
         } \
     } while (0)
 #else
@@ -105,7 +117,9 @@ extern uint32_t R_magic_numbers[R_MAGIC_NUMBER_COUNT];
 #   define R_MAGIC_INIT(EXPR)      /* nothing */
 #   define R_MAGIC_INIT_TYPE(TYPE) /* nothing */
 #   define R_MAGIC_SET(EXPR)       /* nothing */
+#   define R_MAGIC_CHECK_NN(EXPR)  /* nothing */
 #   define R_MAGIC_CHECK(EXPR)     /* nothing */
+#   define R_MAGIC_POISON(PTR)     /* nothing */
 #endif
 
 #define R_MAGIC_CHECK_2(A, B) \

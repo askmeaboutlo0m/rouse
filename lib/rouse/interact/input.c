@@ -40,8 +40,8 @@ void R_input_clear(R_Input *in)
 void R_input_free(R_Input *in)
 {
     if (in) {
-        R_MAGIC_CHECK(in);
         R_input_clear(in);
+        R_MAGIC_POISON(in);
         free(in);
     }
 }
@@ -60,6 +60,7 @@ static void free_key_bind(R_KeyBind *kb)
         if (kb->on_free) {
             kb->on_free(kb->user);
         }
+        R_MAGIC_POISON(kb);
         free(kb);
     }
 }

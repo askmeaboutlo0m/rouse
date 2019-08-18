@@ -69,6 +69,7 @@ static void mesh_buffer_free(R_MeshBuffer *mbuf)
             R_warn("Can't free mesh buffer with unknown type '%d'", mbuf->type);
             break;
     }
+    R_MAGIC_POISON(mbuf);
 }
 
 static void mesh_free(R_Mesh *mesh)
@@ -78,6 +79,7 @@ static void mesh_free(R_Mesh *mesh)
         mesh_buffer_free(&mesh->buffer.values[i]);
     }
     free(mesh->buffer.values);
+    R_MAGIC_POISON(mesh);
 }
 
 void R_model_free(R_Model *model)
@@ -87,6 +89,7 @@ void R_model_free(R_Model *model)
         for (int i = 0; i < mcount; ++i) {
             mesh_free(&model->mesh.values[i]);
         }
+        R_MAGIC_POISON(model);
         free(model);
     }
 }

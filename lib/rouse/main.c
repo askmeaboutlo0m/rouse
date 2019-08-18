@@ -307,6 +307,7 @@ void R_scene_free(R_Scene *scene)
             scene->on_free(scene);
         }
         R_animator_free(scene->animator);
+        R_MAGIC_POISON(scene);
         free(scene);
     }
 }

@@ -64,16 +64,40 @@ R_Step *R_step_new(void *state, R_StepTickFn on_tick, R_StepFreeFn on_free)
     return step;
 }
 
-void R_step_free(R_Step *step)
+static void check_parent(const char *child_type, const char *parent_type,
+                         void *child, void *actual_parent,
+                         void *purported_parent)
+{
+    if (actual_parent != purported_parent) {
+        if (purported_parent) {
+            R_die("Catastrophic failure: attempt to free %s %p from %s %p, but"
+                  "it's actually owned by %p", child_type, child, parent_type,
+                  purported_parent, actual_parent);
+        }
+        else {
+            R_die("Attempting to free %s %p after adding it to %s %p - don't "
+                  "do that, it's owned by the %s now and will be freed later",
+                  child_type, child, parent_type, actual_parent, parent_type);
+        }
+    }
+}
+
+static void free_step_from(R_Step *step, R_Sequence *seq)
 {
     if (step) {
         R_MAGIC_CHECK(step);
+        check_parent("step", "sequence", step, step->seq, seq);
         if (step->on_free) {
             step->on_free(step);
         }
         R_MAGIC_POISON(step);
         free(step);
     }
+}
+
+void R_step_free(R_Step *step)
+{
+    free_step_from(step, NULL);
 }
 
 
@@ -87,24 +111,33 @@ R_Sequence *R_sequence_new(int max_laps, R_SequenceFreeFn on_free,
     return seq;
 }
 
-void R_sequence_free(R_Sequence *seq)
+static void free_steps(R_Sequence *seq)
+{
+    R_Step *step = seq->first;
+    while (step) {
+        R_Step *next = step->next;
+        free_step_from(step, seq);
+        step = next;
+    }
+}
+
+static void free_sequence_from(R_Sequence *seq, R_Animator *an)
 {
     if (seq) {
         R_MAGIC_CHECK(seq);
-        R_Step *step = seq->first;
-
-        while (step) {
-            R_Step *next = step->next;
-            R_step_free(step);
-            step = next;
-        }
-
+        check_parent("sequence", "animator", seq, seq->an, an);
+        free_steps(seq);
         if (seq->on_free) {
             seq->on_free(seq);
         }
         R_MAGIC_POISON(seq);
         free(seq);
     }
+}
+
+void R_sequence_free(R_Sequence *seq)
+{
+    free_sequence_from(seq, NULL);
 }
 
 
@@ -187,7 +220,7 @@ void R_animator_free(R_Animator *an)
 
         while (seq) {
             R_Sequence *next = seq->next;
-            R_sequence_free(seq);
+            free_sequence_from(seq, an);
             seq = next;
         }
 
@@ -263,7 +296,7 @@ static R_Sequence *filter_dead_sequences(R_Animator *an)
     return dead;
 }
 
-static void free_sequences(R_Sequence *dead)
+static void free_sequences(R_Animator *an, R_Sequence *dead)
 {
     while (dead) {
         R_Sequence *seq = dead;
@@ -272,7 +305,7 @@ static void free_sequences(R_Sequence *dead)
         if (!seq->killed && seq->on_done) {
             seq->on_done(seq);
         }
-        R_sequence_free(seq);
+        free_sequence_from(seq, an);
     }
 }
 
@@ -281,5 +314,5 @@ void R_animator_tick(R_Animator *an, bool rendered, float ratio)
     R_MAGIC_CHECK(an);
     tick_sequences(an, rendered, ratio);
     R_Sequence *dead = filter_dead_sequences(an);
-    free_sequences(dead);
+    free_sequences(an, dead);
 }

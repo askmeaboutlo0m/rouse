@@ -12,6 +12,7 @@ add_library(rouse "${rouse_sources}" "${rouse_headers}")
 
 # sources
 target_sources(rouse PRIVATE
+    rouse/anim/call.c
     rouse/anim/delay.c
     rouse/anim/seq.c
     rouse/anim/util.c
@@ -34,6 +35,7 @@ target_sources(rouse PRIVATE
     rouse.h
     rouse/3rdparty/uthash.h
     rouse/3rdparty/uthash_inc.h
+    rouse/anim/call.h
     rouse/anim/delay.h
     rouse/anim/seq.h
     rouse/anim/util.h

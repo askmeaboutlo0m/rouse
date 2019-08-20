@@ -88,7 +88,7 @@ static void free_step_from(R_Step *step, R_Sequence *seq)
         R_MAGIC_CHECK(step);
         check_parent("step", "sequence", step, step->seq, seq);
         if (step->on_free) {
-            step->on_free(step);
+            step->on_free(step->state, seq ? &seq->user : NULL);
         }
         R_MAGIC_POISON(step);
         free(step);
@@ -178,24 +178,26 @@ static bool sequence_has_laps_remaining(R_Sequence *seq)
     return max_laps < 0 || seq->lap < max_laps;
 }
 
-static R_StepStatus tick_step(R_Sequence *seq, bool rendered, float ratio)
+static R_StepStatus tick_step(R_Sequence *seq, bool rendered, float seconds)
 {
     R_Step *step = seq->current;
     R_MAGIC_CHECK(step);
-    return step->on_tick(step, rendered, ratio);
+    return step->on_tick((R_StepTickArgs){
+            step->state, rendered, seconds, seq->lap, seq->user});
 }
 
-static bool keep_stepping_sequence(R_Sequence *seq, bool rendered, float ratio)
+static bool keep_stepping_sequence(R_Sequence *seq, bool rendered,
+                                   float seconds)
 {
     return !seq->killed
         && sequence_has_laps_remaining(seq)
-        && tick_step(seq, rendered, ratio) == R_STEP_STATUS_COMPLETE;
+        && tick_step(seq, rendered, seconds) == R_STEP_STATUS_COMPLETE;
 }
 
-void R_sequence_tick(R_Sequence *seq, bool rendered, float ratio)
+void R_sequence_tick(R_Sequence *seq, bool rendered, float seconds)
 {
     R_MAGIC_CHECK(seq);
-    while (keep_stepping_sequence(seq, rendered, ratio)) {
+    while (keep_stepping_sequence(seq, rendered, seconds)) {
         if (!(seq->current = seq->current->next)) {
             seq->current = seq->first;
             ++seq->lap;
@@ -266,10 +268,10 @@ void R_animator_add(R_Animator *an, R_Sequence *seq)
 }
 
 
-static void tick_sequences(R_Animator *an, bool rendered, float ratio)
+static void tick_sequences(R_Animator *an, bool rendered, float seconds)
 {
     for (R_Sequence *seq = an->first; seq; seq = seq->next) {
-        R_sequence_tick(seq, rendered, ratio);
+        R_sequence_tick(seq, rendered, seconds);
     }
 }
 
@@ -309,10 +311,10 @@ static void free_sequences(R_Animator *an, R_Sequence *dead)
     }
 }
 
-void R_animator_tick(R_Animator *an, bool rendered, float ratio)
+void R_animator_tick(R_Animator *an, bool rendered, float seconds)
 {
     R_MAGIC_CHECK(an);
-    tick_sequences(an, rendered, ratio);
+    tick_sequences(an, rendered, seconds);
     R_Sequence *dead = filter_dead_sequences(an);
     free_sequences(an, dead);
 }

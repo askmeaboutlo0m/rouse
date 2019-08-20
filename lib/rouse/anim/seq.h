@@ -28,13 +28,21 @@ typedef struct R_Step     R_Step;
 typedef struct R_Sequence R_Sequence;
 typedef struct R_Animator R_Animator;
 
+typedef struct R_StepTickArgs {
+    void       *state;
+    bool       rendered;
+    float      seconds;
+    int        lap;
+    R_UserData user;
+} R_StepTickArgs;
+
 typedef enum R_StepStatus {
     R_STEP_STATUS_RUNNING,
     R_STEP_STATUS_COMPLETE,
 } R_StepStatus;
 
-typedef R_StepStatus (*R_StepTickFn)(R_Step *, bool, float);
-typedef void         (*R_StepFreeFn)(R_Step *);
+typedef R_StepStatus (*R_StepTickFn)(R_StepTickArgs);
+typedef void         (*R_StepFreeFn)(void *, R_UserData *);
 
 typedef void (*R_SequenceDoneFn)(R_Sequence *);
 typedef void (*R_SequenceFreeFn)(R_Sequence *);
@@ -50,7 +58,7 @@ void R_sequence_free(R_Sequence *seq);
 
 void R_sequence_add(R_Sequence *seq, R_Step *step);
 
-void R_sequence_tick(R_Sequence *seq, bool rendered, float ratio);
+void R_sequence_tick(R_Sequence *seq, bool rendered, float seconds);
 
 
 R_Animator *R_animator_new(void);
@@ -58,4 +66,4 @@ void R_animator_free(R_Animator *an);
 
 void R_animator_add(R_Animator *an, R_Sequence *seq);
 
-void R_animator_tick(R_Animator *an, bool rendered, float ratio);
+void R_animator_tick(R_Animator *an, bool rendered, float seconds);

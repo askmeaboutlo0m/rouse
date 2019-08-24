@@ -32,7 +32,8 @@
 #include <GL/glew.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
-#include "3rdparty/uthash.h"
+#include "3rdparty/parson.h"
+#include "3rdparty/uthash_inc.h"
 #include "common.h"
 #include "geom.h"
 #include "resource.h"
@@ -86,6 +87,7 @@ static void init(const char *title, int width, int height)
 
     initialized = true;
     R_seed = (unsigned int) time(NULL);
+    json_set_allocation_functions(R_malloc, free);
 
 #ifdef ROUSE_MAGIC
     for (unsigned int i = 0; i < R_LENGTH(R_magic_numbers); ++i) {

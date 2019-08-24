@@ -26,7 +26,9 @@
 #include <stddef.h>
 #include <stdnoreturn.h>
 #include <assert.h>
+#include "../3rdparty/parson.h"
 #include "../common.h"
+#include "../json.h"
 #include "seq.h"
 #include "util.h"
 #include "delay.h"
@@ -50,18 +52,18 @@ typedef struct R_DelayBetween {
 
 typedef struct R_CustomDelay {
     R_MAGIC_FIELD
-    R_DelayState state;
+    R_DelayState  state;
     R_DelayCalcFn on_calc;
     R_DelayFreeFn on_free;
     R_UserData    user;
 } R_CustomDelay;
 
 
-#define RETURN_NEW_DELAY(TYPE, ON_TICK, ON_FREE, ...) do { \
+#define RETURN_NEW_DELAY(TYPE, ON_TICK, ON_FREE, TO_JSON, ...) do { \
         TYPE *_delay = R_NEW_INIT_STRUCT(_delay, TYPE, \
                 R_MAGIC_INIT(_delay) {-1, 0.0f}, __VA_ARGS__); \
         R_MAGIC_CHECK(_delay); \
-        return R_step_new(_delay, ON_TICK, ON_FREE); \
+        return R_step_new(_delay, ON_TICK, ON_FREE, TO_JSON); \
     } while (0)
 
 #define RETURN_TICK_DELAY(TYPE, NAME, RECALCULATE_EXPR) do { \
@@ -84,6 +86,21 @@ typedef struct R_CustomDelay {
         free(NAME); \
     } while(0)
 
+#define DELAY_TO_JSON(TYPE, NAME, ...) do { \
+        TYPE *NAME = state; \
+        R_MAGIC_CHECK(NAME); \
+        delay_to_json(obj, #TYPE, &NAME->state); \
+        __VA_ARGS__ \
+    } while(0)
+
+
+static void delay_to_json(JSON_Object *obj, const char *type, R_DelayState *ds)
+{
+    json_object_set_string(obj, "type", type);
+    json_object_set_number(obj, "lap",  R_int2double(ds->lap));
+    json_object_set_number(obj, "left", ds->left);
+}
+
 
 static R_StepStatus tick_fixed_delay(R_StepTickArgs args)
 {
@@ -95,10 +112,18 @@ static void free_fixed_delay(void *state, R_UNUSED R_UserData *seq_user)
     FREE_DELAY(R_FixedDelay, fd, /* nothing */);
 }
 
+static void fixed_delay_to_json(JSON_Object *obj, void *state,
+                                R_UNUSED R_UserData *seq_user)
+{
+    DELAY_TO_JSON(R_FixedDelay, fd, {
+        json_object_set_number(obj, "seconds", fd->seconds);
+    });
+}
+
 R_Step *R_delay_new_fixed(float seconds)
 {
     RETURN_NEW_DELAY(R_FixedDelay, tick_fixed_delay, free_fixed_delay,
-                     seconds);
+                     fixed_delay_to_json, seconds);
 }
 
 
@@ -109,13 +134,22 @@ static R_StepStatus tick_delay_between(R_StepTickArgs args)
 
 static void free_delay_between(void *state, R_UNUSED R_UserData *seq_user)
 {
-    FREE_DELAY(R_DelayBetween, fd, /* nothing */);
+    FREE_DELAY(R_DelayBetween, db, /* nothing */);
+}
+
+static void delay_between_to_json(JSON_Object *obj, void *state,
+                                  R_UNUSED R_UserData *seq_user)
+{
+    DELAY_TO_JSON(R_DelayBetween, db, {
+        json_object_set_number(obj, "a", db->a);
+        json_object_set_number(obj, "b", db->b);
+    });
 }
 
 R_Step *R_delay_new_between(float a, float b)
 {
     RETURN_NEW_DELAY(R_DelayBetween, tick_delay_between, free_delay_between,
-                     a, b);
+                     delay_between_to_json, a, b);
 }
 
 
@@ -134,10 +168,20 @@ static void free_custom_delay(void *state, R_UserData *seq_user)
     );
 }
 
+static void custom_delay_to_json(JSON_Object *obj, void *state,
+                                 R_UNUSED R_UserData *seq_user)
+{
+    DELAY_TO_JSON(R_CustomDelay, cd, {
+        R_JSON_OBJECT_SET_FN(     obj, "on_calc", cd->on_calc);
+        R_JSON_OBJECT_SET_FN(     obj, "on_free", cd->on_free);
+        R_json_object_set_hexdump(obj, "user",    &cd->user, sizeof(cd->user));
+    });
+}
+
 R_Step *R_delay_new_custom(R_DelayCalcFn on_calc, R_DelayFreeFn on_free,
                            R_UserData user)
 {
     assert(on_calc && "on_calc must not be NULL");
     RETURN_NEW_DELAY(R_CustomDelay, tick_custom_delay, free_custom_delay,
-                     on_calc, on_free, user);
+                     custom_delay_to_json, on_calc, on_free, user);
 }

@@ -176,6 +176,11 @@ static inline uint32_t R_float2uint32(float x)
     return (uint32_t) x;
 }
 
+static inline double R_int2double(int x)
+{
+    return (double) x;
+}
+
 static inline float R_int2float(int x)
 {
     return (float) x;
@@ -348,6 +353,20 @@ void *R_realloc(void *ptr, size_t size);
  * have to `free` the returned value yourself. `R_die`s if the allocation fails.
  */
 char *R_format(const char *fmt, ...) R_FORMAT(1, 2);
+/*
+ * Same thing, but with a `va_list`. You must call `va_start` before and
+ * `va_end` after you call this.
+ */
+char *R_vformat(const char *fmt, va_list ap);
+/*
+ * Turn an arbitrary chunk of bytes pointed to by `ptr` of the given `size`
+ * into a hexadecimal string. It'll always start with "0x" and all the bytes
+ * in the string high to low, from 00 to ff. That is, a buffer of size 4 with
+ * holding the integer 1 little endian will result in `0x00000001`. If `ptr` is
+ * `NULL` or `size` is zero, then you'll get `NULL` back. You must `free` the
+ * resulting string yourself. `R_die`s if the allocation fails.
+ */
+char *R_hexdump(const void *ptr, size_t size);
 /*
  * Copy a string to a newly allocated buffer, which you're responsible for
  * `free`ing. `R_die`s if the allocation fails. When you try to dup `NULL`,

@@ -25,9 +25,11 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdnoreturn.h>
+#include <assert.h>
+#include "../3rdparty/parson.h"
 #include "../common.h"
+#include "../json.h"
 #include "seq.h"
-
 
 struct R_Step {
     R_MAGIC_FIELD
@@ -35,6 +37,7 @@ struct R_Step {
     void         *state;
     R_StepTickFn on_tick;
     R_StepFreeFn on_free;
+    R_StepJsonFn to_json;
     R_Step       *next;
 };
 
@@ -43,11 +46,11 @@ struct R_Sequence {
     R_Animator       *an;
     int              lap, max_laps;
     bool             killed;
-    R_Sequence       *next;
-    R_Step           *first, *current;
     R_SequenceDoneFn on_done;
     R_SequenceFreeFn on_free;
     R_UserData       user;
+    R_Sequence       *next;
+    R_Step           *first, *current;
 };
 
 struct R_Animator {
@@ -56,10 +59,12 @@ struct R_Animator {
 };
 
 
-R_Step *R_step_new(void *state, R_StepTickFn on_tick, R_StepFreeFn on_free)
+R_Step *R_step_new(void *state, R_StepTickFn on_tick, R_StepFreeFn on_free,
+                   R_StepJsonFn to_json)
 {
+    assert(on_tick && "on_tick must not be NULL");
     R_Step *step = R_NEW_INIT_STRUCT(step, R_Step,
-            R_MAGIC_INIT(step) NULL, state, on_tick, on_free, NULL);
+            R_MAGIC_INIT(step) NULL, state, on_tick, on_free, to_json, NULL);
     R_MAGIC_CHECK(step);
     return step;
 }
@@ -101,12 +106,50 @@ void R_step_free(R_Step *step)
 }
 
 
-R_Sequence *R_sequence_new(int max_laps, R_SequenceFreeFn on_free,
-                           R_UserData user)
+static JSON_Value *step_state_to_json(R_Step *step)
 {
+    JSON_Value *val;
+    if (step->to_json) {
+        val = json_value_init_object();
+        step->to_json(json_value_get_object(val), step->state,
+                      step->seq ? &step->seq->user : NULL);
+    }
+    else {
+        val = json_value_init_null();
+    }
+    return val;
+}
+
+JSON_Value *R_step_to_json(R_Step *step)
+{
+    if (!step) {
+        return json_value_init_null();
+    }
+
+    R_MAGIC_CHECK(step);
+    JSON_Value  *val = json_value_init_object();
+    JSON_Object *obj = json_value_get_object(val);
+
+    json_object_set_string(   obj, "type",    "R_Step");
+    R_json_object_set_address(obj, "address", step);
+    R_json_object_set_address(obj, "seq",     step->seq);
+    R_JSON_OBJECT_SET_FN(     obj, "on_tick", step->on_tick);
+    R_JSON_OBJECT_SET_FN(     obj, "on_free", step->on_free);
+    R_JSON_OBJECT_SET_FN(     obj, "to_json", step->to_json);
+    R_json_object_set_address(obj, "next",    step->next);
+    json_object_set_value(    obj, "state",   step_state_to_json(step));
+
+    return val;
+}
+
+
+R_Sequence *R_sequence_new(int max_laps, R_SequenceDoneFn on_done,
+                           R_SequenceFreeFn on_free, R_UserData user)
+{
+    assert((max_laps >= 0 || !on_done) && "on_done doesn't mix with infinite laps");
     R_Sequence *seq = R_NEW_INIT_STRUCT(seq, R_Sequence,
             R_MAGIC_INIT(seq) NULL, -1, max_laps, false,
-            NULL, NULL, NULL, NULL, on_free, user);
+            on_done, on_free, user, NULL, NULL, NULL);
     R_MAGIC_CHECK(seq);
     return seq;
 }
@@ -203,6 +246,45 @@ void R_sequence_tick(R_Sequence *seq, bool rendered, float seconds)
             ++seq->lap;
         }
     }
+}
+
+
+static JSON_Value *steps_to_json(R_Sequence *seq)
+{
+    JSON_Value *val = json_value_init_array();
+    JSON_Array *arr = json_value_get_array(val);
+
+    for (R_Step *step = seq->first; step; step = step->next) {
+        json_array_append_value(arr, R_step_to_json(step));
+    }
+
+    return val;
+}
+
+JSON_Value *R_sequence_to_json(R_Sequence *seq)
+{
+    if (!seq) {
+        return json_value_init_null();
+    }
+
+    R_MAGIC_CHECK(seq);
+    JSON_Value  *val = json_value_init_object();
+    JSON_Object *obj = json_value_get_object(val);
+
+    json_object_set_string(   obj, "type",     "R_Sequence");
+    R_json_object_set_address(obj, "address",  seq);
+    R_json_object_set_address(obj, "an",       seq->an);
+    json_object_set_number(   obj, "lap",      R_int2double(seq->lap));
+    json_object_set_number(   obj, "max_laps", R_int2double(seq->max_laps));
+    R_json_object_set_address(obj, "next",     seq->next);
+    R_json_object_set_address(obj, "first",    seq->first);
+    R_json_object_set_address(obj, "current",  seq->current);
+    R_JSON_OBJECT_SET_FN(     obj, "on_done",  seq->on_done);
+    R_JSON_OBJECT_SET_FN(     obj, "on_free",  seq->on_free);
+    R_json_object_set_hexdump(obj, "user",     &seq->user, sizeof(seq->user));
+    json_object_set_value(    obj, "steps",    steps_to_json(seq));
+
+    return val;
 }
 
 
@@ -317,4 +399,36 @@ void R_animator_tick(R_Animator *an, bool rendered, float seconds)
     tick_sequences(an, rendered, seconds);
     R_Sequence *dead = filter_dead_sequences(an);
     free_sequences(an, dead);
+}
+
+
+static JSON_Value *sequences_to_json(R_Animator *an)
+{
+    JSON_Value *val = json_value_init_array();
+    JSON_Array *arr = json_value_get_array(val);
+
+    for (R_Sequence *seq = an->first; seq; seq = seq->next) {
+        json_array_append_value(arr, R_sequence_to_json(seq));
+    }
+
+    return val;
+}
+
+JSON_Value *R_animator_to_json(R_Animator *an)
+{
+    if (!an) {
+        return json_value_init_null();
+    }
+
+    R_MAGIC_CHECK(an);
+    JSON_Value  *val = json_value_init_object();
+    JSON_Object *obj = json_value_get_object(val);
+
+    json_object_set_string(   obj, "type",      "R_Animator");
+    R_json_object_set_address(obj, "address",   an);
+    R_json_object_set_address(obj, "first",     an->first);
+    R_json_object_set_address(obj, "last",      an->last);
+    json_object_set_value(    obj, "sequences", sequences_to_json(an));
+
+    return val;
 }

@@ -165,21 +165,49 @@ void *R_realloc(void *ptr, size_t size)
 }
 
 
-char *R_format(const char *fmt, ...)
+char *R_vformat(const char *fmt, va_list ap)
 {
-    va_list ap;
+    va_list aq;
 
-    va_start(ap, fmt);
-    int len = vsnprintf(NULL, 0, fmt, ap);
-    va_end(ap);
+    va_copy(aq, ap);
+    int len = vsnprintf(NULL, 0, fmt, aq);
+    va_end(aq);
 
     size_t size = R_int2size(len) + 1;
     char   *buf = R_malloc(size);
-    va_start(ap, fmt);
     vsnprintf(buf, size, fmt, ap);
-    va_end(ap);
 
     return buf;
+}
+
+char *R_format(const char *fmt, ...)
+{
+    va_list ap;
+    va_start(ap, fmt);
+    char *buf = R_vformat(fmt, ap);
+    va_end(ap);
+    return buf;
+}
+
+char *R_hexdump(const void *ptr, size_t size)
+{
+    if (ptr && size > 0) {
+        char *buf   = R_malloc(size * 2 + 3);
+        char *start = buf + 2;
+        buf[0]      = '0';
+        buf[1]      = 'x';
+
+        const unsigned char *uchars = ptr;
+        for (size_t i = 0; i < size; ++i) {
+            snprintf(start + i * 2, 3, "%02x", uchars[size - i - 1]);
+        }
+
+        start[size * 2] = '\0';
+        return buf;
+    }
+    else {
+        return NULL;
+    }
 }
 
 char *R_strdup(const char *str)

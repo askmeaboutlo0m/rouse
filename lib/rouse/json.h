@@ -1,5 +1,5 @@
 /*
- * rouse.h - another wrong animation library
+ * json.h - utility routines on top of parson.
  *
  * Copyright (c) 2019 askmeaboutloom
  *
@@ -21,54 +21,28 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#ifndef ROUSE_H_INCLUDED
-#define ROUSE_H_INCLUDED
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#define R_JSON_OBJECT_SET_FN(OBJ, NAME, FN) do { \
+        if (FN) { \
+            json_object_set_string(OBJ, NAME, "(function pointer)"); \
+        } else { \
+            json_object_set_null(OBJ, NAME); \
+        } \
+    } while (0)
 
-#include <stdlib.h>
-#include <stddef.h>
-#include <stdarg.h>
-#include <stdint.h>
-#include <stdbool.h>
-#include <stdnoreturn.h>
-#include <stdio.h>
-#include <errno.h>
-#include <string.h>
+JSON_Status R_json_object_set_hexdump(JSON_Object *obj, const char *name,
+                                      void *ptr, size_t size);
 
-#include <cglm/struct.h>
-#include <GL/glew.h>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#include "rouse/3rdparty/parson.h"
+JSON_Status R_json_object_set_format(JSON_Object *obj, const char *name,
+                                     const char *fmt, ...);
 
-#include "rouse/common.h"
-#include "rouse/stringify.h"
-#include "rouse/geom.h"
-#include "rouse/json.h"
+JSON_Status R_json_object_set_address(JSON_Object *obj, const char *name,
+                                      void *ptr);
 
-#include <assert.h>
-#include "rouse/sanity.h"
-
-#include "rouse/camera.h"
-#include "rouse/model.h"
-#include "rouse/resource.h"
-#include "rouse/render/gl.h"
-#include "rouse/render/viewport.h"
-#include "rouse/render/binder.h"
-#include "rouse/render/frame_buffer.h"
-#include "rouse/render/frame_renderer.h"
-#include "rouse/anim/util.h"
-#include "rouse/anim/seq.h"
-#include "rouse/anim/call.h"
-#include "rouse/anim/delay.h"
-#include "rouse/interact/input.h"
-#include "rouse/main.h"
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif
+/*
+ * Serializes the given JSON value, either `pretty` or not. The value will be
+ * freed, so don't use this if you need it again afterwards - for that, use
+ * `json_serialize_to_string` or `json_serialize_to_string_pretty` from Parson
+ * directly. The returned string must be `free`d by you though.
+ */
+char *R_json_to_string(JSON_Value *value_will_be_freed, bool pretty);

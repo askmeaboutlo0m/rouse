@@ -43,27 +43,38 @@ typedef enum R_StepStatus {
 
 typedef R_StepStatus (*R_StepTickFn)(R_StepTickArgs);
 typedef void         (*R_StepFreeFn)(void *, R_UserData *);
+typedef void         (*R_StepJsonFn)(JSON_Object *, void *, R_UserData *);
 
 typedef void (*R_SequenceDoneFn)(R_Sequence *);
 typedef void (*R_SequenceFreeFn)(R_Sequence *);
 
 
-R_Step *R_step_new(void *state, R_StepTickFn on_tick, R_StepFreeFn on_free);
+R_Step *R_step_new(void *state, R_StepTickFn on_tick, R_StepFreeFn on_free,
+                   R_StepJsonFn to_json);
+
 void R_step_free(R_Step *step);
 
+JSON_Value *R_step_to_json(R_Step *step);
 
-R_Sequence *R_sequence_new(int max_laps, R_SequenceFreeFn on_free,
-                           R_UserData user);
+
+R_Sequence *R_sequence_new(int max_laps, R_SequenceDoneFn on_done,
+                           R_SequenceFreeFn on_free, R_UserData user);
+
 void R_sequence_free(R_Sequence *seq);
 
 void R_sequence_add(R_Sequence *seq, R_Step *step);
 
 void R_sequence_tick(R_Sequence *seq, bool rendered, float seconds);
 
+JSON_Value *R_sequence_to_json(R_Sequence *seq);
+
 
 R_Animator *R_animator_new(void);
+
 void R_animator_free(R_Animator *an);
 
 void R_animator_add(R_Animator *an, R_Sequence *seq);
 
 void R_animator_tick(R_Animator *an, bool rendered, float seconds);
+
+JSON_Value *R_animator_to_json(R_Animator *an);

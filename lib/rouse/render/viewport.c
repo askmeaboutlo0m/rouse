@@ -30,6 +30,7 @@
 #include <string.h>
 #include <SDL2/SDL.h>
 #include <GL/glew.h>
+#include "../3rdparty/parson.h"
 #include "../common.h"
 #include "gl.h"
 #include "viewport.h"

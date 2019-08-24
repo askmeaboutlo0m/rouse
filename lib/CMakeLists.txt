@@ -1,3 +1,11 @@
+# Parson spews compiler warnings and clang-tidy violations.
+# So it's its own separate target without both of those.
+# I guess that's okay since it's only really used for debugging.
+# Maybe it should be excluded in release mode even?
+add_library(parson STATIC rouse/3rdparty/parson.c)
+target_compile_features(parson PRIVATE c_std_11)
+
+
 set(rouse_geom_h          "${CMAKE_CURRENT_SOURCE_DIR}/rouse/geom.h")
 set(rouse_generate_geom_h "${PROJECT_SOURCE_DIR}/generate-geom-h")
 
@@ -8,7 +16,8 @@ add_custom_command(OUTPUT "${rouse_geom_h}"
 
 set_property(SOURCE "${rouse_geom_h}" PROPERTY GENERATED TRUE)
 
-add_library(rouse "${rouse_sources}" "${rouse_headers}")
+
+add_library(rouse)
 
 # sources
 target_sources(rouse PRIVATE
@@ -19,6 +28,7 @@ target_sources(rouse PRIVATE
     rouse/camera.c
     rouse/common.c
     rouse/interact/input.c
+    rouse/json.c
     rouse/main.c
     rouse/model.c
     rouse/model_parser.c
@@ -33,6 +43,7 @@ target_sources(rouse PRIVATE
 # headers
 target_sources(rouse PRIVATE
     rouse.h
+    rouse/3rdparty/parson.h
     rouse/3rdparty/uthash.h
     rouse/3rdparty/uthash_inc.h
     rouse/anim/call.h
@@ -42,6 +53,7 @@ target_sources(rouse PRIVATE
     rouse/camera.h
     rouse/common.h
     rouse/interact/input.h
+    rouse/json.h
     rouse/main.h
     rouse/model.h
     rouse/render/binder.h
@@ -54,10 +66,12 @@ target_sources(rouse PRIVATE
     rouse/stringify.h
     "${rouse_geom_h}")
 
+add_clang_tidy_if_available(rouse)
 target_include_directories(rouse INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}")
 target_compile_features(rouse PRIVATE c_std_11)
 target_compile_options(rouse PRIVATE ${rouse_warnings})
 target_link_libraries(rouse PUBLIC
+    parson
     Rouse::cglm
     Rouse::glew
     Rouse::sdl2

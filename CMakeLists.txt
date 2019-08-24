@@ -18,6 +18,7 @@ add_subdirectory(lib)
 
 function(add_rouse_linked_executable target)
     add_executable("${target}" ${ARGN})
+    add_clang_tidy_if_available("${target}")
     target_compile_features("${target}" PRIVATE c_std_11)
     target_compile_options("${target}" PRIVATE ${rouse_warnings})
     target_link_libraries("${target}" PUBLIC rouse)

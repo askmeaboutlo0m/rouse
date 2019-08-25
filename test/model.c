@@ -7,12 +7,14 @@ static void buffer_ok(R_MeshBuffer *mb, const char *name, R_BufferType type,
 {
     const char *mq = mb->name ? "\"" : "";
     const char *nq = name     ? "\"" : "";
-    ok(R_str_equal(mb->name, name), "buffer name %s%s%s eq %s%s%s",
-       mq, mb->name ? mb->name : "NULL", mq, nq, name ? name : "NULL", nq);
+    str_eq_ok(mb->name, name, "buffer name %s%s%s eq %s%s%s", mq,
+              mb->name ? mb->name : "NULL", mq, nq, name ? name : "NULL", nq);
 
-    ok(mb->type == type, "buffer type %d == %d", mb->type, type);
-    ok(mb->count == count, "element count %d == %d", mb->count, count);
-    ok(mb->divisor == divisor, "divisor %d == %d", mb->divisor, divisor);
+    int got_type  = (int) mb->type;
+    int want_type = (int) type;
+    int_eq_ok(got_type, want_type, "buffer type %d == %d", got_type, want_type);
+    int_eq_ok(mb->count, count, "element count %d == %d", mb->count, count);
+    int_eq_ok(mb->divisor, divisor, "divisor %d == %d", mb->divisor, divisor);
 }
 
 static void ushort_buffer_ok(R_MeshBuffer *mb, const char *name, int count,
@@ -22,7 +24,7 @@ static void ushort_buffer_ok(R_MeshBuffer *mb, const char *name, int count,
     for (int i = 0; i < count; ++i) {
         unsigned short m = mb->ushorts[i],
                        v = values[i];
-        ok(m == v, "ushorts[%d]: %u == %u", i, m, v);
+        ushort_eq_ok(m, v, "ushorts[%d]: %u == %u", i, m, v);
     }
 }
 
@@ -33,7 +35,7 @@ static void float_buffer_ok(R_MeshBuffer *mb, const char *name, int count,
     for (int i = 0; i < count; ++i) {
         float m = mb->floats[i],
               v = values[i];
-        ok(fabsf(m - v) < 1e-7, "floats[%d]: %f == %f", i, m, v);
+        float_eq_eps_ok(m, v, 1e-7f, "floats[%d]: %f == %f", i, m, v);
     }
 }
 
@@ -59,10 +61,10 @@ static float cube_normals[] = {
 static void test_cube(void)
 {
     R_Model *cube = R_model_from_file("test/data/cube.rmodel");
-    ok(cube->mesh.count == 1, "cube has 1 mesh");
+    int_eq_ok(cube->mesh.count, 1, "cube has 1 mesh");
 
     R_Mesh *mesh = R_model_mesh_by_index(cube, 0);
-    ok(mesh->buffer.count == 3, "cube has 3 buffers");
+    int_eq_ok(mesh->buffer.count, 3, "cube has 3 buffers");
 
     ushort_buffer_ok(R_mesh_buffer_by_index(mesh, 0), "indices",
                      R_LENGTH(cube_indices), 3, cube_indices);

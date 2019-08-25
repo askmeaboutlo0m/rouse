@@ -11,9 +11,9 @@ static void find_resource(void *user)
 
 static void test_empty_resources(void)
 {
-    ok(R_resource_search("asdf") == NULL, "search empty resources");
+    ptr_eq_ok(R_resource_search("asdf"), NULL, "search empty resources");
     dies_ok(find_resource, "asdf", "finding nonexistent resource dies");
-    ok(R_resource_clear() == 0, "resources start empty");
+    int_eq_ok(R_resource_clear(), 0, "resources start empty");
 }
 
 
@@ -22,13 +22,13 @@ static void test_single_resource(void)
     R_resource_add("test", 1, R_user_int(2), NULL);
 
     R_UserData *found = R_resource_search("test");
-    ok(found && found->i == 2, "search resource by id");
-    ok(R_resource_find("test").i == 2, "find resource by id");
-    ok(R_resource_search("asdf") == NULL, "search nonexistent resource");
+    int_eq_ok(found->i, 2, "search resource by id");
+    int_eq_ok(R_resource_find("test").i, 2, "find resource by id");
+    ptr_eq_ok(R_resource_search("asdf"), NULL, "search nonexistent resource");
     dies_ok(find_resource, "asdf", "finding nonexistent resource dies");
 
-    ok(R_resource_clear() == 1, "resource gets cleared");
-    ok(R_resource_clear() == 0, "resources are empty after clearing");
+    int_eq_ok(R_resource_clear(), 1, "resource gets cleared");
+    int_eq_ok(R_resource_clear(), 0, "resources are empty after clearing");
 }
 
 
@@ -61,39 +61,39 @@ static void test_multiple_resources(void)
     char *c = make_resource("c", 2);
     char *d = make_resource("d", 3);
 
-    ok(a == R_resource_find  ("a") .data,   "find resource a by id");
-    ok(a == R_resource_search("a")->data, "search resource a by id");
-    ok(b == R_resource_find  ("b") .data,   "find resource b by id");
-    ok(b == R_resource_search("b")->data, "search resource b by id");
-    ok(c == R_resource_find  ("c") .data,   "find resource c by id");
-    ok(c == R_resource_search("c")->data, "search resource c by id");
-    ok(d == R_resource_find  ("d") .data,   "find resource d by id");
-    ok(d == R_resource_search("d")->data, "search resource d by id");
+    ptr_eq_ok(R_resource_find  ("a") .data, a,   "find resource a by id");
+    ptr_eq_ok(R_resource_search("a")->data, a, "search resource a by id");
+    ptr_eq_ok(R_resource_find  ("b") .data, b,   "find resource b by id");
+    ptr_eq_ok(R_resource_search("b")->data, b, "search resource b by id");
+    ptr_eq_ok(R_resource_find  ("c") .data, c,   "find resource c by id");
+    ptr_eq_ok(R_resource_search("c")->data, c, "search resource c by id");
+    ptr_eq_ok(R_resource_find  ("d") .data, d,   "find resource d by id");
+    ptr_eq_ok(R_resource_search("d")->data, d, "search resource d by id");
 
-    ok(NULL == R_resource_search("e"), "search nonexistent resource");
+    ptr_eq_ok(R_resource_search("e"), NULL, "search nonexistent resource");
     dies_ok(find_resource, "e", "finding nonexistent resource dies");
 
-    ok(freed == 0, "none freed");
-    ok(R_resource_remove_where(remove_containing, "ab") == 2, "removing a and b");
-    ok(freed == 2, "two freed");
-    ok(NULL == R_resource_search("a"), "a is gone");
-    ok(NULL == R_resource_search("b"), "b is gone too");
+    int_eq_ok(freed, 0, "none freed");
+    int_eq_ok(R_resource_remove_where(remove_containing, "ab"), 2, "removing a and b");
+    int_eq_ok(freed, 2, "two freed");
+    ptr_eq_ok(R_resource_search("a"), NULL, "a is gone");
+    ptr_eq_ok(R_resource_search("b"), NULL, "b is gone too");
 
-    ok(R_resource_remove_where(remove_containing, "ab") == 0,
-       "not removing a and b again");
-    ok(freed == 2, "still two freed");
+    int_eq_ok(R_resource_remove_where(remove_containing, "ab"), 0,
+              "not removing a and b again");
+    int_eq_ok(freed, 2, "still two freed");
 
     ok(R_resource_remove("c"), "removing c");
-    ok(freed == 3, "three freed");
-    ok(NULL == R_resource_search("c"), "c is gone");
+    int_eq_ok(freed, 3, "three freed");
+    ptr_eq_ok(R_resource_search("c"), NULL, "c is gone");
     ok(!R_resource_remove("c"), "not removing c again");
 
-    ok(R_resource_clear() == 1, "clearing all");
-    ok(freed == 4, "four freed");
-    ok(NULL == R_resource_search("d"), "d is gone");
-    ok(NULL == R_resource_search("a"), "a is still gone");
-    ok(NULL == R_resource_search("b"), "b is still gone too");
-    ok(NULL == R_resource_search("c"), "c is also still gone");
+    int_eq_ok(R_resource_clear(), 1, "clearing all");
+    int_eq_ok(freed, 4, "four freed");
+    ptr_eq_ok(R_resource_search("d"), NULL, "d is gone");
+    ptr_eq_ok(R_resource_search("a"), NULL, "a is still gone");
+    ptr_eq_ok(R_resource_search("b"), NULL, "b is still gone too");
+    ptr_eq_ok(R_resource_search("c"), NULL, "c is also still gone");
 }
 
 
@@ -122,7 +122,7 @@ static void test_dying_resources(void)
     lives_ok(assert_correct_type, "q", "assert correct type lives");
     dies_ok (assert_wrong_type,   "q", "assert wrong type dies");
 
-    ok(R_resource_clear() == 1, "clearing resources");
+    int_eq_ok(R_resource_clear(), 1, "clearing resources");
 }
 
 

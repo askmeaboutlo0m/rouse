@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <errno.h>
+#include <math.h>
 #include <assert.h>
 
 
@@ -192,7 +193,8 @@ TAP_FN void tap_handle_fail(void)
     }
 }
 
-TAP_FN int vok(int cond, const char *fmt, va_list ap)
+TAP_FN int vok(int cond, const char *fmt, va_list ap,
+               void (*detail_fn)(void *), void *detail_arg)
 {
     if (!cond) {
         fputs("not ", TAP_OUT);
@@ -204,35 +206,119 @@ TAP_FN int vok(int cond, const char *fmt, va_list ap)
     }
     fputs("\n", TAP_OUT);
     if (!cond) {
+        if (detail_fn) {
+            detail_fn(detail_arg);
+        }
         tap_handle_fail();
     }
     return !!cond;
 }
 
-#define TAP_CALL_VOK(COND, FMT) \
-    va_list ap; \
-    va_start(ap, FMT); \
-    int result = vok(COND, FMT, ap); \
-    va_end(ap); \
-    return result;
+#define TAP_CALL_VOK(COND, FMT, DETAIL_FN, DETAIL_ARG) do { \
+        va_list ap; \
+        va_start(ap, FMT); \
+        int _result = vok(COND, FMT, ap, DETAIL_FN, DETAIL_ARG); \
+        va_end(ap); \
+        return _result; \
+    } while (0)
 
 TAP_FORMAT(2, 3)
 TAP_FN int ok(int cond, const char *fmt, ...)
 {
-    TAP_CALL_VOK(cond, fmt);
+    TAP_CALL_VOK(cond, fmt, NULL, NULL);
 }
 
 TAP_FORMAT(1, 2)
 TAP_FN int fail(const char *fmt, ...)
 {
-    TAP_CALL_VOK(0, fmt);
+    TAP_CALL_VOK(0, fmt, NULL, NULL);
 }
 
 TAP_FORMAT(1, 2)
 TAP_FN int pass(const char *fmt, ...)
 {
-    TAP_CALL_VOK(1, fmt);
+    TAP_CALL_VOK(1, fmt, NULL, NULL);
 }
+
+
+#define TAP_CALL_VOK_DETAIL(COND, FMT, DETAIL_FN, TYPE, ...) do { \
+        TYPE _detail = __VA_ARGS__; \
+        TAP_CALL_VOK(COND, FMT, DETAIL_FN, &_detail); \
+    } while (0)
+
+#define TAP_OK_DETAIL_FN(ARG_TYPE, NAME, COND, DETAIL_TITLE, DETAIL_FORMAT) \
+    struct TapDetail_ ## NAME { \
+        ARG_TYPE got; \
+        ARG_TYPE want; \
+    }; \
+    \
+    static void tap_detail_ ## NAME(void *arg) \
+    { \
+        struct TapDetail_ ## NAME *detail = arg; \
+        diag(DETAIL_TITLE); \
+        diag("  wanted  «" DETAIL_FORMAT "»", detail->want); \
+        diag("  but got «" DETAIL_FORMAT "»", detail->got); \
+    } \
+    \
+    TAP_FORMAT(3, 4) \
+    TAP_FN int NAME(ARG_TYPE got, ARG_TYPE want, const char *fmt, ...) \
+    { \
+        TAP_CALL_VOK_DETAIL(COND, fmt, tap_detail_ ## NAME, \
+                            struct TapDetail_ ## NAME, {got, want}); \
+    }
+
+TAP_FN int tap_str_eq(const char *a, const char *b)
+{
+    return a == b || (a && strcmp(a, b) == 0);
+}
+
+TAP_OK_DETAIL_FN(int, int_eq_ok, got == want,
+                 "ints should be equal, but they're not", "%d")
+
+TAP_OK_DETAIL_FN(long, long_eq_ok, got == want,
+                 "longs should be equal, but they're not", "%ld")
+
+TAP_OK_DETAIL_FN(unsigned short, ushort_eq_ok, got == want,
+                 "unsigned shorts should be equal, but they're not", "%u")
+
+TAP_OK_DETAIL_FN(const void *, ptr_eq_ok, got == want,
+                 "pointers should be equal, but they're not", "%p")
+
+TAP_OK_DETAIL_FN(size_t, size_eq_ok, got == want,
+                 "size_t should be equal, but they're not", "%zd")
+
+TAP_OK_DETAIL_FN(const char *, str_eq_ok, tap_str_eq(got, want),
+                 "strings should be equal, but they're not", "%s")
+
+#define TAP_OK_EPS_DETAIL_FN(ARG_TYPE, NAME, COND, DETAIL_TITLE, DETAIL_FORMAT) \
+    struct TapDetail_ ## NAME { \
+        ARG_TYPE got; \
+        ARG_TYPE want; \
+        ARG_TYPE eps; \
+    }; \
+    \
+    static void tap_detail_ ## NAME(void *arg) \
+    { \
+        struct TapDetail_ ## NAME *detail = arg; \
+        diag(DETAIL_TITLE); \
+        diag("  wanted  «" DETAIL_FORMAT "»", detail->want); \
+        diag("  but got «" DETAIL_FORMAT "»", detail->got); \
+        diag("  epsilon «" DETAIL_FORMAT "»", detail->eps); \
+    } \
+    \
+    TAP_FORMAT(4, 5) \
+    TAP_FN int NAME(ARG_TYPE got, ARG_TYPE want, ARG_TYPE eps, \
+                    const char *fmt, ...) \
+    { \
+        TAP_CALL_VOK_DETAIL(COND, fmt, tap_detail_ ## NAME, \
+                            struct TapDetail_ ## NAME, {got, want, eps}); \
+    }
+
+TAP_OK_EPS_DETAIL_FN(double, double_eq_eps_ok, fabs(got - want) < eps,
+                     "doubles should be (mostly) equal, but they're not", "%f")
+
+TAP_OK_EPS_DETAIL_FN(float, float_eq_eps_ok, fabsf(got - want) < eps,
+                    "floats should be (mostly) equal, but they're not", "%f")
 
 
 #if TAP_FORK != 0

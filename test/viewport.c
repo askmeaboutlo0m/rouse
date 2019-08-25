@@ -24,10 +24,10 @@ void glViewport(int x, int y, int width, int height)
 
 static void viewport_ok(R_Viewport viewport, int x, int y, int w, int h)
 {
-    ok(viewport.x == x, "viewport x %d == %d", viewport.x, x);
-    ok(viewport.y == y, "viewport y %d == %d", viewport.y, y);
-    ok(viewport.w == w, "viewport w %d == %d", viewport.w, w);
-    ok(viewport.h == h, "viewport h %d == %d", viewport.h, h);
+    int_eq_ok(viewport.x, x, "viewport x %d == %d", viewport.x, x);
+    int_eq_ok(viewport.y, y, "viewport y %d == %d", viewport.y, y);
+    int_eq_ok(viewport.w, w, "viewport w %d == %d", viewport.w, w);
+    int_eq_ok(viewport.h, h, "viewport h %d == %d", viewport.h, h);
 }
 
 static void window_viewport_ok(int x, int y, int w, int h)

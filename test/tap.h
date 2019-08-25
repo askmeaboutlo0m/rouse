@@ -181,6 +181,7 @@ TAP_FN void skip(int count, const char *fmt, ...)
 
 TAP_FN void tap_handle_fail(void)
 {
+    ++tap_failed;
     switch (tap_on_fail) {
         case TAP_BAIL_ON_FAIL:
             BAIL_OUT("TAP_BAIL_ON_FAIL is set");

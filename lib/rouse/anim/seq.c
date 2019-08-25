@@ -171,7 +171,7 @@ static void free_sequence_from(R_Sequence *seq, R_Animator *an)
         check_parent("sequence", "animator", seq, seq->an, an);
         free_steps(seq);
         if (seq->on_free) {
-            seq->on_free(seq);
+            seq->on_free(seq->user);
         }
         R_MAGIC_POISON(seq);
         free(seq);
@@ -387,7 +387,7 @@ static void free_sequences(R_Animator *an, R_Sequence *dead)
         R_MAGIC_CHECK(seq);
         dead = dead->next;
         if (!seq->killed && seq->on_done) {
-            seq->on_done(seq);
+            seq->on_done(seq->user);
         }
         free_sequence_from(seq, an);
     }

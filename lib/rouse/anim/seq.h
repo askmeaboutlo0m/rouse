@@ -45,8 +45,8 @@ typedef R_StepStatus (*R_StepTickFn)(R_StepTickArgs);
 typedef void         (*R_StepFreeFn)(void *, R_UserData *);
 typedef void         (*R_StepJsonFn)(JSON_Object *, void *, R_UserData *);
 
-typedef void (*R_SequenceDoneFn)(R_Sequence *);
-typedef void (*R_SequenceFreeFn)(R_Sequence *);
+typedef void (*R_SequenceDoneFn)(R_UserData);
+typedef void (*R_SequenceFreeFn)(R_UserData);
 
 
 R_Step *R_step_new(void *state, R_StepTickFn on_tick, R_StepFreeFn on_free,

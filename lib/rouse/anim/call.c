@@ -64,6 +64,7 @@ static void call_to_json(JSON_Object *obj, void *state,
 {
     R_Call *call = state;
     R_MAGIC_CHECK(call);
+    json_object_set_string(   obj, "type",    "R_Call");
     R_JSON_OBJECT_SET_FN(     obj, "on_step", call->on_step);
     R_JSON_OBJECT_SET_FN(     obj, "on_free", call->on_free);
     R_json_object_set_hexdump(obj, "user",    &call->user, sizeof(call->user));

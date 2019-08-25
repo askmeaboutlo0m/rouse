@@ -206,7 +206,7 @@ static bool step_main_loop(struct MainLoop *ml)
         ml->last_ms   += R_float2uint32(R_uint322float(ticks) * R_tick_length);
 
         R_Scene *scene;
-        float   seconds = 1000.0f / R_tick_length;
+        float   seconds = R_tick_length / 1000.0f;
 
         for (uint32_t i = 0; i < max; ++i) {
             scene = swap_scene();

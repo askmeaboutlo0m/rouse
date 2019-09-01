@@ -11,8 +11,6 @@
 #define LOOK_LEFT     (1 << 8)
 #define LOOK_RIGHT    (1 << 9)
 
-#define FB_FLAGS R_FRAME_BUFFER_COLOR_TEXTURE | R_FRAME_BUFFER_DEPTH_BUFFER
-
 
 typedef struct CommonData {
     R_FrameBuffer   *fb;
@@ -146,8 +144,14 @@ R_Scene *common_init(void *(*init_fn )(void *), void *user,
                      void (*render_fn)(void *, R_Camera *),
                      void (*free_fn  )(void *))
 {
+    R_FrameBufferOptions fbo = R_frame_buffer_options();
+    fbo.width      = 1920;
+    fbo.height     = 1080;
+    fbo.color_type = R_FRAME_BUFFER_ATTACHMENT_TEXTURE;
+    fbo.depth_type = R_FRAME_BUFFER_ATTACHMENT_BUFFER;
+
     CommonData *cd  = R_NEW(cd);
-    cd->fb          = R_frame_buffer_new(FB_FLAGS, 1920, 1080);
+    cd->fb          = R_frame_buffer_new(&fbo);
     cd->fr          = R_frame_renderer_new();
     cd->fp          = R_first_person_new(R_v3(0.0f, 0.0f, -20.0f), 0.0f, 0.0f);
     cd->camera      = R_camera_new_perspective(R_to_rad(60.0f), 16.0f / 9.0f,

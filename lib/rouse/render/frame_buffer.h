@@ -22,20 +22,29 @@
  * SOFTWARE.
  */
 
-#define R_FRAME_BUFFER_NONE          0x0
-#define R_FRAME_BUFFER_COLOR_BUFFER  0x1
-#define R_FRAME_BUFFER_COLOR_TEXTURE 0x2
-#define R_FRAME_BUFFER_DEPTH_BUFFER  0x4
-#define R_FRAME_BUFFER_DEPTH_TEXTURE 0x8
+typedef enum R_FrameBufferAttachmentType {
+    R_FRAME_BUFFER_ATTACHMENT_NONE,
+    R_FRAME_BUFFER_ATTACHMENT_BUFFER,
+    R_FRAME_BUFFER_ATTACHMENT_TEXTURE,
+} R_FrameBufferAttachmentType;
+
+typedef struct R_FrameBufferOptions {
+    R_MAGIC_FIELD
+    int                         width, height;
+    R_FrameBufferAttachmentType color_type, depth_type, stencil_type;
+} R_FrameBufferOptions;
 
 typedef struct R_FrameBuffer {
-    int           flags, width, height, real_width, real_height;
-    unsigned int  handle, color, depth;
-    unsigned char *pixels;
+    int                         width, height, real_width, real_height;
+    unsigned int                handle, color, depth, stencil;
+    R_FrameBufferAttachmentType color_type, depth_type, stencil_type;
+    unsigned char               *pixels;
 } R_FrameBuffer;
 
 
-R_FrameBuffer *R_frame_buffer_new(int flags, int width, int height);
+R_FrameBufferOptions R_frame_buffer_options(void);
+
+R_FrameBuffer *R_frame_buffer_new(R_FrameBufferOptions *options);
 
 void R_frame_buffer_free(R_FrameBuffer *fb);
 

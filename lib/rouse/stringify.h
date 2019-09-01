@@ -39,10 +39,11 @@ const char *R_stringify_sdl_window_event_type(uint32_t window_event_type);
 
 
 #define R_FORMAT_STRING_FRAME_BUFFER \
-    "flags=%#x, width=%d, height=%d, real_width=%d, " \
-    "real_height=%d, handle=%u, color=%u, depth=%u, pixels=%p)"
+    "width=%d, height=%d, real_width=%d, real_height=%d, " \
+    "handle=%u, color=%u, depth=%u, color_type=%d, " \
+    "depth_type=%d, stencil_type=%d, pixels=%p)"
 
 #define R_FORMAT_ARGS_FRAME_BUFFER(FB) \
-    (FB)->flags, (FB)->width, (FB)->height, \
-    (FB)->real_width, (FB)->real_height, (FB)->handle, \
-    (FB)->color, (FB)->depth, (void *)(FB)->pixels
+    (FB)->width, (FB)->height, (FB)->real_width, (FB)->real_height, \
+    (FB)->handle, (FB)->color, (FB)->depth, (FB)->color_type, \
+    (FB)->depth_type, (FB)->stencil_type, (void *)(FB)->pixels

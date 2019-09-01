@@ -71,26 +71,27 @@
 
 /* Magic numbers to diagnose memory corruption etc. */
 #ifdef ROUSE_MAGIC
-#   define R_MAGIC_NUMBER_COUNT 16
+#   define R_MAGIC_NUMBER_COUNT 17
 extern uint32_t R_magic_numbers[R_MAGIC_NUMBER_COUNT];
 
 #   define R_MAGIC_INDEX(EXPR) _Generic((EXPR), \
-        struct R_Scene          *:  0, \
-        struct R_Model          *:  1, \
-        struct R_Mesh           *:  2, \
-        struct R_MeshBuffer     *:  3, \
-        struct R_Camera         *:  4, \
-        struct R_FirstPerson    *:  5, \
-        struct R_Input          *:  6, \
-        struct R_KeyBind        *:  7, \
-        struct R_TextureOptions *:  8, \
-        struct R_Animator       *:  9, \
-        struct R_Sequence       *: 10, \
-        struct R_Step           *: 11, \
-        struct R_FixedDelay     *: 12, \
-        struct R_DelayBetween   *: 13, \
-        struct R_CustomDelay    *: 14, \
-        struct R_Call           *: 15)
+        struct R_Scene              *:  0, \
+        struct R_Model              *:  1, \
+        struct R_Mesh               *:  2, \
+        struct R_MeshBuffer         *:  3, \
+        struct R_Camera             *:  4, \
+        struct R_FirstPerson        *:  5, \
+        struct R_Input              *:  6, \
+        struct R_KeyBind            *:  7, \
+        struct R_TextureOptions     *:  8, \
+        struct R_Animator           *:  9, \
+        struct R_Sequence           *: 10, \
+        struct R_Step               *: 11, \
+        struct R_FixedDelay         *: 12, \
+        struct R_DelayBetween       *: 13, \
+        struct R_CustomDelay        *: 14, \
+        struct R_Call               *: 15, \
+        struct R_FrameBufferOptions *: 16)
 
 #   define R_MAGIC_OF(EXPR)        R_magic_numbers[R_MAGIC_INDEX(EXPR)]
 #   define R_MAGIC_FIELD           uint32_t MAGIC;

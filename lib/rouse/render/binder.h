@@ -10,8 +10,8 @@ typedef void (*R_BinderBind)(void *, R_UserData, unsigned int, int);
 
 #define R_BINDER_DEFAULT_DEPTH_TEST GL_LESS
 #define R_BINDER_DEFAULT_CULL_FACE  GL_BACK
-#define R_BINDER_DEFAULT_SFACTOR    GL_ONE
-#define R_BINDER_DEFAULT_DFACTOR    GL_ZERO
+#define R_BINDER_DEFAULT_SFACTOR    GL_SRC_ALPHA
+#define R_BINDER_DEFAULT_DFACTOR    GL_ONE_MINUS_SRC_ALPHA
 
 struct R_Binder {
     R_BinderDraw draw;

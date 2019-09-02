@@ -152,7 +152,7 @@ R_Scene *common_init(void *(*init_fn )(void *), void *user,
 
     CommonData *cd  = R_NEW(cd);
     cd->fb          = R_frame_buffer_new(&fbo);
-    cd->fr          = R_frame_renderer_new();
+    cd->fr          = R_frame_renderer_new(false);
     cd->fp          = R_first_person_new(R_v3(0.0f, 0.0f, -20.0f), 0.0f, 0.0f);
     cd->camera      = R_camera_new_perspective(R_to_rad(60.0f), 16.0f / 9.0f,
                                                0.1f, 1000.0f);

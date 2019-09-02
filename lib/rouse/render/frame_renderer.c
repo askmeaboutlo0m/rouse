@@ -79,10 +79,13 @@ static void draw(R_UNUSED void *subject, R_UNUSED R_UserData user)
 }
 
 
-R_FrameRenderer *R_frame_renderer_new(void)
+R_FrameRenderer *R_frame_renderer_new(bool alpha_blending)
 {
     R_Binder *binder = R_binder_new(0, draw, R_user_null(), vert, frag,
                                     bind, R_user_null(), NULL);
+    if (alpha_blending) {
+        binder->features |= R_BINDER_BLENDING;
+    }
 
     R_FrameRenderer *fr = R_NEW_INIT_STRUCT(fr, R_FrameRenderer, binder,
             R_binder_uniform_location(binder, "u_ratio"),

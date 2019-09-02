@@ -25,7 +25,7 @@
 typedef struct R_FrameRenderer R_FrameRenderer;
 
 
-R_FrameRenderer *R_frame_renderer_new(void);
+R_FrameRenderer *R_frame_renderer_new(bool alpha_blending);
 
 void R_frame_renderer_free(R_FrameRenderer *fr);
 

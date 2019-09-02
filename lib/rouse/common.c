@@ -65,6 +65,8 @@ R_LogFn R_logger_warn  = R_LOGGER_DEFAULT;
 R_LogFn R_logger_info  = R_LOGGER_DEFAULT;
 R_LogFn R_logger_debug = R_LOGGER_DEFAULT;
 
+int R_logbits = R_LOGBIT_DIE | R_LOGBIT_WARN | R_LOGBIT_INFO;
+
 /*
  * All these log functions basically do the same thing and just call a
  * different logging callback, but they have to faff around with varargs, so
@@ -72,9 +74,9 @@ R_LogFn R_logger_debug = R_LOGGER_DEFAULT;
  * macro to implement it instead.
  */
 #define PREFIX_FMT "[%s|%s:%d] "
-#define DO_LOG(LOGGER, LEVEL, FILE, LINE, FMT, LAST) do { \
-        /* No logger, nothing to do. */ \
-        if (!LOGGER) { \
+#define DO_LOG(LOGGER, LOGBIT, LEVEL, FILE, LINE, FMT, LAST) do { \
+        /* No logger or logbit not set, nothing to do. */ \
+        if (!(LOGGER && R_logbits & LOGBIT)) { \
             break; \
         } \
         /* Logging NULL? We'll just let that slide I guess. */ \
@@ -108,7 +110,7 @@ R_LogFn R_logger_debug = R_LOGGER_DEFAULT;
 
 void R_die_fn(const char *file, int line, const char *fmt, ...)
 {
-    DO_LOG(R_logger_die, "DIE", file, line, fmt, fmt);
+    DO_LOG(R_logger_die, R_LOGBIT_DIE, "DIE", file, line, fmt, fmt);
 #ifdef ROUSE_GCOV
     __gcov_flush();
 #endif
@@ -117,12 +119,12 @@ void R_die_fn(const char *file, int line, const char *fmt, ...)
 
 void R_warn_fn(const char *file, int line, const char *fmt, ...)
 {
-    DO_LOG(R_logger_warn, "WARN", file, line, fmt, fmt);
+    DO_LOG(R_logger_warn, R_LOGBIT_WARN, "WARN", file, line, fmt, fmt);
 }
 
 void R_info_fn(const char *file, int line, const char *fmt, ...)
 {
-    DO_LOG(R_logger_info, "INFO", file, line, fmt, fmt);
+    DO_LOG(R_logger_info, R_LOGBIT_INFO, "INFO", file, line, fmt, fmt);
 }
 
 /*
@@ -134,7 +136,7 @@ void R_debug_fn(const char *file R_UNUSED_UNLESS_DEBUG,
                 const char *fmt R_UNUSED_UNLESS_DEBUG, ...)
 {
 #ifdef ROUSE_DEBUG
-    DO_LOG(R_logger_debug, "DEBUG", file, line, fmt, fmt);
+    DO_LOG(R_logger_debug, R_LOGBIT_DEBUG, "DEBUG", file, line, fmt, fmt);
 #endif
 }
 

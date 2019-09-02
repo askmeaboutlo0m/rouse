@@ -315,6 +315,19 @@ extern R_LogFn R_logger_warn;
 extern R_LogFn R_logger_info;
 extern R_LogFn R_logger_debug;
 
+/*
+ * Enable or disable certain log levels with the `R_logbits` flags. By default
+ * everything except debug is enabled, because that level is just extremely
+ * noisy. If you really want that level of loggery, turn it on temporarily on
+ * the sections that you really care about it.
+ */
+#define R_LOGBIT_DIE   0x1
+#define R_LOGBIT_WARN  0x2
+#define R_LOGBIT_INFO  0x4
+#define R_LOGBIT_DEBUG 0x8
+
+extern int R_logbits;
+
 /* Log to `R_logger_die` and then `R_TRAP` to terminate program. */
 #define R_die(...) R_die_fn(__FILE__, __LINE__, __VA_ARGS__)
 void R_die_fn(const char *file, int line, const char *fmt, ...) R_FORMAT(3, 4)

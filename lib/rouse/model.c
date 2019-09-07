@@ -33,11 +33,9 @@
 #include "model.h"
 
 
-static const char FILE_MAGIC[] = "rmodel1";
-
-
 static void check_file_magic(R_Parse *parse)
 {
+    static const char FILE_MAGIC[] = "rmodel1";
     R_parse_read_bytes(parse, sizeof(FILE_MAGIC));
     if (memcmp(parse->buffer, FILE_MAGIC, sizeof(FILE_MAGIC)) != 0) {
         R_PARSE_DIE(parse, "bad file magic, want \"%s\"", FILE_MAGIC);

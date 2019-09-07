@@ -42,6 +42,7 @@ extern "C" {
 #include <GL/glew.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include "rouse/3rdparty/nanovg_inc.h"
 #include "rouse/3rdparty/parson.h"
 
 #include "rouse/common.h"
@@ -61,6 +62,9 @@ extern "C" {
 #include "rouse/render/binder.h"
 #include "rouse/render/frame_buffer.h"
 #include "rouse/render/frame_renderer.h"
+#include "rouse/2d/vector.h"
+#include "rouse/2d/sprite.h"
+#include "rouse/2d/canvas.h"
 #include "rouse/anim/util.h"
 #include "rouse/anim/seq.h"
 #include "rouse/anim/call.h"

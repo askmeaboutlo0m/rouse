@@ -5,6 +5,19 @@
 add_library(parson STATIC rouse/3rdparty/parson.c)
 target_compile_features(parson PRIVATE c_std_11)
 
+# Same for NanoVG, needs to be a separate target to avoid warnings.
+add_library(nanovg STATIC)
+target_compile_features(nanovg PRIVATE c_std_11)
+target_sources(nanovg PRIVATE
+    rouse/3rdparty/nanovg_gles2.c
+    rouse/3rdparty/nanovg/fontstash.h
+    rouse/3rdparty/nanovg/nanovg.c
+    rouse/3rdparty/nanovg/nanovg_gl.h
+    rouse/3rdparty/nanovg/nanovg_gl_utils.h
+    rouse/3rdparty/nanovg/nanovg.h
+    rouse/3rdparty/nanovg/stb_image.h
+    rouse/3rdparty/nanovg/stb_truetype.h)
+
 
 set(rouse_geom_h          "${CMAKE_CURRENT_SOURCE_DIR}/rouse/geom.h")
 set(rouse_generate_geom_h "${PROJECT_SOURCE_DIR}/generate-geom-h")
@@ -21,6 +34,9 @@ add_library(rouse)
 
 # sources
 target_sources(rouse PRIVATE
+    rouse/2d/canvas.c
+    rouse/2d/sprite.c
+    rouse/2d/vector.c
     rouse/anim/call.c
     rouse/anim/delay.c
     rouse/anim/seq.c
@@ -43,6 +59,10 @@ target_sources(rouse PRIVATE
 # headers
 target_sources(rouse PRIVATE
     rouse.h
+    rouse/2d/canvas.h
+    rouse/2d/sprite.h
+    rouse/2d/vector.h
+    rouse/3rdparty/nanovg_inc.h
     rouse/3rdparty/parson.h
     rouse/3rdparty/uthash.h
     rouse/3rdparty/uthash_inc.h
@@ -72,6 +92,7 @@ target_include_directories(rouse INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}")
 target_compile_features(rouse PRIVATE c_std_11)
 target_compile_options(rouse PRIVATE ${rouse_warnings})
 target_link_libraries(rouse PUBLIC
+    nanovg
     parson
     Rouse::cglm
     Rouse::glew

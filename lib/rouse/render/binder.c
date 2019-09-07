@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <GL/glew.h>
 #include "../common.h"
+#include "../parse.h"
 #include "../model.h"
 #include "gl.h"
 #include "binder.h"

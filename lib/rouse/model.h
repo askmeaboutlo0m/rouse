@@ -79,16 +79,6 @@ typedef struct R_Model {
 
 
 /*
- * Callback function to read a chunk of `size` bytes into the buffer `out`,
- * returning the number of characters *actually* read. Sometimes a lower count
- * is expected (e.g. to check that there's nothing beyond the supposed end of
- * input), so don't bail out in that case. The `out` buffer is guaranteed to be
- * able to hold `size` bytes, but not a bit more, so don't overfill it. The
- * `user` pointer is whatever you pass to `R_model_new`.
- */
-typedef int (*R_ModelRead)(uint8_t *out, int size, void *user);
-
-/*
  * Low-level function to read a model from some kind of byte stream. Unless
  * you're implementing your own format to read from, this is the wrong thing,
  * look at `R_model_from_file` instead.
@@ -106,8 +96,8 @@ typedef int (*R_ModelRead)(uint8_t *out, int size, void *user);
  *
  * I'll describe the file format some day... for now, read the code I guess.
  */
-R_Model *R_model_new(const char *title, R_ModelRead read, void *user,
-                     uint8_t *buffer, int bufsize);
+R_Model *R_model_new(const char *title, R_ParseReadFn read, R_UserData user,
+                     int bufsize, unsigned char buffer[static bufsize]);
 
 R_Model *R_model_from_file(const char *path);
 

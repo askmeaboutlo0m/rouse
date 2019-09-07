@@ -53,6 +53,7 @@ extern "C" {
 #include "rouse/sanity.h"
 
 #include "rouse/camera.h"
+#include "rouse/parse.h"
 #include "rouse/model.h"
 #include "rouse/resource.h"
 #include "rouse/render/gl.h"

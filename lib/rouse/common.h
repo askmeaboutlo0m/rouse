@@ -71,7 +71,7 @@
 
 /* Magic numbers to diagnose memory corruption etc. */
 #ifdef ROUSE_MAGIC
-#   define R_MAGIC_NUMBER_COUNT 17
+#   define R_MAGIC_NUMBER_COUNT 18
 extern uint32_t R_magic_numbers[R_MAGIC_NUMBER_COUNT];
 
 #   define R_MAGIC_INDEX(EXPR) _Generic((EXPR), \
@@ -91,7 +91,8 @@ extern uint32_t R_magic_numbers[R_MAGIC_NUMBER_COUNT];
         struct R_DelayBetween       *: 13, \
         struct R_CustomDelay        *: 14, \
         struct R_Call               *: 15, \
-        struct R_FrameBufferOptions *: 16)
+        struct R_FrameBufferOptions *: 16, \
+        struct R_Parse              *: 17)
 
 #   define R_MAGIC_OF(EXPR)        R_magic_numbers[R_MAGIC_INDEX(EXPR)]
 #   define R_MAGIC_FIELD           uint32_t MAGIC;
@@ -230,6 +231,11 @@ static inline long R_size2long(size_t x)
 static inline ptrdiff_t R_size2ptrdiff(size_t x)
 {
     return (ptrdiff_t) x;
+}
+
+static inline char R_uchar2char(unsigned char x)
+{
+    return (char) x;
 }
 
 static inline int R_uint2int(unsigned int x)

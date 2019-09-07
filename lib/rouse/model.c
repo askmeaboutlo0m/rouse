@@ -29,13 +29,9 @@
 #include <string.h>
 #include <errno.h>
 #include "common.h"
+#include "parse.h"
 #include "model.h"
 
-
-static int read_from_file(uint8_t *out, int size, void *fp)
-{
-    return R_size2int(fread(out, sizeof(*out), R_int2size(size), fp));
-}
 
 R_Model *R_model_from_file(const char *path)
 {
@@ -44,8 +40,9 @@ R_Model *R_model_from_file(const char *path)
         R_die("Can't open '%s': %s", path, strerror(errno));
     }
 
-    uint8_t buf[1024];
-    R_Model *model = R_model_new(path, read_from_file, fp, buf, sizeof(buf));
+    unsigned char buffer[1024];
+    R_Model *model = R_model_new(path, R_parse_from_file, R_user_data(fp),
+                                 sizeof(buffer), buffer);
 
     if (fclose(fp) != 0) {
         R_warn("Error closing '%s': %s", path, strerror(errno));

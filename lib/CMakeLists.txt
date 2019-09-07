@@ -32,6 +32,7 @@ target_sources(rouse PRIVATE
     rouse/main.c
     rouse/model.c
     rouse/model_parser.c
+    rouse/parse.c
     rouse/render/binder.c
     rouse/render/frame_buffer.c
     rouse/render/frame_renderer.c
@@ -56,6 +57,7 @@ target_sources(rouse PRIVATE
     rouse/json.h
     rouse/main.h
     rouse/model.h
+    rouse/parse.h
     rouse/render/binder.h
     rouse/render/frame_buffer.h
     rouse/render/frame_renderer.h

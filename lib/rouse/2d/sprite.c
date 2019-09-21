@@ -229,13 +229,6 @@ void R_sprite_remove_child(R_Sprite *sprite, R_Sprite *child)
 }
 
 
-static void copy_matrix(float *dst, const float *src)
-{
-    for (int i = 0; i < 6; ++i) {
-        dst[i] = src[i];
-    }
-}
-
 static void apply_transform(float matrix[static 6], R_AffineTransform *tf)
 {
     float tmp[6];
@@ -252,11 +245,12 @@ static void apply_transform(float matrix[static 6], R_AffineTransform *tf)
 static void calc_matrix(R_Sprite *sprite, float matrix[static 6],
                         const float parent_matrix[static 6])
 {
-    copy_matrix(matrix, parent_matrix);
+    nvgTransformIdentity(matrix);
     int count = sprite->transform_count;
     for (int i = 0; i < count; ++i) {
         apply_transform(matrix, &sprite->transforms[i]);
     }
+    nvgTransformMultiply(matrix, parent_matrix);
 }
 
 static void draw_self(R_Sprite *sprite, NVGcontext *vg,

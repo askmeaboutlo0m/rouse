@@ -54,6 +54,8 @@ R_Step *R_step_new(void *state, R_StepTickFn on_tick, R_StepFreeFn on_free,
 
 void R_step_free(R_Step *step);
 
+void *R_step_state(R_Step *step);
+
 JSON_Value *R_step_to_json(R_Step *step);
 
 

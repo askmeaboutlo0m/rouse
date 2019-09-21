@@ -161,6 +161,15 @@ void R_sprite_draw_vector_image(R_Sprite *sprite, R_VectorImage *vi)
 }
 
 
+R_AffineTransform *R_sprite_transform_at(R_Sprite *sprite, int index)
+{
+    R_MAGIC_CHECK(sprite);
+    assert(index >= 0 && "transform index must not be negative");
+    assert(index < sprite->transform_count && "index must be in bounds");
+    return &sprite->transforms[index];
+}
+
+
 R_Sprite *R_sprite_parent(R_Sprite *sprite)
 {
     check_sprite(sprite);

@@ -76,6 +76,9 @@ void R_sprite_draw_fn(R_Sprite *sprite, R_DrawFn draw, R_UserData user);
 void R_sprite_draw_vector_image(R_Sprite *sprite, R_VectorImage *vi);
 
 
+R_AffineTransform *R_sprite_transform_at(R_Sprite *sprite, int index);
+
+
 /*
  * Returns the parent of the given `sprite`, or `NULL` if it doesn't have one.
  */

@@ -105,6 +105,12 @@ void R_step_free(R_Step *step)
     free_step_from(step, NULL);
 }
 
+void *R_step_state(R_Step *step)
+{
+    R_MAGIC_CHECK(step);
+    return step->state;
+}
+
 
 static JSON_Value *step_state_to_json(R_Step *step)
 {

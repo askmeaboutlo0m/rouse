@@ -36,10 +36,12 @@ add_library(rouse)
 target_sources(rouse PRIVATE
     rouse/2d/canvas.c
     rouse/2d/sprite.c
+    rouse/2d/sprite_anim.c
     rouse/2d/vector.c
     rouse/anim/call.c
     rouse/anim/delay.c
     rouse/anim/seq.c
+    rouse/anim/tween.c
     rouse/anim/util.c
     rouse/camera.c
     rouse/common.c
@@ -61,6 +63,7 @@ target_sources(rouse PRIVATE
     rouse.h
     rouse/2d/canvas.h
     rouse/2d/sprite.h
+    rouse/2d/sprite_anim.h
     rouse/2d/vector.h
     rouse/3rdparty/nanovg_inc.h
     rouse/3rdparty/parson.h
@@ -69,6 +72,7 @@ target_sources(rouse PRIVATE
     rouse/anim/call.h
     rouse/anim/delay.h
     rouse/anim/seq.h
+    rouse/anim/tween.h
     rouse/anim/util.h
     rouse/camera.h
     rouse/common.h

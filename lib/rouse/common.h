@@ -126,10 +126,14 @@ extern uint32_t R_magic_numbers[R_MAGIC_NUMBER_COUNT];
         R_MAGIC_CHECK_NN(PTR); \
     } while (0)
 
-#define R_MAGIC_POISON(PTR) do { \
+#   define R_MAGIC_POISON_NN(PTR) do { \
+        (PTR)->MAGIC = 0xdeaddeadu; \
+    } while (0)
+
+#   define R_MAGIC_POISON(PTR) do { \
         if (PTR) { \
             R_MAGIC_CHECK_NN(PTR); \
-            PTR->MAGIC = 0xdeaddeadu; \
+            R_MAGIC_POISON_NN(PTR); \
         } \
     } while (0)
 #else
@@ -140,11 +144,15 @@ extern uint32_t R_magic_numbers[R_MAGIC_NUMBER_COUNT];
 #   define R_MAGIC_SET(EXPR)       /* nothing */
 #   define R_MAGIC_CHECK_NN(EXPR)  /* nothing */
 #   define R_MAGIC_CHECK(EXPR)     /* nothing */
+#   define R_MAGIC_POISON_NN(PTR)  /* nothing */
 #   define R_MAGIC_POISON(PTR)     /* nothing */
 #endif
 
 #define R_MAGIC_CHECK_2(A, B) \
     do { R_MAGIC_CHECK(A); R_MAGIC_CHECK(B); } while (0)
+
+#define R_MAGIC_CHECK_3(A, B, C) \
+    do { R_MAGIC_CHECK_2(A, B); R_MAGIC_CHECK(C); } while (0)
 
 
 /*

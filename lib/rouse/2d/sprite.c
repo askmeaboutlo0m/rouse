@@ -16,6 +16,7 @@
 
 struct R_Sprite {
     R_MAGIC_FIELD
+    char              *name;
     R_DrawFn          draw;
     R_UserData        user;
     R_Sprite          *parent;
@@ -58,13 +59,14 @@ static inline void check_parent_child(R_Sprite *parent, R_Sprite *child)
     assert(parent != child && "parent can't be a child of itself");
 }
 
-R_Sprite *R_sprite_new(int transform_count)
+R_Sprite *R_sprite_new(const char *name, int transform_count)
 {
     assert(transform_count >= 0 && "transform count must not be negative");
     R_Sprite *sprite = R_malloc(sizeof(*sprite) + sizeof(*sprite->transforms)
                                                 * R_int2size(transform_count));
     *sprite = (R_Sprite){
         R_MAGIC_INIT(sprite)
+        .name            = R_strdup(name),
         .draw            = NULL,
         .user            = R_user_null(),
         .parent          = NULL,
@@ -85,7 +87,7 @@ R_Sprite *R_sprite_new(int transform_count)
 
 R_Sprite *R_sprite_new_root(void)
 {
-    R_Sprite *sprite = R_sprite_new(0);
+    R_Sprite *sprite = R_sprite_new(NULL, 0);
     /* A sprite with itself as parent is normally impossible. */
     /* We create that impossibility here as a marker that     */
     /* makes various parent-changing operations impossible.   */
@@ -107,6 +109,7 @@ static void free_sprite(R_Sprite *sprite)
         R_sprite_decref(child);
     }
     R_MAGIC_POISON(sprite);
+    free(sprite->name);
     free(sprite);
 }
 

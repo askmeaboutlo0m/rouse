@@ -19,9 +19,7 @@ R_AffineTransform R_affine_transform(void);
 
 /*
  * Create a new sprite with the given `name`, which may be `NULL` and will be
- * copied, and `transform_count` `R_AffineTransform`s available. Usually you'll
- * probably just want a single of these, but multiple ones can be useful if you
- * have multiple concurrent animations happening to the same sprite.
+ * copied.
  *
  * Sprites are reference counted. A sprite always starts with a reference count
  * of 1. You must call `R_sprite_decref` when you're done with it. Operations
@@ -35,7 +33,7 @@ R_AffineTransform R_affine_transform(void);
  * when you're done. If you're not doing anything involving setting the parent,
  * then you don't need to change the reference count.
  */
-R_Sprite *R_sprite_new(const char *name, int transform_count);
+R_Sprite *R_sprite_new(const char *name);
 
 /*
  * Create a new sprite with zero transforms that can't be added as a child to
@@ -75,6 +73,10 @@ void R_sprite_draw_fn(R_Sprite *sprite, R_DrawFn draw, R_UserData user);
  */
 void R_sprite_draw_vector_image(R_Sprite *sprite, R_VectorImage *vi);
 
+
+void R_sprite_transforms_resize(R_Sprite *sprite, int transform_count);
+
+void R_sprite_transforms_ensure(R_Sprite *sprite, int transform_count);
 
 R_AffineTransform *R_sprite_transform_at(R_Sprite *sprite, int index);
 

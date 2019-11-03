@@ -24,7 +24,7 @@ struct R_Sprite {
     R_Sprite          *next;
     int               refs;
     int               transform_count;
-    R_AffineTransform transforms[];
+    R_AffineTransform *transforms;
 };
 
 
@@ -59,27 +59,11 @@ static inline void check_parent_child(R_Sprite *parent, R_Sprite *child)
     assert(parent != child && "parent can't be a child of itself");
 }
 
-R_Sprite *R_sprite_new(const char *name, int transform_count)
+R_Sprite *R_sprite_new(const char *name)
 {
-    assert(transform_count >= 0 && "transform count must not be negative");
-    R_Sprite *sprite = R_malloc(sizeof(*sprite) + sizeof(*sprite->transforms)
-                                                * R_int2size(transform_count));
-    *sprite = (R_Sprite){
-        R_MAGIC_INIT(sprite)
-        .name            = R_strdup(name),
-        .draw            = NULL,
-        .user            = R_user_null(),
-        .parent          = NULL,
-        .children        = NULL,
-        .next            = NULL,
-        .refs            = 1,
-        .transform_count = transform_count,
-    };
-
-    for (int i = 0; i < transform_count; ++i) {
-        init_affine_transform(&sprite->transforms[i]);
-    }
-
+    R_Sprite *sprite = R_NEW_INIT_STRUCT(sprite, R_Sprite,
+        R_MAGIC_INIT(sprite) R_strdup(name), NULL, R_user_null(),
+        NULL, NULL, NULL, 1, 0, NULL);
     check_sprite(sprite);
     return sprite;
 }
@@ -87,7 +71,7 @@ R_Sprite *R_sprite_new(const char *name, int transform_count)
 
 R_Sprite *R_sprite_new_root(void)
 {
-    R_Sprite *sprite = R_sprite_new(NULL, 0);
+    R_Sprite *sprite = R_sprite_new(NULL);
     /* A sprite with itself as parent is normally impossible. */
     /* We create that impossibility here as a marker that     */
     /* makes various parent-changing operations impossible.   */
@@ -110,6 +94,7 @@ static void free_sprite(R_Sprite *sprite)
     }
     R_MAGIC_POISON(sprite);
     free(sprite->name);
+    free(sprite->transforms);
     free(sprite);
 }
 
@@ -161,11 +146,41 @@ void R_sprite_draw_vector_image(R_Sprite *sprite, R_VectorImage *vi)
 }
 
 
+static void resize_transforms(R_Sprite *sprite, int transform_count)
+{
+    int prev_count          = sprite->transform_count;
+    sprite->transform_count = transform_count;
+    sprite->transforms      = R_realloc(sprite->transforms,
+        R_int2size(transform_count) * sizeof(*sprite->transforms));
+    for (int i = prev_count; i < transform_count; ++i) {
+        init_affine_transform(&sprite->transforms[i]);
+    }
+}
+
+void R_sprite_transforms_resize(R_Sprite* sprite, int transform_count)
+{
+    assert(transform_count >= 0 && "transform count must not be negative");
+    assert(!R_sprite_is_root(sprite) && "no transforms on root sprite");
+    if (sprite->transform_count != transform_count) {
+        resize_transforms(sprite, transform_count);
+    }
+}
+
+void R_sprite_transforms_ensure(R_Sprite *sprite, int transform_count)
+{
+    check_sprite(sprite);
+    assert(!R_sprite_is_root(sprite) && "no transforms on root sprite");
+    if (sprite->transform_count < transform_count) {
+        R_info("resize transforms of %s to %d", sprite->name, transform_count);
+        resize_transforms(sprite, transform_count);
+    }
+}
+
 R_AffineTransform *R_sprite_transform_at(R_Sprite *sprite, int index)
 {
     R_MAGIC_CHECK(sprite);
     assert(index >= 0 && "transform index must not be negative");
-    assert(index < sprite->transform_count && "index must be in bounds");
+    R_sprite_transforms_ensure(sprite, index + 1);
     return &sprite->transforms[index];
 }
 

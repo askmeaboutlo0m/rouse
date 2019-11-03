@@ -35,6 +35,7 @@ R_AffineTransform R_affine_transform(void)
         .shift = {{0.0f, 0.0f}},
         .pos   = {{0.0f, 0.0f}},
         .scale = {{1.0f, 1.0f}},
+        .skew  = {{0.0f, 0.0f}},
         .angle = 0.0f,
     };
 }
@@ -259,6 +260,10 @@ static void apply_transform(float matrix[static 6], R_AffineTransform *tf)
     nvgTransformTranslate(tmp, tf->shift.x, tf->shift.y);
     nvgTransformMultiply(matrix, tmp);
     nvgTransformScale(tmp, tf->scale.x, tf->scale.y);
+    nvgTransformMultiply(matrix, tmp);
+    nvgTransformSkewX(tmp, tf->skew.x);
+    nvgTransformMultiply(matrix, tmp);
+    nvgTransformSkewY(tmp, tf->skew.y);
     nvgTransformMultiply(matrix, tmp);
     nvgTransformRotate(tmp, tf->angle);
     nvgTransformMultiply(matrix, tmp);

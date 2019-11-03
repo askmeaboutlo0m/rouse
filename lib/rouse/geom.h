@@ -21,9 +21,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#define R_PI   CGLM_PI
-#define R_PI_2 CGLM_PI_2
-#define R_PI_4 CGLM_PI_4
+#define R_PI   GLM_PIf
+#define R_PI_2 GLM_PI_2f
+#define R_PI_4 GLM_PI_4f
 
 typedef vec2s   R_V2;
 typedef vec3s   R_V3;

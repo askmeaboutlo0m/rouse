@@ -86,6 +86,12 @@ typedef struct R_FixedFloatElement {
     float value;
 } R_FixedFloatElement;
 
+typedef struct R_BetweenFloatElement {
+    R_FloatElement base;
+    R_MAGIC_FIELD
+    float a, b;
+} R_BetweenFloatElement;
+
 
 static void calc_elements(R_TweenElement *elements)
 {
@@ -257,6 +263,29 @@ static void add_fixed_float_element(R_Step *step, float value,
     R_MAGIC_CHECK_GRANDCHILD(elem);
 }
 
+
+static void calc_between_float_element(R_TweenCalcArgs args)
+{
+    R_BetweenFloatElement *elem = args.elem;
+    R_MAGIC_CHECK_GRANDCHILD(elem);
+    elem->base.source = elem->base.get(args);
+    elem->base.target = R_rand_between(elem->a, elem->b);
+}
+
+static void add_between_float_element(R_Step *step, float a, float b,
+                                      R_TweenFloatGetFn get,
+                                      R_TweenFloatSetFn set, R_UserData user,
+                                      R_TweenElementFreeFn on_free)
+{
+    R_BetweenFloatElement *elem = R_NEW(elem);
+    init_float_element(step, &elem->base, get, set, user,
+                       calc_between_float_element, on_free);
+    R_MAGIC_SET(elem);
+    elem->a = a;
+    elem->b = b;
+    R_MAGIC_CHECK_GRANDCHILD(elem);
+}
+
 void R_tween_add_float(R_Step *step, R_TweenFloat value, R_UserData user,
                        R_TweenFloatGetFn get, R_TweenFloatSetFn set,
                        R_TweenElementFreeFn on_free)
@@ -264,6 +293,10 @@ void R_tween_add_float(R_Step *step, R_TweenFloat value, R_UserData user,
     switch (value.type) {
         case R_TWEEN_VALUE_FIXED:
             add_fixed_float_element(step, value.fixed, get, set, user, on_free);
+            break;
+        case R_TWEEN_VALUE_BETWEEN:
+            add_between_float_element(step, value.between.a, value.between.b,
+                                      get, set, user, on_free);
             break;
         default:
             R_die("Unknown tween value type: %d", (int) value.type);

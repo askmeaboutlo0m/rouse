@@ -120,6 +120,7 @@ static void free_elements(R_TweenElement *elements)
         next = elem->next;
         if (elem->on_free) {
             elem->on_free((R_TweenFreeArgs){
+                .elem = elem,
                 .user = elem->user,
             });
         }

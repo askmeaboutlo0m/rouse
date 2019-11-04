@@ -12,6 +12,7 @@ typedef struct R_TweenTickArgs {
 } R_TweenTickArgs;
 
 typedef struct R_TweenFreeArgs {
+    void       *elem;
     R_UserData user;
 } R_TweenFreeArgs;
 

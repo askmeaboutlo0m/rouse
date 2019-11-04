@@ -12,6 +12,7 @@
 #include "../json.h"
 #include "../geom.h"
 #include "../parse.h"
+#include "../anim/ease.h"
 #include "../anim/seq.h"
 #include "../anim/util.h"
 #include "../anim/tween.h"

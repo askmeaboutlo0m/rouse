@@ -31,6 +31,7 @@
 #include "../common.h"
 #include "../json.h"
 #include "../geom.h"
+#include "ease.h"
 #include "seq.h"
 #include "util.h"
 #include "tween.h"
@@ -51,6 +52,7 @@ typedef struct R_Tween {
     R_MAGIC_FIELD
     int            lap;
     float          start, left;
+    R_EaseFn       ease;
     R_TweenElement *elements;
 } R_Tween;
 
@@ -121,6 +123,11 @@ static void free_elements(R_TweenElement *elements)
 }
 
 
+static float apply_ease(R_EaseFn ease, float ratio)
+{
+    return ease ? ease(ratio) : ratio;
+}
+
 static R_StepStatus tick_tween(R_StepTickArgs args, float (*calc)(void *))
 {
     R_Tween *tween = args.state;
@@ -137,7 +144,7 @@ static R_StepStatus tick_tween(R_StepTickArgs args, float (*calc)(void *))
     if (R_enough_seconds_left(left, args.seconds)) {
         float start = tween->start;
         float ratio = (start - left) / start;
-        tick_elements(tween->elements, ratio);
+        tick_elements(tween->elements, apply_ease(tween->ease, ratio));
         return R_STEP_STATUS_RUNNING;
     }
     else {
@@ -169,10 +176,10 @@ static void free_fixed_tween(void *state, R_UNUSED R_UserData *seq_user)
     }
 }
 
-R_Step *R_tween_new_fixed(float seconds)
+R_Step *R_tween_new_fixed(float seconds, R_EaseFn ease)
 {
     R_FixedTween *tween = R_NEW_INIT_STRUCT(tween, R_FixedTween,
-            {R_MAGIC_INIT_TYPE(R_Tween) -1, 0.0f, 0.0f, NULL},
+            {R_MAGIC_INIT_TYPE(R_Tween) -1, 0.0f, 0.0f, ease, NULL},
             R_MAGIC_INIT(tween) seconds);
     R_MAGIC_CHECK_CHILD(tween);
     return R_step_new(tween, tick_fixed_tween, free_fixed_tween, NULL);

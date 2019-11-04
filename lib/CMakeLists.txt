@@ -40,6 +40,7 @@ target_sources(rouse PRIVATE
     rouse/2d/vector.c
     rouse/anim/call.c
     rouse/anim/delay.c
+    rouse/anim/ease.c
     rouse/anim/seq.c
     rouse/anim/tween.c
     rouse/anim/util.c
@@ -71,6 +72,7 @@ target_sources(rouse PRIVATE
     rouse/3rdparty/uthash_inc.h
     rouse/anim/call.h
     rouse/anim/delay.h
+    rouse/anim/ease.h
     rouse/anim/seq.h
     rouse/anim/tween.h
     rouse/anim/util.h

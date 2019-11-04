@@ -62,6 +62,7 @@ extern "C" {
 #include "rouse/render/binder.h"
 #include "rouse/render/frame_buffer.h"
 #include "rouse/render/frame_renderer.h"
+#include "rouse/anim/ease.h"
 #include "rouse/anim/util.h"
 #include "rouse/anim/seq.h"
 #include "rouse/anim/call.h"

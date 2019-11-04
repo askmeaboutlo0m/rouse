@@ -67,9 +67,14 @@ static inline R_V4 R_v4(float a, float b, float c, float d)
 
 static inline float R_lerp(float a, float b, float ratio)
 {
+    return a + (b - a) * ratio;
+}
+
+static inline float R_lerp_capped(float a, float b, float ratio)
+{
     return ratio <= 0.0f ? a
          : ratio >= 1.0f ? b
-         : a + (b - a) * ratio;
+         : R_lerp(a, b, ratio);
 }
 
 /* cglm/vec3.h */

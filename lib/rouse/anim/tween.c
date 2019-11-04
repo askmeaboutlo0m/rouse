@@ -154,7 +154,7 @@ static R_StepStatus tick_tween(R_StepTickArgs args, float (*calc)(void *))
         return R_STEP_STATUS_RUNNING;
     }
     else {
-        tick_elements(tween->elements, 1.0f);
+        tick_elements(tween->elements, apply_ease(tween->ease, 1.0f));
         return R_STEP_STATUS_COMPLETE;
     }
 }

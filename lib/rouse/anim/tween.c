@@ -242,12 +242,17 @@ static void init_float_element(R_Step *step, R_FloatElement *elem,
 }
 
 
+#define CALC_FLOAT_ELEMENT(ELEM, ARGS, EXPR) do { \
+        R_MAGIC_CHECK_GRANDCHILD(ELEM); \
+        (ELEM)->base.source = (ELEM)->base.get(ARGS); \
+        (ELEM)->base.target = EXPR; \
+    } while (0)
+
+
 static void calc_fixed_float_element(R_TweenCalcArgs args)
 {
     R_FixedFloatElement *elem = args.elem;
-    R_MAGIC_CHECK_GRANDCHILD(elem);
-    elem->base.source = elem->base.get(args);
-    elem->base.target = elem->value;
+    CALC_FLOAT_ELEMENT(elem, args, elem->value);
 }
 
 static void add_fixed_float_element(R_Step *step, float value,
@@ -267,9 +272,7 @@ static void add_fixed_float_element(R_Step *step, float value,
 static void calc_between_float_element(R_TweenCalcArgs args)
 {
     R_BetweenFloatElement *elem = args.elem;
-    R_MAGIC_CHECK_GRANDCHILD(elem);
-    elem->base.source = elem->base.get(args);
-    elem->base.target = R_rand_between(elem->a, elem->b);
+    CALC_FLOAT_ELEMENT(elem, args, R_rand_between(elem->a, elem->b));
 }
 
 static void add_between_float_element(R_Step *step, float a, float b,

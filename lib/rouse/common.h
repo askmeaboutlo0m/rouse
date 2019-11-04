@@ -111,7 +111,8 @@ extern uint32_t R_magic_numbers[R_MAGIC_NUMBER_COUNT];
         struct R_FloatElement           *: 33, \
         struct R_FixedFloatElement      *: 34, \
         struct R_BetweenFloatElement    *: 35, \
-        struct R_SpriteTweenData        *: 36)
+        struct R_CustomFloatElement     *: 36, \
+        struct R_SpriteTweenData        *: 37)
 
 #   define R_MAGIC_OF(EXPR)        R_magic_numbers[R_MAGIC_INDEX(EXPR)]
 #   define R_MAGIC_FIELD           uint32_t MAGIC;

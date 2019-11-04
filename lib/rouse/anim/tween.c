@@ -92,6 +92,15 @@ typedef struct R_BetweenFloatElement {
     float a, b;
 } R_BetweenFloatElement;
 
+typedef struct R_CustomFloatElement {
+    R_FloatElement base;
+    R_MAGIC_FIELD
+    R_TweenCustomFloatCalcFn custom_calc;
+    R_TweenCustomFloatFreeFn custom_free;
+    R_UserData               custom_user;
+    R_TweenElementFreeFn     on_free;
+} R_CustomFloatElement;
+
 
 static void calc_elements(R_TweenElement *elements)
 {
@@ -221,6 +230,14 @@ R_TweenFloat R_tween_float_between(float a, float b)
     return (R_TweenFloat){R_TWEEN_VALUE_BETWEEN, {.between = {a, b}}};
 }
 
+R_TweenFloat R_tween_float_custom(R_TweenCustomFloatCalcFn custom_calc,
+                                  R_TweenCustomFloatFreeFn custom_free,
+                                  R_UserData               custom_user)
+{
+    return (R_TweenFloat){R_TWEEN_VALUE_CUSTOM,
+        .custom = {custom_calc, custom_free, custom_user}};
+}
+
 
 static void tick_float_element(R_TweenTickArgs args)
 {
@@ -290,6 +307,46 @@ static void add_between_float_element(R_Step *step, float a, float b,
     R_MAGIC_CHECK_GRANDCHILD(elem);
 }
 
+
+static void calc_custom_float_element(R_TweenCalcArgs args)
+{
+    R_CustomFloatElement *elem = args.elem;
+    CALC_FLOAT_ELEMENT(elem, args, elem->custom_calc(args, elem->custom_user));
+}
+
+static void free_custom_float_element(R_TweenFreeArgs args)
+{
+    R_CustomFloatElement *elem = args.elem;
+    R_MAGIC_CHECK_GRANDCHILD(elem);
+
+    if (elem->custom_free) {
+        elem->custom_free(elem->custom_user);
+    }
+
+    if (elem->on_free) {
+        elem->on_free(args);
+    }
+}
+
+static void add_custom_float_element(R_Step *step,
+                                     R_TweenCustomFloatCalcFn custom_calc,
+                                     R_TweenCustomFloatFreeFn custom_free,
+                                     R_UserData custom_user,
+                                     R_TweenFloatGetFn get,
+                                     R_TweenFloatSetFn set, R_UserData user,
+                                     R_TweenElementFreeFn on_free)
+{
+    R_CustomFloatElement *elem = R_NEW(elem);
+    init_float_element(step, &elem->base, get, set, user,
+                       calc_custom_float_element, free_custom_float_element);
+    R_MAGIC_SET(elem);
+    elem->custom_calc = custom_calc;
+    elem->custom_free = custom_free;
+    elem->custom_user = custom_user;
+    elem->on_free     = on_free;
+}
+
+
 void R_tween_add_float(R_Step *step, R_TweenFloat value, R_UserData user,
                        R_TweenFloatGetFn get, R_TweenFloatSetFn set,
                        R_TweenElementFreeFn on_free)
@@ -301,6 +358,11 @@ void R_tween_add_float(R_Step *step, R_TweenFloat value, R_UserData user,
         case R_TWEEN_VALUE_BETWEEN:
             add_between_float_element(step, value.between.a, value.between.b,
                                       get, set, user, on_free);
+            break;
+        case R_TWEEN_VALUE_CUSTOM:
+            add_custom_float_element(step, value.custom.calc,
+                                     value.custom.free, value.custom.user,
+                                     get, set, user, on_free);
             break;
         default:
             R_die("Unknown tween value type: %d", (int) value.type);

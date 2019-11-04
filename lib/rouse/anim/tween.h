@@ -23,6 +23,9 @@ typedef void (*R_TweenElementFreeFn)(R_TweenFreeArgs);
 typedef float (*R_TweenFloatGetFn)(R_TweenCalcArgs);
 typedef void  (*R_TweenFloatSetFn)(R_TweenTickArgs, float);
 
+typedef float (*R_TweenCustomFloatCalcFn)(R_TweenCalcArgs, R_UserData);
+typedef void  (*R_TweenCustomFloatFreeFn)(R_UserData);
+
 typedef enum R_TweenValueType {
     R_TWEEN_VALUE_FIXED,
     R_TWEEN_VALUE_BETWEEN,
@@ -36,6 +39,11 @@ typedef struct R_TweenFloat {
         struct {
             float a, b;
         } between;
+        struct {
+            R_TweenCustomFloatCalcFn calc;
+            R_TweenCustomFloatFreeFn free;
+            R_UserData               user;
+        } custom;
     };
 } R_TweenFloat;
 
@@ -45,6 +53,9 @@ R_Step *R_tween_new_fixed(float seconds, R_EaseFn ease);
 
 R_TweenFloat R_tween_float_fixed(float value);
 R_TweenFloat R_tween_float_between(float a, float b);
+R_TweenFloat R_tween_float_custom(R_TweenCustomFloatCalcFn custom_calc,
+                                  R_TweenCustomFloatFreeFn custom_free,
+                                  R_UserData               custom_user);
 
 void R_tween_add_float(R_Step *step, R_TweenFloat value, R_UserData user,
                        R_TweenFloatGetFn get, R_TweenFloatSetFn set,

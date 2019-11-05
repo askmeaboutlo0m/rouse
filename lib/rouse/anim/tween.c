@@ -194,6 +194,7 @@ static void free_fixed_tween(void *state, R_UNUSED R_UserData *seq_user)
 {
     if (state) {
         R_FixedTween *tween = state;
+        R_MAGIC_CHECK_CHILD(tween);
         free_elements(tween->base.elements);
         R_MAGIC_POISON_CHILD(tween);
         free(tween);
@@ -226,6 +227,7 @@ static void free_between_tween(void *state, R_UNUSED R_UserData *seq_user)
 {
     if (state) {
         R_BetweenTween *tween = state;
+        R_MAGIC_CHECK_CHILD(tween);
         free_elements(tween->base.elements);
         R_MAGIC_POISON_CHILD(tween);
         free(tween);

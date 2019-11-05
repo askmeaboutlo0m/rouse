@@ -48,6 +48,8 @@
     R_MAGIC_CHECK_3((TWEEN), &(TWEEN)->base, &(TWEEN)->base.base)
 
 
+typedef struct R_TweenElement R_TweenElement;
+
 typedef struct R_Tween {
     R_MAGIC_FIELD
     int            lap;

@@ -22,8 +22,6 @@
  * SOFTWARE.
  */
 
-typedef struct R_TweenElement R_TweenElement;
-
 typedef struct R_TweenCalcArgs {
     void       *elem;
     R_UserData user;

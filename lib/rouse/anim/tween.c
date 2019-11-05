@@ -62,6 +62,12 @@ typedef struct R_FixedTween {
     float seconds;
 } R_FixedTween;
 
+typedef struct R_BetweenTween {
+    R_Tween base;
+    R_MAGIC_FIELD
+    float a, b;
+} R_BetweenTween;
+
 struct R_TweenElement {
     R_MAGIC_FIELD
     R_TweenElementCalcFn on_calc;
@@ -199,6 +205,38 @@ R_Step *R_tween_new_fixed(float seconds, R_EaseFn ease)
             R_MAGIC_INIT(tween) seconds);
     R_MAGIC_CHECK_CHILD(tween);
     return R_step_new(tween, tick_fixed_tween, free_fixed_tween, NULL);
+}
+
+
+static float calc_between_tween(void *state)
+{
+    R_BetweenTween *tween = state;
+    R_MAGIC_CHECK(tween);
+    return R_rand_between(tween->a, tween->b);
+}
+
+static R_StepStatus tick_between_tween(R_StepTickArgs args)
+{
+    return tick_tween(args, calc_between_tween);
+}
+
+static void free_between_tween(void *state, R_UNUSED R_UserData *seq_user)
+{
+    if (state) {
+        R_BetweenTween *tween = state;
+        free_elements(tween->base.elements);
+        R_MAGIC_POISON_CHILD(tween);
+        free(tween);
+    }
+}
+
+R_Step *R_tween_new_between(float a, float b, R_EaseFn ease)
+{
+    R_BetweenTween *tween = R_NEW_INIT_STRUCT(tween, R_BetweenTween,
+            {R_MAGIC_INIT_TYPE(R_Tween) -1, 0.0f, 0.0f, ease, NULL},
+            R_MAGIC_INIT(tween) a, b);
+    R_MAGIC_CHECK_CHILD(tween);
+    return R_step_new(tween, tick_between_tween, free_between_tween, NULL);
 }
 
 

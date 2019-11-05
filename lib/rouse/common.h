@@ -71,7 +71,7 @@
 
 /* Magic numbers to diagnose memory corruption etc. */
 #ifdef ROUSE_MAGIC
-#   define R_MAGIC_NUMBER_COUNT 38
+#   define R_MAGIC_NUMBER_COUNT 39
 extern uint32_t R_magic_numbers[R_MAGIC_NUMBER_COUNT];
 
 #   define R_MAGIC_INDEX(EXPR) _Generic((EXPR), \
@@ -107,12 +107,13 @@ extern uint32_t R_magic_numbers[R_MAGIC_NUMBER_COUNT];
         struct R_VectorCommandFill      *: 29, \
         struct R_Tween                  *: 30, \
         struct R_FixedTween             *: 31, \
-        struct R_TweenElement           *: 32, \
-        struct R_FloatElement           *: 33, \
-        struct R_FixedFloatElement      *: 34, \
-        struct R_BetweenFloatElement    *: 35, \
-        struct R_CustomFloatElement     *: 36, \
-        struct R_SpriteTweenData        *: 37)
+        struct R_BetweenTween           *: 32, \
+        struct R_TweenElement           *: 33, \
+        struct R_FloatElement           *: 34, \
+        struct R_FixedFloatElement      *: 35, \
+        struct R_BetweenFloatElement    *: 36, \
+        struct R_CustomFloatElement     *: 37, \
+        struct R_SpriteTweenData        *: 38)
 
 #   define R_MAGIC_OF(EXPR)        R_magic_numbers[R_MAGIC_INDEX(EXPR)]
 #   define R_MAGIC_FIELD           uint32_t MAGIC;

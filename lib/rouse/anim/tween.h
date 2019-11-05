@@ -73,6 +73,7 @@ typedef struct R_TweenFloat {
 
 
 R_Step *R_tween_new_fixed(float seconds, R_EaseFn ease);
+R_Step *R_tween_new_between(float a, float b, R_EaseFn ease);
 
 
 R_TweenFloat R_tween_float_fixed(float value);

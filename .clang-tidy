@@ -1,0 +1,4 @@
+# This warns about strncpy and friends, wanting to use strncpy_s instead.
+# Those functions aren't widely available and pretty unnecessary for what
+# we use it for, so this check can be disabled.
+Checks: '-clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling'

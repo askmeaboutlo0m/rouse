@@ -122,21 +122,14 @@ typedef struct R_CustomFloatElement {
 static void calc_elements(R_TweenElement *elements)
 {
     for (R_TweenElement *elem = elements; elem; elem = elem->next) {
-        elem->on_calc((R_TweenCalcArgs){
-            .elem = elem,
-            .user = elem->user,
-        });
+        elem->on_calc((R_TweenCalcArgs){elem, elem->user});
     }
 }
 
 static void tick_elements(R_TweenElement *elements, float ratio)
 {
     for (R_TweenElement *elem = elements; elem; elem = elem->next) {
-        elem->on_tick((R_TweenTickArgs){
-            .elem  = elem,
-            .user  = elem->user,
-            .ratio = ratio,
-        });
+        elem->on_tick((R_TweenTickArgs){elem, elem->user, ratio});
     }
 }
 
@@ -145,10 +138,7 @@ static void free_elements(R_TweenElement *elements)
     for (R_TweenElement *elem = elements, *next; elem; elem = next) {
         next = elem->next;
         if (elem->on_free) {
-            elem->on_free((R_TweenFreeArgs){
-                .elem = elem,
-                .user = elem->user,
-            });
+            elem->on_free((R_TweenFreeArgs){elem, elem->user});
         }
         R_MAGIC_POISON_NN(elem);
         free(elem);

@@ -38,8 +38,8 @@ typedef struct R_TweenFreeArgs {
     R_UserData user;
 } R_TweenFreeArgs;
 
-typedef float (*R_TweenCustomCalcFn)(R_StepTickArgs, R_UserData);
-typedef void  (*R_TweenCustomFreeFn)(R_UserData);
+typedef float (*R_TweenCalcFn)(R_StepTickArgs, R_UserData);
+typedef void  (*R_TweenFreeFn)(R_UserData);
 
 typedef void (*R_TweenElementCalcFn)(R_TweenCalcArgs);
 typedef void (*R_TweenElementTickFn)(R_TweenTickArgs);
@@ -73,11 +73,11 @@ typedef struct R_TweenFloat {
 } R_TweenFloat;
 
 
+R_Step *R_tween_new(R_TweenCalcFn on_calc, R_TweenFreeFn on_free,
+                    R_UserData user, R_EaseFn ease);
+
 R_Step *R_tween_new_fixed(float seconds, R_EaseFn ease);
 R_Step *R_tween_new_between(float a, float b, R_EaseFn ease);
-R_Step *R_tween_new_custom(R_TweenCustomCalcFn custom_calc,
-                           R_TweenCustomFreeFn custom_free,
-                           R_UserData custom_user, R_EaseFn ease);
 
 
 R_TweenFloat R_tween_float_fixed(float value);

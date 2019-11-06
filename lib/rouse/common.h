@@ -71,7 +71,7 @@
 
 /* Magic numbers to diagnose memory corruption etc. */
 #ifdef ROUSE_MAGIC
-#   define R_MAGIC_NUMBER_COUNT 40
+#   define R_MAGIC_NUMBER_COUNT 37
 extern uint32_t R_magic_numbers[R_MAGIC_NUMBER_COUNT];
 
 #   define R_MAGIC_INDEX(EXPR) _Generic((EXPR), \
@@ -106,15 +106,12 @@ extern uint32_t R_magic_numbers[R_MAGIC_NUMBER_COUNT];
         struct R_VectorCommandWinding   *: 28, \
         struct R_VectorCommandFill      *: 29, \
         struct R_Tween                  *: 30, \
-        struct R_FixedTween             *: 31, \
-        struct R_BetweenTween           *: 32, \
-        struct R_CustomTween            *: 33, \
-        struct R_TweenElement           *: 34, \
-        struct R_FloatElement           *: 35, \
-        struct R_FixedFloatElement      *: 36, \
-        struct R_BetweenFloatElement    *: 37, \
-        struct R_CustomFloatElement     *: 38, \
-        struct R_SpriteTweenData        *: 39)
+        struct R_TweenElement           *: 31, \
+        struct R_FloatElement           *: 32, \
+        struct R_FixedFloatElement      *: 33, \
+        struct R_BetweenFloatElement    *: 34, \
+        struct R_CustomFloatElement     *: 35, \
+        struct R_SpriteTweenData        *: 36)
 
 #   define R_MAGIC_OF(EXPR)        R_magic_numbers[R_MAGIC_INDEX(EXPR)]
 #   define R_MAGIC_FIELD           uint32_t MAGIC;
@@ -289,6 +286,9 @@ typedef union R_UserData {
     unsigned int u;
     float        f;
     void         *data;
+    struct {
+        float a, b;
+    } between;
 } R_UserData;
 
 static inline R_UserData R_user_int(int i)
@@ -314,6 +314,11 @@ static inline R_UserData R_user_data(void *data)
 static inline R_UserData R_user_null(void)
 {
     return (R_UserData){.data = NULL};
+}
+
+static inline R_UserData R_user_between(float a, float b)
+{
+    return (R_UserData){.between = {a, b}};
 }
 
 

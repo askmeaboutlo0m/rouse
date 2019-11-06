@@ -56,27 +56,10 @@ typedef struct R_Tween {
     float          start, left;
     R_EaseFn       ease;
     R_TweenElement *elements;
+    R_TweenCalcFn  on_calc;
+    R_TweenFreeFn  on_free;
+    R_UserData     user;
 } R_Tween;
-
-typedef struct R_FixedTween {
-    R_Tween base;
-    R_MAGIC_FIELD
-    float seconds;
-} R_FixedTween;
-
-typedef struct R_BetweenTween {
-    R_Tween base;
-    R_MAGIC_FIELD
-    float a, b;
-} R_BetweenTween;
-
-typedef struct R_CustomTween {
-    R_Tween base;
-    R_MAGIC_FIELD
-    R_TweenCustomCalcFn custom_calc;
-    R_TweenCustomFreeFn custom_free;
-    R_UserData          custom_user;
-} R_CustomTween;
 
 
 struct R_TweenElement {
@@ -151,14 +134,13 @@ static float apply_ease(R_EaseFn ease, float ratio)
     return ease ? ease(ratio) : ratio;
 }
 
-static R_StepStatus tick_tween(R_StepTickArgs args,
-                               float (*calc)(R_StepTickArgs))
+static R_StepStatus tick_tween(R_StepTickArgs args)
 {
     R_Tween *tween = args.state;
     R_MAGIC_CHECK(tween);
 
     if (tween->lap != args.lap) {
-        tween->start = calc(args);
+        tween->start = tween->on_calc(args, tween->user);
         tween->left  = tween->start;
         tween->lap   = args.lap;
         calc_elements(tween->elements);
@@ -177,111 +159,52 @@ static R_StepStatus tick_tween(R_StepTickArgs args,
     }
 }
 
-
-static float calc_fixed_tween(R_StepTickArgs args)
-{
-    R_FixedTween *tween = args.state;
-    R_MAGIC_CHECK(tween);
-    return tween->seconds;
-}
-
-static R_StepStatus tick_fixed_tween(R_StepTickArgs args)
-{
-    return tick_tween(args, calc_fixed_tween);
-}
-
-static void free_fixed_tween(void *state, R_UNUSED R_UserData *seq_user)
+static void free_tween(void *state, R_UNUSED R_UserData *seq_user)
 {
     if (state) {
-        R_FixedTween *tween = state;
-        R_MAGIC_CHECK_CHILD(tween);
-        free_elements(tween->base.elements);
-        R_MAGIC_POISON_CHILD(tween);
+        R_Tween *tween = state;
+        R_MAGIC_CHECK(tween);
+
+        if (tween->on_free) {
+            tween->on_free(tween->user);
+        }
+
+        free_elements(tween->elements);
+        R_MAGIC_POISON(tween);
         free(tween);
     }
+}
+
+R_Step *R_tween_new(R_TweenCalcFn on_calc, R_TweenFreeFn on_free,
+                    R_UserData user, R_EaseFn ease)
+{
+    assert(on_calc && "tween calc function can't be NULL");
+    R_Tween *tween = R_NEW_INIT_STRUCT(tween, R_Tween, R_MAGIC_INIT(tween)
+            -1, 0.0f, 0.0f, ease, NULL, on_calc, on_free, user);
+    R_MAGIC_CHECK(tween);
+    return R_step_new(tween, tick_tween, free_tween, NULL);
+}
+
+
+static float calc_fixed_tween(R_UNUSED R_StepTickArgs args, R_UserData user)
+{
+    return user.f;
 }
 
 R_Step *R_tween_new_fixed(float seconds, R_EaseFn ease)
 {
-    R_FixedTween *tween = R_NEW_INIT_STRUCT(tween, R_FixedTween,
-            {R_MAGIC_INIT_TYPE(R_Tween) -1, 0.0f, 0.0f, ease, NULL},
-            R_MAGIC_INIT(tween) seconds);
-    R_MAGIC_CHECK_CHILD(tween);
-    return R_step_new(tween, tick_fixed_tween, free_fixed_tween, NULL);
+    return R_tween_new(calc_fixed_tween, NULL, R_user_float(seconds), ease);
 }
 
 
-static float calc_between_tween(R_StepTickArgs args)
+static float calc_between_tween(R_UNUSED R_StepTickArgs args, R_UserData user)
 {
-    R_BetweenTween *tween = args.state;
-    R_MAGIC_CHECK(tween);
-    return R_rand_between(tween->a, tween->b);
-}
-
-static R_StepStatus tick_between_tween(R_StepTickArgs args)
-{
-    return tick_tween(args, calc_between_tween);
-}
-
-static void free_between_tween(void *state, R_UNUSED R_UserData *seq_user)
-{
-    if (state) {
-        R_BetweenTween *tween = state;
-        R_MAGIC_CHECK_CHILD(tween);
-        free_elements(tween->base.elements);
-        R_MAGIC_POISON_CHILD(tween);
-        free(tween);
-    }
+    return R_rand_between(user.between.a, user.between.b);
 }
 
 R_Step *R_tween_new_between(float a, float b, R_EaseFn ease)
 {
-    R_BetweenTween *tween = R_NEW_INIT_STRUCT(tween, R_BetweenTween,
-            {R_MAGIC_INIT_TYPE(R_Tween) -1, 0.0f, 0.0f, ease, NULL},
-            R_MAGIC_INIT(tween) a, b);
-    R_MAGIC_CHECK_CHILD(tween);
-    return R_step_new(tween, tick_between_tween, free_between_tween, NULL);
-}
-
-
-static float calc_custom_tween(R_StepTickArgs args)
-{
-    R_CustomTween *tween = args.state;
-    R_MAGIC_CHECK(tween);
-    return tween->custom_calc(args, tween->custom_user);
-}
-
-static R_StepStatus tick_custom_tween(R_StepTickArgs args)
-{
-    return tick_tween(args, calc_custom_tween);
-}
-
-static void free_custom_tween(void *state, R_UNUSED R_UserData *seq_user)
-{
-    if (state) {
-        R_CustomTween *tween = state;
-        R_MAGIC_CHECK_CHILD(tween);
-
-        if (tween->custom_free) {
-            tween->custom_free(tween->custom_user);
-        }
-
-        free_elements(tween->base.elements);
-        R_MAGIC_POISON_CHILD(tween);
-        free(tween);
-    }
-}
-
-R_Step *R_tween_new_custom(R_TweenCustomCalcFn custom_calc,
-                           R_TweenCustomFreeFn custom_free,
-                           R_UserData custom_user, R_EaseFn ease)
-{
-    assert(custom_calc && "custom tween calc function can't be NULL");
-    R_CustomTween *tween = R_NEW_INIT_STRUCT(tween, R_CustomTween,
-            {R_MAGIC_INIT_TYPE(R_Tween) -1, 0.0f, 0.0f, ease, NULL},
-            R_MAGIC_INIT(tween) custom_calc, custom_free, custom_user);
-    R_MAGIC_CHECK_CHILD(tween);
-    return R_step_new(tween, tick_custom_tween, free_custom_tween, NULL);
+    return R_tween_new(calc_between_tween, NULL, R_user_between(a, b), ease);
 }
 
 

@@ -105,14 +105,14 @@ typedef struct R_CustomFloatElement {
 static void calc_elements(R_TweenElement *elements)
 {
     for (R_TweenElement *elem = elements; elem; elem = elem->next) {
-        elem->on_calc((R_TweenCalcArgs){elem, elem->user});
+        elem->on_calc((R_TweenElementCalcArgs){elem, elem->user});
     }
 }
 
 static void tick_elements(R_TweenElement *elements, float ratio)
 {
     for (R_TweenElement *elem = elements; elem; elem = elem->next) {
-        elem->on_tick((R_TweenTickArgs){elem, elem->user, ratio});
+        elem->on_tick((R_TweenElementTickArgs){elem, elem->user, ratio});
     }
 }
 
@@ -121,7 +121,7 @@ static void free_elements(R_TweenElement *elements)
     for (R_TweenElement *elem = elements, *next; elem; elem = next) {
         next = elem->next;
         if (elem->on_free) {
-            elem->on_free((R_TweenFreeArgs){elem, elem->user});
+            elem->on_free((R_TweenElementFreeArgs){elem, elem->user});
         }
         R_MAGIC_POISON_NN(elem);
         free(elem);
@@ -245,7 +245,7 @@ R_TweenFloat R_tween_float_custom(R_TweenCustomFloatCalcFn custom_calc,
 }
 
 
-static void tick_float_element(R_TweenTickArgs args)
+static void tick_float_element(R_TweenElementTickArgs args)
 {
     R_FloatElement *elem = args.elem;
     R_MAGIC_CHECK_CHILD(elem);
@@ -273,7 +273,7 @@ static void init_float_element(R_Step *step, R_FloatElement *elem,
     } while (0)
 
 
-static void calc_fixed_float_element(R_TweenCalcArgs args)
+static void calc_fixed_float_element(R_TweenElementCalcArgs args)
 {
     R_FixedFloatElement *elem = args.elem;
     CALC_FLOAT_ELEMENT(elem, args, elem->value);
@@ -293,7 +293,7 @@ static void add_fixed_float_element(R_Step *step, float value,
 }
 
 
-static void calc_between_float_element(R_TweenCalcArgs args)
+static void calc_between_float_element(R_TweenElementCalcArgs args)
 {
     R_BetweenFloatElement *elem = args.elem;
     CALC_FLOAT_ELEMENT(elem, args, R_rand_between(elem->a, elem->b));
@@ -314,13 +314,13 @@ static void add_between_float_element(R_Step *step, float a, float b,
 }
 
 
-static void calc_custom_float_element(R_TweenCalcArgs args)
+static void calc_custom_float_element(R_TweenElementCalcArgs args)
 {
     R_CustomFloatElement *elem = args.elem;
     CALC_FLOAT_ELEMENT(elem, args, elem->custom_calc(args, elem->custom_user));
 }
 
-static void free_custom_float_element(R_TweenFreeArgs args)
+static void free_custom_float_element(R_TweenElementFreeArgs args)
 {
     R_CustomFloatElement *elem = args.elem;
     R_MAGIC_CHECK_GRANDCHILD(elem);

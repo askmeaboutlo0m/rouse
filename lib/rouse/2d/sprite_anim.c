@@ -57,7 +57,7 @@ static R_UserData make_tween_data(R_Sprite *sprite, int transform_index)
     return R_user_data(data);
 }
 
-static void free_tween_data(R_TweenFreeArgs args)
+static void free_tween_data(R_TweenElementFreeArgs args)
 {
     R_SpriteTweenData *data = args.user.data;
     R_MAGIC_CHECK(data);
@@ -75,12 +75,12 @@ static R_AffineTransform *get_transform(void *user)
 
 
 #define DEF_SPRITE_TWEEN(NAME, FIELD) \
-    static float get_ ## NAME(R_TweenCalcArgs args) \
+    static float get_ ## NAME(R_TweenElementCalcArgs args) \
     { \
         return get_transform(args.user.data)->FIELD; \
     } \
     \
-    static void set_ ## NAME(R_TweenTickArgs args, float value) \
+    static void set_ ## NAME(R_TweenElementTickArgs args, float value) \
     { \
         get_transform(args.user.data)->FIELD = value; \
     } \

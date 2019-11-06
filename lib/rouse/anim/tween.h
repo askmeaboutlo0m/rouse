@@ -22,33 +22,33 @@
  * SOFTWARE.
  */
 
-typedef struct R_TweenCalcArgs {
+typedef struct R_TweenElementCalcArgs {
     void       *elem;
     R_UserData user;
-} R_TweenCalcArgs;
+} R_TweenElementCalcArgs;
 
-typedef struct R_TweenTickArgs {
+typedef struct R_TweenElementTickArgs {
     void       *elem;
     R_UserData user;
     float      ratio;
-} R_TweenTickArgs;
+} R_TweenElementTickArgs;
 
-typedef struct R_TweenFreeArgs {
+typedef struct R_TweenElementFreeArgs {
     void       *elem;
     R_UserData user;
-} R_TweenFreeArgs;
+} R_TweenElementFreeArgs;
 
 typedef float (*R_TweenCalcFn)(R_StepTickArgs, R_UserData);
 typedef void  (*R_TweenFreeFn)(R_UserData);
 
-typedef void (*R_TweenElementCalcFn)(R_TweenCalcArgs);
-typedef void (*R_TweenElementTickFn)(R_TweenTickArgs);
-typedef void (*R_TweenElementFreeFn)(R_TweenFreeArgs);
+typedef void (*R_TweenElementCalcFn)(R_TweenElementCalcArgs);
+typedef void (*R_TweenElementTickFn)(R_TweenElementTickArgs);
+typedef void (*R_TweenElementFreeFn)(R_TweenElementFreeArgs);
 
-typedef float (*R_TweenFloatGetFn)(R_TweenCalcArgs);
-typedef void  (*R_TweenFloatSetFn)(R_TweenTickArgs, float);
+typedef float (*R_TweenFloatGetFn)(R_TweenElementCalcArgs);
+typedef void  (*R_TweenFloatSetFn)(R_TweenElementTickArgs, float);
 
-typedef float (*R_TweenCustomFloatCalcFn)(R_TweenCalcArgs, R_UserData);
+typedef float (*R_TweenCustomFloatCalcFn)(R_TweenElementCalcArgs, R_UserData);
 typedef void  (*R_TweenCustomFloatFreeFn)(R_UserData);
 
 typedef enum R_TweenValueType {

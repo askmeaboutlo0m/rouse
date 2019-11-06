@@ -22,8 +22,23 @@
  * SOFTWARE.
  */
 
-typedef float (*R_DelayCalcFn)(R_UserData, R_StepTickArgs);
+typedef float (*R_DelayCalcFn)(R_StepTickArgs, R_UserData);
 typedef void  (*R_DelayFreeFn)(R_UserData user, R_UserData *seq_user);
+typedef void  (*R_DelayJsonFn)(JSON_Object *obj, R_UserData user,
+                               R_UserData *seq_user);
+
+/*
+ * A delay that calls a custom function to recalculate the delay amount every
+ * time this step is hit. The `on_calc` function must return the delay amount
+ * in seconds. The optional `on_free` function is called when this step is
+ * freed, allowing you to free your `user` parameter. The first parameter of
+ * `on_free` is the given `user` parameter, the second one is the user data
+ * of the sequence this step belongs to (if any). The `to_json` function allows
+ * you to JSONify your user data in a sensible way. It may be `NULL`, in which
+ * case it's assumed to be a pointer and dumped as a hex value.
+ */
+R_Step *R_delay_new(R_DelayCalcFn on_calc, R_DelayFreeFn on_free,
+                    R_DelayJsonFn to_json, R_UserData user);
 
 /*
  * Delay for the specified number of `seconds`. A negative value is treated
@@ -38,14 +53,3 @@ R_Step *R_delay_new_fixed(float seconds);
  * `R_rand_between`, so it depends on `R_seed`.
  */
 R_Step *R_delay_new_between(float a, float b);
-
-/*
- * A delay that calls a custom function to recalculate the delay amount every
- * time this step is hit. The `on_calc` function must return the delay amount
- * in seconds. The optional `on_free` function is called when this step is
- * freed, allowing you to free your `user` parameter. The first parameter of
- * `on_free` is the given `user` parameter, the second one is the user data
- * of the sequence this step belongs to (if any).
- */
-R_Step *R_delay_new_custom(R_DelayCalcFn on_calc, R_DelayFreeFn on_free,
-                           R_UserData user);

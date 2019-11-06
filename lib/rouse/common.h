@@ -71,7 +71,7 @@
 
 /* Magic numbers to diagnose memory corruption etc. */
 #ifdef ROUSE_MAGIC
-#   define R_MAGIC_NUMBER_COUNT 37
+#   define R_MAGIC_NUMBER_COUNT 35
 extern uint32_t R_magic_numbers[R_MAGIC_NUMBER_COUNT];
 
 #   define R_MAGIC_INDEX(EXPR) _Generic((EXPR), \
@@ -87,31 +87,29 @@ extern uint32_t R_magic_numbers[R_MAGIC_NUMBER_COUNT];
         struct R_Animator               *:  9, \
         struct R_Sequence               *: 10, \
         struct R_Step                   *: 11, \
-        struct R_FixedDelay             *: 12, \
-        struct R_DelayBetween           *: 13, \
-        struct R_CustomDelay            *: 14, \
-        struct R_Call                   *: 15, \
-        struct R_FrameBufferOptions     *: 16, \
-        struct R_Parse                  *: 17, \
-        struct R_AffineTransform        *: 18, \
-        struct R_Sprite                 *: 19, \
-        struct R_Canvas                 *: 20, \
-        struct R_VectorImage            *: 21, \
-        struct R_VectorCommandBegin     *: 22, \
-        struct R_VectorCommandTransform *: 23, \
-        struct R_VectorCommandColor     *: 24, \
-        struct R_VectorCommandMove      *: 25, \
-        struct R_VectorCommandLine      *: 26, \
-        struct R_VectorCommandBezier    *: 27, \
-        struct R_VectorCommandWinding   *: 28, \
-        struct R_VectorCommandFill      *: 29, \
-        struct R_Tween                  *: 30, \
-        struct R_TweenElement           *: 31, \
-        struct R_FloatElement           *: 32, \
-        struct R_FixedFloatElement      *: 33, \
-        struct R_BetweenFloatElement    *: 34, \
-        struct R_CustomFloatElement     *: 35, \
-        struct R_SpriteTweenData        *: 36)
+        struct R_Delay                  *: 12, \
+        struct R_Call                   *: 13, \
+        struct R_FrameBufferOptions     *: 14, \
+        struct R_Parse                  *: 15, \
+        struct R_AffineTransform        *: 16, \
+        struct R_Sprite                 *: 17, \
+        struct R_Canvas                 *: 18, \
+        struct R_VectorImage            *: 19, \
+        struct R_VectorCommandBegin     *: 20, \
+        struct R_VectorCommandTransform *: 21, \
+        struct R_VectorCommandColor     *: 22, \
+        struct R_VectorCommandMove      *: 23, \
+        struct R_VectorCommandLine      *: 24, \
+        struct R_VectorCommandBezier    *: 25, \
+        struct R_VectorCommandWinding   *: 26, \
+        struct R_VectorCommandFill      *: 27, \
+        struct R_Tween                  *: 28, \
+        struct R_TweenElement           *: 29, \
+        struct R_FloatElement           *: 30, \
+        struct R_FixedFloatElement      *: 31, \
+        struct R_BetweenFloatElement    *: 32, \
+        struct R_CustomFloatElement     *: 33, \
+        struct R_SpriteTweenData        *: 34)
 
 #   define R_MAGIC_OF(EXPR)        R_magic_numbers[R_MAGIC_INDEX(EXPR)]
 #   define R_MAGIC_FIELD           uint32_t MAGIC;

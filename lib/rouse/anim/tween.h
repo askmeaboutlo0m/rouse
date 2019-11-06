@@ -24,17 +24,21 @@
 
 typedef struct R_TweenElementCalcArgs {
     void       *elem;
+    R_UserData value_user;
     R_UserData user;
 } R_TweenElementCalcArgs;
 
 typedef struct R_TweenElementTickArgs {
     void       *elem;
+    R_UserData value_user;
     R_UserData user;
     float      ratio;
 } R_TweenElementTickArgs;
 
 typedef struct R_TweenElementFreeArgs {
     void       *elem;
+    R_UserData *seq_user;
+    R_UserData value_user;
     R_UserData user;
 } R_TweenElementFreeArgs;
 
@@ -45,31 +49,14 @@ typedef void (*R_TweenElementCalcFn)(R_TweenElementCalcArgs);
 typedef void (*R_TweenElementTickFn)(R_TweenElementTickArgs);
 typedef void (*R_TweenElementFreeFn)(R_TweenElementFreeArgs);
 
-typedef float (*R_TweenFloatGetFn)(R_TweenElementCalcArgs);
-typedef void  (*R_TweenFloatSetFn)(R_TweenElementTickArgs, float);
-
-typedef float (*R_TweenCustomFloatCalcFn)(R_TweenElementCalcArgs, R_UserData);
-typedef void  (*R_TweenCustomFloatFreeFn)(R_UserData);
-
-typedef enum R_TweenValueType {
-    R_TWEEN_VALUE_FIXED,
-    R_TWEEN_VALUE_BETWEEN,
-    R_TWEEN_VALUE_CUSTOM,
-} R_TweenValueType;
+typedef float (*R_TweenFloatGetFn )(R_TweenElementCalcArgs);
+typedef void  (*R_TweenFloatSetFn )(R_TweenElementTickArgs, float);
+typedef float (*R_TweenFloatCalcFn)(R_TweenElementCalcArgs);
 
 typedef struct R_TweenFloat {
-    R_TweenValueType type;
-    union {
-        float fixed;
-        struct {
-            float a, b;
-        } between;
-        struct {
-            R_TweenCustomFloatCalcFn calc;
-            R_TweenCustomFloatFreeFn free;
-            R_UserData               user;
-        } custom;
-    };
+    R_TweenFloatCalcFn   calc;
+    R_TweenElementFreeFn free;
+    R_UserData           user;
 } R_TweenFloat;
 
 
@@ -80,12 +67,12 @@ R_Step *R_tween_new_fixed(float seconds, R_EaseFn ease);
 R_Step *R_tween_new_between(float a, float b, R_EaseFn ease);
 
 
+R_TweenFloat R_tween_float(R_TweenFloatCalcFn calc,
+                           R_TweenElementFreeFn on_free, R_UserData value_user);
+
 R_TweenFloat R_tween_float_fixed(float value);
 R_TweenFloat R_tween_float_between(float a, float b);
-R_TweenFloat R_tween_float_custom(R_TweenCustomFloatCalcFn custom_calc,
-                                  R_TweenCustomFloatFreeFn custom_free,
-                                  R_UserData               custom_user);
 
-void R_tween_add_float(R_Step *step, R_TweenFloat value, R_UserData user,
-                       R_TweenFloatGetFn get, R_TweenFloatSetFn set,
+void R_tween_add_float(R_Step *step, R_TweenFloat tween_float, R_UserData user,
+                       R_TweenFloatGetFn get_float, R_TweenFloatSetFn set_float,
                        R_TweenElementFreeFn on_free);

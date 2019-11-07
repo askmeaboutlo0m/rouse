@@ -52,13 +52,8 @@ struct R_Sprite {
 R_AffineTransform R_affine_transform(void)
 {
     return (R_AffineTransform){
-        R_MAGIC_INIT_TYPE(R_AffineTransform)
-        .shift = {{0.0f, 0.0f}},
-        .pos   = {{0.0f, 0.0f}},
-        .scale = {{1.0f, 1.0f}},
-        .skew  = {{0.0f, 0.0f}},
-        .angle = 0.0f,
-    };
+            R_MAGIC_INIT_TYPE(R_AffineTransform) {{0.0f, 0.0f}},
+            {{0.0f, 0.0f}}, {{1.0f, 1.0f}}, {{0.0f, 0.0f}}, 0.0f};
 }
 
 
@@ -277,7 +272,8 @@ void R_sprite_remove_child(R_Sprite *sprite, R_Sprite *child)
 static void apply_transform(float matrix[static 6], R_AffineTransform *tf)
 {
     float tmp[6];
-    nvgTransformTranslate(tmp, tf->shift.x, tf->shift.y);
+    R_V2  origin = tf->origin;
+    nvgTransformTranslate(tmp, -origin.x, -origin.y);
     nvgTransformMultiply(matrix, tmp);
     nvgTransformScale(tmp, tf->scale.x, tf->scale.y);
     nvgTransformMultiply(matrix, tmp);
@@ -287,7 +283,7 @@ static void apply_transform(float matrix[static 6], R_AffineTransform *tf)
     nvgTransformMultiply(matrix, tmp);
     nvgTransformRotate(tmp, tf->angle);
     nvgTransformMultiply(matrix, tmp);
-    nvgTransformTranslate(tmp, tf->pos.x, tf->pos.y);
+    nvgTransformTranslate(tmp, tf->pos.x + origin.x, tf->pos.y + origin.y);
     nvgTransformMultiply(matrix, tmp);
 }
 

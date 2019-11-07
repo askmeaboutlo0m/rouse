@@ -24,7 +24,7 @@
 
 typedef struct R_AffineTransform {
     R_MAGIC_FIELD
-    R_V2  shift;
+    R_V2  origin;
     R_V2  pos;
     R_V2  scale;
     R_V2  skew;  /* in radians */
@@ -37,7 +37,7 @@ typedef struct R_Sprite R_Sprite;
 
 
 /*
- * Get a default, "empty" affine transform: the shift and position at (0,0),
+ * Get a default, "empty" affine transform: the origin and position at (0,0),
  * scale at (1,1) and an angle of 0 rad (and therefore 0 degrees).
  */
 R_AffineTransform R_affine_transform(void);

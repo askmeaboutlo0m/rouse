@@ -92,10 +92,10 @@ static R_AffineTransform *get_transform(void *user)
                           get_ ## NAME, set_ ## NAME, free_tween_data); \
     }
 
+DEF_SPRITE_TWEEN(origin_x, origin.x)
+DEF_SPRITE_TWEEN(origin_y, origin.y)
 DEF_SPRITE_TWEEN(pos_x, pos.x)
 DEF_SPRITE_TWEEN(pos_y, pos.y)
-DEF_SPRITE_TWEEN(shift_x, shift.x)
-DEF_SPRITE_TWEEN(shift_y, shift.y)
 DEF_SPRITE_TWEEN(scale_x, scale.x)
 DEF_SPRITE_TWEEN(scale_y, scale.y)
 DEF_SPRITE_TWEEN(skew_x, skew.x)

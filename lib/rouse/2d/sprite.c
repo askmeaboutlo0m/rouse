@@ -193,7 +193,6 @@ void R_sprite_transforms_ensure(R_Sprite *sprite, int transform_count)
     check_sprite(sprite);
     assert(!R_sprite_is_root(sprite) && "no transforms on root sprite");
     if (sprite->transform_count < transform_count) {
-        R_info("resize transforms of %s to %d", sprite->name, transform_count);
         resize_transforms(sprite, transform_count);
     }
 }

@@ -216,18 +216,18 @@ R_Sprite *R_sprite_orphan(R_Sprite *sprite)
     else {
         R_Sprite *parent = sprite->parent;
         if (parent) {
-            R_sprite_remove_child(parent, sprite);
+            R_sprite_child_remove(parent, sprite);
         }
         return parent;
     }
 }
 
-int R_sprite_add_child(R_Sprite *sprite, R_Sprite *child)
+int R_sprite_child_add(R_Sprite *sprite, R_Sprite *child)
 {
-    return R_sprite_add_child_at(sprite, child, INT_MAX);
+    return R_sprite_child_add_at(sprite, child, INT_MAX);
 }
 
-int R_sprite_add_child_at(R_Sprite *sprite, R_Sprite *child, int index)
+int R_sprite_child_add_at(R_Sprite *sprite, R_Sprite *child, int index)
 {
     assert(index >= 0 && "child index must not be negative");
     check_parent_child(sprite, child);
@@ -250,7 +250,7 @@ int R_sprite_add_child_at(R_Sprite *sprite, R_Sprite *child, int index)
     return at;
 }
 
-void R_sprite_remove_child(R_Sprite *sprite, R_Sprite *child)
+void R_sprite_child_remove(R_Sprite *sprite, R_Sprite *child)
 {
     check_parent_child(sprite, child);
     assert(sprite == child->parent && "child can only be removed from parent");

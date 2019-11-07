@@ -124,22 +124,22 @@ R_Sprite *R_sprite_orphan(R_Sprite *sprite);
  * removed from there. In that case its refcount will stay the same. Returns
  * the index that the child was added at.
  */
-int R_sprite_add_child(R_Sprite *sprite, R_Sprite *child);
+int R_sprite_child_add(R_Sprite *sprite, R_Sprite *child);
 
 /*
- * Like `R_sprite_add_child`, but instead of at the end it tries to insert
+ * Like `R_sprite_child_add`, but instead of at the end it tries to insert
  * the `child` at the given `index`. The returned index may be less than the
  * given `index` if the child list isn't that long. Negative indexes are not
  * sensible and will trigger an assertion if enabled.
  */
-int R_sprite_add_child_at(R_Sprite *sprite, R_Sprite *child, int index);
+int R_sprite_child_add_at(R_Sprite *sprite, R_Sprite *child, int index);
 
 /*
  * Removes the given `child` from the parent `sprite` and decrements its
  * refcount. Will `R_die` if the `sprite` doesn't actually have the `child`
  * in its list of children.
  */
-void R_sprite_remove_child(R_Sprite *sprite, R_Sprite *child);
+void R_sprite_child_remove(R_Sprite *sprite, R_Sprite *child);
 
 
 void R_sprite_draw(R_Sprite *sprite, NVGcontext *vg,

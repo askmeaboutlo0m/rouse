@@ -22,41 +22,20 @@
  * SOFTWARE.
  */
 
-typedef struct R_TweenElementCalcArgs {
-    void       *elem;
-    R_UserData value_user;
-    R_UserData user;
-} R_TweenElementCalcArgs;
-
-typedef struct R_TweenElementTickArgs {
-    void       *elem;
-    R_UserData value_user;
-    R_UserData user;
-    float      ratio;
-} R_TweenElementTickArgs;
-
-typedef struct R_TweenElementFreeArgs {
-    void       *elem;
-    R_UserData *seq_user;
-    R_UserData value_user;
-    R_UserData user;
-} R_TweenElementFreeArgs;
-
 typedef float (*R_TweenCalcFn)(R_StepTickArgs, R_UserData);
 typedef void  (*R_TweenFreeFn)(R_UserData);
 
-typedef void (*R_TweenElementCalcFn)(R_TweenElementCalcArgs);
-typedef void (*R_TweenElementTickFn)(R_TweenElementTickArgs);
-typedef void (*R_TweenElementFreeFn)(R_TweenElementFreeArgs);
+typedef void (*R_TweenElementFreeFn)(R_UserData user, R_UserData *seq_user);
+typedef void (*R_TweenValueFreeFn  )(R_UserData user, R_UserData *seq_user);
 
-typedef float (*R_TweenFloatGetFn )(R_TweenElementCalcArgs);
-typedef void  (*R_TweenFloatSetFn )(R_TweenElementTickArgs, float);
-typedef float (*R_TweenFloatCalcFn)(R_TweenElementCalcArgs);
+typedef float (*R_TweenFloatGetFn )(R_UserData);
+typedef void  (*R_TweenFloatSetFn )(R_UserData, float);
+typedef float (*R_TweenFloatCalcFn)(R_UserData, float);
 
 typedef struct R_TweenFloat {
-    R_TweenFloatCalcFn   calc;
-    R_TweenElementFreeFn free;
-    R_UserData           user;
+    R_TweenFloatCalcFn calc;
+    R_TweenValueFreeFn free;
+    R_UserData         user;
 } R_TweenFloat;
 
 
@@ -67,12 +46,12 @@ R_Step *R_tween_new_fixed(float seconds, R_EaseFn ease);
 R_Step *R_tween_new_between(float a, float b, R_EaseFn ease);
 
 
-R_TweenFloat R_tween_float(R_TweenFloatCalcFn calc,
-                           R_TweenElementFreeFn on_free, R_UserData value_user);
+R_TweenFloat R_tween_float(R_TweenFloatCalcFn calc, R_TweenValueFreeFn free,
+                           R_UserData user);
 
 R_TweenFloat R_tween_float_fixed(float value);
 R_TweenFloat R_tween_float_between(float a, float b);
 
-void R_tween_add_float(R_Step *step, R_TweenFloat tween_float, R_UserData user,
+void R_tween_add_float(R_Step *step, R_TweenFloat f, R_UserData user,
                        R_TweenFloatGetFn get_float, R_TweenFloatSetFn set_float,
                        R_TweenElementFreeFn on_free);

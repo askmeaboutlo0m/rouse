@@ -50,9 +50,19 @@ typedef struct R_Tween {
     R_UserData     user;
 } R_Tween;
 
-typedef struct R_TweenValue {
+
+typedef void (*R_TweenElementCalcFn)(R_TweenElement *);
+typedef void (*R_TweenElementTickFn)(R_TweenElement *, float);
+
+struct R_TweenElement {
+    R_MAGIC_FIELD
     R_UserData           user;
+    R_TweenElementCalcFn on_calc;
+    R_TweenElementTickFn on_tick;
     R_TweenElementFreeFn on_free;
+    R_TweenElement       *next;
+    R_UserData           user_value;
+    R_TweenValueFreeFn   free_value;
     union {
         struct {
             float              source_float;
@@ -62,32 +72,20 @@ typedef struct R_TweenValue {
             R_TweenFloatCalcFn calc_float;
         };
     };
-} R_TweenValue;
-
-struct R_TweenElement {
-    R_MAGIC_FIELD
-    R_TweenValue         value;
-    R_UserData           user;
-    R_TweenElementCalcFn on_calc;
-    R_TweenElementTickFn on_tick;
-    R_TweenElementFreeFn on_free;
-    R_TweenElement       *next;
 };
 
 
 static void calc_elements(R_TweenElement *elements)
 {
     for (R_TweenElement *elem = elements; elem; elem = elem->next) {
-        elem->on_calc((R_TweenElementCalcArgs){
-                elem, elem->value.user, elem->user});
+        elem->on_calc(elem);
     }
 }
 
 static void tick_elements(R_TweenElement *elements, float ratio)
 {
     for (R_TweenElement *elem = elements; elem; elem = elem->next) {
-        elem->on_tick((R_TweenElementTickArgs){
-                elem, elem->value.user, elem->user, ratio});
+        elem->on_tick(elem, ratio);
     }
 }
 
@@ -96,15 +94,12 @@ static void free_elements(R_TweenElement *elements, R_UserData *seq_user)
     for (R_TweenElement *elem = elements, *next; elem; elem = next) {
         next = elem->next;
 
-        R_TweenElementFreeArgs args =
-                {elem, seq_user, elem->value.user, elem->user};
-
-        if (elem->value.on_free) {
-            elem->value.on_free(args);
+        if (elem->free_value) {
+            elem->free_value(elem->user_value, seq_user);
         }
 
         if (elem->on_free) {
-            elem->on_free(args);
+            elem->on_free(elem->user, seq_user);
         }
 
         R_MAGIC_POISON_NN(elem);
@@ -193,17 +188,17 @@ R_Step *R_tween_new_between(float a, float b, R_EaseFn ease)
 }
 
 
-R_TweenFloat R_tween_float(R_TweenFloatCalcFn calc,
-                           R_TweenElementFreeFn on_free, R_UserData value_user)
+R_TweenFloat R_tween_float(R_TweenFloatCalcFn calc, R_TweenValueFreeFn on_free,
+                           R_UserData user)
 {
     assert(calc && "tween float calc function can't be NULL");
-    return (R_TweenFloat){calc, on_free, value_user};
+    return (R_TweenFloat){calc, on_free, user};
 }
 
 
-static float calc_fixed_float(R_TweenElementCalcArgs args)
+static float calc_fixed_float(R_UserData user, R_UNUSED float source)
 {
-    return args.value_user.f;
+    return user.f;
 }
 
 R_TweenFloat R_tween_float_fixed(float value)
@@ -212,9 +207,9 @@ R_TweenFloat R_tween_float_fixed(float value)
 }
 
 
-static float calc_between_float(R_TweenElementCalcArgs args)
+static float calc_between_float(R_UserData user, R_UNUSED float source)
 {
-    return R_rand_between(args.value_user.between.a, args.value_user.between.b);
+    return R_rand_between(user.between.a, user.between.b);
 }
 
 R_TweenFloat R_tween_float_between(float a, float b)
@@ -223,43 +218,33 @@ R_TweenFloat R_tween_float_between(float a, float b)
 }
 
 
-static void calc_float_element(R_TweenElementCalcArgs args)
+static void calc_float_element(R_TweenElement *elem)
 {
-    R_TweenElement *elem = args.elem;
-    R_MAGIC_CHECK(elem);
-    elem->value.source_float = elem->value.get_float(args);
-    elem->value.target_float = elem->value.calc_float(args);
+    float source       = elem->get_float(elem->user);
+    elem->source_float = source;
+    elem->target_float = elem->calc_float(elem->user_value, source);
 }
 
-static void tick_float_element(R_TweenElementTickArgs args)
+static void tick_float_element(R_TweenElement *elem, float ratio)
 {
-    R_TweenElement *elem = args.elem;
-    R_MAGIC_CHECK(elem);
-    elem->value.set_float(args, R_lerp(elem->value.source_float,
-                          elem->value.target_float, args.ratio));
+    float current = R_lerp(elem->source_float, elem->target_float, ratio);
+    elem->set_float(elem->user, current);
 }
 
-static R_TweenElement *new_float_element(R_UserData user,
-                                         R_TweenElementFreeFn on_free,
-                                         R_TweenValue value)
+static R_TweenElement *new_float_element(
+        R_UserData user, R_TweenElementFreeFn on_free, R_UserData user_value,
+        R_TweenValueFreeFn free_value, R_TweenFloatGetFn get_float,
+        R_TweenFloatSetFn set_float, R_TweenFloatCalcFn calc_float)
 {
+    assert(get_float  && "element get float function can't be NULL");
+    assert(set_float  && "element set float function can't be NULL");
+    assert(calc_float && "element calc float function can't be NULL");
     R_TweenElement *elem = R_NEW_INIT_STRUCT(elem, R_TweenElement,
-            R_MAGIC_INIT(elem) value, user, calc_float_element,
-            tick_float_element, on_free, NULL);
+            R_MAGIC_INIT(elem) user, calc_float_element, tick_float_element,
+            on_free, NULL, user_value, free_value,
+            {{0.0f, 0.0f, get_float, set_float, calc_float}});
     R_MAGIC_CHECK(elem);
     return elem;
-}
-
-
-static R_TweenValue tween_float_to_value(R_TweenFloat tween_float,
-                                         R_TweenFloatGetFn get_float,
-                                         R_TweenFloatSetFn set_float)
-{
-    assert(tween_float.calc && "element calc float function can't be NULL");
-    assert(get_float        && "element get float function can't be NULL");
-    assert(set_float        && "element set float function can't be NULL");
-    return (R_TweenValue){tween_float.user, tween_float.free, {{0.0f, 0.0f,
-                          get_float, set_float, tween_float.calc}}};
 }
 
 static void tween_add_element(R_Step *step, R_TweenElement *elem)
@@ -270,11 +255,11 @@ static void tween_add_element(R_Step *step, R_TweenElement *elem)
     tween->elements = elem;
 }
 
-void R_tween_add_float(R_Step *step, R_TweenFloat tween_float, R_UserData user,
+void R_tween_add_float(R_Step *step, R_TweenFloat f, R_UserData user,
                        R_TweenFloatGetFn get_float, R_TweenFloatSetFn set_float,
                        R_TweenElementFreeFn on_free)
 {
-    R_TweenValue   value = tween_float_to_value(tween_float, get_float, set_float);
-    R_TweenElement *elem = new_float_element(user, on_free, value);
+    R_TweenElement *elem = new_float_element(user, on_free, f.user, f.free,
+                                             get_float, set_float, f.calc);
     tween_add_element(step, elem);
 }

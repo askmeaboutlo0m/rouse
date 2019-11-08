@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-typedef void (*R_CallStepFn)(R_UserData, R_StepTickArgs);
+typedef void (*R_CallStepFn)(R_StepTickArgs, R_UserData);
 typedef void (*R_CallFreeFn)(R_UserData user, R_UserData *seq_user);
 
 /*

@@ -44,7 +44,7 @@ static R_StepStatus tick_call(R_StepTickArgs args)
 {
     R_Call *call = args.state;
     R_MAGIC_CHECK(call);
-    call->on_step(call->user, args);
+    call->on_step(args, call->user);
     return R_STEP_STATUS_COMPLETE;
 }
 

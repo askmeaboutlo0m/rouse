@@ -82,6 +82,9 @@ R_Sprite *R_sprite_incref(R_Sprite *sprite);
 int R_sprite_refs(R_Sprite *sprite);
 
 
+const char *R_sprite_name(R_Sprite *sprite);
+
+
 /*
  * Make the `sprite` call the given `draw` function when it's being rendered.
  * The given `user` data will be passed to the function when that happens,

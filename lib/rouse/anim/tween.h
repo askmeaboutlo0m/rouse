@@ -24,34 +24,42 @@
 
 typedef float (*R_TweenCalcFn)(R_StepTickArgs, R_UserData);
 typedef void  (*R_TweenFreeFn)(R_UserData);
+typedef void  (*R_TweenJsonFn)(JSON_Object *obj, R_UserData user,
+                               R_UserData *seq_user);
 
+typedef void (*R_TweenElementJsonFn)(JSON_Object *obj, R_UserData user,
+                                     R_UserData *seq_user);
 typedef void (*R_TweenElementFreeFn)(R_UserData user, R_UserData *seq_user);
-typedef void (*R_TweenValueFreeFn  )(R_UserData user, R_UserData *seq_user);
+
+typedef void (*R_TweenValueJsonFn)(JSON_Object *obj, R_UserData user,
+                                   R_UserData *seq_user);
+typedef void (*R_TweenValueFreeFn)(R_UserData user, R_UserData *seq_user);
 
 typedef float (*R_TweenFloatGetFn )(R_UserData);
 typedef void  (*R_TweenFloatSetFn )(R_UserData, float);
 typedef float (*R_TweenFloatCalcFn)(R_UserData, float);
 
 typedef struct R_TweenFloat {
-    R_TweenFloatCalcFn calc;
-    R_TweenValueFreeFn free;
+    R_TweenFloatCalcFn on_calc;
+    R_TweenValueFreeFn on_free;
+    R_TweenValueJsonFn to_json;
     R_UserData         user;
 } R_TweenFloat;
 
 
 R_Step *R_tween_new(R_TweenCalcFn on_calc, R_TweenFreeFn on_free,
-                    R_UserData user, R_EaseFn ease);
+                    R_TweenJsonFn to_json, R_UserData user, R_EaseFn ease);
 
 R_Step *R_tween_new_fixed(float seconds, R_EaseFn ease);
 R_Step *R_tween_new_between(float a, float b, R_EaseFn ease);
 
 
-R_TweenFloat R_tween_float(R_TweenFloatCalcFn calc, R_TweenValueFreeFn free,
-                           R_UserData user);
+R_TweenFloat R_tween_float(R_TweenFloatCalcFn on_calc, R_TweenValueFreeFn on_free,
+                           R_TweenValueJsonFn to_json, R_UserData user);
 
 R_TweenFloat R_tween_float_fixed(float value);
 R_TweenFloat R_tween_float_between(float a, float b);
 
 void R_tween_add_float(R_Step *step, R_TweenFloat f, R_UserData user,
                        R_TweenFloatGetFn get_float, R_TweenFloatSetFn set_float,
-                       R_TweenElementFreeFn on_free);
+                       R_TweenElementFreeFn on_free, R_TweenElementJsonFn to_json);

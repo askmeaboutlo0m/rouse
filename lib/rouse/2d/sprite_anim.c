@@ -73,6 +73,15 @@ static R_AffineTransform *get_transform(void *user)
     return R_sprite_transform_at(data->sprite, data->transform_index);
 }
 
+static void sprite_tween_data_to_json(JSON_Object *obj, R_SpriteTweenData *data)
+{
+    R_MAGIC_CHECK(data);
+    const char *name = R_sprite_name(data->sprite);
+    json_object_set_string(obj, "sprite", name ? name : "");
+    json_object_set_number(obj, "transform_index",
+                           R_int2double(data->transform_index));
+}
+
 
 #define DEF_SPRITE_TWEEN(NAME, FIELD) \
     static float get_ ## NAME(R_UserData user) \
@@ -85,11 +94,20 @@ static R_AffineTransform *get_transform(void *user)
         get_transform(user.data)->FIELD = value; \
     } \
     \
+    static void NAME ## _to_json(JSON_Object *obj, R_UserData user, \
+                                 R_UNUSED R_UserData *seq_user) \
+    { \
+        json_object_set_string(obj, "element_type", "sprite_" #NAME); \
+        json_object_set_number(obj, "current_" #NAME, get_ ## NAME(user)); \
+        sprite_tween_data_to_json(obj, user.data); \
+    } \
+    \
     void R_tween_sprite_ ## NAME(R_Step *step, R_Sprite *sprite, \
                                   int transform_index, R_TweenFloat value) \
     { \
         R_tween_add_float(step, value, make_tween_data(sprite, transform_index), \
-                          get_ ## NAME, set_ ## NAME, free_tween_data); \
+                          get_ ## NAME, set_ ## NAME, free_tween_data, \
+                          NAME ## _to_json); \
     }
 
 DEF_SPRITE_TWEEN(origin_x, origin.x)

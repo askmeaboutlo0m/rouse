@@ -141,6 +141,13 @@ int R_sprite_refs(R_Sprite *sprite)
 }
 
 
+const char *R_sprite_name(R_Sprite *sprite)
+{
+    check_sprite(sprite);
+    return sprite->name;
+}
+
+
 void R_sprite_draw_fn(R_Sprite *sprite, R_DrawFn draw, R_UserData user)
 {
     R_MAGIC_CHECK(sprite);

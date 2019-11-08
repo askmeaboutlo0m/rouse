@@ -112,20 +112,6 @@ void *R_step_state(R_Step *step)
 }
 
 
-static JSON_Value *step_state_to_json(R_Step *step)
-{
-    JSON_Value *val;
-    if (step->to_json) {
-        val = json_value_init_object();
-        step->to_json(json_value_get_object(val), step->state,
-                      step->seq ? &step->seq->user : NULL);
-    }
-    else {
-        val = json_value_init_null();
-    }
-    return val;
-}
-
 JSON_Value *R_step_to_json(R_Step *step)
 {
     if (!step) {
@@ -136,14 +122,12 @@ JSON_Value *R_step_to_json(R_Step *step)
     JSON_Value  *val = json_value_init_object();
     JSON_Object *obj = json_value_get_object(val);
 
-    json_object_set_string(   obj, "type",    "R_Step");
-    R_json_object_set_address(obj, "address", step);
-    R_json_object_set_address(obj, "seq",     step->seq);
-    R_JSON_OBJECT_SET_FN(     obj, "on_tick", step->on_tick);
-    R_JSON_OBJECT_SET_FN(     obj, "on_free", step->on_free);
-    R_JSON_OBJECT_SET_FN(     obj, "to_json", step->to_json);
-    R_json_object_set_address(obj, "next",    step->next);
-    json_object_set_value(    obj, "state",   step_state_to_json(step));
+    if (step->to_json) {
+        step->to_json(obj, step->state, step->seq ? &step->seq->user : NULL);
+    }
+    else {
+        json_object_set_string(obj, "type", "R_Step");
+    }
 
     return val;
 }
@@ -267,6 +251,19 @@ static JSON_Value *steps_to_json(R_Sequence *seq)
     return val;
 }
 
+static int find_current_step_index(R_Step *current, R_Step *steps)
+{
+    if (current) {
+        int i = 0;
+        for (R_Step *step = steps; step; step = step->next, ++i) {
+            if (step == current) {
+                return i;
+            }
+        }
+    }
+    return -1;
+}
+
 JSON_Value *R_sequence_to_json(R_Sequence *seq)
 {
     if (!seq) {
@@ -278,18 +275,19 @@ JSON_Value *R_sequence_to_json(R_Sequence *seq)
     JSON_Object *obj = json_value_get_object(val);
 
     json_object_set_string(   obj, "type",     "R_Sequence");
-    R_json_object_set_address(obj, "address",  seq);
-    R_json_object_set_address(obj, "an",       seq->an);
     json_object_set_number(   obj, "lap",      R_int2double(seq->lap));
     json_object_set_number(   obj, "max_laps", R_int2double(seq->max_laps));
-    R_json_object_set_address(obj, "next",     seq->next);
-    R_json_object_set_address(obj, "first",    seq->first);
-    R_json_object_set_address(obj, "current",  seq->current);
-    R_JSON_OBJECT_SET_FN(     obj, "on_done",  seq->on_done);
-    R_JSON_OBJECT_SET_FN(     obj, "on_free",  seq->on_free);
     R_json_object_set_hexdump(obj, "user",     &seq->user, sizeof(seq->user));
-    json_object_set_value(    obj, "steps",    steps_to_json(seq));
 
+    int step_index = find_current_step_index(seq->current, seq->first);
+    if (step_index < 0) {
+        json_object_set_null(obj, "current_step_index");
+    }
+    else {
+        json_object_set_number(obj, "current_step_index", step_index);
+    }
+
+    json_object_set_value(obj, "steps", steps_to_json(seq));
     return val;
 }
 
@@ -425,16 +423,6 @@ JSON_Value *R_animator_to_json(R_Animator *an)
     if (!an) {
         return json_value_init_null();
     }
-
     R_MAGIC_CHECK(an);
-    JSON_Value  *val = json_value_init_object();
-    JSON_Object *obj = json_value_get_object(val);
-
-    json_object_set_string(   obj, "type",      "R_Animator");
-    R_json_object_set_address(obj, "address",   an);
-    R_json_object_set_address(obj, "first",     an->first);
-    R_json_object_set_address(obj, "last",      an->last);
-    json_object_set_value(    obj, "sequences", sequences_to_json(an));
-
-    return val;
+    return sequences_to_json(an);
 }

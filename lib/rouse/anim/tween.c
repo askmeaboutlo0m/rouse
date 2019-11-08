@@ -216,10 +216,6 @@ static void tween_to_json(JSON_Object *obj, void *state, R_UserData *seq_user)
     json_object_set_number(obj, "left",  tween->left);
     ease_to_json(obj, "ease", tween->ease);
 
-    R_JSON_OBJECT_SET_FN(obj, "on_calc", tween->on_calc);
-    R_JSON_OBJECT_SET_FN(obj, "on_free", tween->on_free);
-    R_JSON_OBJECT_SET_FN(obj, "to_json", tween->to_json);
-
     if (tween->to_json) {
         tween->to_json(obj, tween->user, seq_user);
     }

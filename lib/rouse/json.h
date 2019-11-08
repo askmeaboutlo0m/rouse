@@ -22,22 +22,11 @@
  * SOFTWARE.
  */
 
-#define R_JSON_OBJECT_SET_FN(OBJ, NAME, FN) do { \
-        if (FN) { \
-            json_object_set_string(OBJ, NAME, "(function pointer)"); \
-        } else { \
-            json_object_set_null(OBJ, NAME); \
-        } \
-    } while (0)
-
 JSON_Status R_json_object_set_hexdump(JSON_Object *obj, const char *name,
                                       void *ptr, size_t size);
 
 JSON_Status R_json_object_set_format(JSON_Object *obj, const char *name,
                                      const char *fmt, ...);
-
-JSON_Status R_json_object_set_address(JSON_Object *obj, const char *name,
-                                      void *ptr);
 
 /*
  * Serializes the given JSON value, either `pretty` or not. The value will be

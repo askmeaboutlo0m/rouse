@@ -81,9 +81,6 @@ static void delay_to_json(JSON_Object *obj, void *state, R_UserData *seq_user)
     json_object_set_string(obj, "type", "R_Delay");
     json_object_set_number(obj, "lap",  R_int2double(delay->lap));
     json_object_set_number(obj, "left", delay->left);
-    R_JSON_OBJECT_SET_FN(obj, "on_calc", delay->on_calc);
-    R_JSON_OBJECT_SET_FN(obj, "on_free", delay->on_free);
-    R_JSON_OBJECT_SET_FN(obj, "to_json", delay->to_json);
 
     if (delay->to_json) {
         delay->to_json(obj, delay->user, seq_user);

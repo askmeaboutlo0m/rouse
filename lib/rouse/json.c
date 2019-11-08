@@ -61,13 +61,6 @@ JSON_Status R_json_object_set_format(JSON_Object *obj, const char *name,
     return set_json_string_and_free(obj, name, buf);
 }
 
-JSON_Status R_json_object_set_address(JSON_Object *obj, const char *name,
-                                      void *ptr)
-{
-    return ptr ? R_json_object_set_format(obj, name, "%p", ptr)
-               : json_object_set_null(obj, name);
-}
-
 
 char *R_json_to_string(JSON_Value *value_will_be_freed, bool pretty)
 {

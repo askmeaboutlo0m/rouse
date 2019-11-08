@@ -44,8 +44,117 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+#include <stdlib.h>
+#include <stdarg.h>
+#include <stdint.h>
+#include <stddef.h>
+#include <stdbool.h>
+#include <stdnoreturn.h>
+#include <string.h>
+#include <assert.h>
 #include <cglm/struct.h>
+#include "../common.h"
 #include "../geom.h"
+#include "ease.h"
+
+
+typedef struct R_EaseName R_EaseName;
+
+struct R_EaseName {
+    R_EaseFn   ease;
+    R_EaseName *next;
+    char       name[];
+};
+
+/*
+ * Can't use a hash table for function pointers in ISO C, so a linked list it
+ * is. Shouldn't be much of an issue, stringifying easings is a debug feature
+ * that doesn't need to be fast or anything.
+ */
+static R_EaseName *ease_names;
+
+const char *R_ease_name(R_EaseFn ease)
+{
+    for (R_EaseName *en = ease_names; en; en = en->next) {
+        if (en->ease == ease) {
+            return en->name;
+        }
+    }
+    return NULL;
+}
+
+static R_EaseName *ease_name_new(R_EaseFn ease, const char *name,
+                                 R_EaseName *next)
+{
+    size_t     size = strlen(name) + 1;
+    R_EaseName *en  = R_malloc(sizeof(*en) + size);
+    en->ease = ease;
+    en->next = next;
+    strncpy(en->name, name, size);
+    return en;
+}
+
+static bool remove_name(R_EaseFn ease)
+{
+    R_EaseName **pp = &ease_names;
+    for (R_EaseName *en = ease_names; en; pp = &en->next, en = en->next) {
+        if (en->ease == ease) {
+            *pp = en->next;
+            free(en);
+            return true;
+        }
+    }
+    return false;
+}
+
+void R_ease_name_add(R_EaseFn ease, const char *name)
+{
+    assert(ease && "ease function can't be NULL");
+    assert(name && "ease name can't be NULL");
+    if (ease && name) {
+        remove_name(ease);
+        ease_names = ease_name_new(ease, name, ease_names);
+    }
+}
+
+bool R_ease_name_remove(R_EaseFn ease)
+{
+    return ease ? remove_name(ease) : false;
+}
+
+
+/* Called by `init` in main.c, intentionally not publicly in the header. */
+void R_ease_init(void)
+{
+    R_EASE_NAME_ADD_FN(R_ease_linear);
+    R_EASE_NAME_ADD_FN(R_ease_bounce_in);
+    R_EASE_NAME_ADD_FN(R_ease_bounce_out);
+    R_EASE_NAME_ADD_FN(R_ease_bounce_in_out);
+    R_EASE_NAME_ADD_FN(R_ease_cubic_in);
+    R_EASE_NAME_ADD_FN(R_ease_cubic_out);
+    R_EASE_NAME_ADD_FN(R_ease_cubic_in_out);
+    R_EASE_NAME_ADD_FN(R_ease_elastic_in);
+    R_EASE_NAME_ADD_FN(R_ease_elastic_out);
+    R_EASE_NAME_ADD_FN(R_ease_elastic_in_out);
+    R_EASE_NAME_ADD_FN(R_ease_back_in);
+    R_EASE_NAME_ADD_FN(R_ease_back_out);
+    R_EASE_NAME_ADD_FN(R_ease_back_in_out);
+    R_EASE_NAME_ADD_FN(R_ease_quint_in);
+    R_EASE_NAME_ADD_FN(R_ease_quint_out);
+    R_EASE_NAME_ADD_FN(R_ease_quint_in_out);
+    R_EASE_NAME_ADD_FN(R_ease_quad_in);
+    R_EASE_NAME_ADD_FN(R_ease_quad_out);
+    R_EASE_NAME_ADD_FN(R_ease_quad_in_out);
+    R_EASE_NAME_ADD_FN(R_ease_quart_in);
+    R_EASE_NAME_ADD_FN(R_ease_quart_out);
+    R_EASE_NAME_ADD_FN(R_ease_quart_in_out);
+    R_EASE_NAME_ADD_FN(R_ease_sine_in);
+    R_EASE_NAME_ADD_FN(R_ease_sine_out);
+    R_EASE_NAME_ADD_FN(R_ease_sine_in_out);
+    R_EASE_NAME_ADD_FN(R_ease_expo_in);
+    R_EASE_NAME_ADD_FN(R_ease_expo_out);
+    R_EASE_NAME_ADD_FN(R_ease_expo_in_out);
+}
 
 
 float R_ease_linear(float k)

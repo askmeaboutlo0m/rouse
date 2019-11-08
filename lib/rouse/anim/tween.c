@@ -194,19 +194,31 @@ static JSON_Value *tween_elements_to_json(R_TweenElement *elements,
     return val;
 }
 
+static void ease_to_json(JSON_Object *obj, const char *key, R_EaseFn ease)
+{
+    if (ease) {
+        const char *name = R_ease_name(ease);
+        json_object_set_string(obj, key, name ? name : "(unknown)");
+    }
+    else {
+        json_object_set_null(obj, key);
+    }
+}
+
 static void tween_to_json(JSON_Object *obj, void *state, R_UserData *seq_user)
 {
     R_Tween *tween = state;
     R_MAGIC_CHECK(tween);
 
-    json_object_set_string(obj, "type",     "R_Tween");
-    json_object_set_number(obj, "lap",      R_int2double(tween->lap));
-    json_object_set_number(obj, "start",    tween->start);
-    json_object_set_number(obj, "left",     tween->left);
-    R_JSON_OBJECT_SET_FN(  obj, "ease",     tween->ease);
-    R_JSON_OBJECT_SET_FN(  obj, "on_calc",  tween->on_calc);
-    R_JSON_OBJECT_SET_FN(  obj, "on_free",  tween->on_free);
-    R_JSON_OBJECT_SET_FN(  obj, "to_json",  tween->to_json);
+    json_object_set_string(obj, "type",  "R_Tween");
+    json_object_set_number(obj, "lap",   R_int2double(tween->lap));
+    json_object_set_number(obj, "start", tween->start);
+    json_object_set_number(obj, "left",  tween->left);
+    ease_to_json(obj, "ease", tween->ease);
+
+    R_JSON_OBJECT_SET_FN(obj, "on_calc", tween->on_calc);
+    R_JSON_OBJECT_SET_FN(obj, "on_free", tween->on_free);
+    R_JSON_OBJECT_SET_FN(obj, "to_json", tween->to_json);
 
     if (tween->to_json) {
         tween->to_json(obj, tween->user, seq_user);

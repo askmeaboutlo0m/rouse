@@ -49,6 +49,39 @@
 
 typedef float (*R_EaseFn)(float);
 
+
+/*
+ * Retrieve the name of an easing function, if it's known. This is called when
+ * turning `R_Tween`s into JSON. If you're using your own easings and you want
+ * them to stringify nicely, use `R_ease_name_add` (or `R_EASE_NAME_ADD_FN`) to
+ * register names for them.
+ *
+ * If you pass in `NULL` or the given function has no name associated with it,
+ * you get `NULL` back. The returned string belongs to an internal structure,
+ * don't attempt to free it. Calling `R_ease_name_remove` will invalidate it.
+ */
+const char *R_ease_name(R_EaseFn ease);
+
+/*
+ * Register a `name` for the given `ease` function. If a name for that function
+ * already exists it will be replaced and the existing entry `free`d, so don't
+ * hold onto those strings too tightly. The `name` will be copied. If you pass
+ * a `NULL` `ease` function and/or `name` then an assertion will fire. If you
+ * don't have assertions enabled, nothing will happen.
+ */
+void R_ease_name_add(R_EaseFn ease, const char *name);
+
+/* Register an easing function by its symbol as its name. */
+#define R_EASE_NAME_ADD_FN(FN) R_ease_name_add(FN, #FN)
+
+/*
+ * Unregisters the name for the given `ease` function, if it exists. Returns
+ * if anything was removed at all. If `ease` is `NULL`, then nothing happens
+ * and `false` is returned.
+ */
+bool R_ease_name_remove(R_EaseFn ease);
+
+
 float R_ease_linear(float k);
 
 float R_ease_bounce_in(float k);

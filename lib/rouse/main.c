@@ -79,6 +79,9 @@ void R_framerate_set(float ticks_per_second)
 
 static bool initialized = false;
 
+/* Reference to `ease.c`, not in the header because it's only needed here. */
+void R_ease_init(void);
+
 static void init(const char *title, int width, int height)
 {
     if (initialized) {
@@ -88,6 +91,7 @@ static void init(const char *title, int width, int height)
     initialized = true;
     R_seed = (unsigned int) time(NULL);
     json_set_allocation_functions(R_malloc, free);
+    R_ease_init();
 
 #ifdef ROUSE_MAGIC
     for (unsigned int i = 0; i < R_LENGTH(R_magic_numbers); ++i) {

@@ -24,11 +24,15 @@
 
 typedef void (*R_CallStepFn)(R_StepTickArgs, R_UserData);
 typedef void (*R_CallFreeFn)(R_UserData user, R_UserData *seq_user);
+typedef void (*R_CallJsonFn)(JSON_Object *obj, R_UserData user,
+                             R_UserData *seq_user);
 
 /*
  * Call the given `on_step` function when this step is hit. The optional
  * `on_free` function can be used to free the given `user` data. The second
  * parameter to this function is the parent sequence's user data (if any).
+ * The optional `to_json` function lets you stringify your call in a nice way
+ * when the call is dumped to JSON.
  */
 R_Step *R_call_new(R_CallStepFn on_step, R_CallFreeFn on_free,
-                   R_UserData user);
+                   R_CallJsonFn to_json, R_UserData user);

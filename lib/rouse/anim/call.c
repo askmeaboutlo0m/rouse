@@ -36,6 +36,7 @@ typedef struct R_Call {
     R_MAGIC_FIELD
     R_CallStepFn on_step;
     R_CallFreeFn on_free;
+    R_CallJsonFn to_json;
     R_UserData   user;
 } R_Call;
 
@@ -64,18 +65,21 @@ static void call_to_json(JSON_Object *obj, void *state,
 {
     R_Call *call = state;
     R_MAGIC_CHECK(call);
-    json_object_set_string(   obj, "type",    "R_Call");
-    R_JSON_OBJECT_SET_FN(     obj, "on_step", call->on_step);
-    R_JSON_OBJECT_SET_FN(     obj, "on_free", call->on_free);
-    R_json_object_set_hexdump(obj, "user",    &call->user, sizeof(call->user));
+    json_object_set_string(obj, "type", "R_Call");
+    if (call->to_json) {
+        call->to_json(obj, call->user, seq_user);
+    }
+    else {
+        R_json_object_set_hexdump(obj, "user", &call->user, sizeof(call->user));
+    }
 }
 
 R_Step *R_call_new(R_CallStepFn on_step, R_CallFreeFn on_free,
-                   R_UserData user)
+                   R_CallJsonFn to_json, R_UserData user)
 {
     assert(on_step && "on_step must not be NULL");
     R_Call *call = R_NEW_INIT_STRUCT(call, R_Call,
-            R_MAGIC_INIT(call) on_step, on_free, user);
+            R_MAGIC_INIT(call) on_step, on_free, to_json, user);
     R_MAGIC_CHECK(call);
     return R_step_new(call, tick_call, free_call, call_to_json);
 }

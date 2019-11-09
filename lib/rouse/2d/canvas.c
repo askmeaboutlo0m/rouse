@@ -43,6 +43,7 @@ struct R_Canvas {
     R_MAGIC_FIELD
     R_FrameBuffer *fb;
     R_Sprite      *sprite;
+    NVGcolor      clear;
 };
 
 
@@ -59,11 +60,11 @@ static R_FrameBuffer *make_fb(int width, int height)
 R_Canvas *R_canvas_new(int width, int height)
 {
     R_Canvas *canvas = R_NEW_INIT_STRUCT(canvas, R_Canvas,
-            R_MAGIC_INIT(canvas) make_fb(width, height), R_sprite_new_root());
+            R_MAGIC_INIT(canvas) make_fb(width, height), R_sprite_new_root(),
+            nvgRGBAf(0.0f, 0.0f, 0.0f, 0.0f));
     R_MAGIC_CHECK(canvas);
     return canvas;
 }
-
 
 void R_canvas_free(R_Canvas *canvas)
 {
@@ -74,6 +75,19 @@ void R_canvas_free(R_Canvas *canvas)
         R_MAGIC_POISON(canvas);
         free(canvas);
     }
+}
+
+
+void R_canvas_clear_color_set(R_Canvas *canvas, NVGcolor clear)
+{
+    R_MAGIC_CHECK(canvas);
+    canvas->clear = clear;
+}
+
+NVGcolor R_canvas_clear_color(R_Canvas *canvas)
+{
+    R_MAGIC_CHECK(canvas);
+    return canvas->clear;
 }
 
 
@@ -91,7 +105,8 @@ R_FrameBuffer *R_canvas_render(R_Canvas *canvas, NVGcontext *vg)
     R_FrameBuffer *fb = canvas->fb;
 
     R_frame_buffer_bind(fb);
-    R_gl_clear(0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0);
+    NVGcolor *clear = &canvas->clear;
+    R_gl_clear(clear->r, clear->g, clear->b, clear->a, 1.0f, 0);
 
     nvgBeginFrame(vg, R_int2float(fb->width), R_int2float(fb->height), 1.0f);
     R_sprite_draw(canvas->sprite, vg,

@@ -393,18 +393,11 @@ static void run_begin(R_VectorCommandBegin *command, NVGcontext *vg)
     nvgBeginPath(vg);
 }
 
-static void apply_transform(NVGcontext *vg, const float m[static 6])
-{
-    nvgTransform(vg, m[0], m[1], m[2], m[3], m[4], m[5]);
-}
-
 static void run_transform(R_VectorCommandTransform *command, NVGcontext *vg,
                           const float parent_matrix[static 6])
 {
     R_MAGIC_CHECK(command);
-    nvgResetTransform(vg);
-    apply_transform(vg, parent_matrix);
-    apply_transform(vg, command->matrix);
+    R_nvg_transform_set_2(vg, parent_matrix, command->matrix);
 }
 
 static void run_color(R_VectorCommandColor *command, NVGcontext *vg)

@@ -36,3 +36,22 @@
 #else
 #   include "nanovg/nanovg_gl.h"
 #endif
+
+static inline void R_nvg_transform(NVGcontext *vg, const float m[static 6])
+{
+    nvgTransform(vg, m[0], m[1], m[2], m[3], m[4], m[5]);
+}
+
+static inline void R_nvg_transform_set(NVGcontext *vg, const float m[static 6])
+{
+    nvgResetTransform(vg);
+    R_nvg_transform(vg, m);
+}
+
+static inline void R_nvg_transform_set_2(NVGcontext *vg, const float m[static 6],
+                                         const float n[static 6])
+{
+    nvgResetTransform(vg);
+    R_nvg_transform(vg, m);
+    R_nvg_transform(vg, n);
+}

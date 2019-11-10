@@ -94,12 +94,16 @@ const char *R_sprite_name(R_Sprite *sprite);
  */
 void R_sprite_draw_fn(R_Sprite *sprite, R_DrawFn draw, R_UserData user);
 
+void R_sprite_draw_null(R_Sprite *sprite);
+
 /*
  * Make the `sprite` draw the given vector image when rendering it. Calls
  * `R_sprite_draw_fn`, so if you set anything with that it will be clobbered.
  * If `vi` is null, nothing will be rendered for the sprite itself.
  */
 void R_sprite_draw_vector_image(R_Sprite *sprite, R_VectorImage *vi);
+
+void R_sprite_draw_text_field(R_Sprite *sprite, R_TextField *field);
 
 
 void R_sprite_transforms_resize(R_Sprite *sprite, int transform_count);

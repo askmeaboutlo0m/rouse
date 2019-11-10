@@ -31,10 +31,12 @@
 #include <GL/glew.h>
 #include "../3rdparty/nanovg_inc.h"
 #include "../common.h"
+#include "../string.h"
 #include "../geom.h"
 #include "../parse.h"
 #include "../render/gl.h"
 #include "../render/frame_buffer.h"
+#include "text.h"
 #include "vector.h"
 #include "sprite.h"
 #include "canvas.h"

@@ -30,8 +30,10 @@
 #include <cglm/struct.h>
 #include "../3rdparty/nanovg_inc.h"
 #include "../common.h"
+#include "../string.h"
 #include "../geom.h"
 #include "../parse.h"
+#include "text.h"
 #include "vector.h"
 #include "sprite.h"
 
@@ -158,6 +160,12 @@ void R_sprite_draw_fn(R_Sprite *sprite, R_DrawFn draw, R_UserData user)
     sprite->user = user;
 }
 
+void R_sprite_draw_null(R_Sprite *sprite)
+{
+    R_sprite_draw_fn(sprite, NULL, R_user_null());
+}
+
+
 static void draw_vector_image(NVGcontext *vg, const float m[static 6],
                               R_UserData user)
 {
@@ -167,6 +175,18 @@ static void draw_vector_image(NVGcontext *vg, const float m[static 6],
 void R_sprite_draw_vector_image(R_Sprite *sprite, R_VectorImage *vi)
 {
     R_sprite_draw_fn(sprite, vi ? draw_vector_image : NULL, R_user_data(vi));
+}
+
+
+static void draw_text_field(NVGcontext *vg, const float m[static 6],
+                            R_UserData user)
+{
+    R_text_field_draw(user.data, vg, m);
+}
+
+void R_sprite_draw_text_field(R_Sprite *sprite, R_TextField *field)
+{
+    R_sprite_draw_fn(sprite, field ? draw_text_field : NULL, R_user_data(field));
 }
 
 

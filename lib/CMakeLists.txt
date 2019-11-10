@@ -37,6 +37,7 @@ target_sources(rouse PRIVATE
     rouse/2d/canvas.c
     rouse/2d/sprite.c
     rouse/2d/sprite_anim.c
+    rouse/2d/text.c
     rouse/2d/vector.c
     rouse/anim/call.c
     rouse/anim/delay.c
@@ -57,6 +58,7 @@ target_sources(rouse PRIVATE
     rouse/render/gl.c
     rouse/render/viewport.c
     rouse/resource.c
+    rouse/string.c
     rouse/stringify.c)
 
 # headers
@@ -65,6 +67,7 @@ target_sources(rouse PRIVATE
     rouse/2d/canvas.h
     rouse/2d/sprite.h
     rouse/2d/sprite_anim.h
+    rouse/2d/text.h
     rouse/2d/vector.h
     rouse/3rdparty/nanovg_inc.h
     rouse/3rdparty/parson.h
@@ -90,6 +93,7 @@ target_sources(rouse PRIVATE
     rouse/render/viewport.h
     rouse/resource.h
     rouse/sanity.h
+    rouse/string.h
     rouse/stringify.h
     "${rouse_geom_h}")
 

@@ -46,6 +46,7 @@ extern "C" {
 #include "rouse/3rdparty/parson.h"
 
 #include "rouse/common.h"
+#include "rouse/string.h"
 #include "rouse/stringify.h"
 #include "rouse/geom.h"
 #include "rouse/json.h"
@@ -68,6 +69,7 @@ extern "C" {
 #include "rouse/anim/call.h"
 #include "rouse/anim/delay.h"
 #include "rouse/anim/tween.h"
+#include "rouse/2d/text.h"
 #include "rouse/2d/vector.h"
 #include "rouse/2d/sprite.h"
 #include "rouse/2d/canvas.h"

@@ -1,5 +1,5 @@
 /*
- * text.h - text field for 2D text rendering in sprites
+ * nvg.h - reference-counted NanoVG wrapper and utility functions
  *
  * Copyright (c) 2019 askmeaboutloom
  *
@@ -22,27 +22,32 @@
  * SOFTWARE.
  */
 
-typedef struct R_TextField {
-    R_MAGIC_FIELD
-    int       refs;
-    R_String  *string;
-    NVGcolor  color;
-    int       font;
-    float     size;
-    float     blur;
-    float     spacing;
-    float     line_height;
-    int       align;
-    R_V2      pos;
-    float     width;
-} R_TextField;
+typedef struct R_Nvg R_Nvg;
 
-R_TextField *R_text_field_new(R_Nvg *nvg, R_String *string, NVGcolor color,
-                              const char *font_name, float size);
+R_Nvg *R_nvg_new(int flags);
 
-R_TextField *R_text_field_incref(R_TextField *field);
-R_TextField *R_text_field_decref(R_TextField *field);
-int R_text_field_refs(R_TextField *field);
+R_Nvg *R_nvg_incref(R_Nvg *nvg);
+R_Nvg *R_nvg_decref(R_Nvg *nvg);
+int R_nvg_refs(R_Nvg *nvg);
 
-void R_text_field_draw(R_TextField *field, NVGcontext *ctx,
-                       const float matrix[static 6]);
+NVGcontext *R_nvg_context(R_Nvg *nvg);
+
+
+static inline void R_nvg_transform(NVGcontext *vg, const float m[static 6])
+{
+    nvgTransform(vg, m[0], m[1], m[2], m[3], m[4], m[5]);
+}
+
+static inline void R_nvg_transform_set(NVGcontext *vg, const float m[static 6])
+{
+    nvgResetTransform(vg);
+    R_nvg_transform(vg, m);
+}
+
+static inline void R_nvg_transform_set_2(NVGcontext *vg, const float m[static 6],
+                                         const float n[static 6])
+{
+    nvgResetTransform(vg);
+    R_nvg_transform(vg, m);
+    R_nvg_transform(vg, n);
+}

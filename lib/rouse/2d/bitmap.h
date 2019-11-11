@@ -24,17 +24,19 @@
 
 typedef struct R_BitmapImage R_BitmapImage;
 
-R_BitmapImage *R_bitmap_image_new(NVGcontext *vg, const char *name, int width,
+R_BitmapImage *R_bitmap_image_new(R_Nvg *nvg, const char *name, int width,
                                   int height, const unsigned char *pixels,
                                   int flags);
 
-R_BitmapImage *R_bitmap_image_from_file(NVGcontext *vg, const char *path,
+R_BitmapImage *R_bitmap_image_from_file(R_Nvg *nvg, const char *path,
                                         int flags);
 
-void R_bitmap_image_free(R_BitmapImage *bi);
+R_BitmapImage *R_bitmap_image_incref(R_BitmapImage *bi);
+R_BitmapImage *R_bitmap_image_decref(R_BitmapImage *bi);
+int R_bitmap_image_refs(R_BitmapImage *bi);
 
 int R_bitmap_image_width (R_BitmapImage *bi);
 int R_bitmap_image_height(R_BitmapImage *bi);
 
-void R_bitmap_image_draw(R_BitmapImage *bi, NVGcontext *vg,
+void R_bitmap_image_draw(R_BitmapImage *bi, NVGcontext *ctx,
                          const float matrix[static 6]);

@@ -1,5 +1,5 @@
 /*
- * text.h - text field for 2D text rendering in sprites
+ * refcount.h - macro to define reference counting functions
  *
  * Copyright (c) 2019 askmeaboutloom
  *
@@ -22,27 +22,28 @@
  * SOFTWARE.
  */
 
-typedef struct R_TextField {
-    R_MAGIC_FIELD
-    int       refs;
-    R_String  *string;
-    NVGcolor  color;
-    int       font;
-    float     size;
-    float     blur;
-    float     spacing;
-    float     line_height;
-    int       align;
-    R_V2      pos;
-    float     width;
-} R_TextField;
-
-R_TextField *R_text_field_new(R_Nvg *nvg, R_String *string, NVGcolor color,
-                              const char *font_name, float size);
-
-R_TextField *R_text_field_incref(R_TextField *field);
-R_TextField *R_text_field_decref(R_TextField *field);
-int R_text_field_refs(R_TextField *field);
-
-void R_text_field_draw(R_TextField *field, NVGcontext *ctx,
-                       const float matrix[static 6]);
+#define R_DEFINE_REFCOUNT_FUNCS(TYPE, NAME, FIELD) \
+    TYPE *R_ ## NAME ## _incref(TYPE *t) \
+    { \
+        check_ ## NAME(t); \
+        ++(t->FIELD); \
+        return t; \
+    } \
+    \
+    TYPE *R_ ## NAME ## _decref(TYPE *t) \
+    { \
+        if (t) { \
+            check_ ## NAME(t); \
+            if (--(t->FIELD) == 0) { \
+                free_ ## NAME(t); \
+                return NULL; \
+            } \
+        } \
+        return t; \
+    } \
+    \
+    int R_ ## NAME ## _refs(TYPE *t) \
+    { \
+        check_ ## NAME(t); \
+        return t->FIELD; \
+    }

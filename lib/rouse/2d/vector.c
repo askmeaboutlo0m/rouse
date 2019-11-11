@@ -28,10 +28,13 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <assert.h>
 #include <cglm/struct.h>
 #include "../3rdparty/nanovg_inc.h"
 #include "../common.h"
 #include "../parse.h"
+#include "nvg.h"
+#include "refcount.h"
 #include "vector.h"
 
 /*
@@ -119,6 +122,7 @@ typedef union R_VectorCommand {
 
 struct R_VectorImage {
     R_MAGIC_FIELD
+    int             refs;
     int             width;
     int             height;
     int             count;
@@ -263,6 +267,7 @@ static R_VectorImage *make_vector_image(int width, int height, int count)
     R_VectorImage *vi = R_malloc(
             sizeof(*vi) + R_int2size(count) * sizeof(vi->commands[0]));
     R_MAGIC_SET(vi);
+    vi->refs   = 1;
     vi->width  = width;
     vi->height = height;
     vi->count  = count;
@@ -283,6 +288,13 @@ static R_VectorImage *parse_vector_image(R_Parse *parse)
         parse_command(parse, &vi->commands[i]);
     }
     return vi;
+}
+
+
+static inline void check_vector_image(R_VectorImage *vi)
+{
+    R_MAGIC_CHECK(vi);
+    assert(vi->refs > 0 && "vector image refcount must always be positive");
 }
 
 
@@ -322,7 +334,7 @@ static void check_command_magic(R_VectorCommand *c)
 
 static void check_magics(R_VectorImage *vi)
 {
-    R_MAGIC_CHECK(vi);
+    check_vector_image(vi);
     for (int i = 0; i < vi->count; ++i) {
         check_command_magic(&vi->commands[i]);
     }
@@ -339,6 +351,7 @@ R_VectorImage *R_vector_image_new(const char *title, R_ParseReadFn read,
     R_PARSE_DEBUG(&parse, "parsing vector image with bufsize %d", bufsize);
 
     R_VectorImage *vi = parse_vector_image(&parse);
+    check_vector_image(vi);
 
     R_parse_die_unless_eof(&parse);
 #ifdef ROUSE_MAGIC
@@ -365,119 +378,119 @@ R_VectorImage *R_vector_image_from_file(const char *path)
     return vi;
 }
 
-void R_vector_image_free(R_VectorImage *vi)
+static void free_vector_image(R_VectorImage *vi)
 {
-    if (vi) {
-        R_MAGIC_POISON(vi);
-        free(vi);
-    }
+    R_MAGIC_POISON(vi);
+    free(vi);
 }
+
+R_DEFINE_REFCOUNT_FUNCS(R_VectorImage, vector_image, refs)
 
 
 int R_vector_image_width(R_VectorImage *vi)
 {
-    R_MAGIC_CHECK(vi);
+    check_vector_image(vi);
     return vi->width;
 }
 
 int R_vector_image_height(R_VectorImage *vi)
 {
-    R_MAGIC_CHECK(vi);
+    check_vector_image(vi);
     return vi->height;
 }
 
 
-static void run_begin(R_VectorCommandBegin *command, NVGcontext *vg)
+static void run_begin(R_VectorCommandBegin *command, NVGcontext *ctx)
 {
     R_MAGIC_CHECK(command);
-    nvgBeginPath(vg);
+    nvgBeginPath(ctx);
 }
 
-static void run_transform(R_VectorCommandTransform *command, NVGcontext *vg,
+static void run_transform(R_VectorCommandTransform *command, NVGcontext *ctx,
                           const float parent_matrix[static 6])
 {
     R_MAGIC_CHECK(command);
-    R_nvg_transform_set_2(vg, parent_matrix, command->matrix);
+    R_nvg_transform_set_2(ctx, parent_matrix, command->matrix);
 }
 
-static void run_color(R_VectorCommandColor *command, NVGcontext *vg)
+static void run_color(R_VectorCommandColor *command, NVGcontext *ctx)
 {
     R_MAGIC_CHECK(command);
-    nvgFillColor(vg, command->color);
+    nvgFillColor(ctx, command->color);
 }
 
-static void run_move(R_VectorCommandMove *command, NVGcontext *vg)
+static void run_move(R_VectorCommandMove *command, NVGcontext *ctx)
 {
     R_MAGIC_CHECK(command);
-    nvgMoveTo(vg, command->x, command->y);
+    nvgMoveTo(ctx, command->x, command->y);
 }
 
-static void run_line(R_VectorCommandLine *command, NVGcontext *vg)
+static void run_line(R_VectorCommandLine *command, NVGcontext *ctx)
 {
     R_MAGIC_CHECK(command);
-    nvgLineTo(vg, command->x, command->y);
+    nvgLineTo(ctx, command->x, command->y);
 }
 
-static void run_bezier(R_VectorCommandBezier *command, NVGcontext *vg)
+static void run_bezier(R_VectorCommandBezier *command, NVGcontext *ctx)
 {
     R_MAGIC_CHECK(command);
-    nvgBezierTo(vg, command->c1x, command->c1y,
-                    command->c2x, command->c2y,
-                    command->x,   command->y);
+    nvgBezierTo(ctx, command->c1x, command->c1y,
+                     command->c2x, command->c2y,
+                     command->x,   command->y);
 }
 
-static void run_winding(R_VectorCommandWinding *command, NVGcontext *vg)
+static void run_winding(R_VectorCommandWinding *command, NVGcontext *ctx)
 {
     R_MAGIC_CHECK(command);
-    nvgPathWinding(vg, command->winding);
+    nvgPathWinding(ctx, command->winding);
 }
 
-static void run_fill(R_VectorCommandFill *command, NVGcontext *vg)
+static void run_fill(R_VectorCommandFill *command, NVGcontext *ctx)
 {
     R_MAGIC_CHECK(command);
-    nvgFill(vg);
+    nvgFill(ctx);
 }
 
-static void run_vector_command(R_VectorCommand *command, NVGcontext *vg,
+static void run_vector_command(R_VectorCommand *command, NVGcontext *ctx,
                                const float parent_matrix[static 6])
 {
     R_VectorCommandType type = command->any.type;
     switch (type) {
         case R_VECTOR_COMMAND_BEGIN:
-            run_begin(&command->begin, vg);
+            run_begin(&command->begin, ctx);
             break;
         case R_VECTOR_COMMAND_TRANSFORM:
-            run_transform(&command->transform, vg, parent_matrix);
+            run_transform(&command->transform, ctx, parent_matrix);
             break;
         case R_VECTOR_COMMAND_COLOR:
-            run_color(&command->color, vg);
+            run_color(&command->color, ctx);
             break;
         case R_VECTOR_COMMAND_MOVE:
-            run_move(&command->move, vg);
+            run_move(&command->move, ctx);
             break;
         case R_VECTOR_COMMAND_LINE:
-            run_line(&command->line, vg);
+            run_line(&command->line, ctx);
             break;
         case R_VECTOR_COMMAND_BEZIER:
-            run_bezier(&command->bezier, vg);
+            run_bezier(&command->bezier, ctx);
             break;
         case R_VECTOR_COMMAND_WINDING:
-            run_winding(&command->winding, vg);
+            run_winding(&command->winding, ctx);
             break;
         case R_VECTOR_COMMAND_FILL:
-            run_fill(&command->fill, vg);
+            run_fill(&command->fill, ctx);
             break;
         default:
             R_die("Unknown vector command type %d", type);
     }
 }
 
-void R_vector_image_draw(R_VectorImage *vi, NVGcontext *vg,
+void R_vector_image_draw(R_VectorImage *vi, NVGcontext *ctx,
                          const float parent_matrix[static 6])
 {
-    R_MAGIC_CHECK(vi);
+    check_vector_image(vi);
     int count = vi->count;
     for (int i = 0; i < count; ++i) {
-        run_vector_command(&vi->commands[i], vg, parent_matrix);
+        run_vector_command(&vi->commands[i], ctx, parent_matrix);
     }
 }

@@ -31,7 +31,8 @@ typedef struct R_AffineTransform {
     float angle; /* in radians */
 } R_AffineTransform;
 
-typedef void (*R_DrawFn)(NVGcontext *, const float[static 6], R_UserData);
+typedef void (*R_SpriteDrawFn)(NVGcontext *, const float[static 6], R_UserData);
+typedef void (*R_SpriteFreeFn)(R_UserData);
 
 typedef struct R_Sprite R_Sprite;
 
@@ -86,13 +87,17 @@ const char *R_sprite_name(R_Sprite *sprite);
 
 
 /*
- * Make the `sprite` call the given `draw` function when it's being rendered.
+ * Make the `sprite` call the given `on_draw` function when it's being rendered.
  * The given `user` data will be passed to the function when that happens,
- * along with the nanovg context and the sprite's transformation matrix. If
- * `draw` is `NULL`, nothing will be rendered for the sprite itself, but its
- * children will be. Setting anything but `NULL` on a root sprite `R_die`s.
+ * along with the nanovg context and the sprite's transformation matrix. When
+ * the `sprite` is freed, the `on_free` function is called if given.
+ *
+ * If `on_draw` is `NULL`, nothing will be rendered for the sprite itself, but
+ * its children will be. If `on_free` is `NULL` then no attempt will be made to
+ * call it. Setting anything but `NULL` for both on a root sprite `R_die`s.
  */
-void R_sprite_draw_fn(R_Sprite *sprite, R_DrawFn draw, R_UserData user);
+void R_sprite_draw_fn(R_Sprite *sprite, R_SpriteDrawFn on_draw,
+                      R_SpriteFreeFn on_free, R_UserData user);
 
 void R_sprite_draw_null(R_Sprite *sprite);
 
@@ -151,5 +156,5 @@ int R_sprite_child_add_at(R_Sprite *sprite, R_Sprite *child, int index);
 void R_sprite_child_remove(R_Sprite *sprite, R_Sprite *child);
 
 
-void R_sprite_draw(R_Sprite *sprite, NVGcontext *vg,
+void R_sprite_draw(R_Sprite *sprite, NVGcontext *ctx,
                    const float parent_matrix[static 6]);

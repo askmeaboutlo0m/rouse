@@ -33,20 +33,23 @@
 #include "../string.h"
 #include "../geom.h"
 #include "../parse.h"
+#include "nvg.h"
 #include "bitmap.h"
 #include "text.h"
 #include "vector.h"
+#include "refcount.h"
 #include "sprite.h"
 
 struct R_Sprite {
     R_MAGIC_FIELD
+    int               refs;
     char              *name;
-    R_DrawFn          draw;
+    R_SpriteDrawFn    on_draw;
+    R_SpriteFreeFn    on_free;
     R_UserData        user;
     R_Sprite          *parent;
     R_Sprite          *children;
     R_Sprite          *next;
-    int               refs;
     int               transform_count;
     R_AffineTransform *transforms;
 };
@@ -82,8 +85,8 @@ static inline void check_parent_child(R_Sprite *parent, R_Sprite *child)
 R_Sprite *R_sprite_new(const char *name)
 {
     R_Sprite *sprite = R_NEW_INIT_STRUCT(sprite, R_Sprite,
-        R_MAGIC_INIT(sprite) R_strdup(name), NULL, R_user_null(),
-        NULL, NULL, NULL, 1, 0, NULL);
+            R_MAGIC_INIT(sprite) 1, R_strdup(name), NULL, NULL,
+            R_user_null(), NULL, NULL, NULL, 0, NULL);
     check_sprite(sprite);
     return sprite;
 }
@@ -106,42 +109,32 @@ bool R_sprite_is_root(R_Sprite *sprite)
 }
 
 
-static void free_sprite(R_Sprite *sprite)
+static void free_children(R_Sprite *children)
 {
-    for (R_Sprite *child = sprite->children, *next; child; child = next) {
+    for (R_Sprite *child = children, *next; child; child = next) {
         next = child->next;
         R_sprite_decref(child);
     }
+}
+
+static void free_content(R_SpriteFreeFn on_free, R_UserData user)
+{
+    if (on_free) {
+        on_free(user);
+    }
+}
+
+static void free_sprite(R_Sprite *sprite)
+{
+    free_children(sprite->children);
+    free_content(sprite->on_free, sprite->user);
     R_MAGIC_POISON(sprite);
     free(sprite->name);
     free(sprite->transforms);
     free(sprite);
 }
 
-R_Sprite *R_sprite_decref(R_Sprite *sprite)
-{
-    check_sprite(sprite);
-    if (--sprite->refs == 0) {
-        free_sprite(sprite);
-        return NULL;
-    }
-    else {
-        return sprite;
-    }
-}
-
-R_Sprite *R_sprite_incref(R_Sprite *sprite)
-{
-    check_sprite(sprite);
-    ++sprite->refs;
-    return sprite;
-}
-
-int R_sprite_refs(R_Sprite *sprite)
-{
-    check_sprite(sprite);
-    return sprite->refs;
-}
+R_DEFINE_REFCOUNT_FUNCS(R_Sprite, sprite, refs)
 
 
 const char *R_sprite_name(R_Sprite *sprite)
@@ -151,55 +144,83 @@ const char *R_sprite_name(R_Sprite *sprite)
 }
 
 
-void R_sprite_draw_fn(R_Sprite *sprite, R_DrawFn draw, R_UserData user)
+void R_sprite_draw_fn(R_Sprite *sprite, R_SpriteDrawFn on_draw,
+                      R_SpriteFreeFn on_free, R_UserData user)
 {
     R_MAGIC_CHECK(sprite);
-    if (draw && R_sprite_is_root(sprite)) {
+    if ((on_draw || on_free) && R_sprite_is_root(sprite)) {
         R_die("Can't assign a draw function to a root sprite");
     }
-    sprite->draw = draw;
-    sprite->user = user;
+    sprite->on_draw = on_draw;
+    sprite->on_free = on_free;
+    sprite->user    = user;
 }
 
 void R_sprite_draw_null(R_Sprite *sprite)
 {
-    R_sprite_draw_fn(sprite, NULL, R_user_null());
+    R_sprite_draw_fn(sprite, NULL, NULL, R_user_null());
 }
 
 
-static void draw_bitmap_image(NVGcontext *vg, const float m[static 6],
+#define MAYBE_SET_DRAW(SPRITE, NAME, DATA) do { \
+        if (DATA) { \
+            R_sprite_draw_fn(SPRITE, draw_ ## NAME, free_ ## NAME, \
+                             R_user_data(R_ ## NAME ## _incref(DATA))); \
+        } \
+        else { \
+            R_sprite_draw_null(SPRITE); \
+        } \
+    } while (0)
+
+
+static void draw_bitmap_image(NVGcontext *ctx, const float m[static 6],
                               R_UserData user)
 {
-    R_bitmap_image_draw(user.data, vg, m);
+    R_bitmap_image_draw(user.data, ctx, m);
+}
+
+static void free_bitmap_image(R_UserData user)
+{
+    R_bitmap_image_decref(user.data);
 }
 
 void R_sprite_draw_bitmap_image(R_Sprite *sprite, R_BitmapImage *bi)
 {
-    R_sprite_draw_fn(sprite, bi ? draw_bitmap_image : NULL, R_user_data(bi));
+    MAYBE_SET_DRAW(sprite, bitmap_image, bi);
 }
 
 
-static void draw_vector_image(NVGcontext *vg, const float m[static 6],
+static void draw_vector_image(NVGcontext *ctx, const float m[static 6],
                               R_UserData user)
 {
-    R_vector_image_draw(user.data, vg, m);
+    R_vector_image_draw(user.data, ctx, m);
+}
+
+static void free_vector_image(R_UserData user)
+{
+    R_vector_image_decref(user.data);
 }
 
 void R_sprite_draw_vector_image(R_Sprite *sprite, R_VectorImage *vi)
 {
-    R_sprite_draw_fn(sprite, vi ? draw_vector_image : NULL, R_user_data(vi));
+    MAYBE_SET_DRAW(sprite, vector_image, vi);
 }
 
 
-static void draw_text_field(NVGcontext *vg, const float m[static 6],
+static void draw_text_field(NVGcontext *ctx, const float m[static 6],
                             R_UserData user)
 {
-    R_text_field_draw(user.data, vg, m);
+    R_text_field_draw(user.data, ctx, m);
+}
+
+static void free_text_field(R_UserData user)
+{
+    R_text_field_decref(user.data);
 }
 
 void R_sprite_draw_text_field(R_Sprite *sprite, R_TextField *field)
 {
-    R_sprite_draw_fn(sprite, field ? draw_text_field : NULL, R_user_data(field));
+    MAYBE_SET_DRAW(sprite, text_field, field);
 }
 
 
@@ -338,29 +359,29 @@ static void calc_matrix(R_Sprite *sprite, float matrix[static 6],
     nvgTransformMultiply(matrix, parent_matrix);
 }
 
-static void draw_self(R_Sprite *sprite, NVGcontext *vg,
+static void draw_self(R_Sprite *sprite, NVGcontext *ctx,
                       const float m[static 6])
 {
-    R_DrawFn draw = sprite->draw;
-    if (draw) {
-        draw(vg, m, sprite->user);
+    R_SpriteDrawFn on_draw = sprite->on_draw;
+    if (on_draw) {
+        on_draw(ctx, m, sprite->user);
     }
 }
 
-static void draw_children(R_Sprite *sprite, NVGcontext *vg,
+static void draw_children(R_Sprite *sprite, NVGcontext *ctx,
                           const float matrix[static 6])
 {
     for (R_Sprite *child = sprite->children; child; child = child->next) {
-        R_sprite_draw(child, vg, matrix);
+        R_sprite_draw(child, ctx, matrix);
     }
 }
 
-void R_sprite_draw(R_Sprite *sprite, NVGcontext *vg,
+void R_sprite_draw(R_Sprite *sprite, NVGcontext *ctx,
                    const float parent_matrix[static 6])
 {
     R_MAGIC_CHECK(sprite);
     float matrix[6];
     calc_matrix(sprite, matrix, parent_matrix);
-    draw_self(sprite, vg, matrix);
-    draw_children(sprite, vg, matrix);
+    draw_self(sprite, ctx, matrix);
+    draw_children(sprite, ctx, matrix);
 }

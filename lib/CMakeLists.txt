@@ -38,6 +38,7 @@ add_library(rouse)
 target_sources(rouse PRIVATE
     rouse/2d/bitmap.c
     rouse/2d/canvas.c
+    rouse/2d/nvg.c
     rouse/2d/sprite.c
     rouse/2d/sprite_anim.c
     rouse/2d/text.c
@@ -69,6 +70,8 @@ target_sources(rouse PRIVATE
     rouse.h
     rouse/2d/bitmap.h
     rouse/2d/canvas.h
+    rouse/2d/nvg.h
+    rouse/2d/refcount.h
     rouse/2d/sprite.h
     rouse/2d/sprite_anim.h
     rouse/2d/text.h

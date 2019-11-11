@@ -1,6 +1,4 @@
 /*
- * rouse.h - another wrong animation library
- *
  * Copyright (c) 2019 askmeaboutloom
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,66 +19,65 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#ifndef ROUSE_H_INCLUDED
-#define ROUSE_H_INCLUDED
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <stdlib.h>
-#include <stddef.h>
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdnoreturn.h>
-#include <stdio.h>
-#include <errno.h>
-#include <string.h>
-
-#include <cglm/struct.h>
-#include <GL/glew.h>
+#include <assert.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
-#include "rouse/3rdparty/nanovg_inc.h"
-#include "rouse/3rdparty/parson.h"
+#include "../3rdparty/nanovg_inc.h"
+#include "../common.h"
+#include "refcount.h"
+#include "nvg.h"
 
-#include "rouse/common.h"
-#include "rouse/string.h"
-#include "rouse/stringify.h"
-#include "rouse/geom.h"
-#include "rouse/json.h"
+struct R_Nvg {
+    R_MAGIC_FIELD
+    int        refs;
+    NVGcontext *ctx;
+};
 
-#include <assert.h>
-#include "rouse/sanity.h"
-
-#include "rouse/camera.h"
-#include "rouse/parse.h"
-#include "rouse/model.h"
-#include "rouse/resource.h"
-#include "rouse/render/gl.h"
-#include "rouse/render/viewport.h"
-#include "rouse/render/binder.h"
-#include "rouse/render/frame_buffer.h"
-#include "rouse/render/frame_renderer.h"
-#include "rouse/anim/ease.h"
-#include "rouse/anim/util.h"
-#include "rouse/anim/seq.h"
-#include "rouse/anim/call.h"
-#include "rouse/anim/delay.h"
-#include "rouse/anim/tween.h"
-#include "rouse/2d/nvg.h"
-#include "rouse/2d/bitmap.h"
-#include "rouse/2d/text.h"
-#include "rouse/2d/vector.h"
-#include "rouse/2d/sprite.h"
-#include "rouse/2d/canvas.h"
-#include "rouse/2d/sprite_anim.h"
-#include "rouse/interact/input.h"
-#include "rouse/main.h"
-
-#ifdef __cplusplus
+static inline void check_nvg(R_Nvg *nvg)
+{
+    R_MAGIC_CHECK(nvg);
+    assert(nvg->refs > 0 && "nvg refcount must always be positive");
 }
-#endif
 
-#endif
+
+static NVGcontext *make_context(int flags)
+{
+    NVGcontext *ctx = nvgCreateGLES2(flags);
+    if (ctx) {
+        return ctx;
+    }
+    else {
+        R_die("Can't create NanoVG GL ES 2.0 context with flags %d", flags);
+    }
+}
+
+R_Nvg *R_nvg_new(int flags)
+{
+    R_Nvg *nvg = R_NEW_INIT_STRUCT(nvg, R_Nvg,
+            R_MAGIC_INIT(nvg) 1, make_context(flags));
+    check_nvg(nvg);
+    return nvg;
+}
+
+
+static void free_nvg(R_Nvg *nvg)
+{
+    nvgDeleteGLES2(nvg->ctx);
+    R_MAGIC_POISON_NN(nvg);
+    free(nvg);
+}
+
+R_DEFINE_REFCOUNT_FUNCS(R_Nvg, nvg, refs)
+
+
+NVGcontext *R_nvg_context(R_Nvg *nvg)
+{
+    check_nvg(nvg);
+    return nvg->ctx;
+}

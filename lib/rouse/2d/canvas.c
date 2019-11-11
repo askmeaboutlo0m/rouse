@@ -36,6 +36,7 @@
 #include "../parse.h"
 #include "../render/gl.h"
 #include "../render/frame_buffer.h"
+#include "nvg.h"
 #include "bitmap.h"
 #include "text.h"
 #include "vector.h"
@@ -101,20 +102,20 @@ R_Sprite *R_canvas_sprite(R_Canvas *canvas)
 }
 
 
-R_FrameBuffer *R_canvas_render(R_Canvas *canvas, NVGcontext *vg)
+R_FrameBuffer *R_canvas_render(R_Canvas *canvas, R_Nvg *nvg)
 {
     R_MAGIC_CHECK(canvas);
-    assert(vg && "NVGcontext can't be null");
-    R_FrameBuffer *fb = canvas->fb;
+    NVGcontext    *ctx = R_nvg_context(nvg);
+    R_FrameBuffer *fb  = canvas->fb;
 
     R_frame_buffer_bind(fb);
     NVGcolor *clear = &canvas->clear;
     R_gl_clear(clear->r, clear->g, clear->b, clear->a, 1.0f, 0);
 
-    nvgBeginFrame(vg, R_int2float(fb->width), R_int2float(fb->height), 1.0f);
-    R_sprite_draw(canvas->sprite, vg,
+    nvgBeginFrame(ctx, R_int2float(fb->width), R_int2float(fb->height), 1.0f);
+    R_sprite_draw(canvas->sprite, ctx,
                   (float[6]){1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f});
-    nvgEndFrame(vg);
+    nvgEndFrame(ctx);
 
     return fb;
 }

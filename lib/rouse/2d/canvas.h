@@ -9,4 +9,4 @@ NVGcolor R_canvas_clear_color(R_Canvas *canvas);
 
 R_Sprite *R_canvas_sprite(R_Canvas *canvas);
 
-R_FrameBuffer *R_canvas_render(R_Canvas *canvas, NVGcontext *vg);
+R_FrameBuffer *R_canvas_render(R_Canvas *canvas, R_Nvg *nvg);

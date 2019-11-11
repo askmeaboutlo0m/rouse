@@ -38,6 +38,7 @@
 #include "../anim/seq.h"
 #include "../anim/util.h"
 #include "../anim/tween.h"
+#include "nvg.h"
 #include "bitmap.h"
 #include "text.h"
 #include "vector.h"

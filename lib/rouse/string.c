@@ -87,8 +87,9 @@ void R_string_free(R_String *s)
 {
     if (s) {
         R_MAGIC_CHECK_NN(s);
-        R_MAGIC_POISON(s);
         free(s->d);
+        R_MAGIC_POISON_NN(s);
+        free(s);
     }
 }
 

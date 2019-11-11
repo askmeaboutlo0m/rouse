@@ -36,6 +36,7 @@
 #include "../parse.h"
 #include "../render/gl.h"
 #include "../render/frame_buffer.h"
+#include "bitmap.h"
 #include "text.h"
 #include "vector.h"
 #include "sprite.h"

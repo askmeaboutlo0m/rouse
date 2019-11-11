@@ -33,6 +33,7 @@
 #include "../string.h"
 #include "../geom.h"
 #include "../parse.h"
+#include "bitmap.h"
 #include "text.h"
 #include "vector.h"
 #include "sprite.h"
@@ -163,6 +164,18 @@ void R_sprite_draw_fn(R_Sprite *sprite, R_DrawFn draw, R_UserData user)
 void R_sprite_draw_null(R_Sprite *sprite)
 {
     R_sprite_draw_fn(sprite, NULL, R_user_null());
+}
+
+
+static void draw_bitmap_image(NVGcontext *vg, const float m[static 6],
+                              R_UserData user)
+{
+    R_bitmap_image_draw(user.data, vg, m);
+}
+
+void R_sprite_draw_bitmap_image(R_Sprite *sprite, R_BitmapImage *bi)
+{
+    R_sprite_draw_fn(sprite, bi ? draw_bitmap_image : NULL, R_user_data(bi));
 }
 
 

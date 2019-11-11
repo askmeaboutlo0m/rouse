@@ -34,6 +34,7 @@ add_library(rouse)
 
 # sources
 target_sources(rouse PRIVATE
+    rouse/2d/bitmap.c
     rouse/2d/canvas.c
     rouse/2d/sprite.c
     rouse/2d/sprite_anim.c
@@ -64,6 +65,7 @@ target_sources(rouse PRIVATE
 # headers
 target_sources(rouse PRIVATE
     rouse.h
+    rouse/2d/bitmap.h
     rouse/2d/canvas.h
     rouse/2d/sprite.h
     rouse/2d/sprite_anim.h

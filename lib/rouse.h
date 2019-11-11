@@ -69,6 +69,7 @@ extern "C" {
 #include "rouse/anim/call.h"
 #include "rouse/anim/delay.h"
 #include "rouse/anim/tween.h"
+#include "rouse/2d/bitmap.h"
 #include "rouse/2d/text.h"
 #include "rouse/2d/vector.h"
 #include "rouse/2d/sprite.h"

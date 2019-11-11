@@ -237,7 +237,7 @@ R_TextureOptions R_texture_options(void)
     };
 }
 
-static SDL_Surface *load_surface(const char *path, uint32_t pixel_format)
+SDL_Surface *R_surface_load(const char *path, uint32_t pixel_format)
 {
     SDL_Surface *original_surface = IMG_Load(path);
     if (!original_surface) {
@@ -272,7 +272,7 @@ unsigned int R_gl_texture_new(const char *path, R_TextureOptions *options)
             R_die("Unknown texture format: %u", options->format);
     }
 
-    SDL_Surface *surface = load_surface(path, pixel_format);
+    SDL_Surface *surface = R_surface_load(path, pixel_format);
 
     unsigned int texture;
     R_GL(glActiveTexture, GL_TEXTURE0 + R_int2uint(options->index));

@@ -147,6 +147,8 @@ typedef struct R_TextureOptions {
 /* Get the default set of texture options. */
 R_TextureOptions R_texture_options(void);
 
+struct SDL_Surface *R_surface_load(const char *path, uint32_t pixel_format);
+
 /*
  * Load a 2D texture from the given file `path` and return the handle to it.
  * Use `R_texture_options` to get a default set of texture options, manipulate

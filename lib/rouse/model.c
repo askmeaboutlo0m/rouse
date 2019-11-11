@@ -206,6 +206,7 @@ void R_model_free(R_Model *model)
         for (int i = 0; i < mcount; ++i) {
             mesh_free(&model->mesh.values[i]);
         }
+        free(model->mesh.values);
         R_MAGIC_POISON(model);
         free(model);
     }

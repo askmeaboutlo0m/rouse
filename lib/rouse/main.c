@@ -138,7 +138,7 @@ static void deinit(void)
     SDL_GL_DeleteContext(R_glcontext);
     SDL_DestroyWindow(R_window);
     IMG_Quit();
-#ifndef R_HAVE_ASAN
+#ifndef ROUSE_ASAN
     /* ASAN really hates this function and will report a bajillion leaks */
     /* when it's called. Just not calling is fine for it so... whatever. */
     SDL_Quit();

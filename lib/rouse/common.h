@@ -48,13 +48,6 @@
         __attribute__((__format__(printf, STRING_INDEX, FIRST_TO_CHECK)))
     /* Trap to terminate the program or trigger the debugger. */
 #   define R_TRAP() __builtin_trap()
-#   if defined(__SANITIZE_ADDRESS__)
-#       define R_HAVE_ASAN
-#   elif defined(__has_feature)
-#       if __has_feature(address_sanitizer)
-#           define R_HAVE_ASAN
-#       endif
-#   endif
 #else
 #   define R_NORETURN /* nothing */
 #   define R_UNUSED /* nothing */

@@ -10,6 +10,7 @@ enable_testing()
 
 include(cmake/build_options.cmake)
 include(cmake/warnings.cmake)
+include(cmake/asan.cmake)
 include(cmake/clang_tidy.cmake)
 include(cmake/dependencies.cmake)
 
@@ -18,6 +19,7 @@ add_subdirectory(lib)
 
 function(add_rouse_linked_executable target)
     add_executable("${target}" ${ARGN})
+    add_asan_if_available("${target}")
     add_clang_tidy_if_available("${target}")
     target_compile_features("${target}" PRIVATE c_std_11)
     target_compile_options("${target}" PRIVATE ${rouse_warnings})

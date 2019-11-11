@@ -3,10 +3,12 @@
 # I guess that's okay since it's only really used for debugging.
 # Maybe it should be excluded in release mode even?
 add_library(parson STATIC rouse/3rdparty/parson.c)
+add_asan_if_available(parson)
 target_compile_features(parson PRIVATE c_std_11)
 
 # Same for NanoVG, needs to be a separate target to avoid warnings.
 add_library(nanovg STATIC)
+add_asan_if_available(nanovg)
 target_compile_features(nanovg PRIVATE c_std_11)
 target_sources(nanovg PRIVATE
     rouse/3rdparty/nanovg_gles2.c
@@ -100,6 +102,8 @@ target_sources(rouse PRIVATE
     "${rouse_geom_h}")
 
 add_clang_tidy_if_available(rouse)
+add_asan_if_available(rouse)
+
 target_include_directories(rouse INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}")
 target_compile_features(rouse PRIVATE c_std_11)
 target_compile_options(rouse PRIVATE ${rouse_warnings})

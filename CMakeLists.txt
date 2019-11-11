@@ -34,3 +34,7 @@ endif()
 if(BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif()
+
+
+report_asan_targets()
+report_clang_tidy_targets()

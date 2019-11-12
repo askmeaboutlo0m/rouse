@@ -1,7 +1,8 @@
 set(cube_sources cube/cube.c common.c common.h)
 set(skel_sources skel/skel.c common.c common.h)
+set(ease_sources ease/ease.c)
 
-foreach(exe IN ITEMS cube skel)
+foreach(exe IN ITEMS cube skel ease)
     add_rouse_linked_executable(${exe} ${${exe}_sources})
 
     if(ROUSE_EMSCRIPTEN)

@@ -142,9 +142,11 @@ void R_string_vprintf(R_String *s, const char *fmt, va_list ap)
     va_end(aq);
 
     if (len > 0) {
-        size_t size = R_int2size(len) + 1;
-        R_string_reserve(s, size);
+        size_t slen = R_int2size(len);
+        R_string_reserve(s, slen + 1);
         vsnprintf(&s->d[s->i], s->n - s->i, fmt, ap);
+        size_t i = s->i += slen;
+        s->d[i]  = '\0';
     }
 }
 

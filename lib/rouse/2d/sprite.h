@@ -149,6 +149,15 @@ int R_sprite_child_add(R_Sprite *sprite, R_Sprite *child);
 int R_sprite_child_add_at(R_Sprite *sprite, R_Sprite *child, int index);
 
 /*
+ * These functions are the same as above, but they decrement the reference count
+ * after adding the sprite. This is particularly useful for adding the child for
+ * the first time, since you usually don't want to stay responsible for it and
+ * decrement the reference count right after anyway.
+ */
+int R_sprite_child_add_noinc   (R_Sprite *sprite, R_Sprite *child);
+int R_sprite_child_add_at_noinc(R_Sprite *sprite, R_Sprite *child, int index);
+
+/*
  * Removes the given `child` from the parent `sprite` and decrements its
  * refcount. Will `R_die` if the `sprite` doesn't actually have the `child`
  * in its list of children.

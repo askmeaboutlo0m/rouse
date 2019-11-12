@@ -311,6 +311,20 @@ int R_sprite_child_add_at(R_Sprite *sprite, R_Sprite *child, int index)
     return at;
 }
 
+int R_sprite_child_add_noinc(R_Sprite *sprite, R_Sprite *child)
+{
+    int at = R_sprite_child_add(sprite, child);
+    R_sprite_decref(child);
+    return at;
+}
+
+int R_sprite_child_add_at_noinc(R_Sprite *sprite, R_Sprite *child, int index)
+{
+    int at = R_sprite_child_add_at(sprite, child, index);
+    R_sprite_decref(child);
+    return at;
+}
+
 void R_sprite_child_remove(R_Sprite *sprite, R_Sprite *child)
 {
     check_parent_child(sprite, child);

@@ -127,16 +127,26 @@ void R_info_fn(const char *file, int line, const char *fmt, ...)
     DO_LOG(R_logger_info, R_LOGBIT_INFO, "INFO", file, line, fmt, fmt);
 }
 
-/*
- * The weird parentheses around the name prevent the preprocessor from
- * recognizing this as a macro expansion when debugging isn't enabled.
- */
 void R_debug_fn(const char *file R_UNUSED_UNLESS_DEBUG,
-                int line R_UNUSED_UNLESS_DEBUG,
-                const char *fmt R_UNUSED_UNLESS_DEBUG, ...)
+                int        line  R_UNUSED_UNLESS_DEBUG,
+                const char *fmt  R_UNUSED_UNLESS_DEBUG,
+                ...)
 {
 #ifdef ROUSE_DEBUG
     DO_LOG(R_logger_debug, R_LOGBIT_DEBUG, "DEBUG", file, line, fmt, fmt);
+#endif
+}
+
+void R_assert_fn(const char *file     R_UNUSED_UNLESS_DEBUG,
+                 int        line      R_UNUSED_UNLESS_DEBUG,
+                 const char *expr     R_UNUSED_UNLESS_DEBUG,
+                 bool       condition R_UNUSED_UNLESS_DEBUG,
+                 const char *message  R_UNUSED_UNLESS_DEBUG)
+{
+#ifdef ROUSE_DEBUG
+    if (!condition)  {
+        R_die_fn(file, line, "Assertion botched: '%s' %s", expr, message);
+    }
 #endif
 }
 

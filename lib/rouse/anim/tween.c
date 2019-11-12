@@ -232,7 +232,7 @@ static void tween_to_json(JSON_Object *obj, void *state, R_UserData *seq_user)
 R_Step *R_tween_new(R_TweenCalcFn on_calc, R_TweenFreeFn on_free,
                     R_TweenJsonFn to_json, R_UserData user, R_EaseFn ease)
 {
-    assert(on_calc && "tween calc function can't be NULL");
+    R_assert_not_null(on_calc);
     R_Tween *tween = R_NEW_INIT_STRUCT(tween, R_Tween, R_MAGIC_INIT(tween)
             -1, 0.0f, 0.0f, ease, NULL, on_calc, on_free, to_json, user);
     R_MAGIC_CHECK(tween);
@@ -282,7 +282,7 @@ R_Step *R_tween_new_between(float a, float b, R_EaseFn ease)
 R_TweenFloat R_tween_float(R_TweenFloatCalcFn on_calc, R_TweenValueFreeFn on_free,
                            R_TweenValueJsonFn to_json, R_UserData user)
 {
-    assert(on_calc && "tween float calc function can't be NULL");
+    R_assert_not_null(on_calc);
     return (R_TweenFloat){on_calc, on_free, to_json, user};
 }
 
@@ -353,9 +353,9 @@ static R_TweenElement *new_float_element(
         R_TweenFloatGetFn get_float, R_TweenFloatSetFn set_float,
         R_TweenFloatCalcFn calc_float)
 {
-    assert(get_float  && "element get float function can't be NULL");
-    assert(set_float  && "element set float function can't be NULL");
-    assert(calc_float && "element calc float function can't be NULL");
+    R_assert_not_null(get_float);
+    R_assert_not_null(set_float);
+    R_assert_not_null(calc_float);
     R_TweenElement *elem = R_NEW_INIT_STRUCT(elem, R_TweenElement,
             R_MAGIC_INIT(elem) user, calc_float_element, tick_float_element,
             on_free, to_json, NULL, value_user, value_on_free, value_to_json,

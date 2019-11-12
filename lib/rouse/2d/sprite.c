@@ -72,14 +72,14 @@ static void init_affine_transform(R_AffineTransform *transform)
 static inline void check_sprite(R_Sprite *sprite)
 {
     R_MAGIC_CHECK(sprite);
-    assert(sprite->refs > 0 && "sprite refcount must always be positive");
+    R_assert(sprite->refs > 0, "refcount must always be positive");
 }
 
 static inline void check_parent_child(R_Sprite *parent, R_Sprite *child)
 {
     check_sprite(parent);
     check_sprite(child);
-    assert(parent != child && "parent can't be a child of itself");
+    R_assert(parent != child, "parent can't be a child of itself");
 }
 
 R_Sprite *R_sprite_new(const char *name)
@@ -237,8 +237,8 @@ static void resize_transforms(R_Sprite *sprite, int transform_count)
 
 void R_sprite_transforms_resize(R_Sprite* sprite, int transform_count)
 {
-    assert(transform_count >= 0 && "transform count must not be negative");
-    assert(!R_sprite_is_root(sprite) && "no transforms on root sprite");
+    R_assert(transform_count >= 0, "transform count must not be negative");
+    R_assert(!R_sprite_is_root(sprite), "no transforms on root sprite");
     if (sprite->transform_count != transform_count) {
         resize_transforms(sprite, transform_count);
     }
@@ -247,7 +247,7 @@ void R_sprite_transforms_resize(R_Sprite* sprite, int transform_count)
 void R_sprite_transforms_ensure(R_Sprite *sprite, int transform_count)
 {
     check_sprite(sprite);
-    assert(!R_sprite_is_root(sprite) && "no transforms on root sprite");
+    R_assert(!R_sprite_is_root(sprite), "no transforms on root sprite");
     if (sprite->transform_count < transform_count) {
         resize_transforms(sprite, transform_count);
     }
@@ -256,7 +256,7 @@ void R_sprite_transforms_ensure(R_Sprite *sprite, int transform_count)
 R_AffineTransform *R_sprite_transform_at(R_Sprite *sprite, int index)
 {
     R_MAGIC_CHECK(sprite);
-    assert(index >= 0 && "transform index must not be negative");
+    R_assert(index >= 0, "transform index must not be negative");
     R_sprite_transforms_ensure(sprite, index + 1);
     return &sprite->transforms[index];
 }
@@ -290,7 +290,7 @@ int R_sprite_child_add(R_Sprite *sprite, R_Sprite *child)
 
 int R_sprite_child_add_at(R_Sprite *sprite, R_Sprite *child, int index)
 {
-    assert(index >= 0 && "child index must not be negative");
+    R_assert(index >= 0, "child index must not be negative");
     check_parent_child(sprite, child);
     if (R_sprite_is_root(child)) {
         R_die("Can't treat a canvas root sprite as a child");
@@ -314,7 +314,7 @@ int R_sprite_child_add_at(R_Sprite *sprite, R_Sprite *child, int index)
 void R_sprite_child_remove(R_Sprite *sprite, R_Sprite *child)
 {
     check_parent_child(sprite, child);
-    assert(sprite == child->parent && "child can only be removed from parent");
+    R_assert(sprite == child->parent, "child can only be removed from parent");
 
     for (R_Sprite **pp = &sprite->children; *pp; pp = &(*pp)->next) {
         if (*pp == child) {

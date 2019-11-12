@@ -64,7 +64,7 @@ JSON_Status R_json_object_set_format(JSON_Object *obj, const char *name,
 
 char *R_json_to_string(JSON_Value *value_will_be_freed, bool pretty)
 {
-    assert(value_will_be_freed && "JSON value to stringify can't be NULL");
+    R_assert_not_null(value_will_be_freed);
     char *str = pretty
               ? json_serialize_to_string_pretty(value_will_be_freed)
               : json_serialize_to_string(value_will_be_freed);

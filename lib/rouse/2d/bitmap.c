@@ -48,7 +48,7 @@ struct R_BitmapImage {
 static inline void check_bitmap_image(R_BitmapImage *bi)
 {
     R_MAGIC_CHECK(bi);
-    assert(bi->refs > 0 && "bitmap image refcount must always be positive");
+    R_assert(bi->refs > 0, "refcount must always be positive");
 }
 
 static int make_handle(NVGcontext *ctx, const char *name, int width, int height,
@@ -141,7 +141,7 @@ void R_bitmap_image_draw(R_BitmapImage *bi, NVGcontext *ctx,
                          const float matrix[static 6])
 {
     check_bitmap_image(bi);
-    assert(ctx == R_nvg_context(bi->nvg) && "nanovg context must match bitmap image's");
+    R_assert(ctx == R_nvg_context(bi->nvg), "nanovg context must match");
     R_nvg_transform_set(ctx, matrix);
     float w = R_int2float(bi->width);
     float h = R_int2float(bi->height);

@@ -173,8 +173,8 @@ static int next_power_of_two(int i)
 R_FrameBuffer *R_frame_buffer_new(R_FrameBufferOptions *options)
 {
     R_MAGIC_CHECK(options);
-    assert(options->width  > 0 && "frame buffer width must be positive");
-    assert(options->height > 0 && "frame buffer height must be positive");
+    R_assert(options->width  > 0, "frame buffer dimensions must be positive");
+    R_assert(options->height > 0, "frame buffer dimensions must be positive");
 
     R_GL_CLEAR_ERROR();
     int previous_handle = get_frame_buffer_binding();

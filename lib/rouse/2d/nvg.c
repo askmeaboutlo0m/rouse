@@ -42,7 +42,7 @@ struct R_Nvg {
 static inline void check_nvg(R_Nvg *nvg)
 {
     R_MAGIC_CHECK(nvg);
-    assert(nvg->refs > 0 && "nvg refcount must always be positive");
+    R_assert(nvg->refs > 0, "refcount must always be positive");
 }
 
 

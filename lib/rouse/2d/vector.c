@@ -294,7 +294,7 @@ static R_VectorImage *parse_vector_image(R_Parse *parse)
 static inline void check_vector_image(R_VectorImage *vi)
 {
     R_MAGIC_CHECK(vi);
-    assert(vi->refs > 0 && "vector image refcount must always be positive");
+    R_assert(vi->refs > 0, "refcount must always be positive");
 }
 
 

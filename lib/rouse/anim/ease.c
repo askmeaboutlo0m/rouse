@@ -109,8 +109,9 @@ static bool remove_name(R_EaseFn ease)
 
 void R_ease_name_add(R_EaseFn ease, const char *name)
 {
-    assert(ease && "ease function can't be NULL");
-    assert(name && "ease name can't be NULL");
+    R_assert_not_null(ease);
+    R_assert_not_null(name);
+    /* Since this is basically debug code, don't make this fatal. */
     if (ease && name) {
         remove_name(ease);
         ease_names = ease_name_new(ease, name, ease_names);

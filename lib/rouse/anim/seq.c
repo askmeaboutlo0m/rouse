@@ -62,7 +62,7 @@ struct R_Animator {
 R_Step *R_step_new(void *state, R_StepTickFn on_tick, R_StepFreeFn on_free,
                    R_StepJsonFn to_json)
 {
-    assert(on_tick && "on_tick must not be NULL");
+    R_assert_not_null(on_tick);
     R_Step *step = R_NEW_INIT_STRUCT(step, R_Step,
             R_MAGIC_INIT(step) NULL, state, on_tick, on_free, to_json, NULL);
     R_MAGIC_CHECK(step);
@@ -136,7 +136,7 @@ JSON_Value *R_step_to_json(R_Step *step)
 R_Sequence *R_sequence_new(int max_laps, R_SequenceDoneFn on_done,
                            R_SequenceFreeFn on_free, R_UserData user)
 {
-    assert((max_laps >= 0 || !on_done) && "on_done doesn't mix with infinite laps");
+    R_assert(max_laps >= 0 || !on_done, "can't use on_done with infinite laps");
     R_Sequence *seq = R_NEW_INIT_STRUCT(seq, R_Sequence,
             R_MAGIC_INIT(seq) NULL, -1, max_laps, false,
             on_done, on_free, user, NULL, NULL, NULL);

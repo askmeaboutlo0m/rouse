@@ -95,7 +95,7 @@ static void delay_to_json(JSON_Object *obj, void *state, R_UserData *seq_user)
 R_Step *R_delay_new(R_DelayCalcFn on_calc, R_DelayFreeFn on_free,
                     R_DelayJsonFn to_json, R_UserData user)
 {
-    assert(on_calc && "delay calc function must not be NULL");
+    R_assert_not_null(on_calc);
     R_Delay *delay = R_NEW_INIT_STRUCT(delay, R_Delay,
             R_MAGIC_INIT(delay) -1, 0.0f, on_calc, on_free, to_json, user);
     R_MAGIC_CHECK(delay);

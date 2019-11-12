@@ -383,6 +383,26 @@ void R_debug_fn(const char *file, int line, const char *fmt, ...) R_FORMAT(3, 4)
 
 
 /*
+ * Assertions, basically a conditional R_die if debug mode is enabled.
+ * There's also always a call to the "real" assert so that clang-tidy
+ * understands the invariant condition and doesn't report bogus violations.
+ */
+#if ROUSE_DEBUG
+#   define R_assert(EXPR, MESSAGE) do { \
+            bool _assert_cond = (EXPR); \
+            R_assert_fn(__FILE__, __LINE__, #EXPR, _assert_cond, MESSAGE); \
+            assert(_assert_cond); /* for clang-tidy */ \
+        } while (0)
+#else
+#   define R_assert(EXPR, MESSAGE) assert(EXPR) /* for clang-tidy */
+#endif
+void R_assert_fn(const char *file, int line, const char *expr,
+                 bool condition, const char *message);
+
+#define R_assert_not_null(EXPR) R_assert(EXPR, "can't be NULL")
+
+
+/*
  * Try to `malloc` some memory, but `R_die` if that fails. If `size` is 0, this
  * will return `NULL`, otherwise a pointer to the allocated buffer. So ideally,
  * you should never have to check the return value for success.

@@ -77,7 +77,7 @@ static void call_to_json(JSON_Object *obj, void *state,
 R_Step *R_call_new(R_CallStepFn on_step, R_CallFreeFn on_free,
                    R_CallJsonFn to_json, R_UserData user)
 {
-    assert(on_step && "on_step must not be NULL");
+    R_assert_not_null(on_step);
     R_Call *call = R_NEW_INIT_STRUCT(call, R_Call,
             R_MAGIC_INIT(call) on_step, on_free, to_json, user);
     R_MAGIC_CHECK(call);

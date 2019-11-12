@@ -65,7 +65,7 @@ R_Canvas *R_canvas_new(int width, int height)
 {
     R_Canvas *canvas = R_NEW_INIT_STRUCT(canvas, R_Canvas,
             R_MAGIC_INIT(canvas) make_fb(width, height), R_sprite_new_root(),
-            nvgRGBAf(0.0f, 0.0f, 0.0f, 0.0f));
+            nvgRGBAf(1.0f, 1.0f, 1.0f, 0.0f));
     R_MAGIC_CHECK(canvas);
     return canvas;
 }

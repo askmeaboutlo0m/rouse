@@ -35,11 +35,32 @@
 #include "gl.h"
 
 
-int   R_gl_max_vertex_attribs = -1;
-float R_gl_max_anisotropy     = -1.0f;
+int   R_gl_max_vertex_attribs  = -1;
+float R_gl_max_anisotropy      = -1.0f;
+int   R_gl_max_texture_samples = 1;
 
 
 static bool initialized = false;
+
+static void get_gl_values(void)
+{
+#define R_GL_DEBUGV(NAME, FMT) R_debug("%s: " #NAME "=" FMT, __func__, NAME)
+    R_GL(glGetIntegerv, GL_MAX_VERTEX_ATTRIBS, &R_gl_max_vertex_attribs);
+    R_GL_DEBUGV(R_gl_max_vertex_attribs, "%d");
+
+    if (GLEW_EXT_texture_filter_anisotropic) {
+        R_GL(glGetFloatv, GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &R_gl_max_anisotropy);
+    }
+    R_GL_DEBUGV(R_gl_max_anisotropy, "%f");
+
+    if (GLEW_EXT_multisampled_render_to_texture) {
+        int samples; /* Let's make sure this is at least 1. */
+        R_GL(glGetIntegerv, GL_MAX_SAMPLES_EXT, &samples);
+        R_gl_max_texture_samples = R_MAX(samples, 1);
+    }
+    R_GL_DEBUGV(R_gl_max_texture_samples, "%d");
+#undef R_GL_DEBUGV
+}
 
 void R_gl_init(void)
 {
@@ -55,15 +76,7 @@ void R_gl_init(void)
     R_GL_CLEAR_ERROR();
     R_GL(glClearColor, 1.0f, 1.0f, 1.0f, 0.0f);
 
-    R_GL(glGetIntegerv, GL_MAX_VERTEX_ATTRIBS, &R_gl_max_vertex_attribs);
-    if (GLEW_EXT_texture_filter_anisotropic) {
-        R_GL(glGetFloatv, GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &R_gl_max_anisotropy);
-    }
-
-#define R_GL_DEBUGV(NAME, FMT) R_debug("%s: " #NAME "=" FMT, __func__, NAME)
-    R_GL_DEBUGV(R_gl_max_vertex_attribs, "%d");
-    R_GL_DEBUGV(R_gl_max_anisotropy,     "%f");
-#undef R_GL_DEBUGV
+    get_gl_values();
 }
 
 

@@ -81,10 +81,16 @@
 extern int R_gl_max_vertex_attribs;
 /*
  * `GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT`, the highest anisotropic filtering
- * available. If you don't have the `ext_texture_filter_anisotropic` extension,
+ * available. If you don't have the `EXT_texture_filter_anisotropic` extension,
  * then this will be -1.0f.
  */
 extern float R_gl_max_anisotropy;
+/*
+ * `GL_MAX_SAMPLES_EXT`, the highest number of multisamples for multisampled
+ * texture rendering. If you don't have the `EXT_multisampled_render_to_texture`
+ * extension, this will be 1.
+ */
+extern int R_gl_max_texture_samples;
 
 
 /* Initialize GL stuff. Gets called by `R_main`, so don't do it yourself. */

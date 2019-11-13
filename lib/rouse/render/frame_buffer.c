@@ -35,27 +35,23 @@
 #include "../stringify.h"
 
 
-static int get_frame_buffer_binding(void)
-{
-    int handle;
-    R_GL(glGetIntegerv, GL_FRAMEBUFFER_BINDING, &handle);
-    return handle;
-}
-
-
-static void attach_buffer(unsigned int *buf, unsigned int component,
-                          unsigned int attachment, int width, int height)
+static void gen_buffer(unsigned int *buf, unsigned int component,
+                       int width, int height, int samples)
 {
     R_GL(glGenRenderbuffers, 1, buf);
     R_GL(glBindRenderbuffer, GL_RENDERBUFFER, *buf);
-    R_GL(glRenderbufferStorage, GL_RENDERBUFFER, component, width, height);
-    R_GL(glFramebufferRenderbuffer, GL_FRAMEBUFFER, attachment,
-                                    GL_RENDERBUFFER, *buf);
+    if (samples > 1) {
+        R_GL(glRenderbufferStorageMultisampleEXT,
+             GL_RENDERBUFFER, samples, component, width, height);
+    }
+    else {
+        R_GL(glRenderbufferStorage, GL_RENDERBUFFER, component, width, height);
+    }
+    R_GL(glBindRenderbuffer, GL_RENDERBUFFER, 0);
 }
 
-static void attach_texture(unsigned int *tex, unsigned int attachment,
-                           int internal_format, unsigned int format,
-                           int width, int height)
+static void gen_texture(unsigned int *tex, int internal_format,
+                        unsigned int format, int width, int height)
 {
     R_GL(glGenTextures, 1, tex);
     R_GL(glBindTexture, GL_TEXTURE_2D, *tex);
@@ -65,62 +61,109 @@ static void attach_texture(unsigned int *tex, unsigned int attachment,
     R_GL(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     R_GL(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     R_GL(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    R_GL(glFramebufferTexture2D, GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, *tex, 0);
+    R_GL(glBindTexture, GL_TEXTURE_2D, 0);
 }
 
-static void attach_color_buffer(R_FrameBuffer *fb,
-                                R_FrameBufferAttachmentType type)
+static void gen_color_buffer(R_FrameBuffer *fb,
+                             R_FrameBufferAttachmentType type)
 {
     switch (type) {
         case R_FRAME_BUFFER_ATTACHMENT_NONE:
             break;
         case R_FRAME_BUFFER_ATTACHMENT_BUFFER:
-            attach_buffer(&fb->color, GL_RGBA8, GL_COLOR_ATTACHMENT0,
-                          fb->real_width, fb->real_height);
+            gen_buffer(&fb->color, GL_RGBA8, fb->real_width, fb->real_height,
+                       fb->samples);
             break;
         case R_FRAME_BUFFER_ATTACHMENT_TEXTURE:
-            attach_texture(&fb->color, GL_COLOR_ATTACHMENT0, GL_RGBA, GL_RGBA,
-                           fb->real_width, fb->real_height);
+            gen_texture(&fb->color, GL_RGBA, GL_RGBA, fb->real_width,
+                        fb->real_height);
             break;
         default:
             R_die("Unknown frame buffer color type: %d", type);
     }
 }
 
-static void attach_depth_buffer(R_FrameBuffer *fb,
-                                R_FrameBufferAttachmentType type)
+static void gen_depth_buffer(R_FrameBuffer *fb,
+                             R_FrameBufferAttachmentType type)
 {
     switch (type) {
         case R_FRAME_BUFFER_ATTACHMENT_NONE:
             break;
         case R_FRAME_BUFFER_ATTACHMENT_BUFFER:
-            attach_buffer(&fb->depth, GL_DEPTH_COMPONENT16, GL_DEPTH_ATTACHMENT,
-                          fb->real_width, fb->real_height);
+            gen_buffer(&fb->depth, GL_DEPTH_COMPONENT16, fb->real_width,
+                       fb->real_height, fb->samples);
             break;
         case R_FRAME_BUFFER_ATTACHMENT_TEXTURE:
-            attach_texture(&fb->depth, GL_DEPTH_ATTACHMENT, GL_DEPTH_COMPONENT16,
-                           GL_DEPTH_COMPONENT, fb->real_width, fb->real_height);
+            gen_texture(&fb->depth, GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT,
+                        fb->real_width, fb->real_height);
             break;
         default:
             R_die("Unknown frame buffer depth type: %d", type);
     }
 }
 
-static void attach_stencil_buffer(R_FrameBuffer *fb,
-                                  R_FrameBufferAttachmentType type)
+static void gen_stencil_buffer(R_FrameBuffer *fb,
+                               R_FrameBufferAttachmentType type)
 {
     switch (type) {
         case R_FRAME_BUFFER_ATTACHMENT_NONE:
             break;
         case R_FRAME_BUFFER_ATTACHMENT_BUFFER:
-            attach_buffer(&fb->stencil, GL_STENCIL_INDEX8, GL_STENCIL_ATTACHMENT,
-                          fb->real_width, fb->real_height);
+            gen_buffer(&fb->stencil, GL_STENCIL_INDEX8, fb->real_width,
+                       fb->real_height, fb->samples);
             break;
         case R_FRAME_BUFFER_ATTACHMENT_TEXTURE:
             R_die("Frame buffer stencil textures unsupported in OpenGL ES 2.0");
         default:
             R_die("Unknown frame buffer stencil type: %d", type);
     }
+}
+
+
+static void attach_buffer(unsigned int attachment, unsigned int buf)
+{
+    R_GL(glFramebufferRenderbuffer, GL_FRAMEBUFFER, attachment,
+                                    GL_RENDERBUFFER, buf);
+}
+
+static void attach_texture(unsigned int attachment, unsigned int tex,
+                           int samples)
+{
+    if (samples > 1) {
+        R_GL(glFramebufferTexture2DMultisampleEXT, GL_FRAMEBUFFER, attachment,
+                                                   GL_TEXTURE_2D, tex, 0,
+                                                   samples);
+    }
+    else {
+        R_GL(glFramebufferTexture2D, GL_FRAMEBUFFER, attachment,
+                                     GL_TEXTURE_2D, tex, 0);
+    }
+}
+
+static void attach(R_FrameBuffer *fb, R_FrameBufferAttachmentType type,
+                   unsigned int handle, unsigned int attachment)
+{
+    switch (type) {
+        case R_FRAME_BUFFER_ATTACHMENT_NONE:
+            break;
+        case R_FRAME_BUFFER_ATTACHMENT_BUFFER:
+            attach_buffer(attachment, handle);
+            break;
+        case R_FRAME_BUFFER_ATTACHMENT_TEXTURE:
+            attach_texture(attachment, handle, fb->samples);
+            break;
+        default:
+            R_die("Unknown attachment type: %d", type);
+    }
+}
+
+static void gen_frame_buffer(R_FrameBuffer *fb)
+{
+    R_GL(glGenFramebuffers, 1, &fb->handle);
+    R_GL(glBindFramebuffer, GL_FRAMEBUFFER, fb->handle);
+    attach(fb, fb->color_type,   fb->color,   GL_COLOR_ATTACHMENT0);
+    attach(fb, fb->depth_type,   fb->depth,   GL_DEPTH_ATTACHMENT);
+    attach(fb, fb->stencil_type, fb->stencil, GL_STENCIL_ATTACHMENT);
 }
 
 
@@ -142,6 +185,9 @@ static void check_status(void)
         case GL_FRAMEBUFFER_UNSUPPORTED:
             error = "GL_FRAMEBUFFER_UNSUPPORTED";
             break;
+        case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE_EXT:
+            error = "GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE_EXT";
+            break;
         default:
             error = "unknown error";
             break;
@@ -159,10 +205,27 @@ R_FrameBufferOptions R_frame_buffer_options(void)
         R_MAGIC_INIT_TYPE(R_FrameBufferOptions)
         .width        = 0,
         .height       = 0,
+        .samples      = 1,
         .color_type   = R_FRAME_BUFFER_ATTACHMENT_NONE,
         .depth_type   = R_FRAME_BUFFER_ATTACHMENT_NONE,
         .stencil_type = R_FRAME_BUFFER_ATTACHMENT_NONE,
     };
+}
+
+static int resolve_samples(int samples)
+{
+    if (samples > R_gl_max_texture_samples) {
+        R_warn("Requested %dx MSAA for framebuffer is greater than the "
+                "maximum supported %d samples, falling back to that value",
+                samples, R_gl_max_texture_samples);
+        return R_gl_max_texture_samples;
+    }
+    else if (samples > 1) {
+        return samples;
+    }
+    else {
+        return 1;
+    }
 }
 
 static int next_power_of_two(int i)
@@ -177,23 +240,22 @@ R_FrameBuffer *R_frame_buffer_new(R_FrameBufferOptions *options)
     R_assert(options->height > 0, "frame buffer dimensions must be positive");
 
     R_GL_CLEAR_ERROR();
-    int previous_handle = get_frame_buffer_binding();
-    int width           = options->width;
-    int height          = options->height;
+    int width   = options->width;
+    int height  = options->height;
+    int samples = resolve_samples(options->samples);
 
     R_FrameBuffer *fb = R_NEW_INIT_STRUCT(fb, R_FrameBuffer,
             width, height, next_power_of_two(width),
-            next_power_of_two(height), 0, 0, 0, 0, options->color_type,
+            next_power_of_two(height), samples, 0, 0, 0, 0, options->color_type,
             options->depth_type, options->stencil_type, NULL);
 
-    R_GL(glGenFramebuffers, 1, &fb->handle);
-    R_GL(glBindFramebuffer, GL_FRAMEBUFFER, fb->handle);
-    attach_color_buffer(  fb, options->color_type);
-    attach_depth_buffer(  fb, options->depth_type);
-    attach_stencil_buffer(fb, options->stencil_type);
+    gen_color_buffer(  fb, options->color_type);
+    gen_depth_buffer(  fb, options->depth_type);
+    gen_stencil_buffer(fb, options->stencil_type);
+
+    gen_frame_buffer(fb);
     check_status();
 
-    R_GL(glBindFramebuffer, GL_FRAMEBUFFER, R_int2uint(previous_handle));
     R_debug("R_frame_buffer_new(" R_FORMAT_STRING_FRAME_BUFFER ")",
             R_FORMAT_ARGS_FRAME_BUFFER(fb));
     return fb;

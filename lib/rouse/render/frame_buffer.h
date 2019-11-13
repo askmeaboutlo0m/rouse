@@ -30,12 +30,12 @@ typedef enum R_FrameBufferAttachmentType {
 
 typedef struct R_FrameBufferOptions {
     R_MAGIC_FIELD
-    int                         width, height;
+    int                         width, height, samples;
     R_FrameBufferAttachmentType color_type, depth_type, stencil_type;
 } R_FrameBufferOptions;
 
 typedef struct R_FrameBuffer {
-    int                         width, height, real_width, real_height;
+    int                         width, height, real_width, real_height, samples;
     unsigned int                handle, color, depth, stencil;
     R_FrameBufferAttachmentType color_type, depth_type, stencil_type;
     unsigned char               *pixels;

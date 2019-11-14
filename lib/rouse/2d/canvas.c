@@ -45,27 +45,25 @@
 
 struct R_Canvas {
     R_MAGIC_FIELD
-    R_FrameBuffer *fb;
-    R_Sprite      *sprite;
-    NVGcolor      clear;
+    int      width, height;
+    R_Sprite *sprite;
 };
 
 
-static R_FrameBuffer *make_fb(int width, int height)
+R_FrameBufferOptions R_canvas_frame_buffer_options(int width, int height)
 {
     R_FrameBufferOptions options = R_frame_buffer_options();
     options.width        = width;
     options.height       = height;
     options.color_type   = R_FRAME_BUFFER_ATTACHMENT_TEXTURE;
     options.stencil_type = R_FRAME_BUFFER_ATTACHMENT_BUFFER;
-    return R_frame_buffer_new(&options);
+    return options;
 }
 
 R_Canvas *R_canvas_new(int width, int height)
 {
     R_Canvas *canvas = R_NEW_INIT_STRUCT(canvas, R_Canvas,
-            R_MAGIC_INIT(canvas) make_fb(width, height), R_sprite_new_root(),
-            nvgRGBAf(1.0f, 1.0f, 1.0f, 0.0f));
+            R_MAGIC_INIT(canvas) width, height, R_sprite_new_root());
     R_MAGIC_CHECK(canvas);
     return canvas;
 }
@@ -75,23 +73,9 @@ void R_canvas_free(R_Canvas *canvas)
     if (canvas) {
         R_MAGIC_CHECK_NN(canvas);
         R_sprite_decref(canvas->sprite);
-        R_frame_buffer_free(canvas->fb);
         R_MAGIC_POISON(canvas);
         free(canvas);
     }
-}
-
-
-void R_canvas_clear_color_set(R_Canvas *canvas, NVGcolor clear)
-{
-    R_MAGIC_CHECK(canvas);
-    canvas->clear = clear;
-}
-
-NVGcolor R_canvas_clear_color(R_Canvas *canvas)
-{
-    R_MAGIC_CHECK(canvas);
-    return canvas->clear;
 }
 
 
@@ -102,20 +86,20 @@ R_Sprite *R_canvas_sprite(R_Canvas *canvas)
 }
 
 
-R_FrameBuffer *R_canvas_render(R_Canvas *canvas, R_Nvg *nvg)
+void R_canvas_render(R_Canvas *canvas, R_Nvg *nvg, int target_width,
+                     int target_height)
 {
     R_MAGIC_CHECK(canvas);
-    NVGcontext    *ctx = R_nvg_context(nvg);
-    R_FrameBuffer *fb  = canvas->fb;
 
-    R_frame_buffer_bind(fb);
-    NVGcolor *clear = &canvas->clear;
-    R_gl_clear(clear->r, clear->g, clear->b, clear->a, 1.0f, 0);
+    float w = R_int2float(target_width);
+    float h = R_int2float(target_height);
 
-    nvgBeginFrame(ctx, R_int2float(fb->width), R_int2float(fb->height), 1.0f);
-    R_sprite_draw(canvas->sprite, ctx,
-                  (float[6]){1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f});
+    float matrix[6];
+    nvgTransformScale(matrix, w / R_int2float(canvas->width),
+                              h / R_int2float(canvas->height));
+
+    NVGcontext *ctx = R_nvg_context(nvg);
+    nvgBeginFrame(ctx, w, h, 1.0f);
+    R_sprite_draw(canvas->sprite, ctx, matrix);
     nvgEndFrame(ctx);
-
-    return fb;
 }

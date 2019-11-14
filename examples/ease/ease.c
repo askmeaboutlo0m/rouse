@@ -15,6 +15,7 @@
 typedef struct SceneData {
     R_Nvg           *nvg;
     R_Canvas        *canvas;
+    R_FrameBuffer   *fb;
     R_FrameRenderer *fr;
     R_TextField     *name_field;
     R_TextField     *number_field;
@@ -205,9 +206,14 @@ static void on_tick(R_Scene *scene, R_UNUSED bool rendered)
 static void on_render(R_Scene *scene)
 {
     SceneData     *sd = scene->user.data;
-    R_FrameBuffer *fb = R_canvas_render(sd->canvas, sd->nvg);
+    R_FrameBuffer *fb = sd->fb;
+
+    R_frame_buffer_bind(fb);
+    R_gl_clear(1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0);
+    R_canvas_render(sd->canvas, sd->nvg, fb->width, fb->height);
+
     R_frame_buffer_unbind();
-    R_gl_clear(1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0);
+    R_gl_clear(1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0);
     R_frame_renderer_draw(sd->fr, fb);
 }
 
@@ -217,9 +223,16 @@ static void on_free(R_Scene *scene)
     R_text_field_decref(sd->name_field);
     R_text_field_decref(sd->number_field);
     R_frame_renderer_free(sd->fr);
+    R_frame_buffer_free(sd->fb);
     R_canvas_free(sd->canvas);
     R_nvg_decref(sd->nvg);
     free(sd);
+}
+
+static R_FrameBuffer *make_fb(int width, int height)
+{
+    R_FrameBufferOptions opts = R_canvas_frame_buffer_options(width, height);
+    return R_frame_buffer_new(&opts);
 }
 
 static SceneData *init_scene_data(void)
@@ -227,6 +240,7 @@ static SceneData *init_scene_data(void)
     SceneData *sd = R_NEW(sd);
     sd->nvg       = R_nvg_new(0);
     sd->canvas    = R_canvas_new(1920, 1080);
+    sd->fb        = make_fb(1920, 1080);
     sd->fr        = R_frame_renderer_new(true);
     sd->index     = 0;
     sd->counter   = 0;

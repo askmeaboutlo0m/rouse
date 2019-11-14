@@ -117,11 +117,12 @@ void R_framerate_set(float ticks_per_second);
  * The title will be used as the application name, e.g. in the window title bar
  * or the browser tab or whatever. The window width and height will be used for
  * the window being created, but not every platform will have a window at all.
+ * If `samples` is greater than 1, you get that much MSAA on the created window.
  * Give it a function to set the first scene and an optional argument for that
  * function. You shouldn't do anything after you call this! You can't rely on
  * this function ever returning, cause depending on the platform it won't.
  */
-void R_main(const char *title, int window_width, int window_height,
+void R_main(const char *title, int window_width, int window_height, int samples,
             R_SceneFn fn, void *arg);
 
 

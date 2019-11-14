@@ -105,6 +105,6 @@ static R_Scene *init_scene(void *user)
 
 int main(R_UNUSED int argc, R_UNUSED char **argv)
 {
-    R_main("cube", 1280, 720, init_scene, NULL);
+    R_main("cube", 1280, 720, 1, init_scene, NULL);
     return 0;
 }

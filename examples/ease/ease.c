@@ -261,6 +261,6 @@ static R_Scene *init_scene(R_UNUSED void *user)
 
 int main(R_UNUSED int argc, R_UNUSED char **argv)
 {
-    R_main("ease", 1280, 720, init_scene, NULL);
+    R_main("ease", 1280, 720, 1, init_scene, NULL);
     return 0;
 }

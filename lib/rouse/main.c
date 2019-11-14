@@ -82,7 +82,7 @@ static bool initialized = false;
 /* Reference to `ease.c`, not in the header because it's only needed here. */
 void R_ease_init(void);
 
-static void init(const char *title, int width, int height)
+static void init(const char *title, int width, int height, int samples)
 {
     if (initialized) {
         R_die("Attempt to call R_main twice");
@@ -114,6 +114,16 @@ static void init(const char *title, int width, int height)
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+
+    if (samples > 1) {
+        /* There should probably be a check here if that MSAA amount is actually
+         * supported. However, that seems to be totally platform-specific code,
+         * SDL doesn't have a way to query it. I tried to just create windows
+         * with less and less samples until it works, but that causes a crash in
+         * X_DestroyWindow. I guess an SDL bug. So I'll leave it for now. */
+        SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+        SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, samples);
+    }
 
     R_window = SDL_CreateWindow(
             title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
@@ -278,10 +288,10 @@ static void main_loop(void)
 }
 
 
-void R_main(const char *title, int window_width, int window_height,
+void R_main(const char *title, int window_width, int window_height, int samples,
             R_SceneFn fn, void *arg)
 {
-    init(title, window_width, window_height);
+    init(title, window_width, window_height, samples);
 
     if (spin_events() != R_SPIN_EVENTS_QUIT) {
         if (fn) {

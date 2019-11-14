@@ -107,22 +107,28 @@ extern uint32_t R_magic_numbers[R_MAGIC_NUMBER_COUNT];
 #   define R_MAGIC_OF(EXPR)        R_magic_numbers[R_MAGIC_INDEX(EXPR)]
 #   define R_MAGIC_FIELD           uint32_t MAGIC;
 #   define R_MAGIC_INIT(EXPR)      R_MAGIC_OF(EXPR),
-#   define R_MAGIC_INIT_TYPE(TYPE) R_MAGIC_INIT((TYPE *) NULL)
+#   define R_MAGIC_INIT_TYPE(TYPE) R_MAGIC_INIT((TYPE *)NULL)
 #   define R_MAGIC_SET(EXPR)       (EXPR)->MAGIC = R_MAGIC_OF(EXPR)
 
-#   define R_MAGIC_CHECK_NN(PTR) do { \
-        if ((PTR)->MAGIC != R_MAGIC_OF(PTR)) { \
+#   define R_MAGIC_DO_CHECK_NN(PTR, TYPE_PTR) do { \
+        if ((PTR)->MAGIC != R_MAGIC_OF(TYPE_PTR)) { \
             R_die("Bad magic for '%s': 0x%x != 0x%x", \
-                  #PTR, (PTR)->MAGIC, R_MAGIC_OF(PTR)); \
+                  #PTR, (PTR)->MAGIC, R_MAGIC_OF(TYPE_PTR)); \
         } \
     } while (0)
 
-#   define R_MAGIC_CHECK(PTR) do { \
+#   define R_MAGIC_CHECK_NN(PTR) R_MAGIC_DO_CHECK_NN(PTR, PTR)
+#   define R_MAGIC_CHECK_TYPE_NN(PTR, TYPE) R_MAGIC_DO_CHECK_NN(PTR, (TYPE *)NULL)
+
+#   define R_MAGIC_DO_CHECK(PTR, TYPE_PTR) do { \
         if (!(PTR)) { \
             R_die("Bad magic: '%s' is NULL", #PTR); \
         } \
-        R_MAGIC_CHECK_NN(PTR); \
+        R_MAGIC_DO_CHECK_NN(PTR, TYPE_PTR); \
     } while (0)
+
+#   define R_MAGIC_CHECK(PTR) R_MAGIC_DO_CHECK(PTR, PTR)
+#   define R_MAGIC_CHECK_TYPE(PTR, TYPE) R_MAGIC_DO_CHECK(PTR, (TYPE *)NULL)
 
 #   define R_MAGIC_POISON_NN(PTR) do { \
         (PTR)->MAGIC = 0xdeaddeadu; \
@@ -135,15 +141,17 @@ extern uint32_t R_magic_numbers[R_MAGIC_NUMBER_COUNT];
         } \
     } while (0)
 #else
-#   define R_MAGIC_FIELD           /* nothing */
-#   define R_MAGIC_OF(EXPR)        /* nothing */
-#   define R_MAGIC_INIT(EXPR)      /* nothing */
-#   define R_MAGIC_INIT_TYPE(TYPE) /* nothing */
-#   define R_MAGIC_SET(EXPR)       /* nothing */
-#   define R_MAGIC_CHECK_NN(EXPR)  /* nothing */
-#   define R_MAGIC_CHECK(EXPR)     /* nothing */
-#   define R_MAGIC_POISON_NN(PTR)  /* nothing */
-#   define R_MAGIC_POISON(PTR)     /* nothing */
+#   define R_MAGIC_FIELD                    /* nothing */
+#   define R_MAGIC_OF(EXPR)                 /* nothing */
+#   define R_MAGIC_INIT(EXPR)               /* nothing */
+#   define R_MAGIC_INIT_TYPE(TYPE)          /* nothing */
+#   define R_MAGIC_SET(EXPR)                /* nothing */
+#   define R_MAGIC_CHECK_NN(PTR)            /* nothing */
+#   define R_MAGIC_CHECK_TYPE_NN(PTR, TYPE) /* nothing */
+#   define R_MAGIC_CHECK(PTR)               /* nothing */
+#   define R_MAGIC_CHECK_TYPE(PTR, TYPE)    /* nothing */
+#   define R_MAGIC_POISON_NN(PTR)           /* nothing */
+#   define R_MAGIC_POISON(PTR)              /* nothing */
 #endif
 
 #define R_MAGIC_CHECK_2(A, B) \

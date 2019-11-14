@@ -44,7 +44,7 @@ typedef struct R_FrameBuffer {
 
 R_FrameBufferOptions R_frame_buffer_options(void);
 
-R_FrameBuffer *R_frame_buffer_new(R_FrameBufferOptions *options);
+R_FrameBuffer *R_frame_buffer_new(const R_FrameBufferOptions *options);
 
 void R_frame_buffer_free(R_FrameBuffer *fb);
 

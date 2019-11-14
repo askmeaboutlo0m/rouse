@@ -233,9 +233,9 @@ static int next_power_of_two(int i)
     return R_float2int(R_power_of_two(R_int2float(i)));
 }
 
-R_FrameBuffer *R_frame_buffer_new(R_FrameBufferOptions *options)
+R_FrameBuffer *R_frame_buffer_new(const R_FrameBufferOptions *options)
 {
-    R_MAGIC_CHECK(options);
+    R_MAGIC_CHECK_TYPE(options, R_FrameBufferOptions);
     R_assert(options->width  > 0, "frame buffer dimensions must be positive");
     R_assert(options->height > 0, "frame buffer dimensions must be positive");
 

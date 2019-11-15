@@ -121,9 +121,14 @@ uint32_t R_magic_hash(const char *type);
  * statements, but it ties up some extremely common code so I'm okay with it.
  */
 #define R_NEW_INIT(VAR, INIT) R_NEW(VAR); do { *VAR = INIT; } while (0)
-
-#define R_NEW_INIT_STRUCT(VAR, TYPE, ...) \
-    R_NEW(VAR); do { *VAR = (TYPE){__VA_ARGS__}; } while (0)
+/*
+ * Allocate a variable `VAR` and then assign it a `TYPE` struct literal,
+ * passing all arguments into its initializer. Example:
+ *
+ *     typedef struct { int i; const char *s; } SomeStruct;
+ *     SomeStruct ss = R_NEW_INIT_STRUCT(ss, SomeStruct, 1, "two");
+ */
+#define R_NEW_INIT_STRUCT(VAR, TYPE, ...) R_NEW_INIT(VAR, ((TYPE){__VA_ARGS__}))
 /*
  * Allocate an array of `COUNT` elements: `int *a = R_NEW(a, 10)`. A size of
  * zero will get you `NULL`, as per `R_malloc`.

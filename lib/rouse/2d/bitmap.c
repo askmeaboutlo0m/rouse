@@ -47,7 +47,7 @@ struct R_BitmapImage {
 
 static inline void check_bitmap_image(R_BitmapImage *bi)
 {
-    R_MAGIC_CHECK(bi);
+    R_MAGIC_CHECK(R_BitmapImage, bi);
     R_assert(bi->refs > 0, "refcount must always be positive");
 }
 
@@ -75,7 +75,8 @@ static R_BitmapImage *make_bitmap_image(R_Nvg *nvg, NVGcontext *ctx, int handle)
     int width, height;
     nvgImageSize(ctx, handle, &width, &height);
     R_BitmapImage *bi = R_NEW_INIT_STRUCT(bi, R_BitmapImage,
-            R_MAGIC_INIT(bi) 1, R_nvg_incref(nvg), handle, width, height);
+            R_MAGIC_INIT(R_BitmapImage) 1, R_nvg_incref(nvg),
+            handle, width, height);
     check_bitmap_image(bi);
     return bi;
 }
@@ -112,7 +113,7 @@ static void free_context(R_Nvg *nvg, int handle)
 static void free_bitmap_image(R_BitmapImage *bi)
 {
     free_context(bi->nvg, bi->handle);
-    R_MAGIC_POISON_NN(bi);
+    R_MAGIC_POISON(R_BitmapImage, bi);
     free(bi);
 }
 

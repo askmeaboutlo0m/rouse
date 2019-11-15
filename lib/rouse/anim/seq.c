@@ -64,8 +64,8 @@ R_Step *R_step_new(void *state, R_StepTickFn on_tick, R_StepFreeFn on_free,
 {
     R_assert_not_null(on_tick);
     R_Step *step = R_NEW_INIT_STRUCT(step, R_Step,
-            R_MAGIC_INIT(step) NULL, state, on_tick, on_free, to_json, NULL);
-    R_MAGIC_CHECK(step);
+            R_MAGIC_INIT(R_Step) NULL, state, on_tick, on_free, to_json, NULL);
+    R_MAGIC_CHECK(R_Step, step);
     return step;
 }
 
@@ -90,12 +90,12 @@ static void check_parent(const char *child_type, const char *parent_type,
 static void free_step_from(R_Step *step, R_Sequence *seq)
 {
     if (step) {
-        R_MAGIC_CHECK(step);
+        R_MAGIC_CHECK(R_Step, step);
         check_parent("step", "sequence", step, step->seq, seq);
         if (step->on_free) {
             step->on_free(step->state, seq ? &seq->user : NULL);
         }
-        R_MAGIC_POISON(step);
+        R_MAGIC_POISON(R_Step, step);
         free(step);
     }
 }
@@ -107,7 +107,7 @@ void R_step_free(R_Step *step)
 
 void *R_step_state(R_Step *step)
 {
-    R_MAGIC_CHECK(step);
+    R_MAGIC_CHECK(R_Step, step);
     return step->state;
 }
 
@@ -118,7 +118,7 @@ JSON_Value *R_step_to_json(R_Step *step)
         return json_value_init_null();
     }
 
-    R_MAGIC_CHECK(step);
+    R_MAGIC_CHECK(R_Step, step);
     JSON_Value  *val = json_value_init_object();
     JSON_Object *obj = json_value_get_object(val);
 
@@ -138,9 +138,9 @@ R_Sequence *R_sequence_new(int max_laps, R_SequenceDoneFn on_done,
 {
     R_assert(max_laps >= 0 || !on_done, "can't use on_done with infinite laps");
     R_Sequence *seq = R_NEW_INIT_STRUCT(seq, R_Sequence,
-            R_MAGIC_INIT(seq) NULL, -1, max_laps, false,
+            R_MAGIC_INIT(R_Sequence) NULL, -1, max_laps, false,
             on_done, on_free, user, NULL, NULL, NULL);
-    R_MAGIC_CHECK(seq);
+    R_MAGIC_CHECK(R_Sequence, seq);
     return seq;
 }
 
@@ -157,13 +157,13 @@ static void free_steps(R_Sequence *seq)
 static void free_sequence_from(R_Sequence *seq, R_Animator *an)
 {
     if (seq) {
-        R_MAGIC_CHECK(seq);
+        R_MAGIC_CHECK(R_Sequence, seq);
         check_parent("sequence", "animator", seq, seq->an, an);
         free_steps(seq);
         if (seq->on_free) {
             seq->on_free(seq->user);
         }
-        R_MAGIC_POISON(seq);
+        R_MAGIC_POISON(R_Sequence, seq);
         free(seq);
     }
 }
@@ -198,7 +198,8 @@ static void set_up_step_after_adding(R_Sequence *seq, R_Step *step)
 
 void R_sequence_add(R_Sequence *seq, R_Step *step)
 {
-    R_MAGIC_CHECK_2(seq, step);
+    R_MAGIC_CHECK(R_Sequence, seq);
+    R_MAGIC_CHECK(R_Step, step);
     check_step_not_added(step, __func__);
     add_step_to_sequence(seq, step);
     set_up_step_after_adding(seq, step);
@@ -214,7 +215,7 @@ static bool sequence_has_laps_remaining(R_Sequence *seq)
 static R_StepStatus tick_step(R_Sequence *seq, bool rendered, float seconds)
 {
     R_Step *step = seq->current;
-    R_MAGIC_CHECK(step);
+    R_MAGIC_CHECK(R_Step, step);
     return step->on_tick((R_StepTickArgs){
             step->state, rendered, seconds, seq->lap, seq->user});
 }
@@ -229,7 +230,7 @@ static bool keep_stepping_sequence(R_Sequence *seq, bool rendered,
 
 void R_sequence_tick(R_Sequence *seq, bool rendered, float seconds)
 {
-    R_MAGIC_CHECK(seq);
+    R_MAGIC_CHECK(R_Sequence, seq);
     while (keep_stepping_sequence(seq, rendered, seconds)) {
         if (!(seq->current = seq->current->next)) {
             seq->current = seq->first;
@@ -270,7 +271,7 @@ JSON_Value *R_sequence_to_json(R_Sequence *seq)
         return json_value_init_null();
     }
 
-    R_MAGIC_CHECK(seq);
+    R_MAGIC_CHECK(R_Sequence, seq);
     JSON_Value  *val = json_value_init_object();
     JSON_Object *obj = json_value_get_object(val);
 
@@ -295,15 +296,15 @@ JSON_Value *R_sequence_to_json(R_Sequence *seq)
 R_Animator *R_animator_new(void)
 {
     R_Animator *an = R_NEW_INIT_STRUCT(an, R_Animator,
-            R_MAGIC_INIT(an) NULL, NULL);
-    R_MAGIC_CHECK(an);
+            R_MAGIC_INIT(R_Animator) NULL, NULL);
+    R_MAGIC_CHECK(R_Animator, an);
     return an;
 }
 
 void R_animator_free(R_Animator *an)
 {
     if (an) {
-        R_MAGIC_CHECK(an);
+        R_MAGIC_CHECK(R_Animator, an);
         R_Sequence *seq = an->first;
 
         while (seq) {
@@ -312,7 +313,7 @@ void R_animator_free(R_Animator *an)
             seq = next;
         }
 
-        R_MAGIC_POISON(an);
+        R_MAGIC_POISON(R_Animator, an);
         free(an);
     }
 }
@@ -344,7 +345,8 @@ static void set_up_sequence_after_adding(R_Animator *an, R_Sequence *seq)
 
 void R_animator_add(R_Animator *an, R_Sequence *seq)
 {
-    R_MAGIC_CHECK_2(an, seq);
+    R_MAGIC_CHECK(R_Animator, an);
+    R_MAGIC_CHECK(R_Sequence, seq);
     check_sequence_not_added(seq, __func__);
     if (!seq->first) {
         R_die("%s: added sequence is empty", __func__);
@@ -369,7 +371,7 @@ static R_Sequence *filter_dead_sequences(R_Animator *an)
 
     while (*cur) {
         R_Sequence *seq = *cur;
-        R_MAGIC_CHECK(seq);
+        R_MAGIC_CHECK(R_Sequence, seq);
         if (seq->killed || !sequence_has_laps_remaining(seq)) {
             *cur      = seq->next;
             seq->next = dead;
@@ -388,7 +390,7 @@ static void free_sequences(R_Animator *an, R_Sequence *dead)
 {
     while (dead) {
         R_Sequence *seq = dead;
-        R_MAGIC_CHECK(seq);
+        R_MAGIC_CHECK(R_Sequence, seq);
         dead = dead->next;
         if (!seq->killed && seq->on_done) {
             seq->on_done(seq->user);
@@ -399,7 +401,7 @@ static void free_sequences(R_Animator *an, R_Sequence *dead)
 
 void R_animator_tick(R_Animator *an, bool rendered, float seconds)
 {
-    R_MAGIC_CHECK(an);
+    R_MAGIC_CHECK(R_Animator, an);
     tick_sequences(an, rendered, seconds);
     R_Sequence *dead = filter_dead_sequences(an);
     free_sequences(an, dead);
@@ -423,6 +425,6 @@ JSON_Value *R_animator_to_json(R_Animator *an)
     if (!an) {
         return json_value_init_null();
     }
-    R_MAGIC_CHECK(an);
+    R_MAGIC_CHECK(R_Animator, an);
     return sequences_to_json(an);
 }

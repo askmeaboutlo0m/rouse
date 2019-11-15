@@ -57,7 +57,7 @@ DEF_READ_VALUES(read_floats,  R_parse_read_float,  float)
 
 static void read_buffer(R_Parse *parse, R_MeshBuffer *mbuf)
 {
-    R_MAGIC_SET(mbuf);
+    R_MAGIC_SET(R_MeshBuffer, mbuf);
     mbuf->type = (R_BufferType) R_parse_read_uchar(parse);
     R_PARSE_DEBUG(parse, "   buffer type: %d", mbuf->type);
     if (mbuf->type != R_BUFFER_TYPE_USHORT && mbuf->type != R_BUFFER_TYPE_FLOAT) {
@@ -94,7 +94,7 @@ static void read_buffer(R_Parse *parse, R_MeshBuffer *mbuf)
 
 static void read_buffers(R_Parse *parse, R_Mesh *mesh)
 {
-    R_MAGIC_SET(mesh);
+    R_MAGIC_SET(R_Mesh, mesh);
     int bufcount = R_parse_read_ushort(parse);
     R_PARSE_DEBUG(parse, "  buffer count: %d", bufcount);
     mesh->buffer.count  = bufcount;
@@ -121,13 +121,13 @@ static void read_meshes(R_Parse *parse, R_Model *model)
 #ifdef ROUSE_MAGIC
 static void check_magics(R_Model *model)
 {
-    R_MAGIC_CHECK(model);
+    R_MAGIC_CHECK(R_Model, model);
     for (int i = 0; i < model->mesh.count; ++i) {
         R_Mesh *mesh = &model->mesh.values[i];
-        R_MAGIC_CHECK(mesh);
+        R_MAGIC_CHECK(R_Mesh, mesh);
         for (int j = 0; j < mesh->buffer.count; ++j) {
             R_MeshBuffer *mbuf = &mesh->buffer.values[j];
-            R_MAGIC_CHECK(mbuf);
+            R_MAGIC_CHECK(R_MeshBuffer, mbuf);
         }
     }
 }
@@ -141,7 +141,7 @@ R_Model *R_model_new(const char *title, R_ParseReadFn read, R_UserData user,
     check_file_magic(&parse);
 
     R_Model *model = R_NEW(model);
-    R_MAGIC_SET(model);
+    R_MAGIC_SET(R_Model, model);
     R_PARSE_DEBUG(&parse, "parsing model with bufsize %d", bufsize);
     read_meshes(&parse, model);
 
@@ -174,6 +174,7 @@ R_Model *R_model_from_file(const char *path)
 
 static void mesh_buffer_free(R_MeshBuffer *mbuf)
 {
+    R_MAGIC_CHECK(R_MeshBuffer, mbuf);
     free(mbuf->name);
     switch (mbuf->type) {
         case R_BUFFER_TYPE_USHORT:
@@ -186,28 +187,30 @@ static void mesh_buffer_free(R_MeshBuffer *mbuf)
             R_warn("Can't free mesh buffer with unknown type '%d'", mbuf->type);
             break;
     }
-    R_MAGIC_POISON(mbuf);
+    R_MAGIC_POISON(R_MeshBuffer, mbuf);
 }
 
 static void mesh_free(R_Mesh *mesh)
 {
+    R_MAGIC_CHECK(R_Mesh, mesh);
     int bufcount = mesh->buffer.count;
     for (int i = 0; i < bufcount; ++i) {
         mesh_buffer_free(&mesh->buffer.values[i]);
     }
     free(mesh->buffer.values);
-    R_MAGIC_POISON(mesh);
+    R_MAGIC_POISON(R_Mesh, mesh);
 }
 
 void R_model_free(R_Model *model)
 {
     if (model) {
+        R_MAGIC_CHECK(R_Model, model);
         int mcount = model->mesh.count;
         for (int i = 0; i < mcount; ++i) {
             mesh_free(&model->mesh.values[i]);
         }
         free(model->mesh.values);
-        R_MAGIC_POISON(model);
+        R_MAGIC_POISON(R_Model, model);
         free(model);
     }
 }
@@ -215,6 +218,7 @@ void R_model_free(R_Model *model)
 
 R_Mesh *R_model_mesh_by_index(R_Model *model, int index)
 {
+    R_MAGIC_CHECK(R_Model, model);
     if (index < 0 || index >= model->mesh.count) {
         R_die("Model mesh index %d out of bounds (0 ... %d)",
               index, model->mesh.count);
@@ -225,8 +229,10 @@ R_Mesh *R_model_mesh_by_index(R_Model *model, int index)
 
 int R_mesh_buffer_index_by_name(R_Mesh *mesh, const char *name)
 {
+    R_MAGIC_CHECK(R_Mesh, mesh);
     for (int i = 0; i < mesh->buffer.count; ++i) {
         R_MeshBuffer *buffer = &mesh->buffer.values[i];
+        R_MAGIC_CHECK(R_MeshBuffer, buffer);
         if (R_str_equal(name, buffer->name)) {
             return i;
         }
@@ -236,16 +242,23 @@ int R_mesh_buffer_index_by_name(R_Mesh *mesh, const char *name)
 
 R_MeshBuffer *R_mesh_buffer_by_index(R_Mesh *mesh, int index)
 {
+    R_MAGIC_CHECK(R_Mesh, mesh);
     if (index < 0 || index >= mesh->buffer.count) {
         R_die("Mesh buffer index %d out of bounds (0 ... %d)",
               index, mesh->buffer.count);
     }
-    return &mesh->buffer.values[index];
+    R_MeshBuffer *buffer = &mesh->buffer.values[index];
+    R_MAGIC_CHECK(R_MeshBuffer, buffer);
+    return buffer;
 }
 
 R_MeshBuffer *R_mesh_buffer_by_name(R_Mesh *mesh, const char *name)
 {
-    return &mesh->buffer.values[R_mesh_buffer_index_by_name(mesh, name)];
+    R_MAGIC_CHECK(R_Mesh, mesh);
+    int           index  = R_mesh_buffer_index_by_name(mesh, name);
+    R_MeshBuffer *buffer = &mesh->buffer.values[index];
+    R_MAGIC_CHECK(R_MeshBuffer, buffer);
+    return buffer;
 }
 
 

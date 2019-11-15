@@ -38,7 +38,7 @@ R_Parse R_parse(const char *title, R_ParseReadFn read, R_UserData user,
                 int bufsize, unsigned char buffer[static bufsize])
 {
     return (R_Parse){
-        R_MAGIC_INIT_TYPE(R_Parse) title, read, user, bufsize, buffer, 0};
+        R_MAGIC_INIT(R_Parse) title, read, user, bufsize, buffer, 0};
 }
 
 int R_parse_from_file(int size, unsigned char *out, R_UserData user)
@@ -50,7 +50,7 @@ int R_parse_from_file(int size, unsigned char *out, R_UserData user)
 
 int R_parse_read_into(R_Parse *parse, int size, unsigned char buf[static size])
 {
-    R_MAGIC_CHECK(parse);
+    R_MAGIC_CHECK(R_Parse, parse);
     int got = parse->read(size, buf, parse->user);
     if (got != size) {
         R_PARSE_DIE(parse, "bad read, want %d bytes but got %d", size, got);
@@ -60,7 +60,7 @@ int R_parse_read_into(R_Parse *parse, int size, unsigned char buf[static size])
 
 void R_parse_read_bytes_with_extra_space(R_Parse *parse, int nbytes, int extra)
 {
-    R_MAGIC_CHECK(parse);
+    R_MAGIC_CHECK(R_Parse, parse);
     int needed = nbytes + extra;
     if (parse->bufsize < needed) {
         R_PARSE_DIE(parse, "out of buffer space, want %d bytes but got %d",
@@ -76,7 +76,7 @@ void R_parse_read_bytes(R_Parse *parse, int nbytes)
 
 unsigned char R_parse_read_uchar(R_Parse *parse)
 {
-    R_MAGIC_CHECK(parse);
+    R_MAGIC_CHECK(R_Parse, parse);
     R_parse_read_bytes(parse, 1);
     return parse->buffer[0];
 }
@@ -88,7 +88,7 @@ char R_parse_read_char(R_Parse *parse)
 
 unsigned short R_parse_read_ushort(R_Parse *parse)
 {
-    R_MAGIC_CHECK(parse);
+    R_MAGIC_CHECK(R_Parse, parse);
     R_parse_read_bytes(parse, 2);
     unsigned short lo = parse->buffer[0];
     unsigned short hi = parse->buffer[1];
@@ -98,7 +98,7 @@ unsigned short R_parse_read_ushort(R_Parse *parse)
 
 float R_parse_read_float(R_Parse *parse)
 {
-    R_MAGIC_CHECK(parse);
+    R_MAGIC_CHECK(R_Parse, parse);
     unsigned char len = R_parse_read_uchar(parse);
     int           at  = parse->pos;
     R_parse_read_bytes_with_extra_space(parse, len, 1);
@@ -121,7 +121,7 @@ float R_parse_read_float(R_Parse *parse)
 
 char *R_parse_read_string(R_Parse *parse)
 {
-    R_MAGIC_CHECK(parse);
+    R_MAGIC_CHECK(R_Parse, parse);
     int len = R_parse_read_ushort(parse);
     if (len == 0) {
         return NULL;
@@ -135,7 +135,7 @@ char *R_parse_read_string(R_Parse *parse)
 
 void R_parse_die_unless_eof(R_Parse *parse)
 {
-    R_MAGIC_CHECK(parse);
+    R_MAGIC_CHECK(R_Parse, parse);
     int at  = parse->pos;
     int got = parse->read(parse->bufsize, parse->buffer, parse->user);
     if (got != 0) {

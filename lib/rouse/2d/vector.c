@@ -142,13 +142,13 @@ static void check_file_magic(R_Parse *parse)
 
 static void parse_begin(R_VectorCommandBegin *command)
 {
-    R_MAGIC_SET(command);
+    R_MAGIC_SET(R_VectorCommandBegin, command);
     command->type = R_VECTOR_COMMAND_BEGIN;
 }
 
 static void parse_transform(R_Parse *parse, R_VectorCommandTransform *command)
 {
-    R_MAGIC_SET(command);
+    R_MAGIC_SET(R_VectorCommandTransform, command);
     command->type      = R_VECTOR_COMMAND_TRANSFORM;
     command->matrix[0] = R_parse_read_float(parse);
     command->matrix[1] = R_parse_read_float(parse);
@@ -164,14 +164,14 @@ static void parse_color(R_Parse *parse, R_VectorCommandColor *command)
     unsigned char g = R_parse_read_uchar(parse);
     unsigned char b = R_parse_read_uchar(parse);
     unsigned char a = R_parse_read_uchar(parse);
-    R_MAGIC_SET(command);
+    R_MAGIC_SET(R_VectorCommandColor, command);
     command->type  = R_VECTOR_COMMAND_COLOR;
     command->color = nvgRGBA(r, g, b, a);
 }
 
 static void parse_move(R_Parse *parse, R_VectorCommandMove *command)
 {
-    R_MAGIC_SET(command);
+    R_MAGIC_SET(R_VectorCommandMove, command);
     command->type = R_VECTOR_COMMAND_MOVE;
     command->x    = R_parse_read_float(parse);
     command->y    = R_parse_read_float(parse);
@@ -179,7 +179,7 @@ static void parse_move(R_Parse *parse, R_VectorCommandMove *command)
 
 static void parse_line(R_Parse *parse, R_VectorCommandLine *command)
 {
-    R_MAGIC_SET(command);
+    R_MAGIC_SET(R_VectorCommandLine, command);
     command->type = R_VECTOR_COMMAND_LINE;
     command->x    = R_parse_read_float(parse);
     command->y    = R_parse_read_float(parse);
@@ -187,7 +187,7 @@ static void parse_line(R_Parse *parse, R_VectorCommandLine *command)
 
 static void parse_bezier(R_Parse *parse, R_VectorCommandBezier *command)
 {
-    R_MAGIC_SET(command);
+    R_MAGIC_SET(R_VectorCommandBezier, command);
     command->type = R_VECTOR_COMMAND_BEZIER;
     command->c1x  = R_parse_read_float(parse);
     command->c1y  = R_parse_read_float(parse);
@@ -210,14 +210,14 @@ static void parse_winding(R_Parse *parse, R_VectorCommandWinding *command)
     else {
         R_PARSE_DIE(parse, "unknown winding: %d", parsed);
     }
-    R_MAGIC_SET(command);
+    R_MAGIC_SET(R_VectorCommandWinding, command);
     command->type    = R_VECTOR_COMMAND_WINDING;
     command->winding = winding;
 }
 
 static void parse_fill(R_VectorCommandFill *command)
 {
-    R_MAGIC_SET(command);
+    R_MAGIC_SET(R_VectorCommandFill, command);
     command->type = R_VECTOR_COMMAND_FILL;
 }
 
@@ -266,7 +266,7 @@ static R_VectorImage *make_vector_image(int width, int height, int count)
 {
     R_VectorImage *vi = R_malloc(
             sizeof(*vi) + R_int2size(count) * sizeof(vi->commands[0]));
-    R_MAGIC_SET(vi);
+    R_MAGIC_SET(R_VectorImage, vi);
     vi->refs   = 1;
     vi->width  = width;
     vi->height = height;
@@ -293,7 +293,7 @@ static R_VectorImage *parse_vector_image(R_Parse *parse)
 
 static inline void check_vector_image(R_VectorImage *vi)
 {
-    R_MAGIC_CHECK(vi);
+    R_MAGIC_CHECK(R_VectorImage, vi);
     R_assert(vi->refs > 0, "refcount must always be positive");
 }
 
@@ -304,28 +304,28 @@ static void check_command_magic(R_VectorCommand *c)
     R_VectorCommandType type = c->any.type;
     switch (type) {
         case R_VECTOR_COMMAND_BEGIN:
-            R_MAGIC_CHECK(&c->begin);
+            R_MAGIC_CHECK(R_VectorCommandBegin, &c->begin);
             break;
         case R_VECTOR_COMMAND_TRANSFORM:
-            R_MAGIC_CHECK(&c->transform);
+            R_MAGIC_CHECK(R_VectorCommandTransform, &c->transform);
             break;
         case R_VECTOR_COMMAND_COLOR:
-            R_MAGIC_CHECK(&c->color);
+            R_MAGIC_CHECK(R_VectorCommandColor, &c->color);
             break;
         case R_VECTOR_COMMAND_MOVE:
-            R_MAGIC_CHECK(&c->move);
+            R_MAGIC_CHECK(R_VectorCommandMove, &c->move);
             break;
         case R_VECTOR_COMMAND_LINE:
-            R_MAGIC_CHECK(&c->line);
+            R_MAGIC_CHECK(R_VectorCommandLine, &c->line);
             break;
         case R_VECTOR_COMMAND_BEZIER:
-            R_MAGIC_CHECK(&c->bezier);
+            R_MAGIC_CHECK(R_VectorCommandBezier, &c->bezier);
             break;
         case R_VECTOR_COMMAND_WINDING:
-            R_MAGIC_CHECK(&c->winding);
+            R_MAGIC_CHECK(R_VectorCommandWinding, &c->winding);
             break;
         case R_VECTOR_COMMAND_FILL:
-            R_MAGIC_CHECK(&c->fill);
+            R_MAGIC_CHECK(R_VectorCommandFill, &c->fill);
             break;
         default:
             R_die("Unknown vector command type %d", type);
@@ -380,7 +380,7 @@ R_VectorImage *R_vector_image_from_file(const char *path)
 
 static void free_vector_image(R_VectorImage *vi)
 {
-    R_MAGIC_POISON(vi);
+    R_MAGIC_POISON(R_VectorImage, vi);
     free(vi);
 }
 
@@ -402,38 +402,38 @@ int R_vector_image_height(R_VectorImage *vi)
 
 static void run_begin(R_VectorCommandBegin *command, NVGcontext *ctx)
 {
-    R_MAGIC_CHECK(command);
+    R_MAGIC_CHECK(R_VectorCommandBegin, command);
     nvgBeginPath(ctx);
 }
 
 static void run_transform(R_VectorCommandTransform *command, NVGcontext *ctx,
                           const float parent_matrix[static 6])
 {
-    R_MAGIC_CHECK(command);
+    R_MAGIC_CHECK(R_VectorCommandTransform, command);
     R_nvg_transform_set_2(ctx, parent_matrix, command->matrix);
 }
 
 static void run_color(R_VectorCommandColor *command, NVGcontext *ctx)
 {
-    R_MAGIC_CHECK(command);
+    R_MAGIC_CHECK(R_VectorCommandColor, command);
     nvgFillColor(ctx, command->color);
 }
 
 static void run_move(R_VectorCommandMove *command, NVGcontext *ctx)
 {
-    R_MAGIC_CHECK(command);
+    R_MAGIC_CHECK(R_VectorCommandMove, command);
     nvgMoveTo(ctx, command->x, command->y);
 }
 
 static void run_line(R_VectorCommandLine *command, NVGcontext *ctx)
 {
-    R_MAGIC_CHECK(command);
+    R_MAGIC_CHECK(R_VectorCommandLine, command);
     nvgLineTo(ctx, command->x, command->y);
 }
 
 static void run_bezier(R_VectorCommandBezier *command, NVGcontext *ctx)
 {
-    R_MAGIC_CHECK(command);
+    R_MAGIC_CHECK(R_VectorCommandBezier, command);
     nvgBezierTo(ctx, command->c1x, command->c1y,
                      command->c2x, command->c2y,
                      command->x,   command->y);
@@ -441,13 +441,13 @@ static void run_bezier(R_VectorCommandBezier *command, NVGcontext *ctx)
 
 static void run_winding(R_VectorCommandWinding *command, NVGcontext *ctx)
 {
-    R_MAGIC_CHECK(command);
+    R_MAGIC_CHECK(R_VectorCommandWinding, command);
     nvgPathWinding(ctx, command->winding);
 }
 
 static void run_fill(R_VectorCommandFill *command, NVGcontext *ctx)
 {
-    R_MAGIC_CHECK(command);
+    R_MAGIC_CHECK(R_VectorCommandFill, command);
     nvgFill(ctx);
 }
 

@@ -36,6 +36,7 @@
 
 
 struct R_FrameRenderer {
+    R_MAGIC_FIELD
     R_Binder *binder;
     int      u_ratio, u_sampler;
 };
@@ -87,17 +88,20 @@ R_FrameRenderer *R_frame_renderer_new(bool alpha_blending)
         binder->features |= R_BINDER_BLENDING;
     }
 
-    R_FrameRenderer *fr = R_NEW_INIT_STRUCT(fr, R_FrameRenderer, binder,
+    R_FrameRenderer *fr = R_NEW_INIT_STRUCT(fr, R_FrameRenderer,
+            R_MAGIC_INIT(R_FrameRenderer) binder,
             R_binder_uniform_location(binder, "u_ratio"),
             R_binder_uniform_location(binder, "u_sampler"));
-
+    R_MAGIC_CHECK(R_FrameRenderer, fr);
     return fr;
 }
 
 void R_frame_renderer_free(R_FrameRenderer *fr)
 {
     if (fr) {
+        R_MAGIC_CHECK(R_FrameRenderer, fr);
         R_binder_free(fr->binder);
+        R_MAGIC_POISON(R_FrameRenderer, fr);
         free(fr);
     }
 }
@@ -105,6 +109,8 @@ void R_frame_renderer_free(R_FrameRenderer *fr)
 
 void R_frame_renderer_draw(R_FrameRenderer *fr, R_FrameBuffer *fb)
 {
+    R_MAGIC_CHECK(R_FrameRenderer, fr);
+    R_MAGIC_CHECK(R_FrameBuffer, fb);
     R_binder_begin(fr->binder);
 
     R_GL(glActiveTexture, GL_TEXTURE0);

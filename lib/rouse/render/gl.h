@@ -169,7 +169,7 @@ struct SDL_Surface *R_surface_load(const char *path, uint32_t pixel_format);
  * textures in the middle of rendering stuff then you should mabye rethink
  * what you're doing.
  */
-unsigned int R_gl_texture_new(const char *path, R_TextureOptions *options);
+unsigned int R_gl_texture_new(const char *path, const R_TextureOptions *options);
 
 /* Deletes a texture you loaded via e.g. `R_gl_texture_new`. */
 void R_gl_texture_free(unsigned int texture);

@@ -32,9 +32,17 @@
 #include "common.h"
 
 
-/* We want to be able to flush gcov coverage info before we die horribly. */
-#ifdef ROUSE_GCOV
-void __gcov_flush(void);
+#ifdef ROUSE_MAGIC
+uint32_t R_magic_seed;
+
+uint32_t R_magic_hash(const char *type)
+{
+    uint32_t h = R_magic_seed;
+    for (const char *c = type; *c != '\0'; ++c) {
+        h = 31 * h + R_char2uint32(*c);
+    }
+    return h == R_MAGIC_POISONED_NUMBER ? R_MAGIC_POISONED_NUMBER / 2 : h;
+}
 #endif
 
 
@@ -107,6 +115,11 @@ int R_logbits = R_LOGBIT_DIE | R_LOGBIT_WARN | R_LOGBIT_INFO;
             LOGGER(FMT); \
         } \
     } while (0)
+
+/* We want to be able to flush gcov coverage info before we die horribly. */
+#ifdef ROUSE_GCOV
+void __gcov_flush(void);
+#endif
 
 void R_die_fn(const char *file, int line, const char *fmt, ...)
 {

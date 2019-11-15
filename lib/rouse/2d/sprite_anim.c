@@ -55,30 +55,30 @@ static R_UserData make_tween_data(R_Sprite *sprite, int transform_index)
 {
     R_sprite_incref(sprite);
     R_SpriteTweenData *data = R_NEW_INIT_STRUCT(data, R_SpriteTweenData,
-            R_MAGIC_INIT(data) sprite, transform_index);
-    R_MAGIC_CHECK(data);
+            R_MAGIC_INIT(R_SpriteTweenData) sprite, transform_index);
+    R_MAGIC_CHECK(R_SpriteTweenData, data);
     return R_user_data(data);
 }
 
 static void free_tween_data(R_UserData user, R_UNUSED R_UserData *seq_user)
 {
     R_SpriteTweenData *data = user.data;
-    R_MAGIC_CHECK(data);
+    R_MAGIC_CHECK(R_SpriteTweenData, data);
     R_sprite_decref(data->sprite);
-    R_MAGIC_POISON_NN(data);
+    R_MAGIC_POISON(R_SpriteTweenData, data);
     free(data);
 }
 
 static R_AffineTransform *get_transform(void *user)
 {
     R_SpriteTweenData *data = user;
-    R_MAGIC_CHECK(data);
+    R_MAGIC_CHECK(R_SpriteTweenData, data);
     return R_sprite_transform_at(data->sprite, data->transform_index);
 }
 
 static void sprite_tween_data_to_json(JSON_Object *obj, R_SpriteTweenData *data)
 {
-    R_MAGIC_CHECK(data);
+    R_MAGIC_CHECK(R_SpriteTweenData, data);
     const char *name = R_sprite_name(data->sprite);
     json_object_set_string(obj, "sprite", name ? name : "");
     json_object_set_number(obj, "transform_index",

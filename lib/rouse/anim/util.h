@@ -24,7 +24,7 @@
 
 extern unsigned int R_seed;
 
-int R_rand(void);
+unsigned int R_rand(void);
 
 float R_rand_between(float a, float b);
 

@@ -48,7 +48,7 @@ typedef struct R_Delay {
 static R_StepStatus tick_delay(R_StepTickArgs args)
 {
     R_Delay *delay = args.state;
-    R_MAGIC_CHECK(delay);
+    R_MAGIC_CHECK(R_Delay, delay);
 
     if (delay->lap != args.lap) {
         delay->left = delay->on_calc(args, delay->user);
@@ -63,20 +63,20 @@ static R_StepStatus tick_delay(R_StepTickArgs args)
 static void free_delay(void *state, R_UserData *seq_user)
 {
     R_Delay *delay = state;
-    R_MAGIC_CHECK(delay);
+    R_MAGIC_CHECK(R_Delay, delay);
 
     if (delay->on_free) {
         delay->on_free(delay->user, seq_user);
     }
 
-    R_MAGIC_POISON(delay);
+    R_MAGIC_POISON(R_Delay, delay);
     free(delay);
 }
 
 static void delay_to_json(JSON_Object *obj, void *state, R_UserData *seq_user)
 {
     R_Delay *delay = state;
-    R_MAGIC_CHECK(delay);
+    R_MAGIC_CHECK(R_Delay, delay);
 
     json_object_set_string(obj, "type", "R_Delay");
     json_object_set_number(obj, "lap",  R_int2double(delay->lap));
@@ -97,8 +97,8 @@ R_Step *R_delay_new(R_DelayCalcFn on_calc, R_DelayFreeFn on_free,
 {
     R_assert_not_null(on_calc);
     R_Delay *delay = R_NEW_INIT_STRUCT(delay, R_Delay,
-            R_MAGIC_INIT(delay) -1, 0.0f, on_calc, on_free, to_json, user);
-    R_MAGIC_CHECK(delay);
+            R_MAGIC_INIT(R_Delay) -1, 0.0f, on_calc, on_free, to_json, user);
+    R_MAGIC_CHECK(R_Delay, delay);
     return R_step_new(delay, tick_delay, free_delay, delay_to_json);
 }
 

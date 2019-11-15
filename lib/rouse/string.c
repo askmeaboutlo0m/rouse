@@ -64,8 +64,9 @@ struct R_String {
 
 R_String *R_string_new(size_t initial_capacity)
 {
-    R_String *s = R_NEW_INIT_STRUCT(s, R_String, R_MAGIC_INIT(s) NULL, 0, 0);
-    R_MAGIC_CHECK(s);
+    R_String *s = R_NEW_INIT_STRUCT(s, R_String, R_MAGIC_INIT(R_String)
+                                    NULL, 0, 0);
+    R_MAGIC_CHECK(R_String, s);
     R_string_reserve(s, R_MAX(initial_capacity, R_STRING_MINIMUM_CAPACITY));
     R_string_clear(s);
     return s;
@@ -86,16 +87,16 @@ R_String *R_string_from_bin(const void *data, size_t len)
 void R_string_free(R_String *s)
 {
     if (s) {
-        R_MAGIC_CHECK_NN(s);
+        R_MAGIC_CHECK(R_String, s);
         free(s->d);
-        R_MAGIC_POISON_NN(s);
+        R_MAGIC_POISON(R_String, s);
         free(s);
     }
 }
 
 void R_string_reserve(R_String *s, size_t capacity)
 {
-    R_MAGIC_CHECK(s);
+    R_MAGIC_CHECK(R_String, s);
     if ((s->n - s->i) < capacity) {
         s->d  = R_realloc(s->d, s->n + capacity);
         s->n += capacity;
@@ -104,7 +105,7 @@ void R_string_reserve(R_String *s, size_t capacity)
 
 void R_string_clear(R_String *s)
 {
-    R_MAGIC_CHECK(s);
+    R_MAGIC_CHECK(R_String, s);
     s->i = 0;
     s->d[0] = '\0';
 }
@@ -129,7 +130,7 @@ void R_string_append_bin(R_String *s, const void *data, size_t len)
 void R_string_concat(R_String *dst, R_String *src)
 {
     if (src) {
-        R_MAGIC_CHECK_NN(src);
+        R_MAGIC_CHECK(R_String, src);
         R_string_append_bin(dst, src->d, src->i);
     }
 }
@@ -160,13 +161,13 @@ void R_string_printf(R_String *s, const char *fmt, ...)
 
 size_t R_string_len(R_String *s)
 {
-    R_MAGIC_CHECK(s);
+    R_MAGIC_CHECK(R_String, s);
     return s->i;
 }
 
 char *R_string_body(R_String *s)
 {
-    R_MAGIC_CHECK(s);
+    R_MAGIC_CHECK(R_String, s);
     return s->d;
 }
 

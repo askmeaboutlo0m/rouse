@@ -202,7 +202,7 @@ static void check_status(void)
 R_FrameBufferOptions R_frame_buffer_options(void)
 {
     return (R_FrameBufferOptions){
-        R_MAGIC_INIT_TYPE(R_FrameBufferOptions)
+        R_MAGIC_INIT(R_FrameBufferOptions)
         .width        = 0,
         .height       = 0,
         .samples      = 1,
@@ -235,7 +235,7 @@ static int next_power_of_two(int i)
 
 R_FrameBuffer *R_frame_buffer_new(const R_FrameBufferOptions *options)
 {
-    R_MAGIC_CHECK_TYPE(options, R_FrameBufferOptions);
+    R_MAGIC_CHECK(R_FrameBufferOptions, options);
     R_assert(options->width  > 0, "frame buffer dimensions must be positive");
     R_assert(options->height > 0, "frame buffer dimensions must be positive");
 
@@ -245,9 +245,10 @@ R_FrameBuffer *R_frame_buffer_new(const R_FrameBufferOptions *options)
     int samples = resolve_samples(options->samples);
 
     R_FrameBuffer *fb = R_NEW_INIT_STRUCT(fb, R_FrameBuffer,
-            width, height, next_power_of_two(width),
+            R_MAGIC_INIT(R_FrameBuffer) width, height, next_power_of_two(width),
             next_power_of_two(height), samples, 0, 0, 0, 0, options->color_type,
             options->depth_type, options->stencil_type, NULL);
+    R_MAGIC_CHECK(R_FrameBuffer, fb);
 
     gen_color_buffer(  fb, options->color_type);
     gen_depth_buffer(  fb, options->depth_type);
@@ -280,12 +281,14 @@ static void free_attachment(unsigned int *attachment,
 void R_frame_buffer_free(R_FrameBuffer *fb)
 {
     if (fb) {
+        R_MAGIC_CHECK(R_FrameBuffer, fb);
         R_GL_CLEAR_ERROR();
         R_GL(glDeleteFramebuffers, 1, &fb->handle);
         free_attachment(&fb->color,   fb->color_type);
         free_attachment(&fb->depth,   fb->depth_type);
         free_attachment(&fb->stencil, fb->stencil_type);
         free(fb->pixels);
+        R_MAGIC_POISON(R_FrameBuffer, fb);
         free(fb);
     }
 }
@@ -295,6 +298,7 @@ void R_frame_buffer_bind(R_FrameBuffer *fb)
 {
     R_GL_CLEAR_ERROR();
     if (fb) {
+        R_MAGIC_CHECK(R_FrameBuffer, fb);
         R_GL(glBindFramebuffer, GL_FRAMEBUFFER, fb->handle);
         R_viewport_set((R_Viewport){0, 0, fb->width, fb->height});
     }
@@ -312,12 +316,14 @@ void R_frame_buffer_unbind(void)
 
 R_V2 R_frame_buffer_ratio(R_FrameBuffer *fb)
 {
+    R_MAGIC_CHECK(R_FrameBuffer, fb);
     return R_v2(R_int2float(fb->width)  / R_int2float(fb->real_width),
                 R_int2float(fb->height) / R_int2float(fb->real_height));
 }
 
 unsigned char *R_frame_buffer_read(R_FrameBuffer *fb)
 {
+    R_MAGIC_CHECK(R_FrameBuffer, fb);
     if (!fb->pixels) {
         size_t size = R_int2size(fb->width) * R_int2size(fb->height) * 4;
         fb->pixels = R_ANEW(fb->pixels, size);
@@ -332,6 +338,7 @@ unsigned char *R_frame_buffer_read(R_FrameBuffer *fb)
 
 void R_frame_buffer_write(R_FrameBuffer *fb, FILE *fp)
 {
+    R_MAGIC_CHECK(R_FrameBuffer, fb);
     unsigned char *pixels = R_frame_buffer_read(fb);
     int w = fb->width, h = fb->height;
     for (int y = 0; y < h; ++y) {

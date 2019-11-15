@@ -22,8 +22,6 @@
  * SOFTWARE.
  */
 
-typedef struct R_Binder R_Binder;
-
 typedef void (*R_BinderDraw)(void *, R_UserData);
 typedef void (*R_BinderBind)(void *, R_UserData, unsigned int, int);
 
@@ -37,7 +35,8 @@ typedef void (*R_BinderBind)(void *, R_UserData, unsigned int, int);
 #define R_BINDER_DEFAULT_SFACTOR    GL_SRC_ALPHA
 #define R_BINDER_DEFAULT_DFACTOR    GL_ONE_MINUS_SRC_ALPHA
 
-struct R_Binder {
+typedef struct R_Binder {
+    R_MAGIC_FIELD
     R_BinderDraw draw;
     R_UserData   arg;
     unsigned int features;
@@ -51,12 +50,12 @@ struct R_Binder {
         R_BinderBind *fns;
         R_UserData   *args;
     } attribute;
-};
+} R_Binder;
 
 
 R_Binder *R_binder_new(unsigned int features, R_BinderDraw draw, R_UserData arg,
                        const char *vert, const char *frag, ...);
-void R_binder_free(R_Binder *);
+void R_binder_free(R_Binder *binder);
 
 void R_binder_begin(R_Binder *binder);
 void R_binder_end(R_Binder *binder);

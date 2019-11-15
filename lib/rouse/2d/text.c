@@ -48,7 +48,7 @@ static int find_font(NVGcontext *ctx, const char *font_name)
 
 static inline void check_text_field(R_TextField *field)
 {
-    R_MAGIC_CHECK(field);
+    R_MAGIC_CHECK(R_TextField, field);
     R_assert(field->refs > 0, "must always be positive");
 }
 
@@ -59,8 +59,8 @@ R_TextField *R_text_field_new(R_Nvg *nvg, R_String *string, NVGcolor color,
     int font = find_font(R_nvg_context(nvg), font_name);
 
     R_TextField *field = R_NEW_INIT_STRUCT(field, R_TextField,
-            R_MAGIC_INIT(field) 1, string, color, font, size, 0.0f, 0.0f, 1.0f,
-            NVG_ALIGN_TOP | NVG_ALIGN_LEFT, R_v2(0.0f, 0.0f), 0.0f);
+            R_MAGIC_INIT(R_TextField) 1, string, color, font, size, 0.0f, 0.0f,
+            1.0f, NVG_ALIGN_TOP | NVG_ALIGN_LEFT, R_v2(0.0f, 0.0f), 0.0f);
 
     check_text_field(field);
     return field;
@@ -69,7 +69,7 @@ R_TextField *R_text_field_new(R_Nvg *nvg, R_String *string, NVGcolor color,
 static void free_text_field(R_TextField *field)
 {
     R_string_free(field->string);
-    R_MAGIC_POISON_NN(field);
+    R_MAGIC_POISON(R_TextField, field);
     free(field);
 }
 

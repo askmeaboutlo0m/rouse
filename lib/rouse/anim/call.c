@@ -44,7 +44,7 @@ typedef struct R_Call {
 static R_StepStatus tick_call(R_StepTickArgs args)
 {
     R_Call *call = args.state;
-    R_MAGIC_CHECK(call);
+    R_MAGIC_CHECK(R_Call, call);
     call->on_step(args, call->user);
     return R_STEP_STATUS_COMPLETE;
 }
@@ -52,11 +52,11 @@ static R_StepStatus tick_call(R_StepTickArgs args)
 static void free_call(void *state, R_UserData *seq_user)
 {
     R_Call *call = state;
-    R_MAGIC_CHECK(call);
+    R_MAGIC_CHECK(R_Call, call);
     if (call->on_free) {
         call->on_free(call->user, seq_user);
     }
-    R_MAGIC_POISON(call);
+    R_MAGIC_POISON(R_Call, call);
     free(call);
 }
 
@@ -64,7 +64,7 @@ static void call_to_json(JSON_Object *obj, void *state,
                          R_UNUSED R_UserData *seq_user)
 {
     R_Call *call = state;
-    R_MAGIC_CHECK(call);
+    R_MAGIC_CHECK(R_Call, call);
     json_object_set_string(obj, "type", "R_Call");
     if (call->to_json) {
         call->to_json(obj, call->user, seq_user);
@@ -79,7 +79,7 @@ R_Step *R_call_new(R_CallStepFn on_step, R_CallFreeFn on_free,
 {
     R_assert_not_null(on_step);
     R_Call *call = R_NEW_INIT_STRUCT(call, R_Call,
-            R_MAGIC_INIT(call) on_step, on_free, to_json, user);
-    R_MAGIC_CHECK(call);
+            R_MAGIC_INIT(R_Call) on_step, on_free, to_json, user);
+    R_MAGIC_CHECK(R_Call, call);
     return R_step_new(call, tick_call, free_call, call_to_json);
 }

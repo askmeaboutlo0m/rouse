@@ -35,6 +35,7 @@ typedef struct R_FrameBufferOptions {
 } R_FrameBufferOptions;
 
 typedef struct R_FrameBuffer {
+    R_MAGIC_FIELD
     int                         width, height, real_width, real_height, samples;
     unsigned int                handle, color, depth, stencil;
     R_FrameBufferAttachmentType color_type, depth_type, stencil_type;

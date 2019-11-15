@@ -63,9 +63,11 @@ R_Binder *R_binder_new(unsigned int features, R_BinderDraw draw, R_UserData arg,
                        const char *vert, const char *frag, ...)
 {
     R_Binder *binder = R_NEW_INIT_STRUCT(binder, R_Binder,
-        NULL, R_user_int(0), 0, 0, R_BINDER_DEFAULT_DEPTH_TEST,
-        R_BINDER_DEFAULT_CULL_FACE, R_BINDER_DEFAULT_SFACTOR,
-        R_BINDER_DEFAULT_DFACTOR, {0, NULL, NULL, NULL});
+        R_MAGIC_INIT(R_Binder) NULL, R_user_int(0), 0, 0,
+        R_BINDER_DEFAULT_DEPTH_TEST, R_BINDER_DEFAULT_CULL_FACE,
+        R_BINDER_DEFAULT_SFACTOR, R_BINDER_DEFAULT_DFACTOR,
+        {0, NULL, NULL, NULL});
+    R_MAGIC_CHECK(R_Binder, binder);
 
     binder->features = features;
     binder->draw     = draw;
@@ -105,6 +107,7 @@ R_Binder *R_binder_new(unsigned int features, R_BinderDraw draw, R_UserData arg,
 void R_binder_free(R_Binder *binder)
 {
     if (binder) {
+        R_MAGIC_CHECK(R_Binder, binder);
         R_gl_program_free(binder->program);
         if (binder->attribute.count > 0 && binder->attribute.buffers) {
             R_GL(glDeleteBuffers, binder->attribute.count,
@@ -113,6 +116,7 @@ void R_binder_free(R_Binder *binder)
         free(binder->attribute.buffers);
         free(binder->attribute.fns);
         free(binder->attribute.args);
+        R_MAGIC_POISON(R_Binder, binder);
         free(binder);
     }
 }
@@ -120,6 +124,7 @@ void R_binder_free(R_Binder *binder)
 
 void R_binder_begin(R_Binder *binder)
 {
+    R_MAGIC_CHECK(R_Binder, binder);
     R_GL_CLEAR_ERROR();
     unsigned int features = binder->features;
 
@@ -162,6 +167,7 @@ void R_binder_begin(R_Binder *binder)
 
 void R_binder_end(R_Binder *binder)
 {
+    R_MAGIC_CHECK(R_Binder, binder);
     int count = get_vertex_attrib_count(binder);
     for (int i = 0; i < count; ++i) {
         R_GL(glDisableVertexAttribArray, R_int2uint(i));
@@ -172,12 +178,14 @@ void R_binder_end(R_Binder *binder)
 
 int R_binder_uniform_location(R_Binder *binder, const char *name)
 {
+    R_MAGIC_CHECK(R_Binder, binder);
     return R_gl_uniform_location(binder->program, name);
 }
 
 
 void R_binder_draw(R_Binder *binder, void *subject)
 {
+    R_MAGIC_CHECK(R_Binder, binder);
     int count  = binder->attribute.count;
     int offset = binder->features & R_BINDER_INDEXED ? 1 : 0;
 
@@ -193,6 +201,7 @@ void R_binder_draw(R_Binder *binder, void *subject)
 
 static void draw_mesh(R_MeshBuffer *mb)
 {
+    R_MAGIC_CHECK(R_MeshBuffer, mb);
     R_debug("draw %d indexed triangles", mb->count);
     R_GL_CLEAR_ERROR();
     R_GL(glDrawElements, GL_TRIANGLES, mb->count, GL_UNSIGNED_SHORT, NULL);
@@ -211,6 +220,7 @@ void R_binder_draw_mesh_by_name(void *subject, R_UserData arg)
 
 static void bind_index_buffer(R_MeshBuffer *mb, unsigned int buffer)
 {
+    R_MAGIC_CHECK(R_MeshBuffer, mb);
     if (mb->type != R_BUFFER_TYPE_USHORT) {
         R_die("index mesh buffer '%s' type %d (ushort) != %d",
               mb->name ? mb->name : "", R_BUFFER_TYPE_USHORT, mb->type);
@@ -225,6 +235,7 @@ static void bind_index_buffer(R_MeshBuffer *mb, unsigned int buffer)
 
 static void bind_vertex_buffer(R_MeshBuffer *mb, unsigned int buffer, int index)
 {
+    R_MAGIC_CHECK(R_MeshBuffer, mb);
     unsigned int type;
     void         *values;
     size_t       size;

@@ -47,14 +47,14 @@ struct R_Input {
 
 R_Input *R_input_new(void)
 {
-    R_Input *in = R_NEW_INIT_STRUCT(in, R_Input, R_MAGIC_INIT(in) NULL);
-    R_MAGIC_CHECK(in);
+    R_Input *in = R_NEW_INIT_STRUCT(in, R_Input, R_MAGIC_INIT(R_Input) NULL);
+    R_MAGIC_CHECK(R_Input, in);
     return in;
 }
 
 void R_input_clear(R_Input *in)
 {
-    R_MAGIC_CHECK(in);
+    R_MAGIC_CHECK(R_Input, in);
     R_input_key_clear(in);
 }
 
@@ -62,7 +62,7 @@ void R_input_free(R_Input *in)
 {
     if (in) {
         R_input_clear(in);
-        R_MAGIC_POISON(in);
+        R_MAGIC_POISON(R_Input, in);
         free(in);
     }
 }
@@ -78,10 +78,11 @@ static R_KeyBind *search_key_bind(R_Input *in, unsigned int key)
 static void free_key_bind(R_KeyBind *kb)
 {
     if (kb) {
+        R_MAGIC_CHECK(R_KeyBind, kb);
         if (kb->on_free) {
             kb->on_free(kb->user);
         }
-        R_MAGIC_POISON(kb);
+        R_MAGIC_POISON(R_KeyBind, kb);
         free(kb);
     }
 }
@@ -89,8 +90,8 @@ static void free_key_bind(R_KeyBind *kb)
 void R_input_key_bind(R_Input *in, unsigned int key, R_InputKeyFn fn,
                       R_UserData user, R_InputFreeFn on_free)
 {
-    R_MAGIC_CHECK(in);
-    R_KeyBind *kb = R_NEW_INIT_STRUCT(kb, R_KeyBind, R_MAGIC_INIT(kb)
+    R_MAGIC_CHECK(R_Input, in);
+    R_KeyBind *kb = R_NEW_INIT_STRUCT(kb, R_KeyBind, R_MAGIC_INIT(R_KeyBind)
             key, fn, user, on_free, R_NULL_UT_HH);
 
     R_KeyBind *old;
@@ -100,10 +101,10 @@ void R_input_key_bind(R_Input *in, unsigned int key, R_InputKeyFn fn,
 
 bool R_input_key_unbind(R_Input *in, unsigned int key)
 {
-    R_MAGIC_CHECK(in);
+    R_MAGIC_CHECK(R_Input, in);
     R_KeyBind *kb = search_key_bind(in, key);
     if (kb) {
-        R_MAGIC_CHECK(kb);
+        R_MAGIC_CHECK(R_KeyBind, kb);
         HASH_DELETE(hh, in->key_binds, kb);
         free_key_bind(kb);
         return true;
@@ -115,7 +116,7 @@ bool R_input_key_unbind(R_Input *in, unsigned int key)
 
 void R_input_key_clear(R_Input *in)
 {
-    R_MAGIC_CHECK(in);
+    R_MAGIC_CHECK(R_Input, in);
     /* clang-tidy reports a use-after-free, but that's a false positive. */
     /* See https://github.com/troydhanson/uthash/issues/128 */
     /* NOLINTNEXTLINE(clang-analyzer-unix.Malloc) */
@@ -128,6 +129,7 @@ static R_InputHandled on_key(R_Input *in, SDL_KeyboardEvent *key,
 {
     R_KeyBind *kb = search_key_bind(in, key->keysym.scancode);
     if (kb) {
+        R_MAGIC_CHECK(R_KeyBind, kb);
         kb->fn(key, context, kb->user);
         return R_INPUT_BOUND_KEY;
     }
@@ -139,7 +141,7 @@ static R_InputHandled on_key(R_Input *in, SDL_KeyboardEvent *key,
 R_InputHandled R_input_handle_event(R_Input *in, SDL_Event *event,
                                     R_UserData context)
 {
-    R_MAGIC_CHECK(in);
+    R_MAGIC_CHECK(R_Input, in);
     switch (event->type) {
         case SDL_KEYDOWN:
         case SDL_KEYUP:

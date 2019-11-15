@@ -242,7 +242,7 @@ void R_gl_program_free(unsigned int program)
 R_TextureOptions R_texture_options(void)
 {
     return (R_TextureOptions){
-        R_MAGIC_INIT_TYPE(R_TextureOptions)
+        R_MAGIC_INIT(R_TextureOptions)
         .format     = R_TEXTURE_FORMAT_RGBA,
         .min_filter = GL_LINEAR,
         .mag_filter = GL_LINEAR,
@@ -267,9 +267,9 @@ SDL_Surface *R_surface_load(const char *path, uint32_t pixel_format)
     return converted_surface;
 }
 
-unsigned int R_gl_texture_new(const char *path, R_TextureOptions *options)
+unsigned int R_gl_texture_new(const char *path, const R_TextureOptions *options)
 {
-    R_MAGIC_CHECK(options);
+    R_MAGIC_CHECK(R_TextureOptions, options);
 
     int          internal_format;
     unsigned int format, type;

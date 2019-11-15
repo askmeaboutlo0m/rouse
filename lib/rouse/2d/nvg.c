@@ -41,7 +41,7 @@ struct R_Nvg {
 
 static inline void check_nvg(R_Nvg *nvg)
 {
-    R_MAGIC_CHECK(nvg);
+    R_MAGIC_CHECK(R_Nvg, nvg);
     R_assert(nvg->refs > 0, "refcount must always be positive");
 }
 
@@ -60,7 +60,7 @@ static NVGcontext *make_context(int flags)
 R_Nvg *R_nvg_new(int flags)
 {
     R_Nvg *nvg = R_NEW_INIT_STRUCT(nvg, R_Nvg,
-            R_MAGIC_INIT(nvg) 1, make_context(flags));
+            R_MAGIC_INIT(R_Nvg) 1, make_context(flags));
     check_nvg(nvg);
     return nvg;
 }
@@ -69,7 +69,7 @@ R_Nvg *R_nvg_new(int flags)
 static void free_nvg(R_Nvg *nvg)
 {
     nvgDeleteGLES2(nvg->ctx);
-    R_MAGIC_POISON_NN(nvg);
+    R_MAGIC_POISON(R_Nvg, nvg);
     free(nvg);
 }
 

@@ -34,6 +34,8 @@
 /* Classic static array length check. */
 #define R_LENGTH(ARR) (sizeof(ARR) / sizeof((ARR)[0]))
 
+#define R_NOOP() do {} while (0)
+
 /*
  * GCC- and Clang-specific options. MSVC can probably do some of this stuff
  * as well, but its C support beyond C89 is so bad that I don't care.
@@ -64,101 +66,49 @@
 
 /* Magic numbers to diagnose memory corruption etc. */
 #ifdef ROUSE_MAGIC
-#   define R_MAGIC_NUMBER_COUNT 35
-extern uint32_t R_magic_numbers[R_MAGIC_NUMBER_COUNT];
+extern uint32_t R_magic_seed;
+uint32_t R_magic_hash(const char *type);
 
-#   define R_MAGIC_INDEX(EXPR) _Generic((EXPR), \
-        struct R_Scene                  *:  0, \
-        struct R_Model                  *:  1, \
-        struct R_Mesh                   *:  2, \
-        struct R_MeshBuffer             *:  3, \
-        struct R_Camera                 *:  4, \
-        struct R_FirstPerson            *:  5, \
-        struct R_Input                  *:  6, \
-        struct R_KeyBind                *:  7, \
-        struct R_TextureOptions         *:  8, \
-        struct R_Animator               *:  9, \
-        struct R_Sequence               *: 10, \
-        struct R_Step                   *: 11, \
-        struct R_Delay                  *: 12, \
-        struct R_Call                   *: 13, \
-        struct R_FrameBufferOptions     *: 14, \
-        struct R_Parse                  *: 15, \
-        struct R_AffineTransform        *: 16, \
-        struct R_Sprite                 *: 17, \
-        struct R_Canvas                 *: 18, \
-        struct R_VectorImage            *: 19, \
-        struct R_VectorCommandBegin     *: 20, \
-        struct R_VectorCommandTransform *: 21, \
-        struct R_VectorCommandColor     *: 22, \
-        struct R_VectorCommandMove      *: 23, \
-        struct R_VectorCommandLine      *: 24, \
-        struct R_VectorCommandBezier    *: 25, \
-        struct R_VectorCommandWinding   *: 26, \
-        struct R_VectorCommandFill      *: 27, \
-        struct R_Tween                  *: 28, \
-        struct R_TweenElement           *: 29, \
-        struct R_SpriteTweenData        *: 30, \
-        struct R_String                 *: 31, \
-        struct R_TextField              *: 32, \
-        struct R_BitmapImage            *: 33, \
-        struct R_Nvg                    *: 34)
+#   define R_MAGIC_FIELD uint32_t MAGIC;
 
-#   define R_MAGIC_OF(EXPR)        R_magic_numbers[R_MAGIC_INDEX(EXPR)]
-#   define R_MAGIC_FIELD           uint32_t MAGIC;
-#   define R_MAGIC_INIT(EXPR)      R_MAGIC_OF(EXPR),
-#   define R_MAGIC_INIT_TYPE(TYPE) R_MAGIC_INIT((TYPE *)NULL)
-#   define R_MAGIC_SET(EXPR)       (EXPR)->MAGIC = R_MAGIC_OF(EXPR)
+#   define R_MAGIC_OF(TYPE) ((void) (TYPE *)NULL, R_magic_hash(#TYPE))
 
-#   define R_MAGIC_DO_CHECK_NN(PTR, TYPE_PTR) do { \
-        if ((PTR)->MAGIC != R_MAGIC_OF(TYPE_PTR)) { \
-            R_die("Bad magic for '%s': 0x%x != 0x%x", \
-                  #PTR, (PTR)->MAGIC, R_MAGIC_OF(TYPE_PTR)); \
-        } \
+#   define R_MAGIC_INIT(TYPE) R_MAGIC_OF(TYPE),
+
+#   define R_MAGIC_SET(TYPE, EXPR) do { \
+        TYPE *_magic_ptr  = (EXPR); \
+        _magic_ptr->MAGIC = R_MAGIC_OF(TYPE); \
     } while (0)
 
-#   define R_MAGIC_CHECK_NN(PTR) R_MAGIC_DO_CHECK_NN(PTR, PTR)
-#   define R_MAGIC_CHECK_TYPE_NN(PTR, TYPE) R_MAGIC_DO_CHECK_NN(PTR, (TYPE *)NULL)
+#    define R_MAGIC_CHECK(TYPE, EXPR) do { \
+            const TYPE *_magic_ptr = (EXPR); \
+            if (_magic_ptr) { \
+                uint32_t _expr_magic = _magic_ptr->MAGIC; \
+                uint32_t _type_magic = R_MAGIC_OF(TYPE); \
+                if (_expr_magic != _type_magic) { \
+                    R_die("Bad %s magic for '%s': got 0x%x, but should be 0x%x", \
+                        #TYPE, #EXPR, _expr_magic, _type_magic); \
+                } \
+            } \
+            else { \
+                R_die("Bad %s magic: '%s' is NULL", #TYPE, #EXPR); \
+            } \
+        } while (0)
 
-#   define R_MAGIC_DO_CHECK(PTR, TYPE_PTR) do { \
-        if (!(PTR)) { \
-            R_die("Bad magic: '%s' is NULL", #PTR); \
-        } \
-        R_MAGIC_DO_CHECK_NN(PTR, TYPE_PTR); \
-    } while (0)
+#   define R_MAGIC_POISONED_NUMBER 0xdeaddeadu
 
-#   define R_MAGIC_CHECK(PTR) R_MAGIC_DO_CHECK(PTR, PTR)
-#   define R_MAGIC_CHECK_TYPE(PTR, TYPE) R_MAGIC_DO_CHECK(PTR, (TYPE *)NULL)
-
-#   define R_MAGIC_POISON_NN(PTR) do { \
-        (PTR)->MAGIC = 0xdeaddeadu; \
-    } while (0)
-
-#   define R_MAGIC_POISON(PTR) do { \
-        if (PTR) { \
-            R_MAGIC_CHECK_NN(PTR); \
-            R_MAGIC_POISON_NN(PTR); \
-        } \
+#   define R_MAGIC_POISON(TYPE, EXPR) do { \
+        R_MAGIC_CHECK(TYPE, EXPR); \
+        (EXPR)->MAGIC = R_MAGIC_POISONED_NUMBER; \
     } while (0)
 #else
-#   define R_MAGIC_FIELD                    /* nothing */
-#   define R_MAGIC_OF(EXPR)                 /* nothing */
-#   define R_MAGIC_INIT(EXPR)               /* nothing */
-#   define R_MAGIC_INIT_TYPE(TYPE)          /* nothing */
-#   define R_MAGIC_SET(EXPR)                /* nothing */
-#   define R_MAGIC_CHECK_NN(PTR)            /* nothing */
-#   define R_MAGIC_CHECK_TYPE_NN(PTR, TYPE) /* nothing */
-#   define R_MAGIC_CHECK(PTR)               /* nothing */
-#   define R_MAGIC_CHECK_TYPE(PTR, TYPE)    /* nothing */
-#   define R_MAGIC_POISON_NN(PTR)           /* nothing */
-#   define R_MAGIC_POISON(PTR)              /* nothing */
+#   define R_MAGIC_FIELD              /* nothing */
+#   define R_MAGIC_OF(TYPE)           /* nothing */
+#   define R_MAGIC_INIT(TYPE)         /* nothing */
+#   define R_MAGIC_SET(TYPE, EXPR)    R_NOOP()
+#   define R_MAGIC_CHECK(TYPE, EXPR)  R_NOOP()
+#   define R_MAGIC_POISON(TYPE, EXPR) R_NOOP()
 #endif
-
-#define R_MAGIC_CHECK_2(A, B) \
-    do { R_MAGIC_CHECK(A); R_MAGIC_CHECK(B); } while (0)
-
-#define R_MAGIC_CHECK_3(A, B, C) \
-    do { R_MAGIC_CHECK_2(A, B); R_MAGIC_CHECK(C); } while (0)
 
 
 /*
@@ -192,6 +142,15 @@ extern uint32_t R_magic_numbers[R_MAGIC_NUMBER_COUNT];
 static inline unsigned char R_char2uchar(char x)
 {
     return (unsigned char) x;
+}
+
+static inline uint32_t R_char2uint32(char x){
+    return (uint32_t) x;
+}
+
+static inline float R_double2float(double x)
+{
+    return (float) x;
 }
 
 static inline int R_float2int(float x)
@@ -264,9 +223,19 @@ static inline char R_uchar2char(unsigned char x)
     return (char) x;
 }
 
+static inline float R_uint2float(unsigned int x)
+{
+    return (float) x;
+}
+
 static inline int R_uint2int(unsigned int x)
 {
     return (int) x;
+}
+
+static inline uint32_t R_uint2uint32(unsigned int x)
+{
+    return (uint32_t) x;
 }
 
 static inline float R_uint322float(uint32_t x)

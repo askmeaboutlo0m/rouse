@@ -58,7 +58,7 @@ struct R_Sprite {
 R_AffineTransform R_affine_transform(void)
 {
     return (R_AffineTransform){
-            R_MAGIC_INIT_TYPE(R_AffineTransform) {{0.0f, 0.0f}},
+            R_MAGIC_INIT(R_AffineTransform) {{0.0f, 0.0f}},
             {{0.0f, 0.0f}}, {{1.0f, 1.0f}}, {{0.0f, 0.0f}}, 0.0f};
 }
 
@@ -66,12 +66,12 @@ R_AffineTransform R_affine_transform(void)
 static void init_affine_transform(R_AffineTransform *transform)
 {
     *transform = R_affine_transform();
-    R_MAGIC_CHECK(transform);
+    R_MAGIC_CHECK(R_AffineTransform, transform);
 }
 
 static inline void check_sprite(R_Sprite *sprite)
 {
-    R_MAGIC_CHECK(sprite);
+    R_MAGIC_CHECK(R_Sprite, sprite);
     R_assert(sprite->refs > 0, "refcount must always be positive");
 }
 
@@ -85,7 +85,7 @@ static inline void check_parent_child(R_Sprite *parent, R_Sprite *child)
 R_Sprite *R_sprite_new(const char *name)
 {
     R_Sprite *sprite = R_NEW_INIT_STRUCT(sprite, R_Sprite,
-            R_MAGIC_INIT(sprite) 1, R_strdup(name), NULL, NULL,
+            R_MAGIC_INIT(R_Sprite) 1, R_strdup(name), NULL, NULL,
             R_user_null(), NULL, NULL, NULL, 0, NULL);
     check_sprite(sprite);
     return sprite;
@@ -104,7 +104,7 @@ R_Sprite *R_sprite_new_root(void)
 
 bool R_sprite_is_root(R_Sprite *sprite)
 {
-    R_MAGIC_CHECK(sprite);
+    R_MAGIC_CHECK(R_Sprite, sprite);
     return sprite->parent == sprite;
 }
 
@@ -128,9 +128,9 @@ static void free_sprite(R_Sprite *sprite)
 {
     free_children(sprite->children);
     free_content(sprite->on_free, sprite->user);
-    R_MAGIC_POISON(sprite);
     free(sprite->name);
     free(sprite->transforms);
+    R_MAGIC_POISON(R_Sprite, sprite);
     free(sprite);
 }
 
@@ -147,7 +147,7 @@ const char *R_sprite_name(R_Sprite *sprite)
 void R_sprite_draw_fn(R_Sprite *sprite, R_SpriteDrawFn on_draw,
                       R_SpriteFreeFn on_free, R_UserData user)
 {
-    R_MAGIC_CHECK(sprite);
+    R_MAGIC_CHECK(R_Sprite, sprite);
     if ((on_draw || on_free) && R_sprite_is_root(sprite)) {
         R_die("Can't assign a draw function to a root sprite");
     }
@@ -255,7 +255,7 @@ void R_sprite_transforms_ensure(R_Sprite *sprite, int transform_count)
 
 R_AffineTransform *R_sprite_transform_at(R_Sprite *sprite, int index)
 {
-    R_MAGIC_CHECK(sprite);
+    R_MAGIC_CHECK(R_Sprite, sprite);
     R_assert(index >= 0, "transform index must not be negative");
     R_sprite_transforms_ensure(sprite, index + 1);
     return &sprite->transforms[index];
@@ -393,7 +393,7 @@ static void draw_children(R_Sprite *sprite, NVGcontext *ctx,
 void R_sprite_draw(R_Sprite *sprite, NVGcontext *ctx,
                    const float parent_matrix[static 6])
 {
-    R_MAGIC_CHECK(sprite);
+    R_MAGIC_CHECK(R_Sprite, sprite);
     float matrix[6];
     calc_matrix(sprite, matrix, parent_matrix);
     draw_self(sprite, ctx, matrix);

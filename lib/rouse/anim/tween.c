@@ -97,6 +97,7 @@ static void tick_elements(R_TweenElement *elements, float ratio)
 static void free_elements(R_TweenElement *elements, R_UserData *seq_user)
 {
     for (R_TweenElement *elem = elements, *next; elem; elem = next) {
+        R_MAGIC_CHECK(R_TweenElement, elem);
         next = elem->next;
 
         if (elem->value_on_free) {
@@ -107,7 +108,7 @@ static void free_elements(R_TweenElement *elements, R_UserData *seq_user)
             elem->on_free(elem->user, seq_user);
         }
 
-        R_MAGIC_POISON_NN(elem);
+        R_MAGIC_POISON(R_TweenElement, elem);
         free(elem);
     }
 }
@@ -121,7 +122,7 @@ static float apply_ease(R_EaseFn ease, float ratio)
 static R_StepStatus tick_tween(R_StepTickArgs args)
 {
     R_Tween *tween = args.state;
-    R_MAGIC_CHECK(tween);
+    R_MAGIC_CHECK(R_Tween, tween);
 
     if (tween->lap != args.lap) {
         tween->start = tween->on_calc(args, tween->user);
@@ -147,7 +148,7 @@ static void free_tween(void *state, R_UserData *seq_user)
 {
     if (state) {
         R_Tween *tween = state;
-        R_MAGIC_CHECK(tween);
+        R_MAGIC_CHECK(R_Tween, tween);
 
         free_elements(tween->elements, seq_user);
 
@@ -155,7 +156,7 @@ static void free_tween(void *state, R_UserData *seq_user)
             tween->on_free(tween->user);
         }
 
-        R_MAGIC_POISON(tween);
+        R_MAGIC_POISON(R_Tween, tween);
         free(tween);
     }
 }
@@ -208,7 +209,7 @@ static void ease_to_json(JSON_Object *obj, const char *key, R_EaseFn ease)
 static void tween_to_json(JSON_Object *obj, void *state, R_UserData *seq_user)
 {
     R_Tween *tween = state;
-    R_MAGIC_CHECK(tween);
+    R_MAGIC_CHECK(R_Tween, tween);
 
     json_object_set_string(obj, "type",  "R_Tween");
     json_object_set_number(obj, "lap",   R_int2double(tween->lap));
@@ -233,9 +234,9 @@ R_Step *R_tween_new(R_TweenCalcFn on_calc, R_TweenFreeFn on_free,
                     R_TweenJsonFn to_json, R_UserData user, R_EaseFn ease)
 {
     R_assert_not_null(on_calc);
-    R_Tween *tween = R_NEW_INIT_STRUCT(tween, R_Tween, R_MAGIC_INIT(tween)
+    R_Tween *tween = R_NEW_INIT_STRUCT(tween, R_Tween, R_MAGIC_INIT(R_Tween)
             -1, 0.0f, 0.0f, ease, NULL, on_calc, on_free, to_json, user);
-    R_MAGIC_CHECK(tween);
+    R_MAGIC_CHECK(R_Tween, tween);
     return R_step_new(tween, tick_tween, free_tween, tween_to_json);
 }
 
@@ -357,18 +358,18 @@ static R_TweenElement *new_float_element(
     R_assert_not_null(set_float);
     R_assert_not_null(calc_float);
     R_TweenElement *elem = R_NEW_INIT_STRUCT(elem, R_TweenElement,
-            R_MAGIC_INIT(elem) user, calc_float_element, tick_float_element,
-            on_free, to_json, NULL, value_user, value_on_free, value_to_json,
-            float_element_to_json,
+            R_MAGIC_INIT(R_TweenElement) user, calc_float_element,
+            tick_float_element, on_free, to_json, NULL, value_user,
+            value_on_free, value_to_json, float_element_to_json,
             {{0.0f, 0.0f, get_float, set_float, calc_float}});
-    R_MAGIC_CHECK(elem);
+    R_MAGIC_CHECK(R_TweenElement, elem);
     return elem;
 }
 
 static void tween_add_element(R_Step *step, R_TweenElement *elem)
 {
     R_Tween *tween = R_step_state(step);
-    R_MAGIC_CHECK(tween);
+    R_MAGIC_CHECK(R_Tween, tween);
     elem->next      = tween->elements;
     tween->elements = elem;
 }

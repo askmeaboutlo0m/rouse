@@ -63,17 +63,17 @@ R_FrameBufferOptions R_canvas_frame_buffer_options(int width, int height)
 R_Canvas *R_canvas_new(int width, int height)
 {
     R_Canvas *canvas = R_NEW_INIT_STRUCT(canvas, R_Canvas,
-            R_MAGIC_INIT(canvas) width, height, R_sprite_new_root());
-    R_MAGIC_CHECK(canvas);
+            R_MAGIC_INIT(R_Canvas) width, height, R_sprite_new_root());
+    R_MAGIC_CHECK(R_Canvas, canvas);
     return canvas;
 }
 
 void R_canvas_free(R_Canvas *canvas)
 {
     if (canvas) {
-        R_MAGIC_CHECK_NN(canvas);
+        R_MAGIC_CHECK(R_Canvas, canvas);
         R_sprite_decref(canvas->sprite);
-        R_MAGIC_POISON(canvas);
+        R_MAGIC_POISON(R_Canvas, canvas);
         free(canvas);
     }
 }
@@ -81,7 +81,7 @@ void R_canvas_free(R_Canvas *canvas)
 
 R_Sprite *R_canvas_sprite(R_Canvas *canvas)
 {
-    R_MAGIC_CHECK(canvas);
+    R_MAGIC_CHECK(R_Canvas, canvas);
     return canvas->sprite;
 }
 
@@ -89,7 +89,7 @@ R_Sprite *R_canvas_sprite(R_Canvas *canvas)
 void R_canvas_render(R_Canvas *canvas, R_Nvg *nvg, int target_width,
                      int target_height)
 {
-    R_MAGIC_CHECK(canvas);
+    R_MAGIC_CHECK(R_Canvas, canvas);
 
     float w = R_int2float(target_width);
     float h = R_int2float(target_height);

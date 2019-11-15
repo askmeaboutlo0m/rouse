@@ -61,10 +61,6 @@ uint32_t R_max_ticks_before_render = R_MAX_TICKS_BEFORE_RENDER_DEFAULT;
 float    R_width                   = R_WIDTH_DEFAULT;
 float    R_height                  = R_HEIGHT_DEFAULT;
 
-#ifdef ROUSE_MAGIC
-uint32_t R_magic_numbers[R_MAGIC_NUMBER_COUNT];
-#endif
-
 static R_Scene   *current_scene  = NULL;
 static R_SceneFn next_scene_fn   = NULL;
 static void      *next_scene_arg = NULL;
@@ -94,12 +90,8 @@ static void init(const char *title, int width, int height, int samples)
     R_ease_init();
 
 #ifdef ROUSE_MAGIC
-    for (unsigned int i = 0; i < R_LENGTH(R_magic_numbers); ++i) {
-        uint32_t low  = R_int2uint32(R_rand()) % 0xffff;
-        uint32_t high = R_int2uint32(R_rand()) % 2 == 0 ? 0xfefeffffu : 0xefefffff;
-        R_magic_numbers[i] = high - low;
-        R_debug("magic number %u = 0x%x", i, (unsigned int) R_magic_numbers[i]);
-    }
+    R_magic_seed = R_uint2uint32(R_rand());
+    R_debug("magic number seed = 0x%x", (unsigned int) R_magic_seed);
 #endif
 
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER)) {
@@ -195,7 +187,7 @@ static R_Scene *swap_scene(void)
     if (next_scene_fn) {
         R_scene_free(current_scene);
         current_scene  = next_scene_fn(next_scene_arg);
-        R_MAGIC_CHECK(current_scene);
+        R_MAGIC_CHECK(R_Scene, current_scene);
         next_scene_fn  = NULL;
         next_scene_arg = NULL;
     }
@@ -310,21 +302,21 @@ void R_main(const char *title, int window_width, int window_height, int samples,
 
 R_Scene *R_scene_new(void)
 {
-    R_Scene *scene = R_NEW_INIT_STRUCT(scene, R_Scene, R_MAGIC_INIT(scene)
+    R_Scene *scene = R_NEW_INIT_STRUCT(scene, R_Scene, R_MAGIC_INIT(R_Scene)
             R_animator_new(), {.data = NULL}, NULL, NULL, NULL, NULL);
-    R_MAGIC_CHECK(scene);
+    R_MAGIC_CHECK(R_Scene, scene);
     return scene;
 }
 
 void R_scene_free(R_Scene *scene)
 {
     if (scene) {
-        R_MAGIC_CHECK(scene);
+        R_MAGIC_CHECK(R_Scene, scene);
         if (scene->on_free) {
             scene->on_free(scene);
         }
         R_animator_free(scene->animator);
-        R_MAGIC_POISON(scene);
+        R_MAGIC_POISON(R_Scene, scene);
         free(scene);
     }
 }

@@ -4,6 +4,7 @@
 #include <stdarg.h>
 #include <errno.h>
 #include <math.h>
+#include <inttypes.h>
 #include <assert.h>
 
 
@@ -46,6 +47,17 @@
 #   include <sys/types.h>
 #   include <sys/wait.h>
 #   include <unistd.h>
+#endif
+
+
+#ifdef _WIN32
+#  ifdef _WIN64
+#    define TAP_FMT_SIZE_T PRIu64
+#  else
+#    define TAP_FMT_SIZE_T PRIu32
+#  endif
+#else
+#  define TAP_FMT_SIZE_T "zu"
 #endif
 
 
@@ -292,7 +304,7 @@ TAP_OK_DETAIL_FN(const void *, ptr_eq_ok, got == want,
                  "pointers should be equal, but they're not", "%p")
 
 TAP_OK_DETAIL_FN(size_t, size_eq_ok, got == want,
-                 "size_t should be equal, but they're not", "%zd")
+                 "size_t should be equal, but they're not", "%" TAP_FMT_SIZE_T)
 
 TAP_OK_DETAIL_FN(const char *, str_eq_ok, tap_str_eq(got, want),
                  "strings should be equal, but they're not", "%s")

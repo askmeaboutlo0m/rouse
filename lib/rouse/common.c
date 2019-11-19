@@ -73,7 +73,17 @@ R_LogFn R_logger_warn  = R_LOGGER_DEFAULT;
 R_LogFn R_logger_info  = R_LOGGER_DEFAULT;
 R_LogFn R_logger_debug = R_LOGGER_DEFAULT;
 
-int R_logbits = R_LOGBIT_DIE | R_LOGBIT_WARN | R_LOGBIT_INFO;
+unsigned int R_logbits = R_LOGBIT_DIE | R_LOGBIT_WARN | R_LOGBIT_INFO;
+
+unsigned int R_log_enable(unsigned int bits)
+{
+    return R_logbits |= bits;
+}
+
+unsigned int R_log_disable(unsigned int bits)
+{
+    return R_logbits &= ~bits;
+}
 
 /*
  * All these log functions basically do the same thing and just call a

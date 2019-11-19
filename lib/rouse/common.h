@@ -340,7 +340,10 @@ extern R_LogFn R_logger_debug;
 #define R_LOGBIT_INFO  0x4
 #define R_LOGBIT_DEBUG 0x8
 
-extern int R_logbits;
+extern unsigned int R_logbits;
+
+unsigned int R_log_enable (unsigned int bits);
+unsigned int R_log_disable(unsigned int bits);
 
 /* Log to `R_logger_die` and then `R_TRAP` to terminate program. */
 #define R_die(...) R_die_fn(__FILE__, __LINE__, __VA_ARGS__)

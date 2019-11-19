@@ -10,6 +10,7 @@ target_compile_features(parson PRIVATE c_std_11)
 add_library(nanovg STATIC)
 add_asan_if_available(nanovg)
 target_compile_features(nanovg PRIVATE c_std_11)
+target_link_libraries(nanovg PUBLIC Rouse::glew)
 target_sources(nanovg PRIVATE
     rouse/3rdparty/nanovg_gles2.c
     rouse/3rdparty/nanovg/fontstash.h

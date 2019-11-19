@@ -31,6 +31,9 @@
 #   define R_GL_CLEAR_ERROR()      ((void) 0)
 #   define R_GL_CHECK_ERROR(WHERE) ((void) 0)
 #   define R_GL(FUNC, ...)         FUNC(__VA_ARGS__)
+#   define R_GL_0(FUNC)            FUNC()
+#   define R_GL_ASSIGN(FUNC, ...)  FUNC(__VA_ARGS__)
+#   define R_GL_ASSIGN_0(FUNC)     FUNC()
 #else
 /*
  * Clear any piled up errors and warn about each one. Every function that does
@@ -60,13 +63,33 @@
  * Run the given OpenGL function and check for errors. So for example, instead
  * of `glActiveTexture(GL_TEXTURE0)`, use `R_GL(glActiveTexture, GLTEXTURE0)`.
  * This only works for OpenGL functions with a `void` result and at least one
- * parameter (which is most of them). Otherwise, you need to do a manual check
- * by using `R_GL_CHECK_ERROR` after your function.
+ * parameter (which is most of them). Otherwise, you either need to use the
+ * `R_GL_ASSIGN` macro or do a manual check with `R_GL_CHECK_ERROR` after your
+ * function call. For functions with no parameters, use `R_GL_0`.
  */
 #   define R_GL(FUNC, ...) do { \
            FUNC(__VA_ARGS__); \
            R_GL_CHECK_ERROR(#FUNC); \
        } while (0)
+/*
+ * Same as `R_GL`, but for functions without arguments.
+ */
+#   define R_GL_0(FUNC) do { \
+            FUNC(); \
+            R_GL_CHECK_ERROR(#FUNC); \
+        } while (0)
+/*
+ * Like `R_GL`, but for functions that return a value. This only works when
+ * you're assigning the result to a variable, it doesn't expand to a single
+ * expression. Use it as follows:
+ *
+ *     int handle = R_GL_ASSIGN(glCreateSomething, x, y);
+ */
+#   define R_GL_ASSIGN(FUNC, ...) FUNC(__VA_ARGS__); R_GL_CHECK_ERROR(#FUNC)
+/*
+ * Same as `R_GL_ASSIGN`, but for functions without arguments.
+ */
+#   define R_GL_ASSIGN_0(FUNC) FUNC(); R_GL_CHECK_ERROR(#FUNC)
 #endif
 
 

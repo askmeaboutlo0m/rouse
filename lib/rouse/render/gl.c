@@ -151,11 +151,9 @@ void R_gl_clear(float r, float g, float b, float a,
 
 static unsigned int parse_shader(unsigned int type, const char *source)
 {
-    unsigned int shader = glCreateShader(type);
-    R_GL_CHECK_ERROR("glCreateShader");
-
-    char       *buffer = source[0] == '<' ? R_slurp(source + 1, NULL) : NULL;
-    const char *code   = buffer ? buffer : source;
+    unsigned int shader = R_GL_ASSIGN(glCreateShader, type);
+    char       *buffer  = source[0] == '<' ? R_slurp(source + 1, NULL) : NULL;
+    const char *code    = buffer ? buffer : source;
     R_GL(glShaderSource, shader, 1, &code, NULL);
     R_GL(glCompileShader, shader);
     free(buffer);
@@ -248,9 +246,7 @@ unsigned int R_gl_program_new(const char *vert, const char *frag)
 {
     R_GL_CLEAR_ERROR();
 
-    unsigned int program = glCreateProgram();
-    R_GL_CHECK_ERROR("glCreateProgram");
-
+    unsigned int program = R_GL_ASSIGN_0(glCreateProgram);
     unsigned int vshader = R_gl_shader_new(GL_VERTEX_SHADER,   vert);
     unsigned int fshader = R_gl_shader_new(GL_FRAGMENT_SHADER, frag);
 
@@ -365,8 +361,7 @@ void R_gl_texture_bind(int index, unsigned int texture, int location)
 int R_gl_uniform_location(unsigned int program, const char *name)
 {
     R_GL_CLEAR_ERROR();
-    int location = glGetUniformLocation(program, name);
-    R_GL_CHECK_ERROR("glGetUniformLocation");
+    int location = R_GL_ASSIGN(glGetUniformLocation, program, name);
     if (location == -1) {
         R_die("No uniform location for '%s'", name);
     }

@@ -169,10 +169,8 @@ static void gen_frame_buffer(R_FrameBuffer *fb)
 
 static void check_status(void)
 {
-    unsigned int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-    R_GL_CHECK_ERROR("glCheckFramebufferStatus");
-
-    const char *error = NULL;
+    unsigned int status = R_GL_ASSIGN(glCheckFramebufferStatus, GL_FRAMEBUFFER);
+    const char   *error = NULL;
     switch (status) {
         case GL_FRAMEBUFFER_COMPLETE:
             break;

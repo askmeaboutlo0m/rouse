@@ -179,12 +179,30 @@ static void dump_info_log(
     free(buffer);
 }
 
+/*
+ * Wrap these logging functions, they have weird calling convention attributes
+ * on Windows making their types incompatible with a regular function pointer.
+ */
+
+static void get_shader_info_log(unsigned int shader, int log_length,
+                                int *buflen, char *buffer)
+{
+    glGetShaderInfoLog(shader, log_length, buflen, buffer);
+}
+
+static void get_program_info_log(unsigned int program, int log_length,
+                                 int *buflen, char *buffer)
+{
+    glGetProgramInfoLog(program, log_length, buflen, buffer);
+}
+
+
 static void dump_shader_info_log(unsigned int shader)
 {
     int log_length;
     R_GL(glGetShaderiv, shader, GL_INFO_LOG_LENGTH, &log_length);
     if (log_length > 0) {
-        dump_info_log(glGetShaderInfoLog, shader, log_length);
+        dump_info_log(get_shader_info_log, shader, log_length);
     }
 }
 
@@ -215,7 +233,7 @@ static void dump_program_info_log(unsigned int program)
     int log_length;
     R_GL(glGetProgramiv, program, GL_INFO_LOG_LENGTH, &log_length);
     if (log_length > 0) {
-        dump_info_log(glGetProgramInfoLog, program, log_length);
+        dump_info_log(get_program_info_log, program, log_length);
     }
 }
 

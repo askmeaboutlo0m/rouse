@@ -42,17 +42,38 @@ int   R_gl_max_texture_samples = 1;
 
 static bool initialized = false;
 
+static const char *get_gl_string(unsigned int name)
+{
+    const unsigned char *value = glGetString(name);
+    R_GL_CLEAR_ERROR();
+    return value ? (const char *)value : "(NULL)";
+}
+
+static void dump_gl_info(void)
+{
+#define R_GL_DUMP_STRING(NAME) R_debug(#NAME ": %s", get_gl_string(NAME))
+    R_GL_DUMP_STRING(GL_VENDOR);
+    R_GL_DUMP_STRING(GL_RENDERER);
+    R_GL_DUMP_STRING(GL_VERSION);
+    R_GL_DUMP_STRING(GL_SHADING_LANGUAGE_VERSION);
+    R_GL_DUMP_STRING(GL_EXTENSIONS);
+#undef R_GL_DUMP_STRING
+}
+
 static void get_gl_values(void)
 {
 #define R_GL_DEBUGV(NAME, FMT) R_debug("%s: " #NAME "=" FMT, __func__, NAME)
+    R_debug("checking for maximum vertex attributes");
     R_GL(glGetIntegerv, GL_MAX_VERTEX_ATTRIBS, &R_gl_max_vertex_attribs);
     R_GL_DEBUGV(R_gl_max_vertex_attribs, "%d");
 
+    R_debug("checking for anisotropic texture filtering");
     if (GLEW_EXT_texture_filter_anisotropic) {
         R_GL(glGetFloatv, GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &R_gl_max_anisotropy);
     }
     R_GL_DEBUGV(R_gl_max_anisotropy, "%f");
 
+    R_debug("checking for multisampled rendering to texture");
     if (GLEW_EXT_multisampled_render_to_texture) {
         int samples; /* Let's make sure this is at least 1. */
         R_GL(glGetIntegerv, GL_MAX_SAMPLES_EXT, &samples);
@@ -68,19 +89,22 @@ void R_gl_init(void)
         R_die("Attempt to call R_gl_init twice");
     }
 
+    R_debug("initializing GLEW");
     glewExperimental = GL_TRUE;
     if (glewInit() != GLEW_OK) {
         R_die("glewInit failed");
     }
 
     R_GL_CLEAR_ERROR();
-    R_GL(glClearColor, 1.0f, 1.0f, 1.0f, 0.0f);
-
+    dump_gl_info();
     get_gl_values();
+
+    R_debug("setting initial clear color");
+    R_GL(glClearColor, 1.0f, 1.0f, 1.0f, 0.0f);
 }
 
 
-void R_gl_die (unsigned int err, const char *where)
+void R_gl_die(unsigned int err, const char *where)
 {
     R_die("OpenGL error %d (%s) in %s", err,
           R_gl_strerror(err), where ? where : "");

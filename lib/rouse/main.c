@@ -84,20 +84,26 @@ static void init(const char *title, int width, int height, int samples)
         R_die("Attempt to call R_main twice");
     }
 
+    R_debug("initializing rouse");
     initialized = true;
+
     R_seed = (unsigned int) time(NULL);
+    R_debug("random seed = %u", R_seed);
+
     json_set_allocation_functions(R_malloc, free);
     R_ease_init();
 
 #ifdef ROUSE_MAGIC
     R_magic_seed = R_uint2uint32(R_rand());
-    R_debug("magic number seed = 0x%x", (unsigned int) R_magic_seed);
+    R_debug("magic number seed = %u", (unsigned int) R_magic_seed);
 #endif
 
+    R_debug("initializing SDL");
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER)) {
         R_die("SDL_Init: %s", SDL_GetError());
     }
 
+    R_debug("initializing SDL_image");
     if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG)) {
         R_die("IMG_Init: %s", IMG_GetError());
     }
@@ -115,8 +121,13 @@ static void init(const char *title, int width, int height, int samples)
          * X_DestroyWindow. I guess an SDL bug. So I'll leave it for now. */
         SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
         SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, samples);
+        R_debug("trying to use %dx MSAA", samples);
+    }
+    else {
+        R_debug("not trying to use any MSAA");
     }
 
+    R_debug("creating a %dx%d window with title '%s'", width, height, title);
     R_window = SDL_CreateWindow(
             title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
             width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
@@ -125,6 +136,7 @@ static void init(const char *title, int width, int height, int samples)
         R_die("SDL_CreateWindow: %s", SDL_GetError());
     }
 
+    R_debug("creating GL context");
     R_glcontext = SDL_GL_CreateContext(R_window);
     if (!R_glcontext) {
         R_die("SDL_GL_CreateContext: %s", SDL_GetError());

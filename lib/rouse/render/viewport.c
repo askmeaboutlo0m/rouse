@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
+#include <math.h>
 #include <SDL2/SDL.h>
 #include <GL/glew.h>
 #include "../3rdparty/parson.h"

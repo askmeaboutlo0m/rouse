@@ -98,6 +98,9 @@
  * Don't assign to these, they're supposed to be read-only.
  */
 
+extern bool R_GL_EXT_texture_filter_anisotropic;
+extern bool R_GL_EXT_multisampled_render_to_texture;
+
 /*
  * `GL_MAX_VERTEX_ATTRIBS`, the maximum number of vertex attributes.
  */

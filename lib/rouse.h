@@ -39,9 +39,9 @@ extern "C" {
 #include <string.h>
 
 #include <cglm/struct.h>
-#include <GL/glew.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include "rouse/3rdparty/gles2_inc.h"
 #include "rouse/3rdparty/nanovg_inc.h"
 #include "rouse/3rdparty/parson.h"
 

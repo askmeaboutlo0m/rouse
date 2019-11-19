@@ -26,7 +26,7 @@
 #include <stdnoreturn.h>
 #include <assert.h>
 #include <cglm/struct.h>
-#include <GL/glew.h>
+#include "../3rdparty/gles2_inc.h"
 #include "../common.h"
 #include "../geom.h"
 #include "gl.h"
@@ -71,7 +71,7 @@ static void gen_color_buffer(R_FrameBuffer *fb,
         case R_FRAME_BUFFER_ATTACHMENT_NONE:
             break;
         case R_FRAME_BUFFER_ATTACHMENT_BUFFER:
-            gen_buffer(&fb->color, GL_RGBA8, fb->real_width, fb->real_height,
+            gen_buffer(&fb->color, GL_RGBA, fb->real_width, fb->real_height,
                        fb->samples);
             break;
         case R_FRAME_BUFFER_ATTACHMENT_TEXTURE:

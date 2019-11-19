@@ -14,14 +14,11 @@
  * You can't just define a function in your executable and
  * rely on the library version not being pulled in.
  *
- * Windows uses some strange calling conventions for its GL
- * functions, so let's disable mocking there for now too.
- *
  * Hoping that functions in the program properly override
  * random library functions isn't a good way of mocking I
  * guess. Should figure out something better eventually.
  */
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#ifndef __EMSCRIPTEN__
 #   define TAP_CAN_MOCK
 #endif
 

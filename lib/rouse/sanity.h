@@ -48,7 +48,6 @@ static_assert(sizeof(char) == sizeof(uint8_t), "char must be a byte");
     X(float,          GLfloat   ) \
     X(float,          GLclampf  ) \
     X(double,         GLdouble  ) \
-    X(double,         GLclampd  ) \
     X(ptrdiff_t,      GLsizeiptr) \
     X(uint32_t,       Uint32    )
 

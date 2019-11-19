@@ -30,7 +30,7 @@
 #include <string.h>
 #include <math.h>
 #include <SDL2/SDL.h>
-#include <GL/glew.h>
+#include "../3rdparty/gles2_inc.h"
 #include "../3rdparty/parson.h"
 #include "../common.h"
 #include "gl.h"

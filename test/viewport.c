@@ -14,11 +14,11 @@ void SDL_GL_GetDrawableSize(R_UNUSED SDL_Window *window, int *w, int *h)
 }
 
 
-static R_Viewport mock_gl_viewport = {0, 0, 0, 0};
+static R_Viewport last_viewport = {0, 0, 0, 0};
 
-void glViewport(int x, int y, int width, int height)
+static void GL_APIENTRY mock_viewport(int x, int y, int width, int height)
 {
-    mock_gl_viewport = (R_Viewport){x, y, width, height};
+    last_viewport = (R_Viewport){x, y, width, height};
 }
 
 
@@ -81,14 +81,15 @@ static void test_viewport_set(void)
     resize(1920.0f, 1080.0f, 1920, 1080);
     window_viewport_ok(0, 0, 1920, 1080);
     R_viewport_reset();
-    viewport_ok(mock_gl_viewport, 0, 0, 1920, 1080);
+    viewport_ok(last_viewport, 0, 0, 1920, 1080);
 
     R_viewport_set((R_Viewport){1, 2, 3, 4});
-    viewport_ok(mock_gl_viewport, 1, 2, 3, 4);
+    viewport_ok(last_viewport, 1, 2, 3, 4);
 }
 
 
 TAP_BEGIN
+    glViewport = mock_viewport;
     test_window_viewport_resize();
     test_viewport_set();
 TAP_END

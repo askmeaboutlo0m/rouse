@@ -26,7 +26,7 @@
 #include <stdbool.h>
 #include <stdnoreturn.h>
 #include <stdio.h>
-#include <GL/glew.h>
+#include "../3rdparty/gles2_inc.h"
 #include "../common.h"
 #include "../parse.h"
 #include "../model.h"

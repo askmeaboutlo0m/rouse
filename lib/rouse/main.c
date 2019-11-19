@@ -29,9 +29,9 @@
 #include <string.h>
 #include <time.h>
 #include <cglm/struct.h>
-#include <GL/glew.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include "3rdparty/gles2_inc.h"
 #include "3rdparty/parson.h"
 #include "3rdparty/uthash_inc.h"
 #include "common.h"

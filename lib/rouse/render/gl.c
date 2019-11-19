@@ -28,19 +28,56 @@
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
-#include <GL/glew.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include "../common.h"
 #include "gl.h"
 
+#define R_GL_DEFINE_FALLBACKS
+#include "../3rdparty/gles2_inc.h"
+
+
+bool R_GL_EXT_texture_filter_anisotropic;
+bool R_GL_EXT_multisampled_render_to_texture;
 
 int   R_gl_max_vertex_attribs  = -1;
 float R_gl_max_anisotropy      = -1.0f;
 int   R_gl_max_texture_samples = 1;
 
-
 static bool initialized = false;
+
+#define R_GL_PROC_X(TYPE, NAME) TYPE NAME = R_ ## NAME ## _fallback;
+R_GL_PROC_LIST
+R_GL_PROC_EXT_LIST
+#undef R_GL_PROC_X
+
+#define GET_GL_PROC(TYPE, NAME) do { \
+        void *_proc = SDL_GL_GetProcAddress(#NAME); \
+        if (_proc) { \
+            R_debug("got proc address: " #TYPE " " #NAME " at %p", _proc); \
+            NAME = (TYPE) _proc; \
+        } \
+        else { \
+            R_warn("did not find proc address for " #TYPE " " #NAME ", " \
+                   "this may cause a crash, TODO: install fallback handler"); \
+        } \
+    } while (0)
+
+static void load_gl_procs(void)
+{
+    R_debug("populating gl proc function pointers");
+#   define R_GL_PROC_X(TYPE, NAME) GET_GL_PROC(TYPE, NAME);
+    /*
+     * This needs a cast from `void *` to function pointers. While that's not
+     * strictly ISO C, it's how SDL (and just about everything else) does it.
+     * So turn off the pedantic warning about that for this little section.
+     */
+#   pragma GCC diagnostic push
+#   pragma GCC diagnostic ignored "-Wpedantic"
+    R_GL_PROC_LIST
+#   pragma GCC diagnostic pop
+#   undef R_GL_PROC_X
+}
 
 static const char *get_gl_string(unsigned int name)
 {
@@ -60,6 +97,21 @@ static void dump_gl_info(void)
 #undef R_GL_DUMP_STRING
 }
 
+static void check_gl_extensions(void)
+{
+    R_debug("checking GL extensions");
+#   define CHECK_GL_EXTENSION(NAME) do { \
+            SDL_bool _supported = SDL_GL_ExtensionSupported(#NAME); \
+            R_ ## NAME = _supported; \
+            R_debug("GL extension " #NAME " is %ssupported", \
+                    _supported ? "" : "NOT "); \
+            R_GL_CLEAR_ERROR(); \
+        } while (0)
+    CHECK_GL_EXTENSION(GL_EXT_texture_filter_anisotropic);
+    CHECK_GL_EXTENSION(GL_EXT_multisampled_render_to_texture);
+#   undef CHECK_GL_EXTENSION
+}
+
 static void get_gl_values(void)
 {
 #define R_GL_DEBUGV(NAME, FMT) R_debug("%s: " #NAME "=" FMT, __func__, NAME)
@@ -67,14 +119,14 @@ static void get_gl_values(void)
     R_GL(glGetIntegerv, GL_MAX_VERTEX_ATTRIBS, &R_gl_max_vertex_attribs);
     R_GL_DEBUGV(R_gl_max_vertex_attribs, "%d");
 
-    R_debug("checking for anisotropic texture filtering");
-    if (GLEW_EXT_texture_filter_anisotropic) {
+    R_debug("checking for maximum anisotropic filtering");
+    if (R_GL_EXT_texture_filter_anisotropic) {
         R_GL(glGetFloatv, GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &R_gl_max_anisotropy);
     }
     R_GL_DEBUGV(R_gl_max_anisotropy, "%f");
 
-    R_debug("checking for multisampled rendering to texture");
-    if (GLEW_EXT_multisampled_render_to_texture) {
+    R_debug("checking for maximum texture samples");
+    if (R_GL_EXT_multisampled_render_to_texture) {
         int samples; /* Let's make sure this is at least 1. */
         R_GL(glGetIntegerv, GL_MAX_SAMPLES_EXT, &samples);
         R_gl_max_texture_samples = R_MAX(samples, 1);
@@ -89,14 +141,11 @@ void R_gl_init(void)
         R_die("Attempt to call R_gl_init twice");
     }
 
-    R_debug("initializing GLEW");
-    glewExperimental = GL_TRUE;
-    if (glewInit() != GLEW_OK) {
-        R_die("glewInit failed");
-    }
-
+    load_gl_procs();
     R_GL_CLEAR_ERROR();
+
     dump_gl_info();
+    check_gl_extensions();
     get_gl_values();
 
     R_debug("setting initial clear color");
@@ -162,7 +211,7 @@ static unsigned int parse_shader(unsigned int type, const char *source)
 }
 
 static void dump_info_log(
-        void (*get_info_log)(unsigned int, int, int *, char *),
+        void GL_APIENTRY (*get_info_log)(unsigned int, int, int *, char *),
         unsigned int handle, int log_length)
 {
     char *buffer = R_malloc(R_int2size(log_length));
@@ -177,30 +226,13 @@ static void dump_info_log(
     free(buffer);
 }
 
-/*
- * Wrap these logging functions, they have weird calling convention attributes
- * on Windows making their types incompatible with a regular function pointer.
- */
-
-static void get_shader_info_log(unsigned int shader, int log_length,
-                                int *buflen, char *buffer)
-{
-    glGetShaderInfoLog(shader, log_length, buflen, buffer);
-}
-
-static void get_program_info_log(unsigned int program, int log_length,
-                                 int *buflen, char *buffer)
-{
-    glGetProgramInfoLog(program, log_length, buflen, buffer);
-}
-
 
 static void dump_shader_info_log(unsigned int shader)
 {
     int log_length;
     R_GL(glGetShaderiv, shader, GL_INFO_LOG_LENGTH, &log_length);
     if (log_length > 0) {
-        dump_info_log(get_shader_info_log, shader, log_length);
+        dump_info_log(glGetShaderInfoLog, shader, log_length);
     }
 }
 
@@ -231,7 +263,7 @@ static void dump_program_info_log(unsigned int program)
     int log_length;
     R_GL(glGetProgramiv, program, GL_INFO_LOG_LENGTH, &log_length);
     if (log_length > 0) {
-        dump_info_log(get_program_info_log, program, log_length);
+        dump_info_log(glGetProgramInfoLog, program, log_length);
     }
 }
 

@@ -28,7 +28,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <cglm/struct.h>
-#include <GL/glew.h>
+#include "../3rdparty/gles2_inc.h"
 #include "../3rdparty/nanovg_inc.h"
 #include "../common.h"
 #include "../string.h"

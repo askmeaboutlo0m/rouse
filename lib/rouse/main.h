@@ -22,6 +22,17 @@
  * SOFTWARE.
  */
 
+#define R_SDL_INIT_FLAGS_DEFAULT (SDL_INIT_VIDEO | SDL_INIT_TIMER)
+#define R_IMG_INIT_FLAGS_DEFAULT IMG_INIT_PNG
+
+#define R_WINDOW_TITLE_DEFAULT   "rouse"
+#define R_WINDOW_X_DEFAULT       SDL_WINDOWPOS_UNDEFINED
+#define R_WINDOW_Y_DEFAULT       SDL_WINDOWPOS_UNDEFINED
+#define R_WINDOW_WIDTH_DEFAULT   1280
+#define R_WINDOW_HEIGHT_DEFAULT  720
+#define R_WINDOW_SAMPLES_DEFAULT 1
+#define R_WINDOW_FLAGS_DEFAULT   (SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE)
+
 /* Default tick length and frame skip, for 100 ticks per second. */
 #define R_TICK_LENGTH_DEFAULT             10
 #define R_MAX_TICKS_BEFORE_RENDER_DEFAULT 10
@@ -29,6 +40,81 @@
 /* Default resolution is full HD. */
 #define R_WIDTH_DEFAULT  1920
 #define R_HEIGHT_DEFAULT 1080
+
+/* Generic hook called during initialization. */
+typedef void (*R_InitHook)(void *user);
+/* Hook to modify flags passed to SDL_Init. */
+typedef void (*R_InitSdlHook)(void *user, uint32_t *flags);
+/* Hook to modify flags passed to IMG_Init. */
+typedef void (*R_InitImgHook)(void *user, int *flags);
+/* Hook to modify window arguments passed to SDL_CreateWindow. */
+typedef void (*R_InitWindowHook)(void *user, const char **title, int *x, int *y,
+                                 int *width, int *height, uint32_t *flags);
+
+/* Callback that initializes a scene. */
+typedef struct R_Scene R_Scene;
+typedef R_Scene *(*R_SceneFn)(void *);
+
+typedef struct R_WindowArgs {
+    const char *title;
+    int        x, y, width, height;
+    int        samples;
+    uint32_t   flags;
+} R_WindowArgs;
+
+typedef struct R_MainArgs {
+    R_MAGIC_FIELD
+    uint32_t         sdl_init_flags;
+    int              img_init_flags;
+    R_WindowArgs     window;
+    R_InitSdlHook    on_sdl_init;
+    R_InitImgHook    on_img_init;
+    R_InitWindowHook on_window_init;
+    R_InitHook       on_gl_init;
+    R_InitHook       on_post_init;
+    R_SceneFn        on_scene;
+    void             *user;
+} R_MainArgs;
+
+/*
+ * A scene, the base unit of measurement. When you set a scene, it'll be
+ * responsible for handling events, doing logic on every tick and rendering
+ * stuff to the screen until you set a different scene. Setting a `NULL`
+ * scene means the application is done and will quit. You can basically think
+ * of a scene like a level or some other kind of game state, I guess.
+ *
+ * You set the scene by calling `R_scene_next` with a callback and and an
+ * optional user data pointer. In that callback, you should create a new scene
+ * (probably via `R_scene_new`), set up whatever user data you need an assign
+ * your callback functions (or methods, if you will). From that point on, your
+ * scene will go running until you call `R_scene_next` again with a different
+ * callback - or your application exits by some other means, of course.
+ */
+struct R_Scene {
+    R_MAGIC_FIELD
+    /* Animation sequencing bookkeepery. Don't touch. */
+    R_Animator *animator;
+    /* This is where your scene-specific data goes. */
+    R_UserData user;
+    /* Event handling callback. Just uses SDL's event loop. */
+    void (*on_event)(R_Scene *, SDL_Event *);
+    /*
+     * Callback for each logic tick. The boolean parameter tells you if this
+     * tick will be rendered, so you can avoid doing logic that only has an
+     * effect on the visuals based on that. Or you could do it in your render
+     * callback instead, if you wanna put logic there too.
+     */
+    void (*on_tick)(R_Scene *, bool);
+    /* Render callback. Do your OpenGL renderage here. */
+    void (*on_render)(R_Scene *);
+    /*
+     * Callback for when the scene is over. Use this to free the scene object,
+     * your user data, clean up your loaded resources and whatever else. If
+     * your application `R_die`s or otherwise crashes, this won't get called,
+     * but on scene changes, including changing to a `NULL` scene, it will.
+     */
+    void (*on_free)(R_Scene *);
+};
 
 /*
  * The One Window. Multiple windows aren't supported because how would that
@@ -64,66 +150,19 @@ extern float R_width;
 extern float R_height;
 
 /*
- * A scene, the base unit of measurement. When you set a scene, it'll be
- * responsible for handling events, doing logic on every tick and rendering
- * stuff to the screen until you set a different scene. Setting a `NULL`
- * scene means the application is done and will quit. You can basically think
- * of a scene like a level or some other kind of game state, I guess.
- *
- * You set the scene by calling `R_scene_next` with a callback and and an
- * optional user data pointer. In that callback, you should create a new scene
- * (probably via `R_scene_new`), set up whatever user data you need an assign
- * your callback functions (or methods, if you will). From that point on, your
- * scene will go running until you call `R_scene_next` again with a different
- * callback - or your application exits by some other means, of course.
- */
-typedef struct R_Scene R_Scene;
-struct R_Scene {
-    R_MAGIC_FIELD
-    /* Animation sequencing bookkeepery. Don't touch. */
-    R_Animator *animator;
-    /* This is where your scene-specific data goes. */
-    R_UserData user;
-    /* Event handling callback. Just uses SDL's event loop. */
-    void (*on_event)(R_Scene *, SDL_Event *);
-    /*
-     * Callback for each logic tick. The boolean parameter tells you if this
-     * tick will be rendered, so you can avoid doing logic that only has an
-     * effect on the visuals based on that. Or you could do it in your render
-     * callback instead, if you wanna put logic there too.
-     */
-    void (*on_tick)(R_Scene *, bool);
-    /* Render callback. Do your OpenGL renderage here. */
-    void (*on_render)(R_Scene *);
-    /*
-     * Callback for when the scene is over. Use this to free the scene object,
-     * your user data, clean up your loaded resources and whatever else. If
-     * your application `R_die`s or otherwise crashes, this won't get called,
-     * but on scene changes, including changing to a `NULL` scene, it will.
-     */
-    void (*on_free)(R_Scene *);
-};
-
-/* Callback that initializes a scene. */
-typedef R_Scene *(*R_SceneFn)(void *);
-
-/*
  * Sets `R_tick_length` with the human-friendly unit of ticks per second.
  */
 void R_framerate_set(float ticks_per_second);
 
+R_MainArgs R_main_args(R_SceneFn on_scene, void *user);
+
 /*
  * Get this thing going. This is the entry point to start your application.
- * The title will be used as the application name, e.g. in the window title bar
- * or the browser tab or whatever. The window width and height will be used for
- * the window being created, but not every platform will have a window at all.
- * If `samples` is greater than 1, you get that much MSAA on the created window.
- * Give it a function to set the first scene and an optional argument for that
- * function. You shouldn't do anything after you call this! You can't rely on
- * this function ever returning, cause depending on the platform it won't.
+ * Use `R_main_args` to get the default set of arguments and populate them.
+ * You shouldn't do anything after you call this! You can't rely on this
+ * function ever returning, cause depending on the platform it won't.
  */
-void R_main(const char *title, int window_width, int window_height, int samples,
-            R_SceneFn fn, void *arg);
+void R_main(const R_MainArgs *args);
 
 
 /*

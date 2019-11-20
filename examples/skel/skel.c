@@ -108,6 +108,8 @@ static R_Scene *init_scene(void *user)
 
 int main(R_UNUSED int argc, R_UNUSED char **argv)
 {
-    R_main("cube", 1280, 720, 1, init_scene, NULL);
+    R_MainArgs args   = R_main_args(init_scene, NULL);
+    args.window.title = "skel";
+    R_main(&args);
     return 0;
 }

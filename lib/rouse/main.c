@@ -73,13 +73,115 @@ void R_framerate_set(float ticks_per_second)
 }
 
 
+static R_WindowArgs window_args(void)
+{
+    return (R_WindowArgs){R_WINDOW_TITLE_DEFAULT, R_WINDOW_X_DEFAULT,
+                          R_WINDOW_Y_DEFAULT, R_WINDOW_WIDTH_DEFAULT,
+                          R_WINDOW_HEIGHT_DEFAULT, R_WINDOW_SAMPLES_DEFAULT,
+                          R_WINDOW_FLAGS_DEFAULT};
+}
+
+R_MainArgs R_main_args(R_SceneFn on_scene, void *user)
+{
+    R_MainArgs args = {R_MAGIC_INIT(R_MainArgs) R_SDL_INIT_FLAGS_DEFAULT,
+                       R_IMG_INIT_FLAGS_DEFAULT, window_args(), NULL, NULL,
+                       NULL, NULL, NULL, on_scene, user};
+    R_MAGIC_CHECK(R_MainArgs, &args);
+    return args;
+}
+
+
 static bool initialized = false;
 
 /* Reference to `ease.c`, not in the header because it's only needed here. */
 void R_ease_init(void);
 
-static void init(const char *title, int width, int height, int samples)
+static void init_sdl(uint32_t flags, R_InitSdlHook on_sdl_init, void *user)
 {
+    if (on_sdl_init) {
+        on_sdl_init(user, &flags);
+    }
+    R_debug("initializing SDL with flags 0x%x", (unsigned int) flags);
+    if (SDL_Init(flags)) {
+        R_die("SDL_Init: %s", SDL_GetError());
+    }
+}
+
+static void init_img(int flags, R_InitImgHook on_img_init, void *user)
+{
+    if (on_img_init) {
+        on_img_init(user, &flags);
+    }
+    R_debug("initializing SDL_image with flags 0x%x", (unsigned int) flags);
+    if (!(IMG_Init(flags) & flags)) {
+        R_die("IMG_Init: %s", IMG_GetError());
+    }
+}
+
+static void init_sdl_hints(int samples)
+{
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+
+    if (samples > 1) {
+        /* There should probably be a check here if that MSAA amount is actually
+         * supported. However, that seems to be totally platform-specific code,
+         * SDL doesn't have a way to query it. I tried to just create windows
+         * with less and less samples until it works, but that causes a crash in
+         * X_DestroyWindow. I guess an SDL bug. So I'll leave it for now. */
+        SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+        SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, samples);
+        R_debug("trying to use %dx MSAA", samples);
+    }
+    else {
+        R_debug("not trying to use any MSAA");
+    }
+}
+
+static void init_window(const char *title, int x, int y, int width, int height,
+                        uint32_t flags, R_InitWindowHook on_window_init,
+                        void *user)
+{
+    if (on_window_init) {
+        on_window_init(user, &title, &x, &y, &width, &height, &flags);
+    }
+    if (!title) {
+        title = R_WINDOW_TITLE_DEFAULT;
+    }
+    R_debug("creating window titled '%s' at %d, %d with dimensions %dx%d and "
+            " flags 0x%x", title, x, y, width, height, (unsigned int) flags);
+    R_window = SDL_CreateWindow(title, x, y, width, height, flags);
+    if (!R_window) {
+        R_die("SDL_CreateWindow: %s", SDL_GetError());
+    }
+}
+
+static void init_gl(R_InitHook on_gl_init, void *user)
+{
+    if (on_gl_init) {
+        on_gl_init(user);
+    }
+    R_debug("creating GL context");
+    R_glcontext = SDL_GL_CreateContext(R_window);
+    if (!R_glcontext) {
+        R_die("SDL_GL_CreateContext: %s", SDL_GetError());
+    }
+    R_gl_init();
+}
+
+static void post_init(R_InitHook on_post_init, void *user)
+{
+    R_window_viewport_resize();
+    if (on_post_init) {
+        on_post_init(user);
+    }
+}
+
+static void init(const R_MainArgs *args)
+{
+    R_MAGIC_CHECK(R_MainArgs, args);
     if (initialized) {
         R_die("Attempt to call R_main twice");
     }
@@ -99,52 +201,15 @@ static void init(const char *title, int width, int height, int samples)
     R_debug("magic number seed = %u", (unsigned int) R_magic_seed);
 #endif
 
-    R_debug("initializing SDL");
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER)) {
-        R_die("SDL_Init: %s", SDL_GetError());
-    }
-
-    R_debug("initializing SDL_image");
-    if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG)) {
-        R_die("IMG_Init: %s", IMG_GetError());
-    }
-
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-
-    if (samples > 1) {
-        /* There should probably be a check here if that MSAA amount is actually
-         * supported. However, that seems to be totally platform-specific code,
-         * SDL doesn't have a way to query it. I tried to just create windows
-         * with less and less samples until it works, but that causes a crash in
-         * X_DestroyWindow. I guess an SDL bug. So I'll leave it for now. */
-        SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-        SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, samples);
-        R_debug("trying to use %dx MSAA", samples);
-    }
-    else {
-        R_debug("not trying to use any MSAA");
-    }
-
-    R_debug("creating a %dx%d window with title '%s'", width, height, title);
-    R_window = SDL_CreateWindow(
-            title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-            width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
-
-    if (!R_window) {
-        R_die("SDL_CreateWindow: %s", SDL_GetError());
-    }
-
-    R_debug("creating GL context");
-    R_glcontext = SDL_GL_CreateContext(R_window);
-    if (!R_glcontext) {
-        R_die("SDL_GL_CreateContext: %s", SDL_GetError());
-    }
-
-    R_gl_init();
-    R_window_viewport_resize();
+    void *user = args->user;
+    init_sdl(args->sdl_init_flags, args->on_sdl_init, user);
+    init_img(args->img_init_flags, args->on_img_init, user);
+    const R_WindowArgs *window = &args->window;
+    init_sdl_hints(args->window.samples);
+    init_window(window->title, window->x, window->y, window->width,
+                window->height, window->flags, args->on_window_init, user);
+    init_gl(args->on_gl_init, user);
+    post_init(args->on_post_init, user);
 }
 
 static void deinit(void)
@@ -293,14 +358,14 @@ static void main_loop(void)
 }
 
 
-void R_main(const char *title, int window_width, int window_height, int samples,
-            R_SceneFn fn, void *arg)
+void R_main(const R_MainArgs *args)
 {
-    init(title, window_width, window_height, samples);
+    init(args);
 
     if (spin_events() != R_SPIN_EVENTS_QUIT) {
-        if (fn) {
-            current_scene = fn(arg);
+        R_SceneFn on_scene = args->on_scene;
+        if (on_scene) {
+            current_scene = on_scene(args->user);
         }
         if (current_scene) {
             main_loop();

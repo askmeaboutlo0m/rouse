@@ -120,6 +120,17 @@ static void init_img(int flags, R_InitImgHook on_img_init, void *user)
 
 static void init_sdl_hints(int samples)
 {
+    /* By default, SDL will use the native OpenGL ES 2.0 support in Windows if
+     * the driver supports it instead of using DirectX via ANGLE. This seems to
+     * be the case for Intel and NVidia drivers, basically. However, the actual
+     * implementation isn't great and e.g. refuses to create frame buffers with
+     * a stencil attachment. This hint causes SDL to prefer ANGLE, which is the
+     * more compatible option and therefore the default. If you want to change
+     * it, use the `on_window_init` hook and set this hint to "0" again. */
+#ifdef _WIN32
+    SDL_SetHint(SDL_HINT_OPENGL_ES_DRIVER, "1");
+#endif
+
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);

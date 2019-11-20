@@ -39,7 +39,7 @@ struct R_Nvg {
     NVGcontext *ctx;
 };
 
-static inline void check_nvg(R_Nvg *nvg)
+static inline void check_nvg(R_UNUSED_UNLESS_DEBUG_OR_MAGIC R_Nvg *nvg)
 {
     R_MAGIC_CHECK(R_Nvg, nvg);
     R_assert(nvg->refs > 0, "refcount must always be positive");

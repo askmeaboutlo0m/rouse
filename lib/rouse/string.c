@@ -50,6 +50,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdnoreturn.h>
+#include <assert.h>
 #include <string.h>
 #include <stdio.h>
 #include "common.h"

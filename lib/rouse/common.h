@@ -64,6 +64,13 @@
 #    define R_UNUSED_UNLESS_DEBUG R_UNUSED
 #endif
 
+/* And sometiems parameters are only used if there's asserts or magic checks. */
+#if defined(ROUSE_DEBUG) || defined(ROUSE_MAGIC)
+#   define R_UNUSED_UNLESS_DEBUG_OR_MAGIC /* nothing */
+#else
+#   define R_UNUSED_UNLESS_DEBUG_OR_MAGIC R_UNUSED
+#endif
+
 /* Magic numbers to diagnose memory corruption etc. */
 #ifdef ROUSE_MAGIC
 extern uint32_t R_magic_seed;
@@ -101,6 +108,8 @@ uint32_t R_magic_hash(const char *type);
         R_MAGIC_CHECK(TYPE, EXPR); \
         (EXPR)->MAGIC = R_MAGIC_POISONED_NUMBER; \
     } while (0)
+
+#   define R_UNUSED_UNLESS_MAGIC /* nothing */
 #else
 #   define R_MAGIC_FIELD              /* nothing */
 #   define R_MAGIC_OF(TYPE)           /* nothing */
@@ -108,6 +117,7 @@ uint32_t R_magic_hash(const char *type);
 #   define R_MAGIC_SET(TYPE, EXPR)    R_NOOP()
 #   define R_MAGIC_CHECK(TYPE, EXPR)  R_NOOP()
 #   define R_MAGIC_POISON(TYPE, EXPR) R_NOOP()
+#   define R_UNUSED_UNLESS_MAGIC      R_UNUSED
 #endif
 
 
@@ -300,12 +310,13 @@ static inline R_UserData R_user_between(float a, float b)
  * of pre-formatting the string, so no `printf`ery is needed here. If you need
  * to save the string, `R_strdup` it, it's not yours.
  *
- * The string you receive *usually* has the format `[LEVEL|FILE:LINE] MESSAGE`,
- * where `LEVEL` is one of `DIE`, `WARN`, `INFO` or `DEBUG`, `FILE` is the file
- * name, `LINE` is the line number in that file and `MESSAGE` is the actual
- * thing being logged. You can use this format to split off the information
- * you need out of the string. Don't rely on this format though, you may get
- * something different if an allocation fails or someone else calls you.
+ * The string you receive *usually* has the format `[LEVEL|FILE:LINE] MESSAGE`
+ * if `ROUSE_DEBUG` is defined and `[LEVEL] MESSAGE` otherwise. `LEVEL` is one
+ * of `DIE`, `WARN`, `INFO` or `DEBUG`, `FILE` is the file name, `LINE` is the
+ * line number in that file and `MESSAGE` is the actual thing being logged. You
+ * can use this format to split off the information you need out of the string.
+ * Don't rely on this format though, you may get something different if an
+ * allocation fails or someone else calls you directly.
  */
 typedef void (*R_LogFn)(const char *);
 
@@ -379,7 +390,7 @@ void R_debug_fn(const char *file, int line, const char *fmt, ...) R_FORMAT(3, 4)
             assert(_assert_cond); /* for clang-tidy */ \
         } while (0)
 #else
-#   define R_assert(EXPR, MESSAGE) assert(EXPR) /* for clang-tidy */
+#   define R_assert(EXPR, MESSAGE) /* nothing */
 #endif
 void R_assert_fn(const char *file, int line, const char *expr,
                  bool condition, const char *message);

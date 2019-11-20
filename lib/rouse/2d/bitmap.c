@@ -45,7 +45,8 @@ struct R_BitmapImage {
 };
 
 
-static inline void check_bitmap_image(R_BitmapImage *bi)
+static inline void check_bitmap_image(
+    R_UNUSED_UNLESS_DEBUG_OR_MAGIC R_BitmapImage *bi)
 {
     R_MAGIC_CHECK(R_BitmapImage, bi);
     R_assert(bi->refs > 0, "refcount must always be positive");

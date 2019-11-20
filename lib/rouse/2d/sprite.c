@@ -69,7 +69,7 @@ static void init_affine_transform(R_AffineTransform *transform)
     R_MAGIC_CHECK(R_AffineTransform, transform);
 }
 
-static inline void check_sprite(R_Sprite *sprite)
+static inline void check_sprite(R_UNUSED_UNLESS_DEBUG R_Sprite *sprite)
 {
     R_MAGIC_CHECK(R_Sprite, sprite);
     R_assert(sprite->refs > 0, "refcount must always be positive");

@@ -291,7 +291,8 @@ static R_VectorImage *parse_vector_image(R_Parse *parse)
 }
 
 
-static inline void check_vector_image(R_VectorImage *vi)
+static inline void check_vector_image(
+    R_UNUSED_UNLESS_DEBUG_OR_MAGIC R_VectorImage *vi)
 {
     R_MAGIC_CHECK(R_VectorImage, vi);
     R_assert(vi->refs > 0, "refcount must always be positive");
@@ -400,7 +401,8 @@ int R_vector_image_height(R_VectorImage *vi)
 }
 
 
-static void run_begin(R_VectorCommandBegin *command, NVGcontext *ctx)
+static void run_begin(R_UNUSED_UNLESS_MAGIC R_VectorCommandBegin *command,
+                      NVGcontext *ctx)
 {
     R_MAGIC_CHECK(R_VectorCommandBegin, command);
     nvgBeginPath(ctx);
@@ -445,7 +447,8 @@ static void run_winding(R_VectorCommandWinding *command, NVGcontext *ctx)
     nvgPathWinding(ctx, command->winding);
 }
 
-static void run_fill(R_VectorCommandFill *command, NVGcontext *ctx)
+static void run_fill(R_UNUSED_UNLESS_MAGIC R_VectorCommandFill *command,
+                     NVGcontext *ctx)
 {
     R_MAGIC_CHECK(R_VectorCommandFill, command);
     nvgFill(ctx);

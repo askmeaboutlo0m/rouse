@@ -25,6 +25,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdnoreturn.h>
+#include <assert.h>
 #include <cglm/struct.h>
 #include "../3rdparty/nanovg_inc.h"
 #include "../3rdparty/parson.h"

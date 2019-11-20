@@ -25,6 +25,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdnoreturn.h>
+#include <assert.h>
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
@@ -88,12 +89,12 @@ static const char *get_gl_string(unsigned int name)
 
 static void dump_gl_info(void)
 {
-#define R_GL_DUMP_STRING(NAME) R_debug(#NAME ": %s", get_gl_string(NAME))
-    R_GL_DUMP_STRING(GL_VENDOR);
-    R_GL_DUMP_STRING(GL_RENDERER);
-    R_GL_DUMP_STRING(GL_VERSION);
-    R_GL_DUMP_STRING(GL_SHADING_LANGUAGE_VERSION);
-    R_GL_DUMP_STRING(GL_EXTENSIONS);
+#define R_GL_DUMP_STRING(LOG, NAME) LOG(#NAME ": %s", get_gl_string(NAME))
+    R_GL_DUMP_STRING(R_info,  GL_VENDOR);
+    R_GL_DUMP_STRING(R_info,  GL_RENDERER);
+    R_GL_DUMP_STRING(R_info,  GL_VERSION);
+    R_GL_DUMP_STRING(R_info,  GL_SHADING_LANGUAGE_VERSION);
+    R_GL_DUMP_STRING(R_debug, GL_EXTENSIONS);
 #undef R_GL_DUMP_STRING
 }
 
@@ -103,8 +104,7 @@ static void check_gl_extensions(void)
 #   define CHECK_GL_EXTENSION(NAME) do { \
             SDL_bool _supported = SDL_GL_ExtensionSupported(#NAME); \
             R_ ## NAME = _supported; \
-            R_debug("GL extension " #NAME " is %ssupported", \
-                    _supported ? "" : "NOT "); \
+            R_info(#NAME " is %ssupported", _supported ? "" : "NOT "); \
             R_GL_CLEAR_ERROR(); \
         } while (0)
     CHECK_GL_EXTENSION(GL_EXT_texture_filter_anisotropic);

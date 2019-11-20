@@ -91,8 +91,15 @@ unsigned int R_log_disable(unsigned int bits)
  * it can't be split off into a separate function. So here's this beautiful
  * macro to implement it instead.
  */
-#define PREFIX_FMT "[%s|%s:%d] "
+#ifdef ROUSE_DEBUG
+#   define MARK_ARGS_USED(FILE, LINE) /* nothing */
+#   define FMT_PREFIX(LEVEL, FILE, LINE) "[%s|%s:%d] ", LEVEL, FILE, LINE
+#else
+#   define MARK_ARGS_USED(FILE, LINE) do { (void) FILE; (void) LINE; } while (0)
+#   define FMT_PREFIX(LEVEL, FILE, LINE) "[%s] ", LEVEL
+#endif
 #define DO_LOG(LOGGER, LOGBIT, LEVEL, FILE, LINE, FMT, LAST) do { \
+        MARK_ARGS_USED(FILE, LINE); \
         /* No logger or logbit not set, nothing to do. */ \
         if (!(LOGGER && R_logbits & LOGBIT)) { \
             break; \
@@ -102,7 +109,7 @@ unsigned int R_log_disable(unsigned int bits)
             FMT = ""; \
         } \
         /* How long will it be? */ \
-        int prefix_len = snprintf(NULL, 0, PREFIX_FMT, LEVEL, FILE, LINE); \
+        int prefix_len = snprintf(NULL, 0, FMT_PREFIX(LEVEL, FILE, LINE)); \
         va_list ap; \
         va_start(ap, LAST); \
         int message_len = vsnprintf(NULL, 0, FMT, ap); \
@@ -111,8 +118,8 @@ unsigned int R_log_disable(unsigned int bits)
         /* Not R_malloc, because we don't want to R_die from logging. */ \
         char *buf = malloc(R_int2size(total_len) + 1); \
         if (buf) { \
-            int offset = snprintf(buf, R_int2size(prefix_len) + 1, PREFIX_FMT, \
-                                  LEVEL, FILE, LINE); \
+            int offset = snprintf(buf, R_int2size(prefix_len) + 1, \
+                                  FMT_PREFIX(LEVEL, FILE, LINE)); \
             int size = total_len - offset + 1; \
             va_start(ap, LAST); \
             vsnprintf(buf + offset, R_int2size(size), FMT, ap); \
@@ -250,10 +257,9 @@ char *R_strdup(const char *str)
     if (!str) {
         return NULL;
     }
-    size_t len  = strlen(str);
-    char   *buf = R_malloc(len + 1);
-    strncpy(buf, str, len);
-    buf[len] = '\0';
+    size_t size = strlen(str) + 1;
+    char   *buf = R_malloc(size);
+    memcpy(buf, str, size);
     return buf;
 }
 

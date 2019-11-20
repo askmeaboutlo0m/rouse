@@ -46,7 +46,8 @@ static int find_font(NVGcontext *ctx, const char *font_name)
     }
 }
 
-static inline void check_text_field(R_TextField *field)
+static inline void check_text_field(
+    R_UNUSED_UNLESS_DEBUG_OR_MAGIC R_TextField *field)
 {
     R_MAGIC_CHECK(R_TextField, field);
     R_assert(field->refs > 0, "must always be positive");

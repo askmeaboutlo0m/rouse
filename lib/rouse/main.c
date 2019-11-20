@@ -87,14 +87,15 @@ static void init(const char *title, int width, int height, int samples)
     R_debug("initializing rouse");
     initialized = true;
 
-    R_seed = (unsigned int) time(NULL);
-    R_debug("random seed = %u", R_seed);
+    unsigned int seed = (unsigned int) time(NULL);
+    srand(seed);
+    R_debug("srand seed = %u", seed);
 
     json_set_allocation_functions(R_malloc, free);
     R_ease_init();
 
 #ifdef ROUSE_MAGIC
-    R_magic_seed = R_uint2uint32(R_rand());
+    R_magic_seed = R_int2uint32(rand());
     R_debug("magic number seed = %u", (unsigned int) R_magic_seed);
 #endif
 

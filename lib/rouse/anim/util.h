@@ -22,10 +22,6 @@
  * SOFTWARE.
  */
 
-extern unsigned int R_seed;
-
-unsigned int R_rand(void);
-
 float R_rand_between(float a, float b);
 
 static inline bool R_enough_seconds_left(float left, float seconds)

@@ -50,6 +50,6 @@ R_Step *R_delay_new_fixed(float seconds);
  * Delay for a random value between `a` and `b`, recalculated every time this
  * step is hit. It doesn't matter which one is the smaller and which one is
  * the larger value. Negative results are a delay of zero. This uses
- * `R_rand_between`, so it depends on `R_seed`.
+ * `R_rand_between`.
  */
 R_Step *R_delay_new_between(float a, float b);

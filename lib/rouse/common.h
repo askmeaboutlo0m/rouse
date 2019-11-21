@@ -380,22 +380,21 @@ void R_debug_fn(const char *file, int line, const char *fmt, ...) R_FORMAT(3, 4)
 
 /*
  * Assertions, basically a conditional R_die if debug mode is enabled.
- * There's also always a call to the "real" assert so that clang-tidy
- * understands the invariant condition and doesn't report bogus violations.
  */
-#if ROUSE_DEBUG
+#if ROUSE_DEBUG || defined(__clang_analyzer__)
 #   define R_assert(EXPR, MESSAGE) do { \
-            bool _assert_cond = (EXPR); \
-            R_assert_fn(__FILE__, __LINE__, #EXPR, _assert_cond, MESSAGE); \
-            assert(_assert_cond); /* for clang-tidy */ \
+            if (!(EXPR)) { \
+                R_assert_fail(__FILE__, __LINE__, #EXPR, MESSAGE); \
+            } \
         } while (0)
 #else
 #   define R_assert(EXPR, MESSAGE) /* nothing */
 #endif
-void R_assert_fn(const char *file, int line, const char *expr,
-                 bool condition, const char *message);
 
 #define R_assert_not_null(EXPR) R_assert(EXPR, "can't be NULL")
+
+void R_assert_fail(const char *file, int line, const char *expr,
+                   const char *message) R_NORETURN;
 
 
 /*

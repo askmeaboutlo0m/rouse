@@ -167,17 +167,10 @@ void R_debug_fn(const char *file R_UNUSED_UNLESS_DEBUG,
 #endif
 }
 
-void R_assert_fn(const char *file     R_UNUSED_UNLESS_DEBUG,
-                 int        line      R_UNUSED_UNLESS_DEBUG,
-                 const char *expr     R_UNUSED_UNLESS_DEBUG,
-                 bool       condition R_UNUSED_UNLESS_DEBUG,
-                 const char *message  R_UNUSED_UNLESS_DEBUG)
+void R_assert_fail(const char *file, int line, const char *expr,
+                   const char *message)
 {
-#ifdef ROUSE_DEBUG
-    if (!condition)  {
-        R_die_fn(file, line, "Assertion botched: '%s' %s", expr, message);
-    }
-#endif
+    R_die_fn(file, line, "Assertion botched: '%s' %s", expr, message);
 }
 
 

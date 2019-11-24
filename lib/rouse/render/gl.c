@@ -71,14 +71,29 @@ static void load_gl_procs(void)
     /*
      * This needs a cast from `void *` to function pointers. While that's not
      * strictly ISO C, it's how SDL (and just about everything else) does it.
-     * So turn off the pedantic warning about that for this little section.
+     * So turn off the pedantic warning about that for these little sections.
      */
 #   pragma GCC diagnostic push
 #   pragma GCC diagnostic ignored "-Wpedantic"
     R_GL_PROC_LIST
 #   pragma GCC diagnostic pop
 #   undef R_GL_PROC_X
+    R_GL_CLEAR_ERROR();
 }
+
+static void load_ext_multisampled_render_to_texture_procs(void)
+{
+#   pragma GCC diagnostic push
+#   pragma GCC diagnostic ignored "-Wpedantic"
+    GET_GL_PROC(PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEEXTPROC,
+                glFramebufferTexture2DMultisampleEXT);
+    GET_GL_PROC(PFNGLRENDERBUFFERSTORAGEMULTISAMPLEEXTPROC,
+                glRenderbufferStorageMultisampleEXT);
+#   pragma GCC diagnostic pop
+#   undef R_GL_PROC_X
+    R_GL_CLEAR_ERROR();
+}
+
 
 static const char *get_gl_string(unsigned int name)
 {
@@ -130,6 +145,7 @@ static void get_gl_values(void)
         int samples; /* Let's make sure this is at least 1. */
         R_GL(glGetIntegerv, GL_MAX_SAMPLES_EXT, &samples);
         R_gl_max_texture_samples = R_MAX(samples, 1);
+        load_ext_multisampled_render_to_texture_procs();
     }
     R_GL_DEBUGV(R_gl_max_texture_samples, "%d");
 #undef R_GL_DEBUGV
@@ -142,8 +158,6 @@ void R_gl_init(void)
     }
 
     load_gl_procs();
-    R_GL_CLEAR_ERROR();
-
     dump_gl_info();
     check_gl_extensions();
     get_gl_values();

@@ -15,13 +15,21 @@ include(cmake/clang_tidy.cmake)
 include(cmake/dependencies.cmake)
 
 
+function(set_c11_standard target)
+    set_target_properties("${target}" PROPERTIES
+            C_STANDARD          11
+            C_STANDARD_REQUIRED ON
+            C_EXTENSIONS        OFF)
+endfunction()
+
+
 add_subdirectory(lib)
 
 function(add_rouse_linked_executable target)
     add_executable("${target}" ${ARGN})
     add_asan_if_available("${target}")
     add_clang_tidy_if_available("${target}")
-    target_compile_features("${target}" PRIVATE c_std_11)
+    set_c11_standard("${target}")
     target_compile_options("${target}" PRIVATE ${rouse_warnings})
     target_link_libraries("${target}" PUBLIC rouse)
 endfunction()

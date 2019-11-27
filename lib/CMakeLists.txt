@@ -32,9 +32,4 @@ target_include_directories(rouse PUBLIC "${CMAKE_BINARY_DIR}/config")
 target_compile_options(rouse PRIVATE ${rouse_warnings})
 add_clang_tidy_if_available(rouse)
 add_asan_if_available(rouse)
-target_link_libraries(rouse PUBLIC
-    nanovg
-    parson
-    Rouse::cglm
-    Rouse::sdl2
-    Rouse::sdl2_image)
+target_link_libraries(rouse PUBLIC nanovg parson cglm sdl2 sdl2_image)

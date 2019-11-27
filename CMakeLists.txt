@@ -48,3 +48,7 @@ endif()
 
 report_asan_targets()
 report_clang_tidy_targets()
+
+
+export(TARGETS rouse nanovg parson cglm sdl2 sdl2_image
+       NAMESPACE Rouse:: FILE Rouse.cmake)

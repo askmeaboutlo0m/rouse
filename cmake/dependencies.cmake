@@ -20,7 +20,7 @@ if(USE_PKGCONFIG)
     find_package(PkgConfig REQUIRED)
 
     function(add_rouse_library_pc pkg prefix)
-        set(target      "Rouse::${pkg}")
+        set(target      "${pkg}")
         set(cflags_var  "${pkg}${prefix}_CFLAGS")
         set(ldflags_var "${pkg}${prefix}_LDFLAGS")
 
@@ -42,7 +42,7 @@ else()
     endfunction()
 
     function(add_rouse_library_raw pkg cflags ldflags libs)
-        set(target "Rouse::${pkg}")
+        set(target "${pkg}")
         split_args_to_list(cflags_list  "${cflags}")
         split_args_to_list(ldflags_list "${ldflags}")
         split_args_to_list(libs_list    "${libs}")

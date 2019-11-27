@@ -27,6 +27,7 @@
 #include <assert.h>
 #include <cglm/struct.h>
 #include "../3rdparty/gles2_inc.h"
+#include <rouse_config.h>
 #include "../common.h"
 #include "../geom.h"
 #include "gl.h"

@@ -30,6 +30,7 @@
 #include <cglm/struct.h>
 #include "../3rdparty/gles2_inc.h"
 #include "../3rdparty/nanovg_inc.h"
+#include <rouse_config.h>
 #include "../common.h"
 #include "../string.h"
 #include "../geom.h"

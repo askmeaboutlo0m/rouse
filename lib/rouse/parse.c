@@ -31,6 +31,7 @@
 #include <errno.h>
 #include <limits.h>
 #include <math.h>
+#include <rouse_config.h>
 #include "common.h"
 #include "parse.h"
 

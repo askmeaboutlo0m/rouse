@@ -13,6 +13,7 @@ include(cmake/warnings.cmake)
 include(cmake/asan.cmake)
 include(cmake/clang_tidy.cmake)
 include(cmake/dependencies.cmake)
+include(cmake/rouse_config.cmake)
 
 
 function(set_c11_standard target)

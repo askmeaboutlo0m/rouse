@@ -31,6 +31,7 @@
 #include <assert.h>
 #include <cglm/struct.h>
 #include "../3rdparty/nanovg_inc.h"
+#include <rouse_config.h>
 #include "../common.h"
 #include "../parse.h"
 #include "nvg.h"

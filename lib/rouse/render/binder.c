@@ -28,6 +28,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include "../3rdparty/gles2_inc.h"
+#include <rouse_config.h>
 #include "../common.h"
 #include "../parse.h"
 #include "../model.h"

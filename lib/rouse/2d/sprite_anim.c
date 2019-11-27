@@ -29,6 +29,7 @@
 #include <cglm/struct.h>
 #include "../3rdparty/nanovg_inc.h"
 #include "../3rdparty/parson.h"
+#include <rouse_config.h>
 #include "../common.h"
 #include "../string.h"
 #include "../json.h"

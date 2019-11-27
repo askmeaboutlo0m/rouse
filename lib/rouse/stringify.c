@@ -29,6 +29,7 @@
 #include <string.h>
 #include <cglm/struct.h>
 #include <SDL2/SDL.h>
+#include <rouse_config.h>
 #include "common.h"
 #include "geom.h"
 #include "render/frame_buffer.h"

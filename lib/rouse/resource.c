@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
+#include <rouse_config.h>
 #include "common.h"
 #include "resource.h"
 #include "3rdparty/uthash_inc.h"

@@ -53,6 +53,7 @@
 #include <assert.h>
 #include <string.h>
 #include <stdio.h>
+#include <rouse_config.h>
 #include "common.h"
 #include "string.h"
 

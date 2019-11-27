@@ -31,6 +31,7 @@
 #include <string.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <rouse_config.h>
 #include "../common.h"
 #include "gl.h"
 

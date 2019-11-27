@@ -45,6 +45,7 @@ extern "C" {
 #include "rouse/3rdparty/nanovg_inc.h"
 #include "rouse/3rdparty/parson.h"
 
+#include <rouse_config.h>
 #include "rouse/common.h"
 #include "rouse/string.h"
 #include "rouse/stringify.h"

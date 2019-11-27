@@ -22,6 +22,10 @@
  * SOFTWARE.
  */
 
+#ifndef ROUSE_CONFIG_H_INCLUDED
+#   error "Missing #include of rouse_config.h, must come before common.h"
+#endif
+
 /*
  * Minimum, maximum and clamping between two values. Arguments are evaluated
  * multiple times.
@@ -370,7 +374,7 @@ void R_warn_fn(const char *file, int line, const char *fmt, ...) R_FORMAT(3, 4);
 void R_info_fn(const char *file, int line, const char *fmt, ...) R_FORMAT(3, 4);
 
 /* Log to `R_logger_debug`, if `ROUSE_DEBUG` is defined anyway. */
-#if ROUSE_DEBUG
+#ifdef ROUSE_DEBUG
 #   define R_debug(...) R_debug_fn(__FILE__, __LINE__, __VA_ARGS__)
 #else
 #   define R_debug(...) ((void) 0)
@@ -381,7 +385,7 @@ void R_debug_fn(const char *file, int line, const char *fmt, ...) R_FORMAT(3, 4)
 /*
  * Assertions, basically a conditional R_die if debug mode is enabled.
  */
-#if ROUSE_DEBUG || defined(__clang_analyzer__)
+#if defined(ROUSE_DEBUG) || defined(__clang_analyzer__)
 #   define R_assert(EXPR, MESSAGE) do { \
             if (!(EXPR)) { \
                 R_assert_fail(__FILE__, __LINE__, #EXPR, MESSAGE); \

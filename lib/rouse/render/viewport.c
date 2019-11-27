@@ -32,6 +32,7 @@
 #include <SDL2/SDL.h>
 #include "../3rdparty/gles2_inc.h"
 #include "../3rdparty/parson.h"
+#include <rouse_config.h>
 #include "../common.h"
 #include "gl.h"
 #include "viewport.h"

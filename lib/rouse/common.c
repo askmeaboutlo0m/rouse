@@ -29,6 +29,7 @@
 #include <errno.h>
 #include <string.h>
 #include <SDL2/SDL.h>
+#include <rouse_config.h>
 #include "common.h"
 
 

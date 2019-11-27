@@ -7,7 +7,7 @@ option(USE_CLANG_TIDY    "use clang-tidy for all targets if available"        ON
 option(USE_PKGCONFIG     "use pkg-config to find libraries"                   ON)
 
 if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE DEBUG CACHE STRING "debug or release build" FORCE)
+    set(CMAKE_BUILD_TYPE Debug CACHE STRING "debug or release build" FORCE)
     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release")
 endif()
 

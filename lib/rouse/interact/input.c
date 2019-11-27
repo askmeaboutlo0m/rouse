@@ -26,6 +26,7 @@
 #include <stdnoreturn.h>
 #include <assert.h>
 #include <SDL2/SDL.h>
+#include <rouse_config.h>
 #include "../common.h"
 #include "../3rdparty/uthash_inc.h"
 #include "input.h"

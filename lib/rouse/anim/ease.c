@@ -53,6 +53,7 @@
 #include <string.h>
 #include <assert.h>
 #include <cglm/struct.h>
+#include <rouse_config.h>
 #include "../common.h"
 #include "../geom.h"
 #include "ease.h"

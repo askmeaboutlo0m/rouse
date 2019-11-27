@@ -29,6 +29,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <rouse_config.h>
 #include "common.h"
 #include "parse.h"
 #include "model.h"

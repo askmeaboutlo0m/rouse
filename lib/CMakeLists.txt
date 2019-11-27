@@ -102,12 +102,14 @@ target_sources(rouse PRIVATE
     rouse/sanity.h
     rouse/string.h
     rouse/stringify.h
-    "${rouse_geom_h}")
+    "${rouse_geom_h}"
+    "${rouse_config_h}")
 
 add_clang_tidy_if_available(rouse)
 add_asan_if_available(rouse)
 
 target_include_directories(rouse INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}")
+target_include_directories(rouse PUBLIC "${CMAKE_BINARY_DIR}/config")
 set_c11_standard(rouse)
 target_compile_options(rouse PRIVATE ${rouse_warnings})
 target_link_libraries(rouse PUBLIC
@@ -116,13 +118,3 @@ target_link_libraries(rouse PUBLIC
     Rouse::cglm
     Rouse::sdl2
     Rouse::sdl2_image)
-
-if(NOT CMAKE_BUILD_TYPE STREQUAL "Release")
-    message(STATUS "Building with -DROUSE_DEBUG")
-    target_compile_definitions(rouse PUBLIC "ROUSE_DEBUG")
-endif()
-
-if(BUILD_WITH_MAGIC)
-    message(STATUS "Building with -DROUSE_MAGIC")
-    target_compile_definitions(rouse PUBLIC "ROUSE_MAGIC")
-endif()

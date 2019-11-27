@@ -1,4 +1,6 @@
 /*
+ * config.h - configuration decided at build type, automatically generated
+ *
  * Copyright (c) 2019 askmeaboutloom
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -19,29 +21,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#include <stdlib.h>
-#include <stdarg.h>
-#include <stdint.h>
-#include <stddef.h>
-#include <stdbool.h>
-#include <stdnoreturn.h>
-#include <stdio.h>
-#include <errno.h>
-#include <string.h>
-#include <assert.h>
-#include <rouse_config.h>
-#include "../common.h"
-#include "util.h"
+#ifndef ROUSE_CONFIG_H_INCLUDED
+#define ROUSE_CONFIG_H_INCLUDED
 
-#define RAND_MAX_FLOAT ((float) RAND_MAX)
+/* Version of this library. */
+#define ROUSE_VERSION "@CMAKE_PROJECT_VERSION@"
 
-float R_rand_between(float a, float b)
-{
-    float lo  = R_MIN(a, b);
-    float hi  = R_MAX(a, b);
-    float res = lo + (hi - lo) * (R_int2float(rand()) / RAND_MAX_FLOAT);
-    R_debug("R_rand_between(%f, %f) = %f", a, b, res);
-    R_assert(lo <= res, "R_rand_between result must not be below lower bound");
-    R_assert(hi >= res, "R_rand_between result must not be above upper bound");
-    return res;
-}
+/* What kind of build this is. Usually one of "Debug" or "Release". */
+#define ROUSE_BUILD_TYPE "@CMAKE_BUILD_TYPE@"
+
+/*
+ * Debug mode, enables debug logging, assertions, loads of slow OpenGL error
+ * checking and other extraneous things. Should be off in release mode. This is
+ * unaffected by `NDEBUG`, you can enable or disable them independently.
+ */
+#cmakedefine ROUSE_DEBUG
+
+/*
+ * Magic numbers in structs to allow runtime type checking. Causes a
+ * performance hit, so in a release it's probably disabled.
+ */
+#cmakedefine ROUSE_MAGIC
+
+#endif

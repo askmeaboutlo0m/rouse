@@ -29,6 +29,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include "../3rdparty/nanovg_inc.h"
+#include <rouse_config.h>
 #include "../common.h"
 #include "../render/gl.h"
 #include "nvg.h"

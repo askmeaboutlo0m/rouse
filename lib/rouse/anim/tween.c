@@ -28,6 +28,7 @@
 #include <assert.h>
 #include <cglm/struct.h>
 #include "../3rdparty/parson.h"
+#include <rouse_config.h>
 #include "../common.h"
 #include "../json.h"
 #include "../geom.h"

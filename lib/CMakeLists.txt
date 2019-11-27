@@ -3,11 +3,13 @@
 # I guess that's okay since it's only really used for debugging.
 # Maybe it should be excluded in release mode even?
 add_library(parson STATIC rouse/3rdparty/parson.c)
+set_target_properties(parson PROPERTIES OUTPUT_NAME rouse_parson)
 set_c11_standard(parson)
 add_asan_if_available(parson)
 
 # Same for NanoVG, needs to be a separate target to avoid warnings.
 add_library(nanovg STATIC)
+set_target_properties(nanovg PROPERTIES OUTPUT_NAME rouse_nanovg)
 set_c11_standard(nanovg)
 add_asan_if_available(nanovg)
 target_sources(nanovg PRIVATE

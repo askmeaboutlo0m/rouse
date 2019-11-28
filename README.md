@@ -27,6 +27,7 @@ cmake -B buildrelease -G Ninja \
     -DCMAKE_BUILD_TYPE=Release \
     -DUSE_ASAN=OFF \
     -DBUILD_WITH_MAGIC=OFF \
+    -DBUILD_WITH_GL_CHECKS=OFF \
     -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON
 ```
 
@@ -37,10 +38,11 @@ EMPREFIX=/path/to/prefix
 emcmake cmake -B buildem -G Ninja \
     -DCMAKE_TOOLCHAIN_FILE=cross/emscripten.cmake \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON \
     -DUSE_ASAN=OFF \
     -DUSE_PKGCONFIG=OFF \
     -DBUILD_WITH_MAGIC=OFF \
+    -DBUILD_WITH_GL_CHECKS=OFF \
+    -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON \
     -DCGLM_CFLAGS="-Isystem$EMPREFIX/include" \
     -DCGLM_LDFLAGS="-L$EMPREFIX/lib" \
     -DCGLM_LIBS='-lm libcglm.a' \

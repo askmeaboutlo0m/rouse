@@ -31,9 +31,9 @@
 #define ROUSE_BUILD_TYPE "@CMAKE_BUILD_TYPE@"
 
 /*
- * Debug mode, enables debug logging, assertions, loads of slow OpenGL error
- * checking and other extraneous things. Should be off in release mode. This is
- * unaffected by `NDEBUG`, you can enable or disable them independently.
+ * Debug mode, enables debug logging, assertions, and other extraneous things.
+ * Should be off in release mode. This is unaffected by `NDEBUG`, you can
+ * enable or disable them independently.
  */
 #cmakedefine ROUSE_DEBUG
 
@@ -42,5 +42,11 @@
  * performance hit, so in a release it's probably disabled.
  */
 #cmakedefine ROUSE_MAGIC
+
+/*
+ * Checking of every OpenGL call for errors. This is immensely slow, so
+ * definitely turn it off in release mode.
+ */
+#cmakedefine ROUSE_GL_CHECKS
 
 #endif

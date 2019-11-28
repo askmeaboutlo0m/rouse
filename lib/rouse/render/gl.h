@@ -22,19 +22,15 @@
  * SOFTWARE.
  */
 
+#ifndef ROUSE_CONFIG_H_INCLUDED
+#   error "Missing #include of rouse_config.h, must come before gl.h"
+#endif
+
 /*
- * Macros for OpenGL error checking, which has a rather annoying interface.
- * In a release build, you probably want to disable this checking by defining
- * `ROUSE_GL_UNCHECKED`. In WebGL, you'll get error checking anyway I think.
+ * Macros for OpenGL error checking, which has a rather annoying interface. In
+ * a release build, you probably want to disable this.
  */
-#ifdef ROUSE_GL_UNCHECKED
-#   define R_GL_CLEAR_ERROR()      ((void) 0)
-#   define R_GL_CHECK_ERROR(WHERE) ((void) 0)
-#   define R_GL(FUNC, ...)         FUNC(__VA_ARGS__)
-#   define R_GL_0(FUNC)            FUNC()
-#   define R_GL_ASSIGN(FUNC, ...)  FUNC(__VA_ARGS__)
-#   define R_GL_ASSIGN_0(FUNC)     FUNC()
-#else
+#ifdef ROUSE_GL_CHECKS
 /*
  * Clear any piled up errors and warn about each one. Every function that does
  * error checking should make sure to clear errors beforehand, otherwise those
@@ -90,6 +86,13 @@
  * Same as `R_GL_ASSIGN`, but for functions without arguments.
  */
 #   define R_GL_ASSIGN_0(FUNC) FUNC(); R_GL_CHECK_ERROR(#FUNC)
+#else
+#   define R_GL_CLEAR_ERROR()      ((void) 0)
+#   define R_GL_CHECK_ERROR(WHERE) ((void) 0)
+#   define R_GL(FUNC, ...)         FUNC(__VA_ARGS__)
+#   define R_GL_0(FUNC)            FUNC()
+#   define R_GL_ASSIGN(FUNC, ...)  FUNC(__VA_ARGS__)
+#   define R_GL_ASSIGN_0(FUNC)     FUNC()
 #endif
 
 

@@ -24,10 +24,6 @@
 #ifndef ROUSE_H_INCLUDED
 #define ROUSE_H_INCLUDED
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <stdlib.h>
 #include <stddef.h>
 #include <stdarg.h>
@@ -37,10 +33,16 @@ extern "C" {
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
+#include <assert.h>
 
 #include <cglm/struct.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "rouse/3rdparty/gles2_inc.h"
 #include "rouse/3rdparty/nanovg_inc.h"
 #include "rouse/3rdparty/parson.h"
@@ -51,10 +53,7 @@ extern "C" {
 #include "rouse/stringify.h"
 #include "rouse/geom.h"
 #include "rouse/json.h"
-
-#include <assert.h>
 #include "rouse/sanity.h"
-
 #include "rouse/camera.h"
 #include "rouse/parse.h"
 #include "rouse/model.h"

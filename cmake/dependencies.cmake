@@ -16,6 +16,19 @@ function(report_library_options target)
     message(STATUS "${target} link libraries: ${libs}")
 endfunction()
 
+function(add_rouse_library_target name cflags_var ldflags_var libs_var)
+    # We need these targets twice to make `export` work properly. They need to
+    # be linked with the Rouse:: prefix and exported without it, otherwise you
+    # either get double prefixes or links against targets that don't exist.
+    foreach(target IN ITEMS "${name}" "Rouse::${name}")
+        add_library("${target}" INTERFACE IMPORTED GLOBAL)
+        target_compile_options("${target}" INTERFACE ${${cflags_var}})
+        target_link_options(   "${target}" INTERFACE ${${ldflags_var}})
+        target_link_libraries( "${target}" INTERFACE ${${libs_var}})
+    endforeach()
+    report_library_options("${name}")
+endfunction()
+
 if(USE_PKGCONFIG)
     find_package(PkgConfig REQUIRED)
 
@@ -23,12 +36,10 @@ if(USE_PKGCONFIG)
         set(target      "${pkg}")
         set(cflags_var  "${pkg}${prefix}_CFLAGS")
         set(ldflags_var "${pkg}${prefix}_LDFLAGS")
-
+        set(libs_var    "${pkg}${prefix}_LIBS")
         pkg_search_module(${pkg} REQUIRED ${ARGN})
-        add_library("${target}" INTERFACE IMPORTED GLOBAL)
-        target_compile_options("${target}" INTERFACE ${${cflags_var}})
-        target_link_options(   "${target}" INTERFACE ${${ldflags_var}})
-        report_library_options("${target}")
+        add_rouse_library_target("${target}" "${cflags_var}"
+                                 "${ldflags_var}" "${libs_var}")
     endfunction()
 
     add_rouse_library_pc(cglm "_STATIC" cglm)
@@ -46,12 +57,7 @@ else()
         split_args_to_list(cflags_list  "${cflags}")
         split_args_to_list(ldflags_list "${ldflags}")
         split_args_to_list(libs_list    "${libs}")
-
-        add_library("${target}" INTERFACE IMPORTED GLOBAL)
-        target_compile_options("${target}" INTERFACE "${cflags_list}")
-        target_link_options(   "${target}" INTERFACE "${ldflags_list}")
-        target_link_libraries( "${target}" INTERFACE "${libs_list}")
-        report_library_options("${target}")
+        add_rouse_library_target("${target}" cflags_list ldflags_list libs_list)
     endfunction()
 
     add_rouse_library_raw(cglm "${CGLM_CFLAGS}" "${CGLM_LDFLAGS}" "${CGLM_LIBS}")

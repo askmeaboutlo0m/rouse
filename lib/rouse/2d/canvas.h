@@ -24,12 +24,15 @@
 
 typedef struct R_Canvas R_Canvas;
 
-R_FrameBufferOptions R_canvas_frame_buffer_options(int width, int height);
-
 R_Canvas *R_canvas_new(int width, int height);
 
 void R_canvas_free(R_Canvas *canvas);
 
+R_FrameBufferOptions R_canvas_frame_buffer_options(R_Canvas *canvas);
+R_FrameBuffer *R_canvas_frame_buffer_new(R_Canvas *canvas);
+
+int       R_canvas_width (R_Canvas *canvas);
+int       R_canvas_height(R_Canvas *canvas);
 R_Sprite *R_canvas_sprite(R_Canvas *canvas);
 
 void R_canvas_render(R_Canvas *canvas, R_Nvg *nvg, int target_width,

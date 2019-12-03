@@ -229,18 +229,12 @@ static void on_free(R_Scene *scene)
     free(sd);
 }
 
-static R_FrameBuffer *make_fb(int width, int height)
-{
-    R_FrameBufferOptions opts = R_canvas_frame_buffer_options(width, height);
-    return R_frame_buffer_new(&opts);
-}
-
 static SceneData *init_scene_data(void)
 {
     SceneData *sd = R_NEW(sd);
     sd->nvg       = R_nvg_new(0);
     sd->canvas    = R_canvas_new(1920, 1080);
-    sd->fb        = make_fb(1920, 1080);
+    sd->fb        = R_canvas_frame_buffer_new(sd->canvas);
     sd->fr        = R_frame_renderer_new(true);
     sd->index     = 0;
     sd->counter   = 0;

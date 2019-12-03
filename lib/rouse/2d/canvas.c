@@ -51,16 +51,6 @@ struct R_Canvas {
 };
 
 
-R_FrameBufferOptions R_canvas_frame_buffer_options(int width, int height)
-{
-    R_FrameBufferOptions options = R_frame_buffer_options();
-    options.width        = width;
-    options.height       = height;
-    options.color_type   = R_FRAME_BUFFER_ATTACHMENT_TEXTURE;
-    options.stencil_type = R_FRAME_BUFFER_ATTACHMENT_BUFFER;
-    return options;
-}
-
 R_Canvas *R_canvas_new(int width, int height)
 {
     R_Canvas *canvas = R_NEW_INIT_STRUCT(canvas, R_Canvas,
@@ -79,6 +69,36 @@ void R_canvas_free(R_Canvas *canvas)
     }
 }
 
+
+R_FrameBufferOptions R_canvas_frame_buffer_options(R_Canvas *canvas)
+{
+    R_MAGIC_CHECK(R_Canvas, canvas);
+    R_FrameBufferOptions opts = R_frame_buffer_options();
+    opts.width                = canvas->width;
+    opts.height               = canvas->height;
+    opts.color_type           = R_FRAME_BUFFER_ATTACHMENT_TEXTURE;
+    opts.stencil_type         = R_FRAME_BUFFER_ATTACHMENT_BUFFER;
+    return opts;
+}
+
+R_FrameBuffer *R_canvas_frame_buffer_new(R_Canvas *canvas)
+{
+    R_FrameBufferOptions opts = R_canvas_frame_buffer_options(canvas);
+    return R_frame_buffer_new(&opts);
+}
+
+
+int R_canvas_width (R_Canvas *canvas)
+{
+    R_MAGIC_CHECK(R_Canvas, canvas);
+    return canvas->width;
+}
+
+int R_canvas_height(R_Canvas *canvas)
+{
+    R_MAGIC_CHECK(R_Canvas, canvas);
+    return canvas->height;
+}
 
 R_Sprite *R_canvas_sprite(R_Canvas *canvas)
 {

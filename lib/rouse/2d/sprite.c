@@ -114,7 +114,15 @@ static void free_children(R_Sprite *children)
 {
     for (R_Sprite *child = children, *next; child; child = next) {
         next = child->next;
-        R_sprite_decref(child);
+        if (R_sprite_decref(child)) {
+            /*
+             * FIXME: hrm, orphaning children because their parent isn't
+             * referenced anymore is pretty bad. I guess this sprite tree
+             * needs some more sophisticated memory management, since it's
+             * so self-referential and potentially circular.
+             */
+            child->parent = NULL;
+        }
     }
 }
 

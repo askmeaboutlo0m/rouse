@@ -22,6 +22,9 @@
  * SOFTWARE.
  */
 
+#define R_TEXT_FIELD_SIZE_DEFAULT  12
+#define R_TEXT_FIELD_ALIGN_DEFAULT (NVG_ALIGN_TOP | NVG_ALIGN_LEFT)
+
 typedef struct R_TextField {
     R_MAGIC_FIELD
     int       refs;
@@ -33,12 +36,11 @@ typedef struct R_TextField {
     float     spacing;
     float     line_height;
     int       align;
-    R_V2      pos;
+    float     x, y;
     float     width;
 } R_TextField;
 
-R_TextField *R_text_field_new(R_Nvg *nvg, R_String *string, NVGcolor color,
-                              const char *font_name, float size);
+R_TextField *R_text_field_new(void);
 
 R_TextField *R_text_field_incref(R_TextField *field);
 R_TextField *R_text_field_decref(R_TextField *field);

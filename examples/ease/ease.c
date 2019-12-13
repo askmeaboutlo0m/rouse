@@ -64,9 +64,10 @@ static EasingEntry easings[] = {
 static R_TextField *make_field(const char *name, float x, float y,
                                R_Sprite *parent, R_Nvg *nvg)
 {
-    R_TextField *field = R_text_field_new(
-            nvg, R_string_new(0), nvgRGB(0, 0, 0), "DejaVuSansMono", 64);
+    R_TextField *field = R_text_field_new();
     field->align = NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE;
+    field->font  = nvgFindFont(R_nvg_context(nvg), "DejaVuSansMono");
+    field->size  = 64;
 
     R_Sprite *sprite = R_sprite_new(name);
     R_sprite_transform_at(sprite, 0)->pos = R_v2(x, y);

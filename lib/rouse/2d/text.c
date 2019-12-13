@@ -37,16 +37,6 @@
 #include "text.h"
 
 
-static int find_font(NVGcontext *ctx, const char *font_name)
-{
-    int font = nvgFindFont(ctx, font_name);
-    if (font == -1) {
-        R_die("Font '%s' not found", font_name);
-    } else {
-        return font;
-    }
-}
-
 static inline void check_text_field(
     R_UNUSED_UNLESS_DEBUG_OR_MAGIC R_TextField *field)
 {
@@ -54,16 +44,12 @@ static inline void check_text_field(
     R_assert(field->refs > 0, "must always be positive");
 }
 
-R_TextField *R_text_field_new(R_Nvg *nvg, R_String *string, NVGcolor color,
-                              const char *font_name, float size)
+R_TextField *R_text_field_new(void)
 {
-    R_assert_not_null(font_name);
-    int font = find_font(R_nvg_context(nvg), font_name);
-
     R_TextField *field = R_NEW_INIT_STRUCT(field, R_TextField,
-            R_MAGIC_INIT(R_TextField) 1, string, color, font, size, 0.0f, 0.0f,
-            1.0f, NVG_ALIGN_TOP | NVG_ALIGN_LEFT, R_v2(0.0f, 0.0f), 0.0f);
-
+            R_MAGIC_INIT(R_TextField) 1, R_string_new(0), nvgRGB(0, 0, 0),
+            -1, R_TEXT_FIELD_SIZE_DEFAULT, 0.0f, 0.0f, 1.0f,
+            R_TEXT_FIELD_ALIGN_DEFAULT, 0.0f, 0.0f, 0.0f);
     check_text_field(field);
     return field;
 }
@@ -78,16 +64,17 @@ static void free_text_field(R_TextField *field)
 R_DEFINE_REFCOUNT_FUNCS(R_TextField, text_field, refs)
 
 
-static void draw_text(NVGcontext *vg, R_String *string, R_V2 pos, float width)
+static void draw_text(NVGcontext *vg, R_String *string,
+                      float x, float y, float width)
 {
     const char *start = R_string_body(string);
     const char *end   = start + R_string_len(string);
     nvgBeginPath(vg);
     if (width > 0.0f) {
-        nvgTextBox(vg, pos.x, pos.y, width, start, end);
+        nvgTextBox(vg, x, y, width, start, end);
     }
     else {
-        nvgText(vg, pos.x, pos.y, start, end);
+        nvgText(vg, x, y, start, end);
     }
     nvgFill(vg);
 }
@@ -96,15 +83,17 @@ void R_text_field_draw(R_TextField *field, NVGcontext *ctx,
                        const float matrix[static 6])
 {
     check_text_field(field);
-
-    R_nvg_transform_set(ctx, matrix);
-    nvgFillColor(ctx, field->color);
-    nvgFontFaceId(ctx, field->font);
-    nvgFontSize(ctx, field->size);
-    nvgFontBlur(ctx, field->blur);
-    nvgTextLetterSpacing(ctx, field->spacing);
-    nvgTextLineHeight(ctx, field->line_height);
-    nvgTextAlign(ctx, field->align);
-
-    draw_text(ctx, field->string, field->pos, field->width);
+    int      font    = field->font;
+    R_String *string = field->string;
+    if (font != -1 && string && R_string_len(string) > 0) {
+        R_nvg_transform_set(ctx, matrix);
+        nvgFillColor(ctx, field->color);
+        nvgFontFaceId(ctx, font);
+        nvgFontSize(ctx, field->size);
+        nvgFontBlur(ctx, field->blur);
+        nvgTextLetterSpacing(ctx, field->spacing);
+        nvgTextLineHeight(ctx, field->line_height);
+        nvgTextAlign(ctx, field->align);
+        draw_text(ctx, string, field->x, field->y, field->width);
+    }
 }

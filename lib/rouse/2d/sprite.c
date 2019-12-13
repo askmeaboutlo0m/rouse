@@ -269,19 +269,16 @@ R_Sprite *R_sprite_parent(R_Sprite *sprite)
     return R_sprite_is_root(sprite) ? NULL : sprite->parent;
 }
 
-R_Sprite *R_sprite_orphan(R_Sprite *sprite)
+bool R_sprite_orphan(R_Sprite *sprite)
 {
     check_sprite(sprite);
-    if (R_sprite_is_root(sprite)) {
-        return NULL;
-    }
-    else {
+    if (!R_sprite_is_root(sprite)) {
         R_Sprite *parent = sprite->parent;
         if (parent) {
-            R_sprite_child_remove(parent, sprite);
+            return true;
         }
-        return parent;
     }
+    return false;
 }
 
 int R_sprite_child_add(R_Sprite *sprite, R_Sprite *child)

@@ -127,10 +127,9 @@ R_Sprite *R_sprite_parent(R_Sprite *sprite);
 
 /*
  * Orphans the given `sprite` if it has a parent. After this, its parent will
- * be `NULL`. Returns the parent it had or `NULL` if it didn't have one. The
- * `sprite`s refcount will be decremented if it had a parent.
+ * be `NULL`. Returns if the sprite had a parent or not.
  */
-R_Sprite *R_sprite_orphan(R_Sprite *sprite);
+bool R_sprite_orphan(R_Sprite *sprite);
 
 /*
  * Adds the given `child` to the end of the parent `sprite`'s child list.

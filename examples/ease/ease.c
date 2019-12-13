@@ -156,11 +156,12 @@ static void draw_graph_line(NVGcontext *ctx, float w, float h, int sample_count,
     nvgStroke(ctx);
 }
 
-static void draw_graph(NVGcontext *ctx, const float matrix[static 6],
+static void draw_graph(R_Nvg *nvg, const float matrix[static 6],
                        R_UserData user)
 {
-    SceneData   *sd = user.data;
-    EasingEntry *ee = &easings[sd->index];
+    SceneData   *sd  = user.data;
+    EasingEntry *ee  = &easings[sd->index];
+    NVGcontext  *ctx = R_nvg_context(nvg);
     R_nvg_transform_set(ctx, matrix);
     float w = GRAPH_WIDTH;
     float h = GRAPH_HEIGHT;

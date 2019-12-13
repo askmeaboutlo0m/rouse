@@ -31,7 +31,7 @@ typedef struct R_AffineTransform {
     float angle; /* in radians */
 } R_AffineTransform;
 
-typedef void (*R_SpriteDrawFn)(NVGcontext *, const float[static 6], R_UserData);
+typedef void (*R_SpriteDrawFn)(R_Nvg *, const float[static 6], R_UserData);
 typedef void (*R_SpriteFreeFn)(R_UserData);
 
 typedef struct R_Sprite R_Sprite;
@@ -165,5 +165,5 @@ int R_sprite_child_add_at_noinc(R_Sprite *sprite, R_Sprite *child, int index);
 void R_sprite_child_remove(R_Sprite *sprite, R_Sprite *child);
 
 
-void R_sprite_draw(R_Sprite *sprite, NVGcontext *ctx,
+void R_sprite_draw(R_Sprite *sprite, R_Nvg *nvg,
                    const float parent_matrix[static 6]);

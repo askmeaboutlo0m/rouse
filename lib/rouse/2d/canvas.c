@@ -121,6 +121,6 @@ void R_canvas_render(R_Canvas *canvas, R_Nvg *nvg, int target_width,
 
     NVGcontext *ctx = R_nvg_context(nvg);
     nvgBeginFrame(ctx, w, h, 1.0f);
-    R_sprite_draw(canvas->sprite, ctx, matrix);
+    R_sprite_draw(canvas->sprite, nvg, matrix);
     nvgEndFrame(ctx);
 }

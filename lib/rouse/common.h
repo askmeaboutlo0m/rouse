@@ -300,7 +300,10 @@ static inline R_UserData R_user_data(void *data)
 
 static inline R_UserData R_user_null(void)
 {
-    return (R_UserData){.data = NULL};
+    R_UserData user;
+    void *memset(void * ptr, int value, size_t num);
+    memset(&user, 0, sizeof(user));
+    return user;
 }
 
 static inline R_UserData R_user_between(float a, float b)

@@ -85,6 +85,8 @@ int R_sprite_refs(R_Sprite *sprite);
 
 const char *R_sprite_name(R_Sprite *sprite);
 
+R_UserData *R_sprite_user(R_Sprite *sprite);
+
 
 /*
  * Make the `sprite` call the given `on_draw` function when it's being rendered.

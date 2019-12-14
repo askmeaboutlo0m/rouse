@@ -53,6 +53,7 @@ struct R_Sprite {
     R_Sprite          *next;
     int               transform_count;
     R_AffineTransform *transforms;
+    R_UserData        sprite_user;
 };
 
 
@@ -87,7 +88,7 @@ R_Sprite *R_sprite_new(const char *name)
 {
     R_Sprite *sprite = R_NEW_INIT_STRUCT(sprite, R_Sprite,
             R_MAGIC_INIT(R_Sprite) 1, R_strdup(name), NULL, NULL,
-            R_user_null(), NULL, NULL, NULL, 0, NULL);
+            R_user_null(), NULL, NULL, NULL, 0, NULL, R_user_null());
     check_sprite(sprite);
     return sprite;
 }
@@ -150,6 +151,12 @@ const char *R_sprite_name(R_Sprite *sprite)
 {
     check_sprite(sprite);
     return sprite->name;
+}
+
+R_UserData *R_sprite_user(R_Sprite *sprite)
+{
+    check_sprite(sprite);
+    return &sprite->sprite_user;
 }
 
 

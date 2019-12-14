@@ -47,7 +47,7 @@ struct R_Sprite {
     char              *name;
     R_SpriteDrawFn    on_draw;
     R_SpriteFreeFn    on_free;
-    R_UserData        user;
+    R_UserData        draw_user;
     R_Sprite          *parent;
     R_Sprite          *children;
     R_Sprite          *next;
@@ -126,17 +126,17 @@ static void free_children(R_Sprite *children)
     }
 }
 
-static void free_content(R_SpriteFreeFn on_free, R_UserData user)
+static void free_draw(R_SpriteFreeFn on_free, R_UserData draw_user)
 {
     if (on_free) {
-        on_free(user);
+        on_free(draw_user);
     }
 }
 
 static void free_sprite(R_Sprite *sprite)
 {
     free_children(sprite->children);
-    free_content(sprite->on_free, sprite->user);
+    free_draw(sprite->on_free, sprite->draw_user);
     free(sprite->name);
     free(sprite->transforms);
     R_MAGIC_POISON(R_Sprite, sprite);
@@ -154,15 +154,15 @@ const char *R_sprite_name(R_Sprite *sprite)
 
 
 void R_sprite_draw_fn(R_Sprite *sprite, R_SpriteDrawFn on_draw,
-                      R_SpriteFreeFn on_free, R_UserData user)
+                      R_SpriteFreeFn on_free, R_UserData draw_user)
 {
     R_MAGIC_CHECK(R_Sprite, sprite);
     if ((on_draw || on_free) && R_sprite_is_root(sprite)) {
         R_die("Can't assign a draw function to a root sprite");
     }
-    sprite->on_draw = on_draw;
-    sprite->on_free = on_free;
-    sprite->user    = user;
+    sprite->on_draw   = on_draw;
+    sprite->on_free   = on_free;
+    sprite->draw_user = draw_user;
 }
 
 void R_sprite_draw_null(R_Sprite *sprite)
@@ -183,14 +183,14 @@ void R_sprite_draw_null(R_Sprite *sprite)
 
 
 static void draw_bitmap_image(R_Nvg *nvg, const float m[static 6],
-                              R_UserData user)
+                              R_UserData draw_user)
 {
-    R_bitmap_image_draw(user.data, R_nvg_context(nvg), m);
+    R_bitmap_image_draw(draw_user.data, R_nvg_context(nvg), m);
 }
 
-static void free_bitmap_image(R_UserData user)
+static void free_bitmap_image(R_UserData draw_user)
 {
-    R_bitmap_image_decref(user.data);
+    R_bitmap_image_decref(draw_user.data);
 }
 
 void R_sprite_draw_bitmap_image(R_Sprite *sprite, R_BitmapImage *bi)
@@ -200,14 +200,14 @@ void R_sprite_draw_bitmap_image(R_Sprite *sprite, R_BitmapImage *bi)
 
 
 static void draw_vector_image(R_Nvg *nvg, const float m[static 6],
-                              R_UserData user)
+                              R_UserData draw_user)
 {
-    R_vector_image_draw(user.data, R_nvg_context(nvg), m);
+    R_vector_image_draw(draw_user.data, R_nvg_context(nvg), m);
 }
 
-static void free_vector_image(R_UserData user)
+static void free_vector_image(R_UserData draw_user)
 {
-    R_vector_image_decref(user.data);
+    R_vector_image_decref(draw_user.data);
 }
 
 void R_sprite_draw_vector_image(R_Sprite *sprite, R_VectorImage *vi)
@@ -217,14 +217,14 @@ void R_sprite_draw_vector_image(R_Sprite *sprite, R_VectorImage *vi)
 
 
 static void draw_text_field(R_Nvg *nvg, const float m[static 6],
-                            R_UserData user)
+                            R_UserData draw_user)
 {
-    R_text_field_draw(user.data, R_nvg_context(nvg), m);
+    R_text_field_draw(draw_user.data, R_nvg_context(nvg), m);
 }
 
-static void free_text_field(R_UserData user)
+static void free_text_field(R_UserData draw_user)
 {
-    R_text_field_decref(user.data);
+    R_text_field_decref(draw_user.data);
 }
 
 void R_sprite_draw_text_field(R_Sprite *sprite, R_TextField *field)
@@ -383,7 +383,7 @@ static void draw_self(R_Sprite *sprite, R_Nvg *nvg, const float m[static 6])
 {
     R_SpriteDrawFn on_draw = sprite->on_draw;
     if (on_draw) {
-        on_draw(nvg, m, sprite->user);
+        on_draw(nvg, m, sprite->draw_user);
     }
 }
 

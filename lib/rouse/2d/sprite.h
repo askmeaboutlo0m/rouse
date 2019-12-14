@@ -88,7 +88,7 @@ const char *R_sprite_name(R_Sprite *sprite);
 
 /*
  * Make the `sprite` call the given `on_draw` function when it's being rendered.
- * The given `user` data will be passed to the function when that happens,
+ * The given `draw_user` data will be passed to the function when that happens,
  * along with the nanovg context and the sprite's transformation matrix. When
  * the `sprite` is freed, the `on_free` function is called if given.
  *
@@ -97,7 +97,7 @@ const char *R_sprite_name(R_Sprite *sprite);
  * call it. Setting anything but `NULL` for both on a root sprite `R_die`s.
  */
 void R_sprite_draw_fn(R_Sprite *sprite, R_SpriteDrawFn on_draw,
-                      R_SpriteFreeFn on_free, R_UserData user);
+                      R_SpriteFreeFn on_free, R_UserData draw_user);
 
 void R_sprite_draw_null(R_Sprite *sprite);
 

@@ -85,7 +85,10 @@ int R_sprite_refs(R_Sprite *sprite);
 
 const char *R_sprite_name(R_Sprite *sprite);
 
-R_UserData *R_sprite_user(R_Sprite *sprite);
+R_UserData R_sprite_user(R_Sprite *sprite);
+
+void R_sprite_user_set(R_Sprite *sprite, R_UserData user,
+                       R_SpriteFreeFn on_free);
 
 
 /*

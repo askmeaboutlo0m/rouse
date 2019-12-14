@@ -45,15 +45,18 @@ struct R_Sprite {
     R_MAGIC_FIELD
     int               refs;
     char              *name;
-    R_SpriteDrawFn    on_draw;
-    R_SpriteFreeFn    on_free;
-    R_UserData        draw_user;
     R_Sprite          *parent;
     R_Sprite          *children;
     R_Sprite          *next;
     int               transform_count;
     R_AffineTransform *transforms;
-    R_UserData        sprite_user;
+    R_SpriteFreeFn    on_free;
+    R_UserData        user;
+    struct {
+        R_SpriteDrawFn    on_draw;
+        R_SpriteFreeFn    on_free;
+        R_UserData        user;
+    } content;
 };
 
 
@@ -87,8 +90,8 @@ static inline void check_parent_child(R_Sprite *parent, R_Sprite *child)
 R_Sprite *R_sprite_new(const char *name)
 {
     R_Sprite *sprite = R_NEW_INIT_STRUCT(sprite, R_Sprite,
-            R_MAGIC_INIT(R_Sprite) 1, R_strdup(name), NULL, NULL,
-            R_user_null(), NULL, NULL, NULL, 0, NULL, R_user_null());
+            R_MAGIC_INIT(R_Sprite) 1, R_strdup(name), NULL, NULL, NULL,
+            0, NULL, NULL, R_user_null(), {NULL, NULL, R_user_null()});
     check_sprite(sprite);
     return sprite;
 }
@@ -127,17 +130,18 @@ static void free_children(R_Sprite *children)
     }
 }
 
-static void free_draw(R_SpriteFreeFn on_free, R_UserData draw_user)
+static void free_user(R_SpriteFreeFn on_free, R_UserData user)
 {
     if (on_free) {
-        on_free(draw_user);
+        on_free(user);
     }
 }
 
 static void free_sprite(R_Sprite *sprite)
 {
     free_children(sprite->children);
-    free_draw(sprite->on_free, sprite->draw_user);
+    free_user(sprite->on_free, sprite->user);
+    free_user(sprite->content.on_free, sprite->content.user);
     free(sprite->name);
     free(sprite->transforms);
     R_MAGIC_POISON(R_Sprite, sprite);
@@ -153,10 +157,18 @@ const char *R_sprite_name(R_Sprite *sprite)
     return sprite->name;
 }
 
-R_UserData *R_sprite_user(R_Sprite *sprite)
+R_UserData R_sprite_user(R_Sprite *sprite)
 {
     check_sprite(sprite);
-    return &sprite->sprite_user;
+    return sprite->user;
+}
+
+void R_sprite_user_set(R_Sprite *sprite, R_UserData user,
+                       R_SpriteFreeFn on_free)
+{
+    check_sprite(sprite);
+    sprite->user    = user;
+    sprite->on_free = on_free;
 }
 
 
@@ -167,9 +179,9 @@ void R_sprite_draw_fn(R_Sprite *sprite, R_SpriteDrawFn on_draw,
     if ((on_draw || on_free) && R_sprite_is_root(sprite)) {
         R_die("Can't assign a draw function to a root sprite");
     }
-    sprite->on_draw   = on_draw;
-    sprite->on_free   = on_free;
-    sprite->draw_user = draw_user;
+    sprite->content.on_draw = on_draw;
+    sprite->content.on_free = on_free;
+    sprite->content.user    = draw_user;
 }
 
 void R_sprite_draw_null(R_Sprite *sprite)
@@ -388,9 +400,9 @@ static void calc_matrix(R_Sprite *sprite, float matrix[static 6],
 
 static void draw_self(R_Sprite *sprite, R_Nvg *nvg, const float m[static 6])
 {
-    R_SpriteDrawFn on_draw = sprite->on_draw;
+    R_SpriteDrawFn on_draw = sprite->content.on_draw;
     if (on_draw) {
-        on_draw(nvg, m, sprite->draw_user);
+        on_draw(nvg, m, sprite->content.user);
     }
 }
 

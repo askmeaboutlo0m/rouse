@@ -297,6 +297,12 @@ TAP_OK_DETAIL_FN(long, long_eq_ok, got == want,
 TAP_OK_DETAIL_FN(unsigned short, ushort_eq_ok, got == want,
                  "unsigned shorts should be equal, but they're not", "%u")
 
+TAP_OK_DETAIL_FN(unsigned int, uint_eq_ok, got == want,
+                 "unsigned ints should be equal, but they're not", "%u")
+
+TAP_OK_DETAIL_FN(float, float_eq_ok, got == want,
+                 "floats should be equal, but they're not", "%f")
+
 TAP_OK_DETAIL_FN(const void *, ptr_eq_ok, got == want,
                  "pointers should be equal, but they're not", "%p")
 

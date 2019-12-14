@@ -2,6 +2,18 @@
 #include <rouse.h>
 
 
+static void test_user(void)
+{
+    R_UserData user = R_user_null();
+    ptr_eq_ok(user.data, NULL,        "null user pointer is NULL");
+    int_eq_ok(user.i, 0,              "null user int is 0");
+    uint_eq_ok(user.u, 0u,            "null user uint is 0u");
+    float_eq_ok(user.f, 0.0f,         "null user float is 0.0f");
+    float_eq_ok(user.between.a, 0.0f, "null user between a is 0.0f");
+    float_eq_ok(user.between.b, 0.0f, "null user between b is 0.0f");
+}
+
+
 static void test_format(void)
 {
     char *text = R_format("about %.2f of %d is %s", 1.0 / 3.0, 3, "one");
@@ -93,6 +105,7 @@ static void test_slurp(void)
 
 
 TAP_BEGIN
+    test_user();
     test_format();
     test_vformat();
     test_hexdump();

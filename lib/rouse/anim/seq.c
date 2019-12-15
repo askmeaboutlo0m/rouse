@@ -134,13 +134,11 @@ JSON_Value *R_step_to_json(R_Step *step)
 }
 
 
-R_Sequence *R_sequence_new(int max_laps, R_SequenceDoneFn on_done,
-                           R_SequenceFreeFn on_free, R_UserData user)
+R_Sequence *R_sequence_new(void)
 {
-    R_assert(max_laps >= 0 || !on_done, "can't use on_done with infinite laps");
     R_Sequence *seq = R_NEW_INIT_STRUCT(seq, R_Sequence,
-            R_MAGIC_INIT(R_Sequence) NULL, -1, max_laps, false,
-            on_done, on_free, user, NULL, NULL, NULL);
+            R_MAGIC_INIT(R_Sequence) NULL, -1, 0, false,
+            NULL, NULL, R_user_null(), NULL, NULL, NULL);
     R_MAGIC_CHECK(R_Sequence, seq);
     return seq;
 }
@@ -337,15 +335,24 @@ static void add_sequence_to_animator(R_Animator *an, R_Sequence *seq)
     an->last = seq;
 }
 
-static void set_up_sequence_after_adding(R_Animator *an, R_Sequence *seq)
+static void set_up_sequence_after_adding(R_Animator *an, R_Sequence *seq,
+                                         int max_laps, R_SequenceDoneFn on_done,
+                                         R_SequenceFreeFn on_free, R_UserData user)
 {
-    seq->an      = an;
-    seq->lap     = 0;
-    seq->current = seq->first;
+    seq->an       = an;
+    seq->lap      = 0;
+    seq->current  = seq->first;
+    seq->max_laps = max_laps;
+    seq->on_done  = on_done;
+    seq->on_free  = on_free;
+    seq->user     = user;
 }
 
-void R_animator_add(R_Animator *an, R_Sequence *seq)
+void R_animator_add(R_Animator *an, R_Sequence *seq, int max_laps,
+                    R_SequenceDoneFn on_done, R_SequenceFreeFn on_free,
+                    R_UserData user)
 {
+    R_assert(max_laps >= 0 || !on_done, "can't use on_done with infinite laps");
     R_MAGIC_CHECK(R_Animator, an);
     R_MAGIC_CHECK(R_Sequence, seq);
     check_sequence_not_added(seq, __func__);
@@ -353,7 +360,7 @@ void R_animator_add(R_Animator *an, R_Sequence *seq)
         R_die("%s: added sequence is empty", __func__);
     }
     add_sequence_to_animator(an, seq);
-    set_up_sequence_after_adding(an, seq);
+    set_up_sequence_after_adding(an, seq, max_laps, on_done, on_free, user);
 }
 
 

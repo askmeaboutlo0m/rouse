@@ -59,8 +59,7 @@ void *R_step_state(R_Step *step);
 JSON_Value *R_step_to_json(R_Step *step);
 
 
-R_Sequence *R_sequence_new(int max_laps, R_SequenceDoneFn on_done,
-                           R_SequenceFreeFn on_free, R_UserData user);
+R_Sequence *R_sequence_new(void);
 
 void R_sequence_free(R_Sequence *seq);
 
@@ -75,7 +74,9 @@ R_Animator *R_animator_new(void);
 
 void R_animator_free(R_Animator *an);
 
-void R_animator_add(R_Animator *an, R_Sequence *seq);
+void R_animator_add(R_Animator *an, R_Sequence *seq, int max_laps,
+                    R_SequenceDoneFn on_done, R_SequenceFreeFn on_free,
+                    R_UserData user);
 
 void R_animator_tick(R_Animator *an, bool rendered, float seconds);
 

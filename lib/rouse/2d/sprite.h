@@ -170,4 +170,4 @@ void R_sprite_child_remove(R_Sprite *sprite, R_Sprite *child);
 
 
 void R_sprite_draw(R_Sprite *sprite, R_Nvg *nvg,
-                   const float parent_matrix[static 6]);
+                   const float canvas_matrix[static 6]);

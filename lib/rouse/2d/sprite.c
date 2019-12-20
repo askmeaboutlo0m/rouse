@@ -24,6 +24,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include <string.h>
 #include <stdnoreturn.h>
 #include <limits.h>
 #include <assert.h>
@@ -50,6 +51,8 @@ struct R_Sprite {
     R_Sprite          *next;
     int               transform_count;
     R_AffineTransform *transforms;
+    int               current_id, local_id, world_id, parent_id;
+    float             local[6], world[6];
     R_SpriteFreeFn    on_free;
     R_UserData        user;
     struct {
@@ -91,7 +94,9 @@ R_Sprite *R_sprite_new(const char *name)
 {
     R_Sprite *sprite = R_NEW_INIT_STRUCT(sprite, R_Sprite,
             R_MAGIC_INIT(R_Sprite) 1, R_strdup(name), NULL, NULL, NULL,
-            0, NULL, NULL, R_user_null(), {NULL, NULL, R_user_null()});
+            0, NULL, 0, 0, 0, 0, {1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f},
+            {1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f}, NULL, R_user_null(),
+            {NULL, NULL, R_user_null()});
     check_sprite(sprite);
     return sprite;
 }
@@ -286,6 +291,7 @@ R_AffineTransform *R_sprite_transform_at(R_Sprite *sprite, int index)
     R_MAGIC_CHECK(R_Sprite, sprite);
     R_assert(index >= 0, "transform index must not be negative");
     R_sprite_transforms_ensure(sprite, index + 1);
+    ++sprite->local_id;
     return &sprite->transforms[index];
 }
 
@@ -333,6 +339,9 @@ int R_sprite_child_add_at(R_Sprite *sprite, R_Sprite *child, int index)
 
     child->next = *pp ? (*pp)->next : NULL;
     *pp = child;
+
+    child->parent    = sprite;
+    child->parent_id = -1;
     return at;
 }
 
@@ -387,15 +396,46 @@ static void apply_transform(float matrix[static 6], R_AffineTransform *tf)
     nvgTransformMultiply(matrix, tmp);
 }
 
-static void calc_matrix(R_Sprite *sprite, float matrix[static 6],
-                        const float parent_matrix[static 6])
+static void calc_local(R_Sprite *sprite)
 {
-    nvgTransformIdentity(matrix);
+    float *local = sprite->local;
+    nvgTransformIdentity(local);
     int count = sprite->transform_count;
     for (int i = 0; i < count; ++i) {
-        apply_transform(matrix, &sprite->transforms[i]);
+        apply_transform(local, &sprite->transforms[i]);
     }
-    nvgTransformMultiply(matrix, parent_matrix);
+    sprite->local_id  = sprite->current_id;
+    sprite->parent_id = -1;
+}
+
+static void calc_world(R_Sprite *sprite, R_Sprite *parent)
+{
+    float *world = sprite->world;
+    memcpy(world, sprite->local, sizeof(float[6]));
+    nvgTransformMultiply(world, parent->world);
+    sprite->parent_id = parent->world_id;
+    sprite->world_id++;
+}
+
+static void calc_matrix(R_Sprite *sprite, float matrix[static 6],
+                        const float canvas_matrix[static 6])
+{
+    R_Sprite *parent = sprite->parent;
+    if (parent) {
+        if (sprite->local_id != sprite->current_id) {
+            calc_local(sprite);
+            calc_world(sprite, parent);
+        }
+        else if (sprite->parent_id != parent->world_id) {
+            calc_world(sprite, parent);
+        }
+    }
+    else if (sprite->local_id != sprite->current_id) {
+        calc_local(sprite);
+        memcpy(sprite->world, sprite->local, sizeof(float[6]));
+    }
+    memcpy(matrix, sprite->world, sizeof(float[6]));
+    nvgTransformMultiply(matrix, canvas_matrix);
 }
 
 static void draw_self(R_Sprite *sprite, R_Nvg *nvg, const float m[static 6])
@@ -407,19 +447,19 @@ static void draw_self(R_Sprite *sprite, R_Nvg *nvg, const float m[static 6])
 }
 
 static void draw_children(R_Sprite *sprite, R_Nvg *nvg,
-                          const float matrix[static 6])
+                          const float canvas_matrix[static 6])
 {
     for (R_Sprite *child = sprite->children; child; child = child->next) {
-        R_sprite_draw(child, nvg, matrix);
+        R_sprite_draw(child, nvg, canvas_matrix);
     }
 }
 
 void R_sprite_draw(R_Sprite *sprite, R_Nvg *nvg,
-                   const float parent_matrix[static 6])
+                   const float canvas_matrix[static 6])
 {
     R_MAGIC_CHECK(R_Sprite, sprite);
     float matrix[6];
-    calc_matrix(sprite, matrix, parent_matrix);
+    calc_matrix(sprite, matrix, canvas_matrix);
     draw_self(sprite, nvg, matrix);
-    draw_children(sprite, nvg, matrix);
+    draw_children(sprite, nvg, canvas_matrix);
 }

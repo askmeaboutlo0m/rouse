@@ -108,7 +108,7 @@ static void sprite_tween_data_to_json(JSON_Object *obj, R_SpriteTweenData *data)
     } \
     \
     void R_tween_sprite_ ## NAME(R_Step *step, R_Sprite *sprite, \
-                                  int transform_index, R_TweenFloat value) \
+                                 int transform_index, R_TweenFloat value) \
     { \
         R_tween_add_float(step, value, make_tween_data(sprite, transform_index), \
                           get_ ## NAME, set_ ## NAME, free_tween_data, \
@@ -124,3 +124,30 @@ DEF_SPRITE_TWEEN(scale_y, scale.y)
 DEF_SPRITE_TWEEN(skew_x, skew.x)
 DEF_SPRITE_TWEEN(skew_y, skew.y)
 DEF_SPRITE_TWEEN(angle, angle)
+
+
+static float get_rotation(R_UserData user)
+{
+    return R_to_deg(get_transform(user.data)->angle);
+}
+
+static void set_rotation(R_UserData user, float value)
+{
+    get_transform(user.data)->angle = R_to_rad(value);
+}
+
+static void rotation_to_json(JSON_Object *obj, R_UserData user,
+                             R_UNUSED R_UserData *seq_user)
+{
+    json_object_set_string(obj, "element_type", "sprite_rotation");
+    json_object_set_number(obj, "current_rotation", get_rotation(user));
+    sprite_tween_data_to_json(obj, user.data);
+}
+
+void R_tween_sprite_rotation(R_Step *step, R_Sprite *sprite,
+                             int transform_index, R_TweenFloat value)
+{
+    R_tween_add_float(step, value, make_tween_data(sprite, transform_index),
+                      get_rotation, set_rotation, free_tween_data,
+                      rotation_to_json);
+}

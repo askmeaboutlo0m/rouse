@@ -48,3 +48,6 @@ void R_tween_sprite_skew_y(R_Step *step, R_Sprite *sprite,
 
 void R_tween_sprite_angle(R_Step *step, R_Sprite *sprite,
                           int transform_index, R_TweenFloat value);
+
+void R_tween_sprite_rotation(R_Step *step, R_Sprite *sprite,
+                             int transform_index, R_TweenFloat value);

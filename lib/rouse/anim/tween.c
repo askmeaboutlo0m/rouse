@@ -115,18 +115,19 @@ static void free_elements(R_TweenElement *elements)
 }
 
 
-static float apply_ease(R_EaseFn ease, float ratio)
+static float apply_ease(R_EaseFn ease, R_UserData user, float ratio)
 {
-    return ease ? ease(ratio) : ratio;
+    return ease ? ease(ratio, user) : ratio;
 }
 
 static R_StepStatus tick_tween(R_StepTickArgs args)
 {
     R_Tween *tween = args.state;
     R_MAGIC_CHECK(R_Tween, tween);
+    R_UserData user = tween->user;
 
     if (tween->lap != args.lap) {
-        tween->start = tween->on_calc(args, tween->user);
+        tween->start = tween->on_calc(args, user);
         tween->left  = tween->start;
         tween->lap   = args.lap;
         calc_elements(tween->elements);
@@ -136,11 +137,11 @@ static R_StepStatus tick_tween(R_StepTickArgs args)
     if (R_enough_seconds_left(left, args.seconds)) {
         float start = tween->start;
         float ratio = (start - left) / start;
-        tick_elements(tween->elements, apply_ease(tween->ease, ratio));
+        tick_elements(tween->elements, apply_ease(tween->ease, user, ratio));
         return R_STEP_STATUS_RUNNING;
     }
     else {
-        tick_elements(tween->elements, apply_ease(tween->ease, 1.0f));
+        tick_elements(tween->elements, apply_ease(tween->ease, user, 1.0f));
         return R_STEP_STATUS_COMPLETE;
     }
 }

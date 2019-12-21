@@ -23,11 +23,21 @@ typedef struct SceneData {
     int             counter;
 } SceneData;
 
+typedef float (*GlmEaseFn)(float);
+
 typedef struct EasingEntry {
     const char *name;
     R_EaseFn   ease;
-    R_EaseFn   glm;
+    GlmEaseFn  glm;
 } EasingEntry;
+
+typedef struct EaseUnion {
+    bool with_user;
+    union {
+        R_EaseFn  ease;
+        GlmEaseFn glm;
+    };
+} EaseUnion;
 
 static EasingEntry easings[] = {
     {"linear",         R_ease_linear,         glm_ease_linear      },
@@ -129,15 +139,20 @@ static void draw_graph_frame(NVGcontext *ctx, float w, float h)
     nvgFill(ctx);
 }
 
+static float call_ease(float k, EaseUnion eu)
+{
+    return eu.with_user ? eu.ease(k, R_user_null()) : eu.glm(k);
+}
+
 static void draw_graph_line(NVGcontext *ctx, float w, float h, int sample_count,
-                            R_EaseFn ease, NVGcolor color)
+                            EaseUnion eu, NVGcolor color)
 {
     int   s   = GRAPH_SAMPLES;
     float sf  = GRAPH_SAMPLES;
     int   c   = R_MIN(sample_count, s);
     int   d   = sample_count > s ? sample_count - s : 0;
-    int   dst = R_float2int(ease(R_int2float(c) / sf) * sf);
-    int   src = R_float2int(ease(R_int2float(d) / sf) * sf);
+    int   dst = R_float2int(call_ease(R_int2float(c) / sf, eu) * sf);
+    int   src = R_float2int(call_ease(R_int2float(d) / sf, eu) * sf);
 
     nvgStrokeWidth(ctx, 4.0f);
     nvgStrokeColor(ctx, color);
@@ -145,7 +160,7 @@ static void draw_graph_line(NVGcontext *ctx, float w, float h, int sample_count,
     for (int i = src; i <= dst; ++i) {
         float f = R_int2float(i) / sf;
         float x = w * f;
-        float y = h - h * ease(f);
+        float y = h - h * call_ease(f, eu);
         if (i == src) {
             nvgMoveTo(ctx, x, y);
         }
@@ -167,9 +182,11 @@ static void draw_graph(R_Nvg *nvg, const float matrix[static 6],
     float h = GRAPH_HEIGHT;
     draw_graph_background(ctx, w, h);
     draw_graph_frame(ctx, w, h);
-    draw_graph_line(ctx, w, h, sd->counter, ee->ease, nvgRGB(255, 0, 0));
+    draw_graph_line(ctx, w, h, sd->counter,
+                    (EaseUnion){true, {.ease = ee->ease}}, nvgRGB(255, 0, 0));
 #if COMPARE_WITH_GLM
-    draw_graph_line(ctx, w, h, sd->counter, ee->glm,  nvgRGB(0, 0, 255));
+    draw_graph_line(ctx, w, h, sd->counter,
+                    (EaseUnion){false, {.glm = ee->glm}}, nvgRGB(0, 0, 255));
 #endif
 }
 
@@ -197,7 +214,7 @@ static void on_tick(R_Scene *scene, R_UNUSED bool rendered)
 
     float s = GRAPH_SAMPLES;
     float t = R_int2float(sd->counter % GRAPH_SAMPLES) / s;
-    float u = easings[sd->index].ease(t);
+    float u = easings[sd->index].ease(t, R_user_null());
     float c = sd->counter > GRAPH_SAMPLES ? 1.0f - t : t;
     float e = sd->counter > GRAPH_SAMPLES ? 1.0f - u : u;
     R_String *number = sd->number_field->string;

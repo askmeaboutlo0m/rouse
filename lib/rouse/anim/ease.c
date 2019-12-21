@@ -159,24 +159,24 @@ void R_ease_init(void)
 }
 
 
-float R_ease_linear(float k)
+float R_ease_linear(float k, R_UNUSED R_UserData user)
 {
     return k;
 }
 
 
-float R_ease_back_in(float k)
+float R_ease_back_in(float k, R_UNUSED R_UserData user)
 {
     return k * k * ((1.70158f + 1.0f) * k - 1.70158f);
 }
 
-float R_ease_back_out(float k)
+float R_ease_back_out(float k, R_UNUSED R_UserData user)
 {
     k -= 1.0f;
     return (k * k * ((1.70158f + 1.0f) * k + 1.70158f) + 1.0f);
 }
 
-float R_ease_back_in_out(float k)
+float R_ease_back_in_out(float k, R_UNUSED R_UserData user)
 {
     if ((k /= 0.5f) < 1.0f) {
         return 0.5f * (k * k * (((1.70158f *1.525f) + 1.0f)
@@ -214,17 +214,17 @@ static float b_in(float t, float b, float c, float d)
     return c - b_out(d - t, 0.0f, c, d) + b;
 }
 
-float R_ease_bounce_in(float k)
+float R_ease_bounce_in(float k, R_UNUSED R_UserData user)
 {
     return b_in(k, 0.0f, 1.0f, 1.0f);
 }
 
-float R_ease_bounce_out(float k)
+float R_ease_bounce_out(float k, R_UNUSED R_UserData user)
 {
     return b_out(k, 0.0f, 1.0f, 1.0f);
 }
 
-float R_ease_bounce_in_out(float k)
+float R_ease_bounce_in_out(float k, R_UNUSED R_UserData user)
 {
     if (k < 0.5f) {
         return b_in(k * 2.0f, 0.0f, 1.0f, 1.0f) * 0.5f;
@@ -235,18 +235,18 @@ float R_ease_bounce_in_out(float k)
 }
 
 
-float R_ease_cubic_in(float k)
+float R_ease_cubic_in(float k, R_UNUSED R_UserData user)
 {
     return k * k * k;
 }
 
-float R_ease_cubic_out(float k)
+float R_ease_cubic_out(float k, R_UNUSED R_UserData user)
 {
     k -= 1.0f;
     return k * k * k + 1.0f;
 }
 
-float R_ease_cubic_in_out(float k)
+float R_ease_cubic_in_out(float k, R_UNUSED R_UserData user)
 {
     if ((k /= 1.0f / 2.0f) < 1.0f) {
         return 0.5f * k * k * k;
@@ -258,7 +258,7 @@ float R_ease_cubic_in_out(float k)
 }
 
 
-float R_ease_elastic_in(float k)
+float R_ease_elastic_in(float k, R_UNUSED R_UserData user)
 {
     if (k == 0.0f || k == 1.0f) {
         return k;
@@ -269,7 +269,7 @@ float R_ease_elastic_in(float k)
          * (2.0f * R_PI) / 0.4f));
 }
 
-float R_ease_elastic_out(float k)
+float R_ease_elastic_out(float k, R_UNUSED R_UserData user)
 {
     if (k == 0.0f || k == 1.0f) {
         return k;
@@ -279,7 +279,7 @@ float R_ease_elastic_out(float k)
          * (2.0f * R_PI) / 0.4f) + 1.0f);
 }
 
-float R_ease_elastic_in_out(float k)
+float R_ease_elastic_in_out(float k, R_UNUSED R_UserData user)
 {
     if (k == 0.0f) {
         return 0.0f;
@@ -302,17 +302,17 @@ float R_ease_elastic_in_out(float k)
 }
 
 
-float R_ease_expo_in(float k)
+float R_ease_expo_in(float k, R_UNUSED R_UserData user)
 {
     return k == 0.0f ? 0.0f : expf(6.931471805599453f * (k - 1.0f));
 }
 
-float R_ease_expo_out(float k)
+float R_ease_expo_out(float k, R_UNUSED R_UserData user)
 {
     return k == 1.0f ? 1.0f : (1.0f - expf(-6.931471805599453f * k));
 }
 
-float R_ease_expo_in_out(float k)
+float R_ease_expo_in_out(float k, R_UNUSED R_UserData user)
 {
     if (k == 0.0f || k == 1.0f) {
         return k;
@@ -327,17 +327,17 @@ float R_ease_expo_in_out(float k)
 }
 
 
-float R_ease_quad_in(float k)
+float R_ease_quad_in(float k, R_UNUSED R_UserData user)
 {
     return k * k;
 }
 
-float R_ease_quad_out(float k)
+float R_ease_quad_out(float k, R_UNUSED R_UserData user)
 {
     return -k * (k - 2.0f);
 }
 
-float R_ease_quad_in_out(float k)
+float R_ease_quad_in_out(float k, R_UNUSED R_UserData user)
 {
     if ((k *= 2.0f) < 1.0f) {
         return 1.0f / 2.0f * k * k;
@@ -348,18 +348,18 @@ float R_ease_quad_in_out(float k)
 }
 
 
-float R_ease_quart_in(float k)
+float R_ease_quart_in(float k, R_UNUSED R_UserData user)
 {
     return k * k * k * k;
 }
 
-float R_ease_quart_out(float k)
+float R_ease_quart_out(float k, R_UNUSED R_UserData user)
 {
     k -= 1.0f;
     return -(k * k * k * k - 1.0f);
 }
 
-float R_ease_quart_in_out(float k)
+float R_ease_quart_in_out(float k, R_UNUSED R_UserData user)
 {
     if ((k *= 2.0f) < 1.0f) {
         return 0.5f * k * k * k * k;
@@ -371,18 +371,18 @@ float R_ease_quart_in_out(float k)
 }
 
 
-float R_ease_quint_in(float k)
+float R_ease_quint_in(float k, R_UNUSED R_UserData user)
 {
     return k * k * k * k * k;
 }
 
-float R_ease_quint_out(float k)
+float R_ease_quint_out(float k, R_UNUSED R_UserData user)
 {
     k -= 1.0f;
     return k * k * k * k * k + 1.0f;
 }
 
-float R_ease_quint_in_out(float k)
+float R_ease_quint_in_out(float k, R_UNUSED R_UserData user)
 {
     if ((k *= 2.0f) < 1.0f) {
         return 0.5f * k * k * k * k * k;
@@ -394,17 +394,17 @@ float R_ease_quint_in_out(float k)
 }
 
 
-float R_ease_sine_in(float k)
+float R_ease_sine_in(float k, R_UNUSED R_UserData user)
 {
     return 1.0f - cosf(k * R_PI_2);
 }
 
-float R_ease_sine_out(float k)
+float R_ease_sine_out(float k, R_UNUSED R_UserData user)
 {
     return sinf(k * R_PI_2);
 }
 
-float R_ease_sine_in_out(float k)
+float R_ease_sine_in_out(float k, R_UNUSED R_UserData user)
 {
     return -(cosf(R_PI * k) - 1.0f) / 2.0f;
 }

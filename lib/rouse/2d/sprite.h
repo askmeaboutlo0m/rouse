@@ -158,6 +158,11 @@ void R_sprite_angle_set   (R_Sprite *sprite, int index, float value); /* radians
 void R_sprite_rotation_set(R_Sprite *sprite, int index, float value); /* degrees */
 
 
+R_V2  R_sprite_world_pos(R_Sprite *sprite);
+float R_sprite_world_x  (R_Sprite *sprite);
+float R_sprite_world_y  (R_Sprite *sprite);
+
+
 /*
  * Returns the parent of the given `sprite`, or `NULL` if it doesn't have one.
  */

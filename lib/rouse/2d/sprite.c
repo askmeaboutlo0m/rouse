@@ -390,6 +390,97 @@ void R_sprite_rotation_set(R_Sprite *sprite, int index, float value)
 }
 
 
+static void apply_transform(float matrix[static 6], R_AffineTransform *tf)
+{
+    float tmp[6];
+    R_V2  origin = tf->origin;
+    nvgTransformTranslate(tmp, -origin.x, -origin.y);
+    nvgTransformMultiply(matrix, tmp);
+    nvgTransformScale(tmp, tf->scale.x, tf->scale.y);
+    nvgTransformMultiply(matrix, tmp);
+    nvgTransformSkewX(tmp, tf->skew.x);
+    nvgTransformMultiply(matrix, tmp);
+    nvgTransformSkewY(tmp, tf->skew.y);
+    nvgTransformMultiply(matrix, tmp);
+    nvgTransformRotate(tmp, tf->angle);
+    nvgTransformMultiply(matrix, tmp);
+    nvgTransformTranslate(tmp, tf->pos.x + origin.x, tf->pos.y + origin.y);
+    nvgTransformMultiply(matrix, tmp);
+}
+
+/* Watch out: this does NOT set the parent_id to a new value! You either need
+ * to call `calc_world` right after or set the parent_id to -1 yourself. */
+static void calc_local(R_Sprite *sprite)
+{
+    float *local = sprite->local;
+    nvgTransformIdentity(local);
+    int count = sprite->transform_count;
+    for (int i = 0; i < count; ++i) {
+        apply_transform(local, &sprite->transforms[i]);
+    }
+    sprite->local_id = sprite->current_id;
+}
+
+static void calc_world(R_Sprite *sprite, R_Sprite *parent)
+{
+    float *world = sprite->world;
+    memcpy(world, sprite->local, sizeof(float[6]));
+    nvgTransformMultiply(world, parent->world);
+    sprite->parent_id = parent->world_id;
+    ++sprite->world_id;
+}
+
+static float *update_world(R_Sprite *sprite, bool update_parent)
+{
+    R_Sprite *parent = R_sprite_parent(sprite);
+    if (parent) {
+        /* If we're e.g. drawing the sprites, we're currently traversing and
+         * updating them from the root up anyway. In those cases, we can skip
+         * walking back up the tree and re-checking the parents. However, if
+         * we're just retrieving the global position in the middle of a tick,
+         * there's no walking going on already, so we have to do our own. */
+        if (update_parent) {
+            update_world(parent, true);
+        }
+        /* Recalculate matrices only as needed. */
+        if (sprite->local_id != sprite->current_id) {
+            calc_local(sprite);
+            calc_world(sprite, parent);
+        }
+        else if (sprite->parent_id != parent->world_id) {
+            calc_world(sprite, parent);
+        }
+    }
+    else if (sprite->local_id != sprite->current_id) {
+        calc_local(sprite);
+        memcpy(sprite->world, sprite->local, sizeof(float[6]));
+    }
+    return sprite->world;
+}
+
+static float *get_world(R_Sprite *sprite)
+{
+    check_sprite(sprite);
+    return update_world(sprite, true);
+}
+
+R_V2 R_sprite_world_pos(R_Sprite *sprite)
+{
+    float *world = get_world(sprite);
+    return R_v2(world[4], world[5]);
+}
+
+float R_sprite_world_x(R_Sprite *sprite)
+{
+    return get_world(sprite)[4];
+}
+
+float R_sprite_world_y(R_Sprite *sprite)
+{
+    return get_world(sprite)[5];
+}
+
+
 
 R_Sprite *R_sprite_parent(R_Sprite *sprite)
 {
@@ -473,71 +564,18 @@ void R_sprite_child_remove(R_Sprite *sprite, R_Sprite *child)
 }
 
 
-static void apply_transform(float matrix[static 6], R_AffineTransform *tf)
-{
-    float tmp[6];
-    R_V2  origin = tf->origin;
-    nvgTransformTranslate(tmp, -origin.x, -origin.y);
-    nvgTransformMultiply(matrix, tmp);
-    nvgTransformScale(tmp, tf->scale.x, tf->scale.y);
-    nvgTransformMultiply(matrix, tmp);
-    nvgTransformSkewX(tmp, tf->skew.x);
-    nvgTransformMultiply(matrix, tmp);
-    nvgTransformSkewY(tmp, tf->skew.y);
-    nvgTransformMultiply(matrix, tmp);
-    nvgTransformRotate(tmp, tf->angle);
-    nvgTransformMultiply(matrix, tmp);
-    nvgTransformTranslate(tmp, tf->pos.x + origin.x, tf->pos.y + origin.y);
-    nvgTransformMultiply(matrix, tmp);
-}
-
-static void calc_local(R_Sprite *sprite)
-{
-    float *local = sprite->local;
-    nvgTransformIdentity(local);
-    int count = sprite->transform_count;
-    for (int i = 0; i < count; ++i) {
-        apply_transform(local, &sprite->transforms[i]);
-    }
-    sprite->local_id  = sprite->current_id;
-    sprite->parent_id = -1;
-}
-
-static void calc_world(R_Sprite *sprite, R_Sprite *parent)
-{
-    float *world = sprite->world;
-    memcpy(world, sprite->local, sizeof(float[6]));
-    nvgTransformMultiply(world, parent->world);
-    sprite->parent_id = parent->world_id;
-    sprite->world_id++;
-}
-
-static void calc_matrix(R_Sprite *sprite, float matrix[static 6],
-                        const float canvas_matrix[static 6])
-{
-    R_Sprite *parent = sprite->parent;
-    if (parent) {
-        if (sprite->local_id != sprite->current_id) {
-            calc_local(sprite);
-            calc_world(sprite, parent);
-        }
-        else if (sprite->parent_id != parent->world_id) {
-            calc_world(sprite, parent);
-        }
-    }
-    else if (sprite->local_id != sprite->current_id) {
-        calc_local(sprite);
-        memcpy(sprite->world, sprite->local, sizeof(float[6]));
-    }
-    memcpy(matrix, sprite->world, sizeof(float[6]));
-    nvgTransformMultiply(matrix, canvas_matrix);
-}
-
-static void draw_self(R_Sprite *sprite, R_Nvg *nvg, const float m[static 6])
+static void draw_self(R_Sprite *sprite, R_Nvg *nvg,
+                      const float canvas_matrix[static 6])
 {
     R_SpriteDrawFn on_draw = sprite->content.on_draw;
     if (on_draw) {
-        on_draw(nvg, m, sprite->content.user);
+        float matrix[6];
+        memcpy(matrix, update_world(sprite, false), sizeof(float[6]));
+        nvgTransformMultiply(matrix, canvas_matrix);
+        on_draw(nvg, matrix, sprite->content.user);
+    }
+    else {
+        update_world(sprite, false);
     }
 }
 
@@ -553,8 +591,6 @@ void R_sprite_draw(R_Sprite *sprite, R_Nvg *nvg,
                    const float canvas_matrix[static 6])
 {
     R_MAGIC_CHECK(R_Sprite, sprite);
-    float matrix[6];
-    calc_matrix(sprite, matrix, canvas_matrix);
-    draw_self(sprite, nvg, matrix);
+    draw_self(sprite, nvg, canvas_matrix);
     draw_children(sprite, nvg, canvas_matrix);
 }

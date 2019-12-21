@@ -122,7 +122,40 @@ void R_sprite_transforms_resize(R_Sprite *sprite, int transform_count);
 
 void R_sprite_transforms_ensure(R_Sprite *sprite, int transform_count);
 
-R_AffineTransform *R_sprite_transform_at(R_Sprite *sprite, int index);
+
+R_AffineTransform R_sprite_transform_at(R_Sprite *sprite, int index);
+
+R_V2  R_sprite_origin_at  (R_Sprite *sprite, int index);
+float R_sprite_origin_x_at(R_Sprite *sprite, int index);
+float R_sprite_origin_y_at(R_Sprite *sprite, int index);
+R_V2  R_sprite_pos_at     (R_Sprite *sprite, int index);
+float R_sprite_pos_x_at   (R_Sprite *sprite, int index);
+float R_sprite_pos_y_at   (R_Sprite *sprite, int index);
+R_V2  R_sprite_scale_at   (R_Sprite *sprite, int index);
+float R_sprite_scale_x_at (R_Sprite *sprite, int index);
+float R_sprite_scale_y_at (R_Sprite *sprite, int index);
+R_V2  R_sprite_skew_at    (R_Sprite *sprite, int index);
+float R_sprite_skew_x_at  (R_Sprite *sprite, int index);
+float R_sprite_skew_y_at  (R_Sprite *sprite, int index);
+float R_sprite_angle_at   (R_Sprite *sprite, int index); /* radians */
+float R_sprite_rotation_at(R_Sprite *sprite, int index); /* degrees */
+
+void R_sprite_transform_set(R_Sprite *sprite, int index, R_AffineTransform tf);
+
+void R_sprite_origin_set  (R_Sprite *sprite, int index, R_V2  value);
+void R_sprite_origin_x_set(R_Sprite *sprite, int index, float value);
+void R_sprite_origin_y_set(R_Sprite *sprite, int index, float value);
+void R_sprite_pos_set     (R_Sprite *sprite, int index, R_V2  value);
+void R_sprite_pos_x_set   (R_Sprite *sprite, int index, float value);
+void R_sprite_pos_y_set   (R_Sprite *sprite, int index, float value);
+void R_sprite_scale_set   (R_Sprite *sprite, int index, R_V2  value);
+void R_sprite_scale_x_set (R_Sprite *sprite, int index, float value);
+void R_sprite_scale_y_set (R_Sprite *sprite, int index, float value);
+void R_sprite_skew_set    (R_Sprite *sprite, int index, R_V2  value);
+void R_sprite_skew_x_set  (R_Sprite *sprite, int index, float value);
+void R_sprite_skew_y_set  (R_Sprite *sprite, int index, float value);
+void R_sprite_angle_set   (R_Sprite *sprite, int index, float value); /* radians */
+void R_sprite_rotation_set(R_Sprite *sprite, int index, float value); /* degrees */
 
 
 /*

@@ -70,7 +70,7 @@ static R_TextField *make_field(const char *name, float x, float y,
     field->size  = 64;
 
     R_Sprite *sprite = R_sprite_new(name);
-    R_sprite_transform_at(sprite, 0)->pos = R_v2(x, y);
+    R_sprite_pos_set(sprite, 0, R_v2(x, y));
     R_sprite_draw_text_field(sprite, field);
     R_sprite_child_add_noinc(parent, sprite);
 
@@ -176,8 +176,8 @@ static void draw_graph(R_Nvg *nvg, const float matrix[static 6],
 static void add_easing_graph(SceneData *sd)
 {
     R_Sprite *sprite = R_sprite_new("graph");
-    R_sprite_transform_at(sprite, 0)->pos = R_v2(
-            (1920.0f - GRAPH_WIDTH) * 0.5f, (1080.0f - GRAPH_HEIGHT) * 0.5f);
+    R_sprite_pos_set(sprite, 0, R_v2(
+            (1920.0f - GRAPH_WIDTH) * 0.5f, (1080.0f - GRAPH_HEIGHT) * 0.5f));
     R_sprite_draw_fn(sprite, draw_graph, NULL, R_user_data(sd));
     R_sprite_child_add_noinc(R_canvas_sprite(sd->canvas), sprite);
 }

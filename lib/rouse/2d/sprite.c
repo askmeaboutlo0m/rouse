@@ -286,14 +286,68 @@ void R_sprite_transforms_ensure(R_Sprite *sprite, int transform_count)
     }
 }
 
-R_AffineTransform *R_sprite_transform_at(R_Sprite *sprite, int index)
+
+static R_AffineTransform *check_transform(R_Sprite *sprite, int index)
 {
     R_MAGIC_CHECK(R_Sprite, sprite);
     R_assert(index >= 0, "transform index must not be negative");
     R_sprite_transforms_ensure(sprite, index + 1);
-    ++sprite->local_id;
     return &sprite->transforms[index];
 }
+
+R_AffineTransform R_sprite_transform_at(R_Sprite *sprite, int index)
+{
+    return *check_transform(sprite, index);
+}
+
+void R_sprite_transform_set(R_Sprite *sprite, int index, R_AffineTransform tf)
+{
+    *check_transform(sprite, index) = tf;
+    ++sprite->current_id;
+}
+
+#define GET_TRANSFORM(TYPE, NAME, ACCESS) \
+    TYPE R_sprite_ ## NAME ## _at(R_Sprite *sprite, int index) \
+    { \
+        return check_transform(sprite, index)->ACCESS; \
+    }
+
+#define SET_TRANSFORM(TYPE, NAME, ACCESS) \
+    void R_sprite_ ## NAME ## _set(R_Sprite *sprite, int index, TYPE value) \
+    { \
+        check_transform(sprite, index)->ACCESS = value; \
+        ++sprite->current_id; \
+    }
+
+#define GET_SET_TRANSFORM(TYPE, NAME, ACCESS) \
+    GET_TRANSFORM(TYPE, NAME, ACCESS) \
+    SET_TRANSFORM(TYPE, NAME, ACCESS)
+
+GET_SET_TRANSFORM(R_V2,  origin,   origin)
+GET_SET_TRANSFORM(float, origin_x, origin.x)
+GET_SET_TRANSFORM(float, origin_y, origin.y)
+GET_SET_TRANSFORM(R_V2,  pos,      pos)
+GET_SET_TRANSFORM(float, pos_x,    pos.x)
+GET_SET_TRANSFORM(float, pos_y,    pos.y)
+GET_SET_TRANSFORM(R_V2,  scale,    scale)
+GET_SET_TRANSFORM(float, scale_x,  scale.x)
+GET_SET_TRANSFORM(float, scale_y,  scale.y)
+GET_SET_TRANSFORM(R_V2,  skew,     skew)
+GET_SET_TRANSFORM(float, skew_x,   skew.x)
+GET_SET_TRANSFORM(float, skew_y,   skew.y)
+GET_SET_TRANSFORM(float, angle,    angle)
+
+float R_sprite_rotation_at(R_Sprite *sprite, int index)
+{
+    return R_to_deg(check_transform(sprite, index)->angle);
+}
+
+void R_sprite_rotation_set(R_Sprite *sprite, int index, float value)
+{
+    check_transform(sprite, index)->angle = R_to_rad(value);
+    ++sprite->current_id;
+}
+
 
 
 R_Sprite *R_sprite_parent(R_Sprite *sprite)

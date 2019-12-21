@@ -44,12 +44,16 @@ typedef struct R_Tween {
     R_MAGIC_FIELD
     int            lap;
     float          start, left;
-    R_EaseFn       ease;
     R_TweenElement *elements;
     R_TweenCalcFn  on_calc;
     R_TweenFreeFn  on_free;
     R_TweenJsonFn  to_json;
     R_UserData     user;
+    struct {
+        R_EaseFn          fn;
+        R_TweenEaseFreeFn on_free;
+        R_UserData        user;
+    } ease;
 } R_Tween;
 
 
@@ -133,15 +137,17 @@ static R_StepStatus tick_tween(R_StepTickArgs args)
         calc_elements(tween->elements);
     }
 
-    float left = tween->left -= args.seconds;
+    float      left      = tween->left -= args.seconds;
+    R_EaseFn   ease      = tween->ease.fn;
+    R_UserData ease_user = tween->ease.user;
     if (R_enough_seconds_left(left, args.seconds)) {
         float start = tween->start;
         float ratio = (start - left) / start;
-        tick_elements(tween->elements, apply_ease(tween->ease, user, ratio));
+        tick_elements(tween->elements, apply_ease(ease, ease_user, ratio));
         return R_STEP_STATUS_RUNNING;
     }
     else {
-        tick_elements(tween->elements, apply_ease(tween->ease, user, 1.0f));
+        tick_elements(tween->elements, apply_ease(ease, ease_user, 1.0f));
         return R_STEP_STATUS_COMPLETE;
     }
 }
@@ -156,6 +162,10 @@ static void free_tween(void *state)
 
         if (tween->on_free) {
             tween->on_free(tween->user);
+        }
+
+        if (tween->ease.on_free) {
+            tween->ease.on_free(tween->ease.user);
         }
 
         R_MAGIC_POISON(R_Tween, tween);
@@ -215,7 +225,7 @@ static void tween_to_json(JSON_Object *obj, void *state)
     json_object_set_number(obj, "lap",   R_int2double(tween->lap));
     json_object_set_number(obj, "start", tween->start);
     json_object_set_number(obj, "left",  tween->left);
-    ease_to_json(obj, "ease", tween->ease);
+    ease_to_json(obj, "ease", tween->ease.fn);
 
     if (tween->to_json) {
         tween->to_json(obj, tween->user);
@@ -231,11 +241,13 @@ static void tween_to_json(JSON_Object *obj, void *state)
 }
 
 R_Step *R_tween_new(R_TweenCalcFn on_calc, R_TweenFreeFn on_free,
-                    R_TweenJsonFn to_json, R_UserData user, R_EaseFn ease)
+                    R_TweenJsonFn to_json, R_UserData user, R_EaseFn ease,
+                    R_TweenEaseFreeFn ease_free, R_UserData ease_user)
 {
     R_assert_not_null(on_calc);
     R_Tween *tween = R_NEW_INIT_STRUCT(tween, R_Tween, R_MAGIC_INIT(R_Tween)
-            -1, 0.0f, 0.0f, ease, NULL, on_calc, on_free, to_json, user);
+            -1, 0.0f, 0.0f, NULL, on_calc, on_free, to_json, user,
+            {ease, ease_free, ease_user});
     R_MAGIC_CHECK(R_Tween, tween);
     return R_step_new(tween, tick_tween, free_tween, tween_to_json);
 }
@@ -252,10 +264,11 @@ static void fixed_tween_to_json(JSON_Object *obj, R_UserData user)
     json_object_set_number(obj, "seconds", user.f);
 }
 
-R_Step *R_tween_new_fixed(float seconds, R_EaseFn ease)
+R_Step *R_tween_new_fixed(float seconds, R_EaseFn ease,
+                          R_TweenEaseFreeFn ease_free, R_UserData ease_user)
 {
     return R_tween_new(calc_fixed_tween, NULL, fixed_tween_to_json,
-                       R_user_float(seconds), ease);
+                       R_user_float(seconds), ease, ease_free, ease_user);
 }
 
 
@@ -271,10 +284,11 @@ static void between_tween_to_json(JSON_Object *obj, R_UserData user)
     json_object_set_number(obj, "b", user.between.b);
 }
 
-R_Step *R_tween_new_between(float a, float b, R_EaseFn ease)
+R_Step *R_tween_new_between(float a, float b, R_EaseFn ease,
+                            R_TweenEaseFreeFn ease_free, R_UserData ease_user)
 {
     return R_tween_new(calc_between_tween, NULL, between_tween_to_json,
-                       R_user_between(a, b), ease);
+                       R_user_between(a, b), ease, ease_free, ease_user);
 }
 
 

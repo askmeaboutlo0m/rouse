@@ -26,6 +26,8 @@ typedef float (*R_TweenCalcFn)(R_StepTickArgs, R_UserData);
 typedef void  (*R_TweenFreeFn)(R_UserData);
 typedef void  (*R_TweenJsonFn)(JSON_Object *, R_UserData);
 
+typedef void  (*R_TweenEaseFreeFn)(R_UserData);
+
 typedef void (*R_TweenElementJsonFn)(JSON_Object *, R_UserData);
 typedef void (*R_TweenElementFreeFn)(R_UserData);
 
@@ -45,10 +47,14 @@ typedef struct R_TweenFloat {
 
 
 R_Step *R_tween_new(R_TweenCalcFn on_calc, R_TweenFreeFn on_free,
-                    R_TweenJsonFn to_json, R_UserData user, R_EaseFn ease);
+                    R_TweenJsonFn to_json, R_UserData user, R_EaseFn ease,
+                    R_TweenEaseFreeFn ease_free, R_UserData ease_user);
 
-R_Step *R_tween_new_fixed(float seconds, R_EaseFn ease);
-R_Step *R_tween_new_between(float a, float b, R_EaseFn ease);
+R_Step *R_tween_new_fixed(float seconds, R_EaseFn ease,
+                          R_TweenEaseFreeFn ease_free, R_UserData ease_user);
+
+R_Step *R_tween_new_between(float a, float b, R_EaseFn ease,
+                            R_TweenEaseFreeFn ease_free, R_UserData ease_user);
 
 
 R_TweenFloat R_tween_float(R_TweenFloatCalcFn on_calc, R_TweenValueFreeFn on_free,

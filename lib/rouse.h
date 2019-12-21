@@ -74,7 +74,6 @@ extern "C" {
 #include "rouse/2d/text.h"
 #include "rouse/2d/vector.h"
 #include "rouse/2d/sprite.h"
-#include "rouse/2d/canvas.h"
 #include "rouse/2d/sprite_anim.h"
 #include "rouse/interact/input.h"
 #include "rouse/main.h"

@@ -143,23 +143,6 @@ R_Sprite *R_sprite_new(const char *name)
 }
 
 
-R_Sprite *R_sprite_new_root(void)
-{
-    R_Sprite *sprite = R_sprite_new(NULL);
-    /* A sprite with itself as parent is normally impossible. */
-    /* We create that impossibility here as a marker that     */
-    /* makes various parent-changing operations impossible.   */
-    sprite->parent = sprite;
-    return sprite;
-}
-
-bool R_sprite_is_root(R_Sprite *sprite)
-{
-    R_MAGIC_CHECK(R_Sprite, sprite);
-    return sprite->parent == sprite;
-}
-
-
 static void free_children(R_Sprite *children)
 {
     for (R_Sprite *child = children, *next; child; child = next) {
@@ -222,9 +205,6 @@ void R_sprite_draw_fn(R_Sprite *sprite, R_SpriteDrawFn on_draw,
                       R_SpriteFreeFn on_free, R_UserData draw_user)
 {
     R_MAGIC_CHECK(R_Sprite, sprite);
-    if ((on_draw || on_free) && R_sprite_is_root(sprite)) {
-        R_die("Can't assign a draw function to a root sprite");
-    }
     sprite->content.on_draw = on_draw;
     sprite->content.on_free = on_free;
     sprite->content.user    = draw_user;
@@ -312,7 +292,6 @@ static void resize_transforms(R_Sprite *sprite, int transform_count)
 void R_sprite_transforms_resize(R_Sprite* sprite, int transform_count)
 {
     R_assert(transform_count >= 0, "transform count must not be negative");
-    R_assert(!R_sprite_is_root(sprite), "no transforms on root sprite");
     if (sprite->transform_count != transform_count) {
         resize_transforms(sprite, transform_count);
     }
@@ -321,7 +300,6 @@ void R_sprite_transforms_resize(R_Sprite* sprite, int transform_count)
 void R_sprite_transforms_ensure(R_Sprite *sprite, int transform_count)
 {
     check_sprite(sprite);
-    R_assert(!R_sprite_is_root(sprite), "no transforms on root sprite");
     if (sprite->transform_count < transform_count) {
         resize_transforms(sprite, transform_count);
     }
@@ -432,7 +410,7 @@ static void calc_world(R_Sprite *sprite, R_Sprite *parent)
 
 static float *update_world(R_Sprite *sprite, bool update_parent)
 {
-    R_Sprite *parent = R_sprite_parent(sprite);
+    R_Sprite *parent = sprite->parent;
     if (parent) {
         /* If we're e.g. drawing the sprites, we're currently traversing and
          * updating them from the root up anyway. In those cases, we can skip
@@ -485,17 +463,16 @@ float R_sprite_world_y(R_Sprite *sprite)
 R_Sprite *R_sprite_parent(R_Sprite *sprite)
 {
     check_sprite(sprite);
-    return R_sprite_is_root(sprite) ? NULL : sprite->parent;
+    return sprite->parent;
 }
 
 bool R_sprite_orphan(R_Sprite *sprite)
 {
     check_sprite(sprite);
-    if (!R_sprite_is_root(sprite)) {
-        R_Sprite *parent = sprite->parent;
-        if (parent) {
-            return true;
-        }
+    R_Sprite *parent = sprite->parent;
+    if (parent) {
+        R_sprite_child_remove(parent, sprite);
+        return true;
     }
     return false;
 }
@@ -509,9 +486,6 @@ int R_sprite_child_add_at(R_Sprite *sprite, R_Sprite *child, int index)
 {
     R_assert(index >= 0, "child index must not be negative");
     check_parent_child(sprite, child);
-    if (R_sprite_is_root(child)) {
-        R_die("Can't treat a canvas root sprite as a child");
-    }
 
     R_sprite_incref(child); /* Increment refcount first, orphaning */
     R_sprite_orphan(child); /* will potentially decrement it.      */
@@ -579,18 +553,45 @@ static void draw_self(R_Sprite *sprite, R_Nvg *nvg,
     }
 }
 
+static void draw_sprite(R_Sprite *sprite, R_Nvg *nvg,
+                        const float canvas_matrix[static 6]);
+
 static void draw_children(R_Sprite *sprite, R_Nvg *nvg,
                           const float canvas_matrix[static 6])
 {
     for (R_Sprite *child = sprite->children; child; child = child->next) {
-        R_sprite_draw(child, nvg, canvas_matrix);
+        draw_sprite(child, nvg, canvas_matrix);
     }
 }
 
-void R_sprite_draw(R_Sprite *sprite, R_Nvg *nvg,
-                   const float canvas_matrix[static 6])
+static void draw_sprite(R_Sprite *sprite, R_Nvg *nvg,
+                        const float canvas_matrix[static 6])
 {
     R_MAGIC_CHECK(R_Sprite, sprite);
     draw_self(sprite, nvg, canvas_matrix);
     draw_children(sprite, nvg, canvas_matrix);
+}
+
+void R_sprite_draw(R_Sprite *sprite, R_Nvg *nvg,
+                   int logical_width, int logical_height,
+                   int target_width, int target_height)
+{
+    check_sprite(sprite);
+    if (sprite->parent) {
+        /* Drawing a non-root sprite is probably a bad idea. But hey, we'll make
+         * it work anyway by updating the world transforms above this one. */
+        update_world(sprite->parent, true);
+    }
+
+    float w = R_int2float(target_width);
+    float h = R_int2float(target_height);
+
+    float matrix[6];
+    nvgTransformScale(matrix, w / R_int2float(logical_width),
+                              h / R_int2float(logical_height));
+
+    NVGcontext *ctx = R_nvg_context(nvg);
+    nvgBeginFrame(ctx, w, h, 1.0f);
+    draw_sprite(sprite, nvg, matrix);
+    nvgEndFrame(ctx);
 }

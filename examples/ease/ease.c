@@ -14,7 +14,7 @@
 
 typedef struct SceneData {
     R_Nvg           *nvg;
-    R_Canvas        *canvas;
+    R_Sprite        *root;
     R_FrameBuffer   *fb;
     R_FrameRenderer *fr;
     R_TextField     *name_field;
@@ -82,7 +82,7 @@ static void add_text_fields(SceneData *sd)
     NVGcontext *ctx = R_nvg_context(sd->nvg);
     nvgCreateFont(ctx, "DejaVuSansMono", "test/data/dejavu/DejaVuSansMono.ttf");
 
-    R_Sprite *parent = R_canvas_sprite(sd->canvas);
+    R_Sprite *parent = sd->root;
     sd->name_field   = make_field("name", (1920.0f - GRAPH_WIDTH) * 0.25f,
                                   1080.0f * 0.5f, parent, sd->nvg);
     sd->number_field = make_field("number", (1920.0f + GRAPH_WIDTH) * 0.625f,
@@ -179,7 +179,7 @@ static void add_easing_graph(SceneData *sd)
     R_sprite_pos_set(sprite, 0, R_v2(
             (1920.0f - GRAPH_WIDTH) * 0.5f, (1080.0f - GRAPH_HEIGHT) * 0.5f));
     R_sprite_draw_fn(sprite, draw_graph, NULL, R_user_data(sd));
-    R_sprite_child_add_noinc(R_canvas_sprite(sd->canvas), sprite);
+    R_sprite_child_add_noinc(sd->root, sprite);
 }
 
 
@@ -212,7 +212,7 @@ static void on_render(R_Scene *scene)
 
     R_frame_buffer_bind(fb);
     R_gl_clear(1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0);
-    R_canvas_render(sd->canvas, sd->nvg, fb->width, fb->height);
+    R_sprite_draw(sd->root, sd->nvg, 1920, 1080, fb->width, fb->height);
 
     R_frame_buffer_unbind();
     R_gl_clear(1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0);
@@ -226,7 +226,7 @@ static void on_free(R_Scene *scene)
     R_text_field_decref(sd->number_field);
     R_frame_renderer_free(sd->fr);
     R_frame_buffer_free(sd->fb);
-    R_canvas_free(sd->canvas);
+    R_sprite_decref(sd->root);
     R_nvg_decref(sd->nvg);
     free(sd);
 }
@@ -235,8 +235,8 @@ static SceneData *init_scene_data(void)
 {
     SceneData *sd = R_NEW(sd);
     sd->nvg       = R_nvg_new(0);
-    sd->canvas    = R_canvas_new(1920, 1080);
-    sd->fb        = R_canvas_frame_buffer_new(sd->canvas);
+    sd->root      = R_sprite_new("root");
+    sd->fb        = R_frame_buffer_2d_new(1920, 1080);
     sd->fr        = R_frame_renderer_new(true);
     sd->index     = 0;
     sd->counter   = 0;

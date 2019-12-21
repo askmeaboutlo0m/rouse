@@ -61,20 +61,6 @@ R_AffineTransform R_affine_transform(void);
  */
 R_Sprite *R_sprite_new(const char *name);
 
-/*
- * Create a new sprite with zero transforms that can't be added as a child to
- * any other sprite. Probably totally useless to you, but `R_Canvas` uses this
- * to make its root sprite.
- *
- * Root sprites can't have a parent or be drawn to. They have zero transforms.
- * Internally, they're implemented as a sprite that has itself as its parent,
- * since that's an impossible state by any other means.
- */
-R_Sprite *R_sprite_new_root(void);
-
-/* Tells you if the given `sprite` is a root sprite. */
-bool R_sprite_is_root(R_Sprite *sprite);
-
 /* Increment the `sprite`'s reference count. */
 R_Sprite *R_sprite_decref(R_Sprite *sprite);
 /* Decrement the `sprite`'s reference count, freeing it if it reaches 0. */
@@ -99,7 +85,7 @@ void R_sprite_user_set(R_Sprite *sprite, R_UserData user,
  *
  * If `on_draw` is `NULL`, nothing will be rendered for the sprite itself, but
  * its children will be. If `on_free` is `NULL` then no attempt will be made to
- * call it. Setting anything but `NULL` for both on a root sprite `R_die`s.
+ * call it.
  */
 void R_sprite_draw_fn(R_Sprite *sprite, R_SpriteDrawFn on_draw,
                       R_SpriteFreeFn on_free, R_UserData draw_user);
@@ -208,4 +194,5 @@ void R_sprite_child_remove(R_Sprite *sprite, R_Sprite *child);
 
 
 void R_sprite_draw(R_Sprite *sprite, R_Nvg *nvg,
-                   const float canvas_matrix[static 6]);
+                   int logical_width, int logical_height,
+                   int target_width, int target_height);

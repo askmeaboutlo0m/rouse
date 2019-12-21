@@ -47,6 +47,9 @@ R_FrameBufferOptions R_frame_buffer_options(void);
 
 R_FrameBuffer *R_frame_buffer_new(const R_FrameBufferOptions *options);
 
+R_FrameBufferOptions R_frame_buffer_2d_options(int width, int height);
+R_FrameBuffer       *R_frame_buffer_2d_new    (int width, int height);
+
 void R_frame_buffer_free(R_FrameBuffer *fb);
 
 void R_frame_buffer_bind(R_FrameBuffer *fb);

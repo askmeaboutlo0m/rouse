@@ -262,6 +262,24 @@ R_FrameBuffer *R_frame_buffer_new(const R_FrameBufferOptions *options)
 }
 
 
+R_FrameBufferOptions R_frame_buffer_2d_options(int width, int height)
+{
+    R_FrameBufferOptions opts = R_frame_buffer_options();
+    opts.width                = width;
+    opts.height               = height;
+    opts.color_type           = R_FRAME_BUFFER_ATTACHMENT_TEXTURE;
+    opts.stencil_type         = R_FRAME_BUFFER_ATTACHMENT_BUFFER;
+    return opts;
+}
+
+R_FrameBuffer *R_frame_buffer_2d_new(int width, int height)
+{
+    R_FrameBufferOptions opts = R_frame_buffer_2d_options(width, height);
+    return R_frame_buffer_new(&opts);
+}
+
+
+
 static void free_attachment(unsigned int *attachment,
                             R_FrameBufferAttachmentType type)
 {

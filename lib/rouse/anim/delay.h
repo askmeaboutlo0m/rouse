@@ -23,9 +23,8 @@
  */
 
 typedef float (*R_DelayCalcFn)(R_StepTickArgs, R_UserData);
-typedef void  (*R_DelayFreeFn)(R_UserData user, R_UserData *seq_user);
-typedef void  (*R_DelayJsonFn)(JSON_Object *obj, R_UserData user,
-                               R_UserData *seq_user);
+typedef void  (*R_DelayFreeFn)(R_UserData);
+typedef void  (*R_DelayJsonFn)(JSON_Object *, R_UserData);
 
 /*
  * A delay that calls a custom function to recalculate the delay amount every

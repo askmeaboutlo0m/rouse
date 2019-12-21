@@ -61,20 +61,20 @@ static R_StepStatus tick_delay(R_StepTickArgs args)
             ? R_STEP_STATUS_RUNNING : R_STEP_STATUS_COMPLETE;
 }
 
-static void free_delay(void *state, R_UserData *seq_user)
+static void free_delay(void *state)
 {
     R_Delay *delay = state;
     R_MAGIC_CHECK(R_Delay, delay);
 
     if (delay->on_free) {
-        delay->on_free(delay->user, seq_user);
+        delay->on_free(delay->user);
     }
 
     R_MAGIC_POISON(R_Delay, delay);
     free(delay);
 }
 
-static void delay_to_json(JSON_Object *obj, void *state, R_UserData *seq_user)
+static void delay_to_json(JSON_Object *obj, void *state)
 {
     R_Delay *delay = state;
     R_MAGIC_CHECK(R_Delay, delay);
@@ -84,7 +84,7 @@ static void delay_to_json(JSON_Object *obj, void *state, R_UserData *seq_user)
     json_object_set_number(obj, "left", delay->left);
 
     if (delay->to_json) {
-        delay->to_json(obj, delay->user, seq_user);
+        delay->to_json(obj, delay->user);
     }
     else {
         json_object_set_string(obj, "delay_type", "custom");
@@ -109,8 +109,7 @@ static float calc_fixed_delay(R_UNUSED R_StepTickArgs args, R_UserData user)
     return user.f;
 }
 
-static void fixed_delay_to_json(JSON_Object *obj, R_UserData user,
-                                R_UNUSED R_UserData *seq_user)
+static void fixed_delay_to_json(JSON_Object *obj, R_UserData user)
 {
     json_object_set_string(obj, "delay_type", "fixed");
     json_object_set_number(obj, "seconds", user.f);
@@ -128,8 +127,7 @@ static float calc_between_delay(R_UNUSED R_StepTickArgs args, R_UserData user)
     return R_rand_between(user.between.a, user.between.b);
 }
 
-static void between_delay_to_json(JSON_Object *obj, R_UserData user,
-                                  R_UNUSED R_UserData *seq_user)
+static void between_delay_to_json(JSON_Object *obj, R_UserData user)
 {
     json_object_set_string(obj, "delay_type", "between");
     json_object_set_number(obj, "a", user.between.a);

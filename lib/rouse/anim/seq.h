@@ -42,8 +42,8 @@ typedef enum R_StepStatus {
 } R_StepStatus;
 
 typedef R_StepStatus (*R_StepTickFn)(R_StepTickArgs);
-typedef void         (*R_StepFreeFn)(void *, R_UserData *);
-typedef void         (*R_StepJsonFn)(JSON_Object *, void *, R_UserData *);
+typedef void         (*R_StepFreeFn)(void *);
+typedef void         (*R_StepJsonFn)(JSON_Object *, void *);
 
 typedef void (*R_SequenceDoneFn)(R_UserData);
 typedef void (*R_SequenceFreeFn)(R_UserData);

@@ -94,7 +94,7 @@ static void free_step_from(R_Step *step, R_Sequence *seq)
         R_MAGIC_CHECK(R_Step, step);
         check_parent("step", "sequence", step, step->seq, seq);
         if (step->on_free) {
-            step->on_free(step->state, seq ? &seq->user : NULL);
+            step->on_free(step->state);
         }
         R_MAGIC_POISON(R_Step, step);
         free(step);
@@ -124,7 +124,7 @@ JSON_Value *R_step_to_json(R_Step *step)
     JSON_Object *obj = json_value_get_object(val);
 
     if (step->to_json) {
-        step->to_json(obj, step->state, step->seq ? &step->seq->user : NULL);
+        step->to_json(obj, step->state);
     }
     else {
         json_object_set_string(obj, "type", "R_Step");

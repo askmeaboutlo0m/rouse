@@ -24,16 +24,13 @@
 
 typedef float (*R_TweenCalcFn)(R_StepTickArgs, R_UserData);
 typedef void  (*R_TweenFreeFn)(R_UserData);
-typedef void  (*R_TweenJsonFn)(JSON_Object *obj, R_UserData user,
-                               R_UserData *seq_user);
+typedef void  (*R_TweenJsonFn)(JSON_Object *, R_UserData);
 
-typedef void (*R_TweenElementJsonFn)(JSON_Object *obj, R_UserData user,
-                                     R_UserData *seq_user);
-typedef void (*R_TweenElementFreeFn)(R_UserData user, R_UserData *seq_user);
+typedef void (*R_TweenElementJsonFn)(JSON_Object *, R_UserData);
+typedef void (*R_TweenElementFreeFn)(R_UserData);
 
-typedef void (*R_TweenValueJsonFn)(JSON_Object *obj, R_UserData user,
-                                   R_UserData *seq_user);
-typedef void (*R_TweenValueFreeFn)(R_UserData user, R_UserData *seq_user);
+typedef void (*R_TweenValueJsonFn)(JSON_Object *, R_UserData);
+typedef void (*R_TweenValueFreeFn)(R_UserData);
 
 typedef float (*R_TweenFloatGetFn )(R_UserData);
 typedef void  (*R_TweenFloatSetFn )(R_UserData, float);

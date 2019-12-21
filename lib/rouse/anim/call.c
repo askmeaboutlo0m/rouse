@@ -50,25 +50,24 @@ static R_StepStatus tick_call(R_StepTickArgs args)
     return R_STEP_STATUS_COMPLETE;
 }
 
-static void free_call(void *state, R_UserData *seq_user)
+static void free_call(void *state)
 {
     R_Call *call = state;
     R_MAGIC_CHECK(R_Call, call);
     if (call->on_free) {
-        call->on_free(call->user, seq_user);
+        call->on_free(call->user);
     }
     R_MAGIC_POISON(R_Call, call);
     free(call);
 }
 
-static void call_to_json(JSON_Object *obj, void *state,
-                         R_UNUSED R_UserData *seq_user)
+static void call_to_json(JSON_Object *obj, void *state)
 {
     R_Call *call = state;
     R_MAGIC_CHECK(R_Call, call);
     json_object_set_string(obj, "type", "R_Call");
     if (call->to_json) {
-        call->to_json(obj, call->user, seq_user);
+        call->to_json(obj, call->user);
     }
     else {
         R_json_object_set_hexdump(obj, "user", &call->user, sizeof(call->user));

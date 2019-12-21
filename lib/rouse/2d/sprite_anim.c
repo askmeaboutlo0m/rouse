@@ -62,7 +62,7 @@ static R_UserData make_tween_data(R_Sprite *sprite, int transform_index)
     return R_user_data(data);
 }
 
-static void free_tween_data(R_UserData user, R_UNUSED R_UserData *seq_user)
+static void free_tween_data(R_UserData user)
 {
     R_SpriteTweenData *data = user.data;
     R_MAGIC_CHECK(R_SpriteTweenData, data);
@@ -96,8 +96,7 @@ static void sprite_tween_data_to_json(JSON_Object *obj, R_SpriteTweenData *data)
         R_sprite_ ## NAME ## _set(data->sprite, data->transform_index, value); \
     } \
     \
-    static void NAME ## _to_json(JSON_Object *obj, R_UserData user, \
-                                 R_UNUSED R_UserData *seq_user) \
+    static void NAME ## _to_json(JSON_Object *obj, R_UserData user) \
     { \
         json_object_set_string(obj, "element_type", "sprite_" #NAME); \
         json_object_set_number(obj, "current_" #NAME, get_ ## NAME(user)); \

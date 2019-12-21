@@ -23,9 +23,8 @@
  */
 
 typedef void (*R_CallStepFn)(R_StepTickArgs, R_UserData);
-typedef void (*R_CallFreeFn)(R_UserData user, R_UserData *seq_user);
-typedef void (*R_CallJsonFn)(JSON_Object *obj, R_UserData user,
-                             R_UserData *seq_user);
+typedef void (*R_CallFreeFn)(R_UserData);
+typedef void (*R_CallJsonFn)(JSON_Object *, R_UserData);
 
 /*
  * Call the given `on_step` function when this step is hit. The optional

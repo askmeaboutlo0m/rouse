@@ -95,18 +95,18 @@ static void tick_elements(R_TweenElement *elements, float ratio)
     }
 }
 
-static void free_elements(R_TweenElement *elements, R_UserData *seq_user)
+static void free_elements(R_TweenElement *elements)
 {
     for (R_TweenElement *elem = elements, *next; elem; elem = next) {
         R_MAGIC_CHECK(R_TweenElement, elem);
         next = elem->next;
 
         if (elem->value_on_free) {
-            elem->value_on_free(elem->value_user, seq_user);
+            elem->value_on_free(elem->value_user);
         }
 
         if (elem->on_free) {
-            elem->on_free(elem->user, seq_user);
+            elem->on_free(elem->user);
         }
 
         R_MAGIC_POISON(R_TweenElement, elem);
@@ -145,13 +145,13 @@ static R_StepStatus tick_tween(R_StepTickArgs args)
     }
 }
 
-static void free_tween(void *state, R_UserData *seq_user)
+static void free_tween(void *state)
 {
     if (state) {
         R_Tween *tween = state;
         R_MAGIC_CHECK(R_Tween, tween);
 
-        free_elements(tween->elements, seq_user);
+        free_elements(tween->elements);
 
         if (tween->on_free) {
             tween->on_free(tween->user);
@@ -162,8 +162,7 @@ static void free_tween(void *state, R_UserData *seq_user)
     }
 }
 
-static JSON_Value *tween_element_to_json(R_TweenElement *elem,
-                                         R_UserData *seq_user)
+static JSON_Value *tween_element_to_json(R_TweenElement *elem)
 {
     JSON_Value  *val = json_value_init_object();
     JSON_Object *obj = json_value_get_object(val);
@@ -173,24 +172,23 @@ static JSON_Value *tween_element_to_json(R_TweenElement *elem,
     }
 
     if (elem->to_json) {
-        elem->to_json(obj, elem->user, seq_user);
+        elem->to_json(obj, elem->user);
     }
 
     if (elem->value_to_json) {
-        elem->value_to_json(obj, elem->value_user, seq_user);
+        elem->value_to_json(obj, elem->value_user);
     }
 
     return val;
 }
 
-static JSON_Value *tween_elements_to_json(R_TweenElement *elements,
-                                          R_UserData *seq_user)
+static JSON_Value *tween_elements_to_json(R_TweenElement *elements)
 {
     JSON_Value *val = json_value_init_array();
     JSON_Array *arr = json_value_get_array(val);
 
     for (R_TweenElement *elem = elements; elem; elem = elem->next) {
-        json_array_append_value(arr, tween_element_to_json(elem, seq_user));
+        json_array_append_value(arr, tween_element_to_json(elem));
     }
 
     return val;
@@ -207,7 +205,7 @@ static void ease_to_json(JSON_Object *obj, const char *key, R_EaseFn ease)
     }
 }
 
-static void tween_to_json(JSON_Object *obj, void *state, R_UserData *seq_user)
+static void tween_to_json(JSON_Object *obj, void *state)
 {
     R_Tween *tween = state;
     R_MAGIC_CHECK(R_Tween, tween);
@@ -219,7 +217,7 @@ static void tween_to_json(JSON_Object *obj, void *state, R_UserData *seq_user)
     ease_to_json(obj, "ease", tween->ease);
 
     if (tween->to_json) {
-        tween->to_json(obj, tween->user, seq_user);
+        tween->to_json(obj, tween->user);
     }
     else {
         json_object_set_string(obj, "tween_type", "custom");
@@ -228,7 +226,7 @@ static void tween_to_json(JSON_Object *obj, void *state, R_UserData *seq_user)
     }
 
     json_object_set_value(
-            obj, "elements", tween_elements_to_json(tween->elements, seq_user));
+            obj, "elements", tween_elements_to_json(tween->elements));
 }
 
 R_Step *R_tween_new(R_TweenCalcFn on_calc, R_TweenFreeFn on_free,
@@ -247,8 +245,7 @@ static float calc_fixed_tween(R_UNUSED R_StepTickArgs args, R_UserData user)
     return user.f;
 }
 
-static void fixed_tween_to_json(JSON_Object *obj, R_UserData user,
-                                R_UNUSED R_UserData *seq_user)
+static void fixed_tween_to_json(JSON_Object *obj, R_UserData user)
 {
     json_object_set_string(obj, "tween_type", "fixed");
     json_object_set_number(obj, "seconds", user.f);
@@ -266,8 +263,7 @@ static float calc_between_tween(R_UNUSED R_StepTickArgs args, R_UserData user)
     return R_rand_between(user.between.a, user.between.b);
 }
 
-static void between_tween_to_json(JSON_Object *obj, R_UserData user,
-                                  R_UNUSED R_UserData *seq_user)
+static void between_tween_to_json(JSON_Object *obj, R_UserData user)
 {
     json_object_set_string(obj, "tween_type", "between");
     json_object_set_number(obj, "a", user.between.a);
@@ -294,8 +290,7 @@ static float calc_fixed_float(R_UserData user, R_UNUSED float source)
     return user.f;
 }
 
-static void fixed_float_to_json(JSON_Object *obj, R_UserData user,
-                                R_UNUSED R_UserData *seq_user)
+static void fixed_float_to_json(JSON_Object *obj, R_UserData user)
 {
     json_object_set_string(obj, "value_type", "fixed_float");
     json_object_set_number(obj, "value", user.f);
@@ -313,8 +308,7 @@ static float calc_between_float(R_UserData user, R_UNUSED float source)
     return R_rand_between(user.between.a, user.between.b);
 }
 
-static void between_float_to_json(JSON_Object *obj, R_UserData user,
-                                  R_UNUSED R_UserData *seq_user)
+static void between_float_to_json(JSON_Object *obj, R_UserData user)
 {
     json_object_set_string(obj, "value_type", "between_float");
     json_object_set_number(obj, "a", user.between.a);

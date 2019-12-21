@@ -18,6 +18,32 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
+ * ______________________________________________________________________________
+ *
+ * The transform id system is based on PixiJS, which can be found at
+ * https://www.pixijs.com/. It's licensed under the following terms:
+ *
+ * The MIT License
+ *
+ * Copyright (c) 2013-2017 Mathew Groves, Chad Engler
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 #include <stdlib.h>
 #include <stdarg.h>
@@ -51,6 +77,21 @@ struct R_Sprite {
     R_Sprite          *next;
     int               transform_count;
     R_AffineTransform *transforms;
+    /* These id things keep track of which transforms need to be recalculated.
+     * This system is heavily inspired by the way PixiJS works. Each sprite
+     * keeps track of its local matrix, which is calculated from its own affine
+     * transforms, and its world matrix, which is calculated by multiplying the
+     * local matrix with its parent's world matrix. A sprite that has no parent
+     * has identical local and world matrices.
+     *
+     * The current_id is incremented whenever something about the sprite's
+     * affine transforms changes. When current_id is different from local_id,
+     * the local matrix is recalculated and local_id is updated to current_id.
+     *
+     * Whenever the local matrix changes or the parent_id is different from the
+     * parent's world_id, the world matrix is recalculated. When that happens,
+     * the world_id is incremented, invalidating all children's parent_id and
+     * making them recalculate their world matrices as well. */
     int               current_id, local_id, world_id, parent_id;
     float             local[6], world[6];
     R_SpriteFreeFn    on_free;

@@ -186,6 +186,14 @@ const char *R_sprite_name(R_Sprite *sprite)
     return sprite->name;
 }
 
+void R_sprite_name_set(R_Sprite *sprite, const char *name)
+{
+    check_sprite(sprite);
+    free(sprite->name);
+    sprite->name = R_strdup(name);
+}
+
+
 R_UserData R_sprite_user(R_Sprite *sprite)
 {
     check_sprite(sprite);

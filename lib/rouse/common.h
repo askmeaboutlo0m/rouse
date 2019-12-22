@@ -54,11 +54,14 @@
         __attribute__((__format__(printf, STRING_INDEX, FIRST_TO_CHECK)))
     /* Trap to terminate the program or trigger the debugger. */
 #   define R_TRAP() __builtin_trap()
+    /* Mark an unreachable code path. */
+#   define R_UNREACHABLE() __builtin_unreachable()
 #else
 #   define R_NORETURN /* nothing */
 #   define R_UNUSED /* nothing */
 #   define R_FORMAT(STRING_INDEX, FIRST_TO_CHECK) /* nothing */
 #   define R_TRAP() abort()
+#   define R_UNREACHABLE() /* nothing */
 #endif
 
 /* Sometimes parameters are only used in debug mode. */

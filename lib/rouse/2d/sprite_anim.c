@@ -47,68 +47,38 @@
 #include "sprite_anim.h"
 
 
-typedef struct R_SpriteTweenData {
-    R_MAGIC_FIELD
-    R_Sprite *sprite;
-    int      transform_index;
-} R_SpriteTweenData;
-
-static R_UserData make_tween_data(R_Sprite *sprite, int transform_index)
+static void tween_sprite_free(R_UserData user)
 {
-    R_sprite_incref(sprite);
-    R_SpriteTweenData *data = R_NEW_INIT_STRUCT(data, R_SpriteTweenData,
-            R_MAGIC_INIT(R_SpriteTweenData) sprite, transform_index);
-    R_MAGIC_CHECK(R_SpriteTweenData, data);
-    return R_user_data(data);
+    R_sprite_decref(user.data);
 }
-
-static void free_tween_data(R_UserData user)
-{
-    R_SpriteTweenData *data = user.data;
-    R_MAGIC_CHECK(R_SpriteTweenData, data);
-    R_sprite_decref(data->sprite);
-    R_MAGIC_POISON(R_SpriteTweenData, data);
-    free(data);
-}
-
-static void sprite_tween_data_to_json(JSON_Object *obj, R_SpriteTweenData *data)
-{
-    R_MAGIC_CHECK(R_SpriteTweenData, data);
-    const char *name = R_sprite_name(data->sprite);
-    json_object_set_string(obj, "sprite", name ? name : "");
-    json_object_set_number(obj, "transform_index",
-                           R_int2double(data->transform_index));
-}
-
 
 #define DEF_SPRITE_TWEEN(NAME, FIELD) \
     static float get_ ## NAME(R_UserData user) \
     { \
-        R_SpriteTweenData *data = user.data; \
-        R_MAGIC_CHECK(R_SpriteTweenData, data); \
-        return R_sprite_ ## NAME ## _at(data->sprite, data->transform_index); \
+        R_Sprite* sprite = user.data; \
+        return R_sprite_ ## NAME(sprite); \
     } \
     \
     static void set_ ## NAME(R_UserData user, float value) \
     { \
-        R_SpriteTweenData *data = user.data; \
-        R_MAGIC_CHECK(R_SpriteTweenData, data); \
-        R_sprite_ ## NAME ## _set(data->sprite, data->transform_index, value); \
+        R_Sprite *sprite = user.data; \
+        R_sprite_ ## NAME ## _set(sprite, value); \
     } \
     \
     static void NAME ## _to_json(JSON_Object *obj, R_UserData user) \
     { \
         json_object_set_string(obj, "element_type", "sprite_" #NAME); \
         json_object_set_number(obj, "current_" #NAME, get_ ## NAME(user)); \
-        sprite_tween_data_to_json(obj, user.data); \
+        const char *name = R_sprite_name(user.data); \
+        json_object_set_string(obj, "sprite", name ? name : ""); \
     } \
     \
     void R_tween_sprite_ ## NAME(R_Step *step, R_Sprite *sprite, \
-                                 int transform_index, R_TweenFloat value) \
+                                 R_TweenFloat value) \
     { \
-        R_tween_add_float(step, value, make_tween_data(sprite, transform_index), \
-                          get_ ## NAME, set_ ## NAME, free_tween_data, \
-                          NAME ## _to_json); \
+        R_sprite_incref(sprite); \
+        R_tween_add_float(step, value, R_user_data(sprite), get_ ## NAME, \
+                          set_ ## NAME, tween_sprite_free, NAME ## _to_json); \
     }
 
 DEF_SPRITE_TWEEN(origin_x, origin.x)

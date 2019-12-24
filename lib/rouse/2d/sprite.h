@@ -107,44 +107,39 @@ void R_sprite_draw_vector_image(R_Sprite *sprite, R_VectorImage *vi);
 void R_sprite_draw_text_field(R_Sprite *sprite, R_TextField *field);
 
 
-void R_sprite_transforms_resize(R_Sprite *sprite, int transform_count);
+R_AffineTransform R_sprite_transform(R_Sprite *sprite);
 
-void R_sprite_transforms_ensure(R_Sprite *sprite, int transform_count);
+R_V2  R_sprite_origin  (R_Sprite *sprite);
+float R_sprite_origin_x(R_Sprite *sprite);
+float R_sprite_origin_y(R_Sprite *sprite);
+R_V2  R_sprite_pos     (R_Sprite *sprite);
+float R_sprite_pos_x   (R_Sprite *sprite);
+float R_sprite_pos_y   (R_Sprite *sprite);
+R_V2  R_sprite_scale   (R_Sprite *sprite);
+float R_sprite_scale_x (R_Sprite *sprite);
+float R_sprite_scale_y (R_Sprite *sprite);
+R_V2  R_sprite_skew    (R_Sprite *sprite);
+float R_sprite_skew_x  (R_Sprite *sprite);
+float R_sprite_skew_y  (R_Sprite *sprite);
+float R_sprite_angle   (R_Sprite *sprite); /* radians */
+float R_sprite_rotation(R_Sprite *sprite); /* degrees */
 
+void R_sprite_transform_set(R_Sprite *sprite, R_AffineTransform tf);
 
-R_AffineTransform R_sprite_transform_at(R_Sprite *sprite, int index);
-
-R_V2  R_sprite_origin_at  (R_Sprite *sprite, int index);
-float R_sprite_origin_x_at(R_Sprite *sprite, int index);
-float R_sprite_origin_y_at(R_Sprite *sprite, int index);
-R_V2  R_sprite_pos_at     (R_Sprite *sprite, int index);
-float R_sprite_pos_x_at   (R_Sprite *sprite, int index);
-float R_sprite_pos_y_at   (R_Sprite *sprite, int index);
-R_V2  R_sprite_scale_at   (R_Sprite *sprite, int index);
-float R_sprite_scale_x_at (R_Sprite *sprite, int index);
-float R_sprite_scale_y_at (R_Sprite *sprite, int index);
-R_V2  R_sprite_skew_at    (R_Sprite *sprite, int index);
-float R_sprite_skew_x_at  (R_Sprite *sprite, int index);
-float R_sprite_skew_y_at  (R_Sprite *sprite, int index);
-float R_sprite_angle_at   (R_Sprite *sprite, int index); /* radians */
-float R_sprite_rotation_at(R_Sprite *sprite, int index); /* degrees */
-
-void R_sprite_transform_set(R_Sprite *sprite, int index, R_AffineTransform tf);
-
-void R_sprite_origin_set  (R_Sprite *sprite, int index, R_V2  value);
-void R_sprite_origin_x_set(R_Sprite *sprite, int index, float value);
-void R_sprite_origin_y_set(R_Sprite *sprite, int index, float value);
-void R_sprite_pos_set     (R_Sprite *sprite, int index, R_V2  value);
-void R_sprite_pos_x_set   (R_Sprite *sprite, int index, float value);
-void R_sprite_pos_y_set   (R_Sprite *sprite, int index, float value);
-void R_sprite_scale_set   (R_Sprite *sprite, int index, R_V2  value);
-void R_sprite_scale_x_set (R_Sprite *sprite, int index, float value);
-void R_sprite_scale_y_set (R_Sprite *sprite, int index, float value);
-void R_sprite_skew_set    (R_Sprite *sprite, int index, R_V2  value);
-void R_sprite_skew_x_set  (R_Sprite *sprite, int index, float value);
-void R_sprite_skew_y_set  (R_Sprite *sprite, int index, float value);
-void R_sprite_angle_set   (R_Sprite *sprite, int index, float value); /* radians */
-void R_sprite_rotation_set(R_Sprite *sprite, int index, float value); /* degrees */
+void R_sprite_origin_set  (R_Sprite *sprite, R_V2  value);
+void R_sprite_origin_x_set(R_Sprite *sprite, float value);
+void R_sprite_origin_y_set(R_Sprite *sprite, float value);
+void R_sprite_pos_set     (R_Sprite *sprite, R_V2  value);
+void R_sprite_pos_x_set   (R_Sprite *sprite, float value);
+void R_sprite_pos_y_set   (R_Sprite *sprite, float value);
+void R_sprite_scale_set   (R_Sprite *sprite, R_V2  value);
+void R_sprite_scale_x_set (R_Sprite *sprite, float value);
+void R_sprite_scale_y_set (R_Sprite *sprite, float value);
+void R_sprite_skew_set    (R_Sprite *sprite, R_V2  value);
+void R_sprite_skew_x_set  (R_Sprite *sprite, float value);
+void R_sprite_skew_y_set  (R_Sprite *sprite, float value);
+void R_sprite_angle_set   (R_Sprite *sprite, float value); /* radians */
+void R_sprite_rotation_set(R_Sprite *sprite, float value); /* degrees */
 
 
 R_V2  R_sprite_world_pos(R_Sprite *sprite);

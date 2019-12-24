@@ -75,17 +75,16 @@ struct R_Sprite {
     R_Sprite          *parent;
     R_Sprite          *children;
     R_Sprite          *next;
-    int               transform_count;
-    R_AffineTransform *transforms;
+    R_AffineTransform transform;
     /* These id things keep track of which transforms need to be recalculated.
      * This system is heavily inspired by the way PixiJS works. Each sprite
      * keeps track of its local matrix, which is calculated from its own affine
-     * transforms, and its world matrix, which is calculated by multiplying the
+     * transform, and its world matrix, which is calculated by multiplying the
      * local matrix with its parent's world matrix. A sprite that has no parent
      * has identical local and world matrices.
      *
      * The current_id is incremented whenever something about the sprite's
-     * affine transforms changes. When current_id is different from local_id,
+     * affine transform changes. When current_id is different from local_id,
      * the local matrix is recalculated and local_id is updated to current_id.
      *
      * Whenever the local matrix changes or the parent_id is different from the
@@ -112,16 +111,16 @@ R_AffineTransform R_affine_transform(void)
 }
 
 
-static void init_affine_transform(R_AffineTransform *transform)
-{
-    *transform = R_affine_transform();
-    R_MAGIC_CHECK(R_AffineTransform, transform);
-}
-
 static inline void check_sprite(R_UNUSED_UNLESS_DEBUG R_Sprite *sprite)
 {
     R_MAGIC_CHECK(R_Sprite, sprite);
     R_assert(sprite->refs > 0, "refcount must always be positive");
+}
+
+static inline void check_sprite_transform(R_Sprite *sprite)
+{
+    check_sprite(sprite);
+    R_MAGIC_CHECK(R_AffineTransform, &sprite->transform);
 }
 
 static inline void check_parent_child(R_Sprite *parent, R_Sprite *child)
@@ -133,10 +132,11 @@ static inline void check_parent_child(R_Sprite *parent, R_Sprite *child)
 
 R_Sprite *R_sprite_new(const char *name)
 {
+#   define IDENTITY_AFFINE_MATRIX {1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f}
     R_Sprite *sprite = R_NEW_INIT_STRUCT(sprite, R_Sprite,
             R_MAGIC_INIT(R_Sprite) 1, R_strdup(name), NULL, NULL, NULL,
-            0, NULL, 0, 0, 0, 0, {1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f},
-            {1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f}, NULL, R_user_null(),
+            R_affine_transform(), 0, 0, 0, 0, IDENTITY_AFFINE_MATRIX,
+            IDENTITY_AFFINE_MATRIX, NULL, R_user_null(),
             {NULL, NULL, R_user_null()});
     check_sprite(sprite);
     return sprite;
@@ -172,7 +172,6 @@ static void free_sprite(R_Sprite *sprite)
     free_user(sprite->on_free, sprite->user);
     free_user(sprite->content.on_free, sprite->content.user);
     free(sprite->name);
-    free(sprite->transforms);
     R_MAGIC_POISON(R_Sprite, sprite);
     free(sprite);
 }
@@ -286,63 +285,32 @@ void R_sprite_draw_text_field(R_Sprite *sprite, R_TextField *field)
 }
 
 
-static void resize_transforms(R_Sprite *sprite, int transform_count)
+R_AffineTransform R_sprite_transform(R_Sprite *sprite)
 {
-    int prev_count          = sprite->transform_count;
-    sprite->transform_count = transform_count;
-    sprite->transforms      = R_realloc(sprite->transforms,
-        R_int2size(transform_count) * sizeof(*sprite->transforms));
-    for (int i = prev_count; i < transform_count; ++i) {
-        init_affine_transform(&sprite->transforms[i]);
-    }
+    check_sprite_transform(sprite);
+    return sprite->transform;
 }
 
-void R_sprite_transforms_resize(R_Sprite* sprite, int transform_count)
-{
-    R_assert(transform_count >= 0, "transform count must not be negative");
-    if (sprite->transform_count != transform_count) {
-        resize_transforms(sprite, transform_count);
-    }
-}
-
-void R_sprite_transforms_ensure(R_Sprite *sprite, int transform_count)
+void R_sprite_transform_set(R_Sprite *sprite, R_AffineTransform tf)
 {
     check_sprite(sprite);
-    if (sprite->transform_count < transform_count) {
-        resize_transforms(sprite, transform_count);
-    }
-}
-
-
-static R_AffineTransform *check_transform(R_Sprite *sprite, int index)
-{
-    R_MAGIC_CHECK(R_Sprite, sprite);
-    R_assert(index >= 0, "transform index must not be negative");
-    R_sprite_transforms_ensure(sprite, index + 1);
-    return &sprite->transforms[index];
-}
-
-R_AffineTransform R_sprite_transform_at(R_Sprite *sprite, int index)
-{
-    return *check_transform(sprite, index);
-}
-
-void R_sprite_transform_set(R_Sprite *sprite, int index, R_AffineTransform tf)
-{
-    *check_transform(sprite, index) = tf;
+    R_MAGIC_CHECK(R_AffineTransform, &tf);
+    sprite->transform = tf;
     ++sprite->current_id;
 }
 
 #define GET_TRANSFORM(TYPE, NAME, ACCESS) \
-    TYPE R_sprite_ ## NAME ## _at(R_Sprite *sprite, int index) \
+    TYPE R_sprite_ ## NAME(R_Sprite *sprite) \
     { \
-        return check_transform(sprite, index)->ACCESS; \
+        check_sprite_transform(sprite); \
+        return sprite->transform.ACCESS; \
     }
 
 #define SET_TRANSFORM(TYPE, NAME, ACCESS) \
-    void R_sprite_ ## NAME ## _set(R_Sprite *sprite, int index, TYPE value) \
+    void R_sprite_ ## NAME ## _set(R_Sprite *sprite, TYPE value) \
     { \
-        check_transform(sprite, index)->ACCESS = value; \
+        check_sprite_transform(sprite); \
+        sprite->transform.ACCESS = value; \
         ++sprite->current_id; \
     }
 
@@ -364,14 +332,16 @@ GET_SET_TRANSFORM(float, skew_x,   skew.x)
 GET_SET_TRANSFORM(float, skew_y,   skew.y)
 GET_SET_TRANSFORM(float, angle,    angle)
 
-float R_sprite_rotation_at(R_Sprite *sprite, int index)
+float R_sprite_rotation(R_Sprite *sprite)
 {
-    return R_to_deg(check_transform(sprite, index)->angle);
+    check_sprite_transform(sprite);
+    return R_to_deg(sprite->transform.angle);
 }
 
-void R_sprite_rotation_set(R_Sprite *sprite, int index, float value)
+void R_sprite_rotation_set(R_Sprite *sprite, float value)
 {
-    check_transform(sprite, index)->angle = R_to_rad(value);
+    check_sprite_transform(sprite);
+    sprite->transform.angle = R_to_rad(value);
     ++sprite->current_id;
 }
 
@@ -379,7 +349,7 @@ void R_sprite_rotation_set(R_Sprite *sprite, int index, float value)
 static void apply_transform(float matrix[static 6], R_AffineTransform *tf)
 {
     float tmp[6];
-    R_V2  origin = tf->origin;
+    R_V2 origin = tf->origin;
     nvgTransformTranslate(tmp, -origin.x, -origin.y);
     nvgTransformMultiply(matrix, tmp);
     nvgTransformScale(tmp, tf->scale.x, tf->scale.y);
@@ -400,10 +370,7 @@ static void calc_local(R_Sprite *sprite)
 {
     float *local = sprite->local;
     nvgTransformIdentity(local);
-    int count = sprite->transform_count;
-    for (int i = 0; i < count; ++i) {
-        apply_transform(local, &sprite->transforms[i]);
-    }
+    apply_transform(local, &sprite->transform);
     sprite->local_id = sprite->current_id;
 }
 

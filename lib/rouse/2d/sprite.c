@@ -348,20 +348,17 @@ void R_sprite_rotation_set(R_Sprite *sprite, float value)
 
 static void apply_transform(float matrix[static 6], R_AffineTransform *tf)
 {
-    float tmp[6];
-    R_V2 origin = tf->origin;
-    nvgTransformTranslate(tmp, -origin.x, -origin.y);
-    nvgTransformMultiply(matrix, tmp);
-    nvgTransformScale(tmp, tf->scale.x, tf->scale.y);
-    nvgTransformMultiply(matrix, tmp);
-    nvgTransformSkewX(tmp, tf->skew.x);
-    nvgTransformMultiply(matrix, tmp);
-    nvgTransformSkewY(tmp, tf->skew.y);
-    nvgTransformMultiply(matrix, tmp);
-    nvgTransformRotate(tmp, tf->angle);
-    nvgTransformMultiply(matrix, tmp);
-    nvgTransformTranslate(tmp, tf->pos.x + origin.x, tf->pos.y + origin.y);
-    nvgTransformMultiply(matrix, tmp);
+    float angle  = tf->angle;
+    R_V2  skew   = tf->skew;
+    R_V2  scale  = tf->scale;
+    R_V2  origin = tf->origin;
+    R_V2  pos    = tf->pos;
+    matrix[0] =  cosf(angle + skew.y) * scale.x;
+    matrix[1] =  sinf(angle + skew.y) * scale.x;
+    matrix[2] = -sinf(angle - skew.x) * scale.y;
+    matrix[3] =  cosf(angle - skew.x) * scale.y;
+    matrix[4] = pos.x + origin.x - origin.x * matrix[0] - origin.y * matrix[2];
+    matrix[5] = pos.y + origin.y - origin.x * matrix[1] - origin.y * matrix[3];
 }
 
 /* Watch out: this does NOT set the parent_id to a new value! You either need

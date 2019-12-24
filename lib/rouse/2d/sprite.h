@@ -141,11 +141,13 @@ void R_sprite_skew_y_set  (R_Sprite *sprite, float value);
 void R_sprite_angle_set   (R_Sprite *sprite, float value); /* radians */
 void R_sprite_rotation_set(R_Sprite *sprite, float value); /* degrees */
 
+R_V2  R_sprite_world_pos  (R_Sprite *sprite);
+float R_sprite_world_pos_x(R_Sprite *sprite);
+float R_sprite_world_pos_y(R_Sprite *sprite);
 
-R_V2  R_sprite_world_pos(R_Sprite *sprite);
-float R_sprite_world_x  (R_Sprite *sprite);
-float R_sprite_world_y  (R_Sprite *sprite);
-
+R_V2  R_sprite_world_origin  (R_Sprite *sprite);
+float R_sprite_world_origin_x(R_Sprite *sprite);
+float R_sprite_world_origin_y(R_Sprite *sprite);
 
 /*
  * Returns the parent of the given `sprite`, or `NULL` if it doesn't have one.

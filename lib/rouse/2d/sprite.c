@@ -420,16 +420,37 @@ R_V2 R_sprite_world_pos(R_Sprite *sprite)
     return R_v2(world[4], world[5]);
 }
 
-float R_sprite_world_x(R_Sprite *sprite)
+float R_sprite_world_pos_x(R_Sprite *sprite)
 {
     return get_world(sprite)[4];
 }
 
-float R_sprite_world_y(R_Sprite *sprite)
+float R_sprite_world_pos_y(R_Sprite *sprite)
 {
     return get_world(sprite)[5];
 }
 
+R_V2 R_sprite_world_origin(R_Sprite *sprite)
+{
+    float *world = get_world(sprite);
+    R_V2  origin = sprite->transform.origin;
+    return R_v2(origin.x * world[0] + origin.y * world[2] + world[4],
+                origin.x * world[1] + origin.y * world[3] + world[5]);
+}
+
+float R_sprite_world_origin_x(R_Sprite *sprite)
+{
+    float *world = get_world(sprite);
+    R_V2  origin = sprite->transform.origin;
+    return origin.x * world[0] + origin.y * world[2] + world[4];
+}
+
+float R_sprite_world_origin_y(R_Sprite *sprite)
+{
+    float *world = get_world(sprite);
+    R_V2  origin = sprite->transform.origin;
+    return origin.x * world[1] + origin.y * world[3] + world[5];
+}
 
 
 R_Sprite *R_sprite_parent(R_Sprite *sprite)

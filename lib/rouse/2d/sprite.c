@@ -212,6 +212,9 @@ void R_sprite_draw_fn(R_Sprite *sprite, R_SpriteDrawFn on_draw,
                       R_SpriteFreeFn on_free, R_UserData draw_user)
 {
     R_MAGIC_CHECK(R_Sprite, sprite);
+    if (sprite->content.on_free) {
+        sprite->content.on_free(sprite->content.user);
+    }
     sprite->content.on_draw = on_draw;
     sprite->content.on_free = on_free;
     sprite->content.user    = draw_user;

@@ -17,7 +17,6 @@ typedef struct CommonData {
     R_FrameRenderer *fr;
     R_FirstPerson   *fp;
     R_Camera        *camera;
-    R_Input         *input;
     R_V3            speed;
     unsigned int    input_flags;
     struct {
@@ -30,22 +29,35 @@ typedef struct CommonData {
 } CommonData;
 
 
-static void on_key(SDL_KeyboardEvent *key, R_UserData context, R_UserData user)
+static unsigned int on_key(SDL_Scancode scancode)
 {
-    CommonData *cd = context.data;
-    if (key->type == SDL_KEYDOWN) {
-        cd->input_flags |= user.u;
-    }
-    else {
-        cd->input_flags &= ~user.u;
+    switch (scancode) {
+        case SDL_SCANCODE_W:      return MOVE_FORWARD;
+        case SDL_SCANCODE_A:      return MOVE_LEFT;
+        case SDL_SCANCODE_S:      return MOVE_BACKWARD;
+        case SDL_SCANCODE_D:      return MOVE_RIGHT;
+        case SDL_SCANCODE_SPACE:  return MOVE_UP;
+        case SDL_SCANCODE_LSHIFT: return MOVE_DOWN;
+        case SDL_SCANCODE_Q:      return LOOK_LEFT;
+        case SDL_SCANCODE_E:      return LOOK_RIGHT;
+        case SDL_SCANCODE_R:      return LOOK_UP;
+        case SDL_SCANCODE_F:      return LOOK_DOWN;
+        default:                  return 0;
     }
 }
 
 static void on_event(R_Scene *scene, SDL_Event *event)
 {
-    R_debug("on_event %d", event->type);
+    uint32_t type = event->type;
+    R_debug("on_event %d", type);
     CommonData *cd = scene->user.data;
-    R_input_handle_event(cd->input, event, scene->user);
+
+    if (type == SDL_KEYDOWN) {
+        cd->input_flags |= on_key(event->key.keysym.scancode);
+    }
+    else if (type == SDL_KEYUP) {
+        cd->input_flags &= ~on_key(event->key.keysym.scancode);
+    }
 
     if (cd->custom.on_event) {
         cd->custom.on_event(cd->custom.data, event);
@@ -129,7 +141,6 @@ static void on_free(R_Scene *scene)
         cd->custom.on_free(cd->custom.data);
     }
 
-    R_input_free(cd->input);
     R_first_person_free(cd->fp);
     R_camera_free(cd->camera);
     R_frame_renderer_free(cd->fr);
@@ -156,7 +167,6 @@ R_Scene *common_init(void *(*init_fn )(void *), void *user,
     cd->fp          = R_first_person_new(R_v3(0.0f, 0.0f, -20.0f), 0.0f, 0.0f);
     cd->camera      = R_camera_new_perspective(R_to_rad(60.0f), 16.0f / 9.0f,
                                                0.1f, 1000.0f);
-    cd->input       = R_input_new();
     cd->speed       = R_v3_zero();
     cd->input_flags = 0;
 
@@ -165,23 +175,6 @@ R_Scene *common_init(void *(*init_fn )(void *), void *user,
     cd->custom.on_tick   = tick_fn;
     cd->custom.on_render = render_fn;
     cd->custom.on_free   = free_fn;
-
-#   define BIND_KEY(KEY, FLAG) \
-        R_input_key_bind(cd->input, SDL_SCANCODE_ ## KEY, on_key, \
-                         R_user_uint(FLAG), NULL)
-
-    BIND_KEY(W,      MOVE_FORWARD);
-    BIND_KEY(A,      MOVE_LEFT);
-    BIND_KEY(S,      MOVE_BACKWARD);
-    BIND_KEY(D,      MOVE_RIGHT);
-    BIND_KEY(SPACE,  MOVE_UP);
-    BIND_KEY(LSHIFT, MOVE_DOWN);
-    BIND_KEY(Q,      LOOK_LEFT);
-    BIND_KEY(E,      LOOK_RIGHT);
-    BIND_KEY(R,      LOOK_UP);
-    BIND_KEY(F,      LOOK_DOWN);
-
-#   undef BIND_KEY
 
     R_Scene *scene   = R_scene_new();
     scene->on_event  = on_event;

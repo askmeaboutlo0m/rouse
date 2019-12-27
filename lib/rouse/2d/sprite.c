@@ -493,7 +493,7 @@ int R_sprite_child_add_at(R_Sprite *sprite, R_Sprite *child, int index)
         ++at;
     }
 
-    child->next = *pp ? (*pp)->next : NULL;
+    child->next = *pp ? *pp : NULL;
     *pp = child;
 
     child->parent    = sprite;

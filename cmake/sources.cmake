@@ -16,8 +16,6 @@ set(rouse_headers
     "${CMAKE_SOURCE_DIR}/lib/rouse/3rdparty/KHR/khrplatform.h"
     "${CMAKE_SOURCE_DIR}/lib/rouse/3rdparty/gles2_inc.h"
     "${CMAKE_SOURCE_DIR}/lib/rouse/3rdparty/nanovg_inc.h"
-    "${CMAKE_SOURCE_DIR}/lib/rouse/3rdparty/uthash.h"
-    "${CMAKE_SOURCE_DIR}/lib/rouse/3rdparty/uthash_inc.h"
     "${CMAKE_SOURCE_DIR}/lib/rouse/anim/call.h"
     "${CMAKE_SOURCE_DIR}/lib/rouse/anim/delay.h"
     "${CMAKE_SOURCE_DIR}/lib/rouse/anim/ease.h"

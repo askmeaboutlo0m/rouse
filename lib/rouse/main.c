@@ -33,7 +33,6 @@
 #include <SDL2/SDL_image.h>
 #include "3rdparty/gles2_inc.h"
 #include "3rdparty/parson.h"
-#include "3rdparty/uthash_inc.h"
 #include <rouse_config.h>
 #include "common.h"
 #include "geom.h"

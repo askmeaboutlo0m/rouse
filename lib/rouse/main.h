@@ -25,12 +25,17 @@
 #define R_SDL_INIT_FLAGS_DEFAULT (SDL_INIT_VIDEO | SDL_INIT_TIMER)
 #define R_IMG_INIT_FLAGS_DEFAULT IMG_INIT_PNG
 
+#define R_SDL_GL_CONTEXT_PROFILE_MASK_DEFAULT  SDL_GL_CONTEXT_PROFILE_ES
+#define R_SDL_GL_CONTEXT_MAJOR_VERSION_DEFAULT 2
+#define R_SDL_GL_CONTEXT_MINOR_VERSION_DEFAULT 0
+#define R_SDL_GL_DOUBLEBUFFER_DEFAULT          1
+#define R_SDL_GL_ARG_UNDEFINED                 (-9999)
+
 #define R_WINDOW_TITLE_DEFAULT   "rouse"
 #define R_WINDOW_X_DEFAULT       SDL_WINDOWPOS_UNDEFINED
 #define R_WINDOW_Y_DEFAULT       SDL_WINDOWPOS_UNDEFINED
 #define R_WINDOW_WIDTH_DEFAULT   1280
 #define R_WINDOW_HEIGHT_DEFAULT  720
-#define R_WINDOW_SAMPLES_DEFAULT 1
 #define R_WINDOW_FLAGS_DEFAULT   (SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE)
 
 /* Default tick length and frame skip, for 100 ticks per second. */
@@ -55,10 +60,35 @@ typedef void (*R_InitWindowHook)(void *user, const char **title, int *x, int *y,
 typedef struct R_Scene R_Scene;
 typedef R_Scene *(*R_SceneFn)(void *);
 
+typedef struct R_SdlGlArgs {
+    int red_size;                   /* SDL_GL_RED_SIZE */
+    int green_size;                 /* SDL_GL_GREEN_SIZE */
+    int blue_size;                  /* SDL_GL_BLUE_SIZE */
+    int alpha_size;                 /* SDL_GL_ALPHA_SIZE */
+    int buffer_size;                /* SDL_GL_BUFFER_SIZE */
+    int doublebuffer;               /* SDL_GL_DOUBLEBUFFER */
+    int depth_size;                 /* SDL_GL_DEPTH_SIZE */
+    int stencil_size;               /* SDL_GL_STENCIL_SIZE */
+    int accum_red_size;             /* SDL_GL_ACCUM_RED_SIZE */
+    int accum_green_size;           /* SDL_GL_ACCUM_GREEN_SIZE */
+    int accum_blue_size;            /* SDL_GL_ACCUM_BLUE_SIZE */
+    int accum_alpha_size;           /* SDL_GL_ACCUM_ALPHA_SIZE */
+    int stereo;                     /* SDL_GL_STEREO */
+    int multisamplebuffers;         /* SDL_GL_MULTISAMPLEBUFFERS */
+    int multisamplesamples;         /* SDL_GL_MULTISAMPLESAMPLES */
+    int accelerated_visual;         /* SDL_GL_ACCELERATED_VISUAL */
+    int context_major_version;      /* SDL_GL_CONTEXT_MAJOR_VERSION */
+    int context_minor_version;      /* SDL_GL_CONTEXT_MINOR_VERSION */
+    int context_flags;              /* SDL_GL_CONTEXT_FLAGS */
+    int context_profile_mask;       /* SDL_GL_CONTEXT_PROFILE_MASK */
+    int share_with_current_context; /* SDL_GL_SHARE_WITH_CURRENT_CONTEXT */
+    int framebuffer_srgb_capable;   /* SDL_GL_FRAMEBUFFER_SRGB_CAPABLE */
+    int context_release_behavior;   /* SDL_GL_CONTEXT_RELEASE_BEHAVIOR */
+} R_SdlGlArgs;
+
 typedef struct R_WindowArgs {
     const char *title;
     int        x, y, width, height;
-    int        samples;
     uint32_t   flags;
 } R_WindowArgs;
 
@@ -66,6 +96,7 @@ typedef struct R_MainArgs {
     R_MAGIC_FIELD
     uint32_t         sdl_init_flags;
     int              img_init_flags;
+    R_SdlGlArgs      gl;
     R_WindowArgs     window;
     R_InitSdlHook    on_sdl_init;
     R_InitImgHook    on_img_init;

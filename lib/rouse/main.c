@@ -74,19 +74,47 @@ void R_framerate_set(float ticks_per_second)
 }
 
 
+static R_SdlGlArgs gl_args(void)
+{
+    return (R_SdlGlArgs) {
+        .red_size                   = R_SDL_GL_ARG_UNDEFINED,
+        .green_size                 = R_SDL_GL_ARG_UNDEFINED,
+        .blue_size                  = R_SDL_GL_ARG_UNDEFINED,
+        .alpha_size                 = R_SDL_GL_ARG_UNDEFINED,
+        .buffer_size                = R_SDL_GL_ARG_UNDEFINED,
+        .doublebuffer               = R_SDL_GL_DOUBLEBUFFER_DEFAULT,
+        .depth_size                 = R_SDL_GL_ARG_UNDEFINED,
+        .stencil_size               = R_SDL_GL_ARG_UNDEFINED,
+        .accum_red_size             = R_SDL_GL_ARG_UNDEFINED,
+        .accum_green_size           = R_SDL_GL_ARG_UNDEFINED,
+        .accum_blue_size            = R_SDL_GL_ARG_UNDEFINED,
+        .accum_alpha_size           = R_SDL_GL_ARG_UNDEFINED,
+        .stereo                     = R_SDL_GL_ARG_UNDEFINED,
+        .multisamplebuffers         = R_SDL_GL_ARG_UNDEFINED,
+        .multisamplesamples         = R_SDL_GL_ARG_UNDEFINED,
+        .accelerated_visual         = R_SDL_GL_ARG_UNDEFINED,
+        .context_major_version      = R_SDL_GL_CONTEXT_MAJOR_VERSION_DEFAULT,
+        .context_minor_version      = R_SDL_GL_CONTEXT_MINOR_VERSION_DEFAULT,
+        .context_flags              = R_SDL_GL_ARG_UNDEFINED,
+        .context_profile_mask       = R_SDL_GL_CONTEXT_PROFILE_MASK_DEFAULT,
+        .share_with_current_context = R_SDL_GL_ARG_UNDEFINED,
+        .framebuffer_srgb_capable   = R_SDL_GL_ARG_UNDEFINED,
+        .context_release_behavior   = R_SDL_GL_ARG_UNDEFINED,
+    };
+}
+
 static R_WindowArgs window_args(void)
 {
     return (R_WindowArgs){R_WINDOW_TITLE_DEFAULT, R_WINDOW_X_DEFAULT,
                           R_WINDOW_Y_DEFAULT, R_WINDOW_WIDTH_DEFAULT,
-                          R_WINDOW_HEIGHT_DEFAULT, R_WINDOW_SAMPLES_DEFAULT,
-                          R_WINDOW_FLAGS_DEFAULT};
+                          R_WINDOW_HEIGHT_DEFAULT, R_WINDOW_FLAGS_DEFAULT};
 }
 
 R_MainArgs R_main_args(R_SceneFn on_scene, void *user)
 {
     R_MainArgs args = {R_MAGIC_INIT(R_MainArgs) R_SDL_INIT_FLAGS_DEFAULT,
-                       R_IMG_INIT_FLAGS_DEFAULT, window_args(), NULL, NULL,
-                       NULL, NULL, NULL, on_scene, user};
+                       R_IMG_INIT_FLAGS_DEFAULT, gl_args(), window_args(),
+                       NULL, NULL, NULL, NULL, NULL, on_scene, user};
     R_MAGIC_CHECK(R_MainArgs, &args);
     return args;
 }
@@ -119,7 +147,19 @@ static void init_img(int flags, R_InitImgHook on_img_init, void *user)
     }
 }
 
-static void init_sdl_hints(int samples)
+static void set_sdl_gl_attribute(R_UNUSED_UNLESS_DEBUG const char *attr_name,
+                                 SDL_GLattr attr, int value)
+{
+    if (value != R_SDL_GL_ARG_UNDEFINED) {
+        R_debug("%s = %d", attr_name, value);
+        SDL_GL_SetAttribute(attr, value);
+    }
+    else {
+        R_debug("%s left on its default", attr_name);
+    }
+}
+
+static void init_sdl_hints(const R_SdlGlArgs *gl_args)
 {
     /* By default, SDL will use the native OpenGL ES 2.0 support in Windows if
      * the driver supports it instead of using DirectX via ANGLE. This seems to
@@ -132,24 +172,32 @@ static void init_sdl_hints(int samples)
     SDL_SetHint(SDL_HINT_OPENGL_ES_DRIVER, "1");
 #endif
 
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-
-    if (samples > 1) {
-        /* There should probably be a check here if that MSAA amount is actually
-         * supported. However, that seems to be totally platform-specific code,
-         * SDL doesn't have a way to query it. I tried to just create windows
-         * with less and less samples until it works, but that causes a crash in
-         * X_DestroyWindow. I guess an SDL bug. So I'll leave it for now. */
-        SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-        SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, samples);
-        R_debug("trying to use %dx MSAA", samples);
-    }
-    else {
-        R_debug("not trying to use any MSAA");
-    }
+#   define SET_GL_ATTR(FIELD, ATTRIBUTE) \
+        set_sdl_gl_attribute(#ATTRIBUTE, ATTRIBUTE, gl_args->FIELD)
+    SET_GL_ATTR(red_size,                   SDL_GL_RED_SIZE);
+    SET_GL_ATTR(green_size,                 SDL_GL_GREEN_SIZE);
+    SET_GL_ATTR(blue_size,                  SDL_GL_BLUE_SIZE);
+    SET_GL_ATTR(alpha_size,                 SDL_GL_ALPHA_SIZE);
+    SET_GL_ATTR(buffer_size,                SDL_GL_BUFFER_SIZE);
+    SET_GL_ATTR(doublebuffer,               SDL_GL_DOUBLEBUFFER);
+    SET_GL_ATTR(depth_size,                 SDL_GL_DEPTH_SIZE);
+    SET_GL_ATTR(stencil_size,               SDL_GL_STENCIL_SIZE);
+    SET_GL_ATTR(accum_red_size,             SDL_GL_ACCUM_RED_SIZE);
+    SET_GL_ATTR(accum_green_size,           SDL_GL_ACCUM_GREEN_SIZE);
+    SET_GL_ATTR(accum_blue_size,            SDL_GL_ACCUM_BLUE_SIZE);
+    SET_GL_ATTR(accum_alpha_size,           SDL_GL_ACCUM_ALPHA_SIZE);
+    SET_GL_ATTR(stereo,                     SDL_GL_STEREO);
+    SET_GL_ATTR(multisamplebuffers,         SDL_GL_MULTISAMPLEBUFFERS);
+    SET_GL_ATTR(multisamplesamples,         SDL_GL_MULTISAMPLESAMPLES);
+    SET_GL_ATTR(accelerated_visual,         SDL_GL_ACCELERATED_VISUAL);
+    SET_GL_ATTR(context_major_version,      SDL_GL_CONTEXT_MAJOR_VERSION);
+    SET_GL_ATTR(context_minor_version,      SDL_GL_CONTEXT_MINOR_VERSION);
+    SET_GL_ATTR(context_flags,              SDL_GL_CONTEXT_FLAGS);
+    SET_GL_ATTR(context_profile_mask,       SDL_GL_CONTEXT_PROFILE_MASK);
+    SET_GL_ATTR(share_with_current_context, SDL_GL_SHARE_WITH_CURRENT_CONTEXT);
+    SET_GL_ATTR(framebuffer_srgb_capable,   SDL_GL_FRAMEBUFFER_SRGB_CAPABLE);
+    SET_GL_ATTR(context_release_behavior,   SDL_GL_CONTEXT_RELEASE_BEHAVIOR);
+#   undef SET_GL_ATTR
 }
 
 static void init_window(const char *title, int x, int y, int width, int height,
@@ -216,8 +264,8 @@ static void init(const R_MainArgs *args)
     void *user = args->user;
     init_sdl(args->sdl_init_flags, args->on_sdl_init, user);
     init_img(args->img_init_flags, args->on_img_init, user);
+    init_sdl_hints(&args->gl);
     const R_WindowArgs *window = &args->window;
-    init_sdl_hints(args->window.samples);
     init_window(window->title, window->x, window->y, window->width,
                 window->height, window->flags, args->on_window_init, user);
     init_gl(args->on_gl_init, user);

@@ -37,7 +37,6 @@ set(rouse_headers
     "${CMAKE_SOURCE_DIR}/lib/rouse/render/frame_renderer.h"
     "${CMAKE_SOURCE_DIR}/lib/rouse/render/gl.h"
     "${CMAKE_SOURCE_DIR}/lib/rouse/render/viewport.h"
-    "${CMAKE_SOURCE_DIR}/lib/rouse/resource.h"
     "${CMAKE_SOURCE_DIR}/lib/rouse/sanity.h"
     "${CMAKE_SOURCE_DIR}/lib/rouse/string.h"
     "${CMAKE_SOURCE_DIR}/lib/rouse/stringify.h")
@@ -67,7 +66,6 @@ set(rouse_sources
     "${CMAKE_SOURCE_DIR}/lib/rouse/render/frame_renderer.c"
     "${CMAKE_SOURCE_DIR}/lib/rouse/render/gl.c"
     "${CMAKE_SOURCE_DIR}/lib/rouse/render/viewport.c"
-    "${CMAKE_SOURCE_DIR}/lib/rouse/resource.c"
     "${CMAKE_SOURCE_DIR}/lib/rouse/string.c"
     "${CMAKE_SOURCE_DIR}/lib/rouse/stringify.c")
 

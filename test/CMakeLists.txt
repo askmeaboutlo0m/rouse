@@ -1,4 +1,4 @@
-set(test_names common model resource viewport)
+set(test_names common model viewport)
 
 if(ROUSE_EMSCRIPTEN)
     find_program(node NAMES node nodejs)

@@ -37,7 +37,6 @@
 #include <rouse_config.h>
 #include "common.h"
 #include "geom.h"
-#include "resource.h"
 #include "anim/seq.h"
 #include "anim/util.h"
 #include "render/gl.h"

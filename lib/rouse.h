@@ -57,7 +57,6 @@ extern "C" {
 #include "rouse/camera.h"
 #include "rouse/parse.h"
 #include "rouse/model.h"
-#include "rouse/resource.h"
 #include "rouse/render/gl.h"
 #include "rouse/render/viewport.h"
 #include "rouse/render/binder.h"

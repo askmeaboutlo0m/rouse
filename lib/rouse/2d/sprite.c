@@ -533,6 +533,25 @@ void R_sprite_child_remove(R_Sprite *sprite, R_Sprite *child)
           (void *)sprite, (void *)child, (void *)child->parent);
 }
 
+int R_sprite_child_index(R_Sprite *sprite, R_Sprite *child)
+{
+    check_sprite(sprite);
+    check_sprite(child);
+    if (child->parent == sprite) {
+        int i = 0;
+        for (R_Sprite *s = sprite->children; s; s = s->next, ++i) {
+            if (s == child) {
+                return i;
+            }
+        }
+        R_die("Catastrophic failure: child %p not found in its parent %p",
+              (void *)child, (void *)sprite);
+    }
+    else {
+        return -1;
+    }
+}
+
 
 static void draw_self(R_Sprite *sprite, R_Nvg *nvg,
                       const float canvas_matrix[static 6])

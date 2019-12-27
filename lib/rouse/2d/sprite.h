@@ -192,6 +192,8 @@ int R_sprite_child_add_at_noinc(R_Sprite *sprite, R_Sprite *child, int index);
  */
 void R_sprite_child_remove(R_Sprite *sprite, R_Sprite *child);
 
+int R_sprite_child_index(R_Sprite *sprite, R_Sprite *child);
+
 
 void R_sprite_draw(R_Sprite *sprite, R_Nvg *nvg,
                    int logical_width, int logical_height,

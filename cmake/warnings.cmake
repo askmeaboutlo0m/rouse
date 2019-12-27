@@ -5,7 +5,7 @@ if(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
     # MinGW links against an ancient MSVC runtime that doesn't support %z
     # modifiers in printf formatting. So we have to use Windows-specific
     # formats in that case, which we don't want to hear warnings about.
-    if(WIN32)
+    if(CMAKE_C_COMPILER MATCHES "mingw")
         list(APPEND rouse_warnings -Wno-pedantic-ms-format)
     endif()
 endif()

@@ -8,21 +8,11 @@ project(librouse
 enable_testing()
 
 
-include(cmake/build_options.cmake)
-include(cmake/warnings.cmake)
-include(cmake/asan.cmake)
-include(cmake/clang_tidy.cmake)
-include(cmake/dependencies.cmake)
-include(cmake/rouse_config.cmake)
-include(cmake/sources.cmake)
-
-
-function(set_c11_standard target)
-    set_target_properties("${target}" PROPERTIES
-            C_STANDARD          11
-            C_STANDARD_REQUIRED ON
-            C_EXTENSIONS        OFF)
-endfunction()
+include("${CMAKE_CURRENT_LIST_DIR}/../cmake/common.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/cmake/build_options.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/cmake/dependencies.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/cmake/rouse_config.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/cmake/sources.cmake")
 
 
 add_subdirectory(lib)

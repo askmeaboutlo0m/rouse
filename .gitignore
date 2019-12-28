@@ -2,6 +2,6 @@
 *.o
 *.gcda
 *.gcno
-/.vscode
-/*build*
-/cover
+.vscode
+*build*
+cover

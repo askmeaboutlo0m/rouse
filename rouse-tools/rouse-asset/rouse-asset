@@ -1,0 +1,474 @@
+#!/usr/bin/env perl
+# Copyright (c) 2019 askmeaboutloom
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+use 5.020;
+use warnings;
+use FindBin;
+use Imager;
+use IPC::Open2;
+use List::Util qw(any min max);
+use JSON::PP;
+use Path::Tiny;
+use Term::ANSIColor;
+
+use Inline with => 'Imager';
+use Inline 'C'  => "$FindBin::Bin/rouse_imager.c";
+
+
+my ($topic, $total, $current);
+
+sub progress {
+    my ($t) = @_;
+
+    if (defined($topic) && $t eq $topic) {
+        ++$current;
+    }
+    else {
+        $current = 1;
+        print STDERR "\n";
+    }
+
+    $topic    = $t;
+    my $msg   = sprintf "[%s] %d/%d", $topic, $current, $total;
+    my $blank = ' ' x length $msg;
+
+    print STDERR "\r$blank\r$msg";
+}
+
+
+sub separate {
+    my ($file, $dirname) = @_;
+
+    my $script = qq(
+        (let* ((file  "$file")
+               (image (car (gimp-file-load RUN-NONINTERACTIVE file file)))
+               (draw  (car (gimp-image-get-active-layer image))))
+            (python-fu-rouse RUN-NONINTERACTIVE image draw)
+            (gimp-image-delete image))
+    );
+
+    $ENV{ROUSE_DIRNAME} = $dirname;
+
+    open my $fh, '-|', 'gimp', '-inb', $script, '-b', '(gimp-quit 1)'
+        or die "can't run gimp: $!\n";
+
+    my $output = do { local $/; <$fh> };
+    close $fh;
+
+    if ($? != 0 || $output !~ /^rouse ok$/m) {
+        die "gimp batch command failed\n";
+    }
+}
+
+
+sub flatten {
+    my ($cs) = @_;
+    return @$cs, map { flatten($_->{children}) } @$cs;
+}
+
+
+sub apply_attributes {
+    my ($cs, $raster) = @_;
+    for my $c (@$cs) {
+        $c->{raster} = $raster         if $raster;
+        $c->{raster} = JSON::PP::false if $c->{vector};
+        apply_attributes($c->{children}, $c->{raster});
+    }
+}
+
+
+sub calculate_actual_dimensions {
+    my ($flat) = @_;
+    for (@$flat) {
+        my $img = Imager->new(file => $_->{png}) or die Imager->errstr;
+        $_->{actual} = rouse_autocrop($img);
+        progress('autocrop');
+    }
+}
+
+
+sub resize {
+    my ($d, $bounds) = @_;
+
+    my $dim = dim($d);
+    return unless any { $dim->[$_] != $bounds->[$_] } 0 .. 3;
+
+    if ($bounds->[0] > $dim->[0] || $bounds->[1] > $dim->[1] ||
+        $bounds->[2] < $dim->[2] || $bounds->[3] < $dim->[3]) {
+        die "logic error - resize truncates '$d->{name}'!\n",
+            sprintf("dim    %4d %4d %4d %4d\n", @$dim),
+            sprintf("bounds %4d %4d %4d %4d\n", @$bounds);
+    }
+
+    my $img = Imager->new(file => $d->{png}) or die Imager->errstr;
+    my $new = Imager->new(
+        xsize    => 1 + $bounds->[2] - $bounds->[0],
+        ysize    => 1 + $bounds->[3] - $bounds->[1],
+        channels => 4,
+    ) or die Imager->errstr;
+
+    $new->paste(
+        img  => $img,
+        left => $dim->[0] - $bounds->[0],
+        top  => $dim->[1] - $bounds->[1],
+    ) or die $new->errstr;
+
+    $d->{x}      = $bounds->[0];
+    $d->{y}      = $bounds->[1];
+    $d->{width}  = $new->getwidth;
+    $d->{height} = $new->getheight;
+    delete $d->{actual};
+
+    $new->write(file => $d->{png}) or die $new->errstr;
+}
+
+
+sub dim {
+    my ($d) = @_;
+    my $dim = $d->{actual} || [0, 0, $d->{width} - 1, $d->{height} - 1];
+    return [
+        $dim->[0] + $d->{x},
+        $dim->[1] + $d->{y},
+        $dim->[2] + $d->{x},
+        $dim->[3] + $d->{y},
+    ];
+}
+
+sub normalize {
+    my ($d) = @_;
+
+    my $dim    = dim($d);
+    my @all    = ($dim, map { normalize($_) } @{$d->{children}});
+    my $bounds = [
+        min(map { $_->[0] } @all),
+        min(map { $_->[1] } @all),
+        max(map { $_->[2] } @all),
+        max(map { $_->[3] } @all),
+    ];
+
+    resize($d, $bounds);
+    progress('normalize');
+
+    return dim($d);
+}
+
+
+sub expand {
+    my ($d, $bounds, $all) = @_;
+
+    resize($d, $bounds);
+    progress('expand');
+
+    for my $c (@{$d->{children}}) {
+        if ($all || $c->{name} =~ /^\p{Lu}/) {
+            resize($c, $bounds);
+            expand($c, $bounds, 1);
+        }
+        else {
+            expand($c, dim($c), $c->{frames});
+        }
+    }
+}
+
+
+sub blank_svg {
+    my ($w, $h) = @_;
+    return qq(<?xml version="1.0" standalone="no"?>\n)
+         . qq(<svg width="$w" height="$h" viewBox="0 0 $w $h">\n)
+         . qq(</svg>);
+}
+
+
+sub quantify {
+    my ($img) = @_;
+
+    my $colors = rouse_quantify($img);
+    my $ret    = undef;
+    my $max    = 0;
+
+    while (my ($k, $v) = each %$colors) {
+        next unless $v > $max;
+        ($ret, $max) = ($k, $v);
+    }
+
+    return $ret;
+}
+
+
+sub potrace {
+    my ($img) = @_;
+    my $color = quantify($img) || return;
+    rouse_posterize($img, 0.5);
+
+    open2 my $read, my $write, 'potrace', '-sC', "#$color"
+        or die "can't run potrace: $!\n";
+
+    $img->write(fh => $write, type => 'bmp') or die $img->errstr;
+    close $write;
+
+    my $svg = do { local $/; <$read> };
+    close $read;
+
+    if ($? != 0) {
+        die "potrace exited with $?\n";
+    }
+
+    $svg =~ s/(width|height)="([0-9\.]+)pt"/$1="$2"/g;
+    return $svg;
+}
+
+
+sub svgify {
+    my ($flat) = @_;
+
+    for (@$flat) {
+        next if $_->{raster};
+        ($_->{svg} = $_->{png}) =~ s/\.png$/.svg/gi;
+    }
+
+    my $done  = 0;
+    my $total = @$flat;
+
+    for my $i (0 ... $#$flat) {
+        my $d = $flat->[$i];
+        next unless $d->{svg};
+
+        my $img = Imager->new(file => $d->{png}) or die Imager->errstr;
+        my $svg = potrace($img) || blank_svg(@{$d}{'width', 'height'});
+
+        path($d->{svg})->spew($svg);
+    }
+    continue {
+        progress('svg');
+    }
+}
+
+
+sub from {
+    local $_ = path(shift)->slurp;
+    s{<[!?][^>]*>}{}g;
+    s{</?svg[^>]*>}{}g;
+    s{<metadata>.*?</metadata>}{}gs;
+    s{^\s+|\s+$}{}g;
+    return $_;
+}
+
+sub merge_into_svg {
+    my ($d) = @_;
+    progress('merge');
+    my @children = map { merge_into_svg($_) } reverse @{$d->{children}};
+    return join "\n", from($d->{svg}), @children;
+}
+
+sub merge_svg {
+    my ($dir, $d) = @_;
+
+    if ($d->{frames}) {
+        for (@{$d->{children}}) {
+            my $svg = path($d->{svg})->slurp;
+            $svg =~ s{</svg>\s*$}{};
+            $svg .= merge_into_svg($_);
+            $svg .= "\n</svg>\n";
+            $dir->child("$_->{name}.svg")->spew($svg);
+        }
+    }
+    else {
+        my $svg = path($d->{svg})->slurp;
+        $svg =~ s{</svg>\s*$}{};
+
+        for (reverse @{$d->{children}}) {
+            if ($_->{name} =~ /^\p{Lu}/) {
+                $svg .= merge_into_svg($_);
+            }
+            else {
+                merge($dir, $_);
+            }
+        }
+
+        $svg .= "\n</svg>\n";
+        $dir->child("$d->{name}.svg")->spew($svg);
+    }
+}
+
+
+sub merge_into_png {
+    my ($img, $d) = @_;
+    progress('merge');
+
+    my $src = Imager->new(file => $d->{png}) or die Imager->errstr;
+    $img->rubthrough(src => $src, tx => 0, ty => 0) or die $img->errstr;
+
+    my @children = map { merge_into_png($img, $_) } reverse @{$d->{children}};
+}
+
+sub merge_png {
+    my ($dir, $d) = @_;
+
+    if ($d->{frames}) {
+        for my $frame (@{$d->{children}}) {
+            my $img = Imager->new(file => $d->{png}) or die Imager->errstr;
+            merge_into_png($img, $frame);
+            $img->write(file => $dir->child("$frame->{name}.png")->stringify)
+                or die $img->errstr;
+        }
+    }
+    else {
+        my $img = Imager->new(file => $d->{png}) or die Imager->errstr;
+
+        for (reverse @{$d->{children}}) {
+            if ($_->{name} =~ /^\p{Lu}/) {
+                merge_into_png($img, $_);
+            }
+            else {
+                merge($dir, $_);
+            }
+        }
+
+        $img->write(file => $dir->child("$d->{name}.png")->stringify)
+            or die $img->errstr;
+    }
+}
+
+
+sub merge {
+    my ($dir, $d) = @_;
+    progress('merge');
+
+    if ($d->{svg}) {
+        merge_svg($dir, $d);
+    }
+    else {
+        merge_png($dir, $d);
+    }
+}
+
+
+sub assetify {
+    my ($tree) = @_;
+
+    my @remaining = reverse @$tree;
+    my @assets;
+
+    while (@remaining) {
+        my $d = shift @remaining;
+        my %a = (
+            name    => $d->{name},
+            world_x => $d->{x} + ($ENV{ROUSE_X_OFFSET} || 0),
+            world_y => $d->{y} + ($ENV{ROUSE_Y_OFFSET} || 0),
+        );
+
+        $a{name}   =~ s/^\@//;
+        $a{parent} = $d->{parent} if $d->{parent};
+
+        if ($d->{frames}) {
+            $a{content} = $d->{children}[-1]{name};
+        }
+        else {
+            $a{content} = $a{name};
+            for (reverse grep { $_->{name} !~ /^\p{Lu}/ } @{$d->{children}}) {
+                $_->{parent} = $d->{name};
+                push @remaining, $_;
+            }
+        }
+
+        push @assets, \%a;
+    }
+
+    return \@assets;
+}
+
+
+sub fill_in {
+    my ($fill, $inner) = @_;
+    $inner =~ s/<path/<path fill="$fill"/g;
+    return $inner;
+}
+
+sub fixsvg {
+    my ($svg) = @_;
+
+    if (system 'svgo', '--disable=convertPathData',
+                       '--disable=moveElemsAttrsToGroup',
+                       '--enable=transformsWithOnePath',
+                       '--quiet', '-i', $_) {
+        die "can't run svgo: $?\n";
+    }
+
+    my $text = path($svg)->slurp;
+
+    $text =~ s{<g\s+fill="([^"]*)"\s*>(.*?)</g>}{fill_in($1, $2)}ge;
+
+    path($svg)->spew($text);
+    progress('svgo');
+}
+
+
+eval {
+    die "Usage: $0 IMAGE-FILE\n" unless @ARGV == 1;
+
+    if ($ENV{ROUSE_DIR}) {
+        chdir $ENV{ROUSE_DIR} or die "can't cd '$ENV{ROUSE_DIR}': $!\n";
+    }
+
+    my ($file) = @ARGV;
+    my $dir    = path("rouse-$file");
+    my $out    = $dir->child('out');
+
+
+    if ($dir->is_dir && -M "$dir" > -M $file) {
+        $dir->remove_tree;
+    }
+
+    if ($dir->is_dir) {
+        print STDERR "[png] skip - $dir is already up to date\n"
+    }
+    else {
+        separate($file, "$dir");
+    }
+
+    my $tree = decode_json($dir->child('tree.json')->slurp);
+    my $flat = [flatten($tree)];
+    $total   = @$flat;
+
+    apply_attributes($tree);
+    calculate_actual_dimensions($flat);
+    normalize($_) for @$tree;
+    expand($_, dim($_), $_->{frames}) for @$tree;
+    svgify($flat);
+
+    $out->mkpath;
+    merge($out, $_) for @$tree;
+
+    my @svgs = $out->children(qr/\.svg$/);
+    $total   = @svgs;
+    fixsvg($_) for @svgs;
+
+    (my $assets = $file) =~ s{\.[^/\.]*$}{.json};
+    $out->child($assets)->spew(encode_json(assetify($tree)));
+
+    print STDERR "\n";
+};
+
+
+if ($@) {
+    my $err = "$@";
+    $err =~ s/\s+$//g;
+    die "\n", color('red'), "[ERR] $err", color('reset'), "\n";
+}

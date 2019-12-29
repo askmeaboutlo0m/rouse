@@ -1,0 +1,161 @@
+# carton snapshot format: version 1.0
+DISTRIBUTIONS
+  File-ShareDir-Install-0.13
+    pathname: E/ET/ETHER/File-ShareDir-Install-0.13.tar.gz
+    provides:
+      File::ShareDir::Install 0.13
+    requirements:
+      Carp 0
+      Exporter 0
+      ExtUtils::MakeMaker 0
+      File::Spec 0
+      IO::Dir 0
+      perl 5.006
+      strict 0
+      warnings 0
+  Imager-1.011
+    pathname: T/TO/TONYC/Imager-1.011.tar.gz
+    provides:
+      Imager 1.011
+      Imager::Color 1.012
+      Imager::Color::Float 1.005
+      Imager::Color::Table 1.003
+      Imager::CountColor 0.02
+      Imager::Expr 1.007
+      Imager::Expr::Assem 1.003
+      Imager::Expr::Infix 1.007
+      Imager::Expr::Postfix 1.007
+      Imager::ExtUtils 1.002
+      Imager::FORMATS 1.011
+      Imager::File::CUR undef
+      Imager::File::ICO 0.06
+      Imager::File::SGI 0.04
+      Imager::Fill 1.012
+      Imager::Filter::DynTest 0.02
+      Imager::Filter::Flines 0.03
+      Imager::Filter::Mandelbrot 0.04
+      Imager::Font 1.038
+      Imager::Font::BBox 1.006
+      Imager::Font::FreeType2 1.020
+      Imager::Font::Image undef
+      Imager::Font::Test 1.0001
+      Imager::Font::Truetype 1.012
+      Imager::Font::Type1 1.012
+      Imager::Font::Wrap 1.004
+      Imager::Fountain 1.007
+      Imager::IO 1.011
+      Imager::Matrix2d 1.012
+      Imager::Preprocess 1.001
+      Imager::Probe 1.006
+      Imager::Regops undef
+      Imager::Test 1.004
+      Imager::Test::OverUtf8 1.004
+      Imager::Transform 1.006
+    requirements:
+      ExtUtils::MakeMaker 0
+      Scalar::Util 1.00
+      Test::More 0.99
+      XSLoader 0
+  Inline-0.83
+    pathname: T/TI/TINITA/Inline-0.83.tar.gz
+    provides:
+      Foo::Tester 0.83
+      Inline 0.83
+      Inline::Foo 0.83
+      Inline::MakeMaker 0.83
+      Inline::denter undef
+    requirements:
+      Digest::MD5 0
+      ExtUtils::MakeMaker 0
+      File::Spec 0.8
+      perl 5.008001
+      version 0.82
+  Inline-C-0.81
+    pathname: T/TI/TINITA/Inline-C-0.81.tar.gz
+    provides:
+      Inline::C 0.81
+    requirements:
+      ExtUtils::MakeMaker 7.00
+      File::ShareDir::Install 0.06
+      File::Spec 0.8
+      Inline 0.83
+      Parse::RecDescent 1.967009
+      Pegex 0.66
+      perl 5.008001
+  Parse-RecDescent-1.967015
+    pathname: J/JT/JTBRAUN/Parse-RecDescent-1.967015.tar.gz
+    provides:
+      Parse::RecDescent 1.967015
+      Parse::RecDescent::Action 1.967015
+      Parse::RecDescent::ColCounter 1.967015
+      Parse::RecDescent::Directive 1.967015
+      Parse::RecDescent::Error 1.967015
+      Parse::RecDescent::Expectation 1.967015
+      Parse::RecDescent::InterpLit 1.967015
+      Parse::RecDescent::LineCounter 1.967015
+      Parse::RecDescent::Literal 1.967015
+      Parse::RecDescent::OffsetCounter 1.967015
+      Parse::RecDescent::Operator 1.967015
+      Parse::RecDescent::Production 1.967015
+      Parse::RecDescent::Repetition 1.967015
+      Parse::RecDescent::Result 1.967015
+      Parse::RecDescent::Rule 1.967015
+      Parse::RecDescent::Subrule 1.967015
+      Parse::RecDescent::Token 1.967015
+      Parse::RecDescent::UncondReject 1.967015
+    requirements:
+      ExtUtils::MakeMaker 6.5702
+      Test::More 0
+      Text::Balanced 1.95
+  Path-Tiny-0.108
+    pathname: D/DA/DAGOLDEN/Path-Tiny-0.108.tar.gz
+    provides:
+      Path::Tiny 0.108
+      Path::Tiny::Error 0.108
+    requirements:
+      Carp 0
+      Cwd 0
+      Digest 1.03
+      Digest::SHA 5.45
+      Encode 0
+      Exporter 5.57
+      ExtUtils::MakeMaker 6.17
+      Fcntl 0
+      File::Copy 0
+      File::Glob 0
+      File::Path 2.07
+      File::Spec 0.86
+      File::Temp 0.19
+      File::stat 0
+      constant 0
+      overload 0
+      perl 5.008001
+      strict 0
+      warnings 0
+      warnings::register 0
+  Pegex-0.70
+    pathname: I/IN/INGY/Pegex-0.70.tar.gz
+    provides:
+      Pegex 0.70
+      Pegex::Base undef
+      Pegex::Bootstrap undef
+      Pegex::Compiler undef
+      Pegex::Constant undef
+      Pegex::Grammar undef
+      Pegex::Grammar::Atoms undef
+      Pegex::Input undef
+      Pegex::Module undef
+      Pegex::Optimizer undef
+      Pegex::Parser undef
+      Pegex::Parser::Indent undef
+      Pegex::Pegex::AST undef
+      Pegex::Pegex::Grammar undef
+      Pegex::Receiver undef
+      Pegex::Regex undef
+      Pegex::Tree undef
+      Pegex::Tree::Wrap undef
+    requirements:
+      ExtUtils::MakeMaker 0
+      File::ShareDir::Install 0.06
+      Scalar::Util 0
+      perl 5.008001

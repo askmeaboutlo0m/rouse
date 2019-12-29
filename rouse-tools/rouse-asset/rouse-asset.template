@@ -1,0 +1,93 @@
+#!/usr/bin/env perl
+# Copyright (c) 2019 askmeaboutloom
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+use 5.020;
+use warnings;
+use Cwd;
+use File::Basename qw(basename dirname);
+use File::Find;
+use Pod::Usage;
+
+
+sub run {
+    my $exit_code = system @_;
+    if ($exit_code != 0) {
+        die "Command execution failed: @_\n";
+    }
+}
+
+sub mv {
+    my ($from, $to) = @_;
+    rename $from, $to or die "Can't move '$from' to '$to': $!\n";
+}
+
+sub find_svgs {
+    my @svgs;
+    my $wanted = sub {
+        push @svgs, $_ if /\.svg\z/i;
+    };
+    find({wanted => $wanted, no_chdir => 1}, @_);
+    return @svgs;
+}
+
+
+die pod2usage('No arguments given.') unless @ARGV;
+
+my $rouse_asset_dir = ???rouse-asset-dir???;
+my $rouse_svg_dir   = ???rouse-svg-dir???;
+
+
+my $dir = $ENV{ROUSE_DIR} = getcwd;
+my $asset_parent = "$dir/assets";
+
+for my $file (@ARGV) {
+    my $name         = basename($file) =~ s/\.[^\.]*$//r;
+    my $temp_dir     = "$dir/rouse-$file";
+    my $out_dir      = "$temp_dir/out";
+    my $asset_dir    = "$asset_parent/$name";
+
+    chdir $rouse_asset_dir or die "Can't chdir to '$rouse_asset_dir': $!\n";
+    run('carton', 'exec', './rouse-asset', $file);
+
+    chdir $rouse_svg_dir or die "Can't chdir to '$rouse_svg_dir': $!\n";
+    my @svgs = find_svgs($out_dir);
+    run('carton', 'exec', './rouse-svg', @svgs);
+    run('rm', @svgs);
+
+    run('rm', '-rf', $asset_dir);
+    run('mkdir', '-p', $asset_parent);
+    mv($out_dir, $asset_dir);
+    run('rm', '-r', $temp_dir);
+}
+
+run('rouse-assetlist', $asset_parent);
+
+
+__END__
+
+=head1 NAME
+
+rouse-asset
+
+=head1 SYNOPSIS
+
+    rouse-asset PSDFILES...
+
+=cut

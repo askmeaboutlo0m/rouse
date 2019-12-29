@@ -1,0 +1,77 @@
+/*
+ * Copyright (c) 2019 askmeaboutloom
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+#include <rouse.h>
+#include "lua_inc.h"
+#include "intern.h"
+#include "util.h"
+
+static void log_message(lua_State *L, void (*log_fn)(const char *, int,
+                                                     const char *, ...))
+{
+    int argc = lua_gettop(L);
+    lua_getglobal(L, "string");
+    lua_getfield(L, -1, "format");
+    lua_insert(L, 1);
+    lua_pop(L, 1);
+    lua_call(L, argc, 1);
+    const char *message = lua_tostring(L, -1);
+
+    lua_Debug ar;
+    lua_getstack(L, 1, &ar);
+    lua_getinfo(L, "Sl", &ar);
+    const char *file = ar.currentline > 0 ? ar.short_src : "(unknown)";
+
+    log_fn(file, ar.currentline, "%s", message);
+}
+
+@xl
+
+ENUM R.Logbit s/R_LOGBIT_//
+    R_LOGBIT_DEBUG
+    R_LOGBIT_INFO
+    R_LOGBIT_WARN
+    R_LOGBIT_DIE
+END
+
+FUNCTION void R.log.enable (unsigned int logbits) = R_log_enable
+FUNCTION void R.log.disable(unsigned int logbits) = R_log_disable
+
+FUNCTION void R.debug()
+    log_message(L, R_debug_fn);
+END
+
+FUNCTION void R.info()
+    log_message(L, R_info_fn);
+END
+
+FUNCTION void R.warn()
+    log_message(L, R_warn_fn);
+END
+
+FUNCTION void R.die()
+    log_message(L, R_die_fn);
+END
+
+
+FUNCTION float R.rand_between(float a, float b) = R_rand_between
+
+INIT extern R_lua_misc_init

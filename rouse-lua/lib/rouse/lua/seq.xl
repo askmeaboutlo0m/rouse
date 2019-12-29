@@ -1,0 +1,506 @@
+/*
+ * Copyright (c) 2019 askmeaboutloom
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+#include <rouse.h>
+#include "lua_inc.h"
+#include "intern.h"
+#include "util.h"
+
+typedef R_Step R_LuaTween;
+
+@xl
+
+UTYPE R_TweenFloat R.TweenFloat
+
+METATABLE R_TweenFloat
+
+@c
+
+static int protected_tween_float_calc(lua_State *L)
+{
+    lua_call(L, 1, 1);
+    int        success;
+    lua_Number value = lua_tonumberx(L, -1, &success);
+    if (success) {
+        lua_pushnumber(L, value);
+        return 1;
+    }
+    else {
+        return luaL_error(L, "Can't convert tween float target to number");
+    }
+}
+
+static float tween_float_calc(R_UserData user, float source)
+{
+    R_LUA_VALUE_DECLARE_UNPACK(user.data, lv, L);
+    lua_pushcfunction(L, protected_tween_float_calc);
+    R_lua_getreg(L, lv->reg);
+    XL_pushfloat(L, source);
+    if (lua_pcall(L, 2, 1, 0)) {
+        R_LUA_ERROR_TO_WARNING(L);
+        return 0.0f;
+    }
+    else {
+        return (float) lua_tonumber(L, -1);
+    }
+}
+
+static void tween_float_free(R_UserData user)
+{
+    R_lua_value_free(user.data);
+}
+
+static int new_tween_float_fixed(lua_State *L)
+{
+    float value = XL_checkfloat(L, lua_upvalueindex(1));
+    R_TweenFloat tf = R_tween_float_fixed(value);
+    XL_pushnewutype(L, &tf, sizeof(tf), "R_TweenFloat");
+    return 1;
+}
+
+static int new_tween_float_between(lua_State *L)
+{
+    float a = XL_checkfloat(L, lua_upvalueindex(1));
+    float b = XL_checkfloat(L, lua_upvalueindex(2));
+    R_TweenFloat tf = R_tween_float_between(a, b);
+    XL_pushnewutype(L, &tf, sizeof(tf), "R_TweenFloat");
+    return 1;
+}
+
+static int new_tween_float_custom(lua_State *L)
+{
+    R_LuaValue *lv = R_lua_value_new(L, lua_upvalueindex(1));
+    R_TweenFloat tf = R_tween_float(tween_float_calc, tween_float_free,
+                                    NULL, R_user_data(lv));
+    XL_pushnewutype(L, &tf, sizeof(tf), "R_TweenFloat");
+    return 1;
+}
+
+static R_TweenFloat tween_float_get(lua_State *L, int index)
+{
+    lua_pushvalue(L, index);
+    lua_call(L, 0, 1);
+    return *((R_TweenFloat *)XL_checkutype(L, -1, "R_TweenFloat"));
+}
+
+@xl
+
+FUNCTION ... R.TweenFloat.fixed(float value)
+    XL_pushfloat(L, value);
+    lua_pushcclosure(L, new_tween_float_fixed, 1);
+    return 1;
+END
+
+FUNCTION ... R.TweenFloat.between(float a, float b)
+    XL_pushfloat(L, a);
+    XL_pushfloat(L, b);
+    lua_pushcclosure(L, new_tween_float_between, 2);
+    return 1;
+END
+
+FUNCTION ... R.TweenFloat.custom(any fn)
+    lua_pushvalue(L, fn);
+    lua_pushcclosure(L, new_tween_float_custom, 1);
+    return 1;
+END
+
+
+PPTYPE R_Sprite
+PPTYPE R_LuaTween R.LuaTween
+
+@@PERL
+for my $name (qw(origin_x origin_y pos_x pos_y scale_x
+                 scale_y skew_x skew_y angle rotation)) {
+    print "METHOD ... sprite_$name(R_Sprite *sprite, any value_fn)\n";
+    print "    R_tween_sprite_$name(self, sprite, tween_float_get(L, value_fn));\n";
+    print "    lua_settop(L, 1);\n";
+    print "    return 1;\n";
+    print "END\n\n";
+}
+@@END
+
+@c
+
+static int protected_get_float_field(lua_State *L)
+{
+    lua_rawgeti(L, 1, 1);
+    lua_rawgeti(L, 1, 2);
+    lua_gettable(L, -2);
+
+    int        success;
+    lua_Number value = lua_tonumberx(L, -1, &success);
+    if (success) {
+        lua_pushnumber(L, value);
+        return 1;
+    }
+    else {
+        return luaL_error(L, "Can't convert field value to number");
+    }
+}
+
+static float get_float_field(R_UserData user)
+{
+    R_LUA_VALUE_DECLARE_UNPACK(user.data, lv, L);
+    lua_pushcfunction(L, protected_get_float_field);
+    R_lua_getreg(L, lv->reg);
+
+    if (R_lua_pcall(L, 1, 1)) {
+        R_LUA_ERROR_TO_WARNING(L);
+        return 0.0f;
+    }
+
+    float f = XL_checkfloat(L, -1);
+    lua_pop(L, 1);
+    return f;
+}
+
+static int protected_set_float_field(lua_State *L)
+{
+    lua_rawgeti(L, 1, 1);
+    lua_rawgeti(L, 1, 2);
+    lua_pushvalue(L, 2);
+    lua_settable(L, -3);
+    return 0;
+}
+
+static void set_float_field(R_UserData user, float value)
+{
+    R_LUA_VALUE_DECLARE_UNPACK(user.data, lv, L);
+    lua_pushcfunction(L, protected_set_float_field);
+    R_lua_getreg(L, lv->reg);
+    XL_pushfloat(L, value);
+    if (R_lua_pcall(L, 2, 0)) {
+        R_LUA_ERROR_TO_WARNING(L);
+    }
+}
+
+static void free_float_field(R_UserData user)
+{
+    R_lua_value_free(user.data);
+}
+
+@xl
+
+METHOD ... field(any subject, any key, any value_fn)
+    lua_createtable(L, 2, 0);
+    int table = lua_gettop(L);
+    lua_pushvalue(L, subject);
+    lua_rawseti(L, table, 1);
+    lua_pushvalue(L, key);
+    lua_rawseti(L, table, 2);
+
+    R_TweenFloat value = tween_float_get(L, value_fn);
+    R_LuaValue *lv = R_lua_value_new(L, table);
+    R_tween_add_float(self, value, R_user_data(lv), get_float_field,
+                      set_float_field, free_float_field, NULL);
+    lua_settop(L, 1);
+    return 1;
+END
+
+METHOD ... build()
+    XL_UNUSED(self);
+    lua_getuservalue(L, 1);
+    return 1;
+END
+
+
+PPTYPE R_Sequence R.Sequence
+
+CONSTRUCTOR new()
+    RETVAL = R_sequence_new();
+END
+
+DESTRUCTOR = R_sequence_free
+
+@c
+
+static int add_step(lua_State *L, R_Sequence *self, R_Step *step)
+{
+    R_sequence_add(self, step);
+    lua_settop(L, 1);
+    return 1;
+}
+
+
+static int protected_delay_step(lua_State *L)
+{
+    lua_call(L, 0, 1);
+    int        success;
+    lua_Number seconds = lua_tonumberx(L, -1, &success);
+    if (success) {
+        lua_pushnumber(L, seconds);
+        return 1;
+    }
+    else {
+        return luaL_error(L, "Can't convert delay amount to number");
+    }
+}
+
+static float delay_step(R_UNUSED R_StepTickArgs args, R_UserData user)
+{
+    R_LUA_VALUE_DECLARE_UNPACK(user.data, lv, L);
+    lua_pushcfunction(L, protected_delay_step);
+    R_lua_getreg(L, lv->reg);
+    if (lua_pcall(L, 1, 1, 0)) {
+        R_LUA_ERROR_TO_WARNING(L);
+        return 0.0f;
+    }
+    else {
+        float delay = (float) lua_tonumber(L, -1);
+        lua_pop(L, 1);
+        return delay;
+    }
+}
+
+static void delay_free(R_UserData user)
+{
+    R_lua_value_free(user.data);
+}
+
+@xl
+
+METHOD ... delay_fixed(float seconds)
+    return add_step(L, self, R_delay_new_fixed(seconds));
+END
+
+METHOD ... delay_between(float a, float b)
+    return add_step(L, self, R_delay_new_between(a, b));
+END
+
+METHOD ... delay_custom(any fn)
+    return add_step(L, self, R_delay_new(delay_step, delay_free, NULL,
+                                         R_user_data(R_lua_value_new(L, fn))));
+END
+
+
+@c
+
+static void call_step(R_UNUSED R_StepTickArgs args, R_UserData user)
+{
+    R_LUA_VALUE_DECLARE_UNPACK(user.data, lv, L);
+    R_lua_getreg(L, lv->reg);
+    if (lua_pcall(L, 0, 0, 0)) {
+        R_LUA_ERROR_TO_WARNING(L);
+    }
+}
+
+static void call_free(R_UserData user)
+{
+    R_lua_value_free(user.data);
+}
+
+@xl
+
+METHOD ... call(any fn)
+    return add_step(L, self, R_call_new(call_step, call_free, NULL,
+                                        R_user_data(R_lua_value_new(L, fn))));
+END
+
+
+@c
+
+typedef struct R_LuaEase {
+    R_EaseFn          fn;
+    R_TweenEaseFreeFn on_free;
+    R_UserData        user;
+} R_LuaEase;
+
+static R_LuaEase to_named_ease(lua_State *L, int arg)
+{
+    R_EaseFn ease = R_lua_named_ease(L, arg);
+    if (ease) {
+        return (R_LuaEase){ease, NULL, R_user_null()};
+    }
+    else {
+        luaL_error(L, "Don't know easing named '%s'", lua_tostring(L, arg));
+        R_UNREACHABLE();
+    }
+}
+
+static int protected_call_ease(lua_State *L)
+{
+    lua_call(L, 1, 1);
+    int        success;
+    lua_Number result = lua_tonumberx(L, -1, &success);
+    if (success) {
+        lua_pushnumber(L, result);
+        return 1;
+    }
+    else {
+        return luaL_error(L, "Can't convert ease result to number");
+    }
+}
+
+static float call_ease(float k, R_UserData user)
+{
+    R_LUA_VALUE_DECLARE_UNPACK(user.data, lv, L);
+    lua_pushcfunction(L, protected_call_ease);
+    R_lua_getreg(L, lv->reg);
+    XL_pushfloat(L, k);
+    if (lua_pcall(L, 2, 1, 0)) {
+        R_LUA_ERROR_TO_WARNING(L);
+        return k;
+    }
+    else {
+        float result = (float) lua_tonumber(L, -1);
+        lua_pop(L, 1);
+        return result;
+    }
+}
+
+static void free_ease(R_UserData user)
+{
+    R_lua_value_free(user.data);
+}
+
+static R_LuaEase to_custom_ease(lua_State *L, int arg)
+{
+    R_LuaValue *lv = R_lua_value_new(L, arg);
+    return (R_LuaEase){call_ease, free_ease, R_user_data(lv)};
+}
+
+static R_LuaEase to_ease(lua_State *L, int arg)
+{
+    if (lua_isnoneornil(L, arg)) {
+        return (R_LuaEase){NULL, NULL, R_user_null()};
+    }
+    else if (lua_isstring(L, arg)) {
+        return to_named_ease(L, arg);
+    }
+    else {
+        return to_custom_ease(L, arg);
+    }
+}
+
+static int protected_tween_step(lua_State *L)
+{
+    lua_call(L, 0, 1);
+    int        success;
+    lua_Number seconds = lua_tonumberx(L, -1, &success);
+    if (success) {
+        lua_pushnumber(L, seconds);
+        return 1;
+    }
+    else {
+        return luaL_error(L, "Can't convert tween time to number");
+    }
+}
+
+static float tween_step(R_UNUSED R_StepTickArgs args, R_UserData user)
+{
+    R_LUA_VALUE_DECLARE_UNPACK(user.data, lv, L);
+    lua_pushcfunction(L, protected_tween_step);
+    R_lua_getreg(L, lv->reg);
+    if (lua_pcall(L, 1, 1, 0)) {
+        R_LUA_ERROR_TO_WARNING(L);
+        return 0.0f;
+    }
+    else {
+        return (float) lua_tonumber(L, -1);
+    }
+}
+
+static void tween_free(R_UserData user)
+{
+    R_lua_value_free(user.data);
+}
+
+@xl
+
+METHOD <NEW>R_LuaTween *tween_fixed(float seconds)
+    R_LuaEase ease = to_ease(L, 3);
+    RETVAL = R_tween_new_fixed(seconds, ease.fn, ease.on_free, ease.user);
+    R_sequence_add(self, RETVAL);
+LEAVE
+    lua_pushvalue(L, 1);
+    lua_setuservalue(L, -2);
+END
+
+METHOD <NEW>R_LuaTween *tween_between(float a, float b)
+    R_LuaEase ease = to_ease(L, 4);
+    RETVAL = R_tween_new_between(a, b, ease.fn, ease.on_free, ease.user);
+    R_sequence_add(self, RETVAL);
+LEAVE
+    lua_pushvalue(L, 1);
+    lua_setuservalue(L, -2);
+END
+
+METHOD <NEW>R_LuaTween *tween_custom(any fn)
+    R_LuaEase ease = to_ease(L, 3);
+    RETVAL = R_tween_new(tween_step, tween_free, NULL,
+                         R_user_data(R_lua_value_new(L, fn)),
+                         ease.fn, ease.on_free, ease.user);
+    R_sequence_add(self, RETVAL);
+LEAVE
+    lua_pushvalue(L, 1);
+    lua_setuservalue(L, -2);
+END
+
+
+@c
+
+static void seq_on_done(R_UserData user)
+{
+    R_LUA_VALUE_DECLARE_UNPACK(user.data, lv, L);
+    R_lua_getreg(L, lv->reg);
+    if (lua_pcall(L, 0, 0, 0)) {
+        R_LUA_ERROR_TO_WARNING(L);
+    }
+}
+
+static void seq_on_free(R_UserData user)
+{
+    R_lua_value_free(user.data);
+}
+
+@xl
+
+PPTYPE R_Scene
+
+FUNCTION void R_Sequence:run()
+    R_Sequence **pp   = luaL_checkudata(L, 1, "R_Sequence");
+    R_Scene    *scene = XL_checkpptype(L, 2, "R_Scene");
+    int        laps   = (int) luaL_optinteger(L, 3, R_SEQUENCE_RUN_FOREVER);
+
+    R_SequenceDoneFn on_done;
+    R_SequenceFreeFn on_free;
+    R_UserData       user;
+
+    if (lua_isnoneornil(L, 4)) {
+        on_done = NULL;
+        on_free = NULL;
+        user    = R_user_null();
+    }
+    else if (laps < 0) {
+        return luaL_error(L, "Can't have done callback on infinite sequence");
+    }
+    else {
+        on_done = seq_on_done;
+        on_free = seq_on_free;
+        user    = R_user_data(R_lua_value_new(L, 4));
+    }
+
+    R_animator_add(scene->animator, *pp, laps, on_done, on_free, user);
+    *pp = NULL;
+END
+
+
+INIT extern R_lua_seq_init

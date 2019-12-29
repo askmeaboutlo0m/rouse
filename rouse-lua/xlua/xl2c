@@ -1,0 +1,48 @@
+#!/usr/bin/env perl
+# Copyright (c) 2019 askmeaboutloom
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+use 5.020;
+use warnings;
+use FindBin;
+use Cwd            qw(abs_path);
+use File::Basename qw(dirname);
+use File::Path     qw(make_path);
+
+die "Usage: $0 INPUT OUTPUT" unless @ARGV == 2;
+my ($input, $output) = @ARGV;
+
+my $project_dir    = abs_path("$FindBin::Bin/..");
+my $gen_dir        = "$project_dir/tmp";
+my $relative_input = $input =~ s/\A\Q$project_dir\E\/*//r;
+my $xlpp_output    = "$gen_dir/$relative_input.xlpp";
+my $xlparse_output = "$gen_dir/$relative_input.xlparse";
+
+sub run {
+    my ($command, @args) = @_;
+    my $exit_code = system "$FindBin::Bin/$command", @args;
+    if ($exit_code != 0) {
+        die "Command execution failed: $command @args\n";
+    }
+}
+
+make_path(dirname("$gen_dir/$relative_input"));
+run xlpp    => $input,          $xlpp_output;
+run xlparse => $xlpp_output,    $xlparse_output;
+run xlgen   => $xlparse_output, $output;

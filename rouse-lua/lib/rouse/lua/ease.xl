@@ -1,0 +1,109 @@
+/*
+ * Copyright (c) 2019 askmeaboutloom
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+#include <rouse.h>
+#include "lua_inc.h"
+#include "intern.h"
+#include "util.h"
+
+@@PERL
+@Rouse::easing_names = qw(
+    linear bounce_in bounce_out bounce_in_out cubic_in cubic_out cubic_in_out
+    elastic_in elastic_out elastic_in_out back_in back_out back_in_out
+    quint_in quint_out quint_in_out quad_in quad_out quad_in_out quart_in
+    quart_out quart_in_out sine_in sine_out sine_in_out expo_in expo_out
+    expo_in_out
+);
+@@END
+
+@xl
+
+@@PERL
+for my $name (@Rouse::easing_names) {
+    print "FUNCTION float R.Ease.$name(float k)\n";
+    print "    RETVAL = R_ease_$name(k, R_user_null());\n";
+    print "END\n";
+}
+@@END
+
+
+UTYPE R_LuaEaseFn
+METATABLE R_LuaEaseFn
+
+@c
+
+typedef struct R_LuaEaseFn {
+    R_MAGIC_FIELD
+    R_EaseFn ease;
+} R_LuaEaseFn;
+
+static int easings_dummy;
+
+static void set_named_easing(lua_State *L, const char *name, R_EaseFn ease)
+{
+    R_LuaEaseFn le = {R_MAGIC_INIT(R_LuaEaseFn) ease};
+    R_MAGIC_CHECK(R_LuaEaseFn, &le);
+    XL_pushnewutype(L, &le, sizeof(le), "R_LuaEaseFn");
+    lua_setfield(L, -2, name);
+}
+
+static void init_named_easings(lua_State *L)
+{
+@@PERL
+my $nrecords = @Rouse::easing_names;
+print "    lua_createtable(L, 0, $nrecords);\n";
+for my $name (@Rouse::easing_names) {
+    print "    set_named_easing(L, \"$name\", R_ease_$name);\n";
+}
+@@END
+    lua_rawsetp(L, LUA_REGISTRYINDEX, &easings_dummy);
+}
+
+R_EaseFn R_lua_named_ease(lua_State *L, int name_index)
+{
+    lua_rawgetp(L, LUA_REGISTRYINDEX, &easings_dummy);
+    lua_pushvalue(L, name_index);
+    lua_gettable(L, -2);
+
+    R_EaseFn ease;
+    if (lua_isnil(L, -1)) {
+        ease = NULL;
+    }
+    else {
+        R_LuaEaseFn *le = XL_checkutype(L, -1, "R_LuaEaseFn");
+        R_MAGIC_CHECK(R_LuaEaseFn, le);
+        ease = le->ease;
+    }
+
+    lua_pop(L, 2);
+    return ease;
+}
+
+
+static int init(lua_State *L);
+
+int R_lua_ease_init(lua_State *L)
+{
+    lua_pushcfunction(L, init);
+    lua_call(L, 0, 0);
+    init_named_easings(L);
+    return 0;
+}

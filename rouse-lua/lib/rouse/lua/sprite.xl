@@ -1,0 +1,268 @@
+/*
+ * Copyright (c) 2019 askmeaboutloom
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+#include <rouse.h>
+#include "lua_inc.h"
+#include "intern.h"
+#include "util.h"
+
+@xl
+
+PPTYPE R_Nvg
+UTYPE R_LuaNvgTransform
+
+
+UTYPE R_V2 R.V2
+
+CONSTRUCTOR new(float x, float y) = R_v2
+
+FIELD float x
+FIELD float y
+
+METHOD ... __tostring()
+    lua_pushfstring(L, "R_V2(%f, %f)", R_lua_float2n(self->x),
+                                       R_lua_float2n(self->y));
+    return 1;
+END
+
+METHOD ... unpack()
+    XL_pushfloat(L, self->x);
+    XL_pushfloat(L, self->y);
+    return 2;
+END
+
+SETFROMTABLE set
+
+
+UTYPE R_AffineTransform
+
+FIELD R_V2  origin
+FIELD float origin_x = origin.x
+FIELD float origin_y = origin.x
+FIELD R_V2  pos
+FIELD float pos_x    = pos.x
+FIELD float pos_y    = pos.y
+FIELD R_V2  scale
+FIELD float scale_x  = scale.x
+FIELD float scale_y  = scale.y
+FIELD R_V2  skew
+FIELD float skew_x   = skew.x
+FIELD float skew_y   = skew.y
+FIELD float angle
+
+FIELD float x = pos.x
+FIELD float y = pos.y
+
+SETFROMTABLE set
+
+
+PPTYPE R_Sprite R.Sprite
+
+CONSTRUCTOR new(const char *name)
+    int argc = lua_gettop(L);
+    RETVAL   = R_sprite_new(name);
+LEAVE
+    if (argc >= 2) {
+        lua_getfield(L, -1, "set");
+        lua_pushvalue(L, -2);
+        lua_pushvalue(L, 2);
+        lua_call(L, 2, 0);
+    }
+END
+
+DESTRUCTOR = R_sprite_decref
+
+
+INDEX const char *name = R_sprite_name
+
+NEWINDEX any name
+    if (lua_isnil(L, VALUE)) {
+        R_sprite_name_set(self, NULL);
+    }
+    else {
+        const char *name = luaL_checkstring(L, VALUE);
+        R_sprite_name_set(self, name);
+    }
+END
+
+
+@c
+
+static void free_user(R_UserData user)
+{
+    R_lua_value_free(user.data);
+}
+
+@xl
+
+INDEX ... user
+    R_LuaValue *lv = R_sprite_user(self).data;
+    if (lv) {
+        R_lua_getreg(L, lv->reg);
+    }
+    else {
+        lua_pushnil(L);
+    }
+    return 1;
+END
+
+NEWINDEX any user
+    R_LuaValue *lv = R_sprite_user(self).data;
+    bool have_value = !lua_isnil(L, VALUE);
+    if (lv) {
+        if (have_value) {
+            lua_pushvalue(L, VALUE);
+            R_lua_unreg(L, lv->reg);
+            lv->reg = R_lua_reg(L);
+        }
+        else {
+            R_lua_value_free(lv);
+            R_sprite_user_set(self, R_user_null(), NULL);
+        }
+    }
+    else if (have_value) {
+        lv = R_lua_value_new(L, VALUE);
+        R_sprite_user_set(self, R_user_data(lv), free_user);
+    }
+END
+
+INDEX <NEW_NULLABLE>R_Sprite *parent
+    RETVAL = R_sprite_parent(self);
+    if (RETVAL) {
+        R_sprite_incref(RETVAL);
+    }
+END
+
+@c
+
+static void draw_lua_value(R_Nvg *nvg, const float matrix[static 6],
+                           R_UserData user)
+{
+    R_LUA_VALUE_DECLARE_UNPACK(user.data, lv, L);
+    R_lua_getreg(L, lv->reg);
+    XL_pushnewpptype(L, nvg, "R_Nvg");
+    R_nvg_incref(nvg);
+    XL_pushnewutype(L, matrix, sizeof(R_LuaNvgTransform), "R_LuaNvgTransform");
+    if (lua_pcall(L, 2, 0, 0)) {
+        R_LUA_ERROR_TO_WARNING(L);
+    }
+}
+
+static void free_lua_value(R_UserData user)
+{
+    R_lua_value_free(user.data);
+}
+
+
+@xl
+
+NEWINDEX any content
+    void **pp;
+    if ((pp = luaL_testudata(L, VALUE, "R_VectorImage"))) {
+        R_VectorImage *field = *pp;
+        R_sprite_draw_vector_image(self, field);
+    }
+    else if ((pp = luaL_testudata(L, VALUE, "R_BitmapImage"))) {
+        R_BitmapImage *field = *pp;
+        R_sprite_draw_bitmap_image(self, field);
+    }
+    else if ((pp = luaL_testudata(L, VALUE, "R_TextField"))) {
+        R_TextField *field = *pp;
+        R_sprite_draw_text_field(self, field);
+    }
+    else if (lua_isfunction(L, VALUE)) {
+        R_LuaValue *lv = R_lua_value_new(L, VALUE);
+        R_sprite_draw_fn(self, draw_lua_value, free_lua_value, R_user_data(lv));
+    }
+    else if (lua_isnil(L, VALUE)) {
+        R_sprite_draw_null(self);
+    }
+    else {
+        luaL_error(L, "Don't know how to draw a value of type %s",
+                      luaL_typename(L, VALUE));
+    }
+END
+
+SETFROMTABLE set
+
+
+INDEX <NEW>R_AffineTransform *transform = R_sprite_transform
+
+INDEX R_V2  origin   = R_sprite_origin
+INDEX float origin_x = R_sprite_origin_x
+INDEX float origin_y = R_sprite_origin_y
+INDEX R_V2  pos      = R_sprite_pos
+INDEX float pos_x    = R_sprite_pos_x
+INDEX float pos_y    = R_sprite_pos_y
+INDEX R_V2  scale    = R_sprite_scale
+INDEX float scale_x  = R_sprite_scale_x
+INDEX float scale_y  = R_sprite_scale_y
+INDEX R_V2  skew     = R_sprite_skew
+INDEX float skew_x   = R_sprite_skew_x
+INDEX float skew_y   = R_sprite_skew_y
+INDEX float angle    = R_sprite_angle
+INDEX float rotation = R_sprite_rotation
+
+NEWINDEX R_AffineTransform set_transform = R_sprite_transform_set
+
+NEWINDEX R_V2  origin   = R_sprite_origin_set
+NEWINDEX float origin_x = R_sprite_origin_x_set
+NEWINDEX float origin_y = R_sprite_origin_y_set
+NEWINDEX R_V2  pos      = R_sprite_pos_set
+NEWINDEX float pos_x    = R_sprite_pos_x_set
+NEWINDEX float pos_y    = R_sprite_pos_y_set
+NEWINDEX R_V2  scale    = R_sprite_scale_set
+NEWINDEX float scale_x  = R_sprite_scale_x_set
+NEWINDEX float scale_y  = R_sprite_scale_y_set
+NEWINDEX R_V2  skew     = R_sprite_skew_set
+NEWINDEX float skew_x   = R_sprite_skew_x_set
+NEWINDEX float skew_y   = R_sprite_skew_y_set
+NEWINDEX float angle    = R_sprite_angle_set
+NEWINDEX float rotation = R_sprite_rotation_set
+
+INDEX    float x = R_sprite_pos_x
+NEWINDEX float x = R_sprite_pos_x_set
+INDEX    float y = R_sprite_pos_y
+NEWINDEX float y = R_sprite_pos_y_set
+
+INDEX float world_pos_x = R_sprite_world_pos_x
+INDEX float world_pos_y = R_sprite_world_pos_y
+
+INDEX float world_origin_x = R_sprite_world_origin_x
+INDEX float world_origin_y = R_sprite_world_origin_y
+
+
+METHOD void orphan() = R_sprite_orphan
+
+METHOD int add_child(R_Sprite *child) = R_sprite_child_add
+
+METHOD int add_child_at(R_Sprite *child, int index) = R_sprite_child_add_at
+
+METHOD void remove_child(R_Sprite *child) = R_sprite_child_remove
+
+METHOD int child_index(R_Sprite *child) = R_sprite_child_index
+
+
+METHOD void draw(R_Nvg *nvg, int logical_width, int logical_height,
+                 int target_width, int target_height) = R_sprite_draw
+
+
+INIT extern R_lua_sprite_init

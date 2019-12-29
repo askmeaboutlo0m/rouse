@@ -1,0 +1,316 @@
+/*
+ * Copyright (c) 2019 askmeaboutloom
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+#include <rouse.h>
+#include "lua_inc.h"
+#include "intern.h"
+#include "util.h"
+
+static void check_matrix_index(lua_State *L, lua_Integer i, int arg)
+{
+    if (i < 1 || i > 6) {
+        luaL_argerror(L, arg, "matrix index must be >= 1 and <= 6");
+    }
+}
+
+@xl
+
+UTYPE R_LuaNvgTransform R.Nvg.Transform
+
+INTINDEX float
+    check_matrix_index(L, INDEX, 2);
+    RETVAL = self->matrix[INDEX - 1];
+END
+
+INTNEWINDEX float
+    check_matrix_index(L, INDEX, 2);
+    self->matrix[INDEX - 1] = VALUE;
+END
+
+METHOD lua_Integer __len()
+    XL_UNUSED(self);
+    RETVAL = 6;
+END
+
+METHOD ... __tostring()
+    lua_pushfstring(L, "[a = %f, b = %f, c = %f, d = %f, e = %f, f = %f]",
+                       self->matrix[0], self->matrix[1], self->matrix[2],
+                       self->matrix[3], self->matrix[4], self->matrix[5]);
+    return 1;
+END
+
+@c
+
+static void check_color_index(lua_State *L, lua_Integer i, int arg)
+{
+    if (i < 1 || i > 4) {
+        luaL_argerror(L, arg, "color index must be >= 1 and <= 4");
+    }
+}
+
+@xl
+
+UTYPE NVGcolor R.Nvg
+
+CONSTRUCTOR rgb(unsigned char r, unsigned char g, unsigned char b) = nvgRGB
+
+CONSTRUCTOR rgbf(float r, float g, float b) = nvgRGBf
+
+CONSTRUCTOR rgba(unsigned char r, unsigned char g,
+                 unsigned char b, unsigned char a) = nvgRGBA
+
+CONSTRUCTOR rgbaf(float r, float g, float b, float a) = nvgRGBAf
+
+FIELD float r
+FIELD float g
+FIELD float b
+FIELD float a
+
+INTINDEX float
+    check_color_index(L, INDEX, 2);
+    RETVAL = self->rgba[INDEX - 1];
+END
+
+INTNEWINDEX float
+    check_color_index(L, INDEX, 2);
+    self->rgba[INDEX - 1] = VALUE;
+END
+
+METHOD ... unpack()
+    XL_pushfloat(L, self->r);
+    XL_pushfloat(L, self->g);
+    XL_pushfloat(L, self->b);
+    XL_pushfloat(L, self->a);
+    return 4;
+END
+
+METHOD lua_Integer __len()
+    XL_UNUSED(self);
+    RETVAL = 4;
+END
+
+METHOD ... __tostring()
+    lua_pushfstring(L, "[r = %f, g = %f, b = %f, a = %f]",
+                       self->r, self->g, self->b, self->a);
+    return 1;
+END
+
+
+PPTYPE R_Nvg R.Nvg
+
+CONSTRUCTOR new(int flags) = R_nvg_new
+
+DESTRUCTOR = R_nvg_decref
+
+
+// With so many functions the `=` shortcut is vital.
+// Hack the pre- and postamble a bit to make the generated
+// code pass the NVGcontext instead of the R_Nvg wrapper.
+
+PREAMBLE
+    NVGcontext *ctx = R_nvg_context(self);
+#   define self ctx
+END
+
+POSTAMBLE = #   undef self
+
+METHOD int create_font(const char *name, const char *path)
+    RETVAL = nvgCreateFont(self, name, path);
+    if (RETVAL == -1) {
+        luaL_error(L, "Can't load font '%s' from '%s'", name, path);
+    }
+END
+
+
+METHOD void begin_frame(float window_width, float window_height,
+                        float device_pixel_ratio) = nvgBeginFrame
+
+METHOD void cancel_frame() = nvgCancelFrame
+
+METHOD void end_frame() = nvgEndFrame
+
+
+METHOD void save() = nvgSave
+
+METHOD void restore() = nvgRestore
+
+METHOD void reset() = nvgReset
+
+
+METHOD void shape_anti_alias(bool enabled) = nvgShapeAntiAlias
+
+METHOD void stroke_color(NVGcolor color) = nvgStrokeColor
+
+@c
+/* nvgStrokePaint NVGpaint */
+@xl
+
+METHOD void fill_color(NVGcolor color) = nvgFillColor
+
+@c
+/* nvgFillPaint NVGpaint */
+@xl
+
+METHOD void miter_limit(float limit) = nvgMiterLimit
+
+METHOD void stroke_width(float size) = nvgStrokeWidth
+
+METHOD void line_cap(int cap) = nvgLineCap
+
+METHOD void line_join(int join) = nvgLineJoin
+
+METHOD void global_alpha(float alpha) = nvgGlobalAlpha
+
+
+METHOD void reset_transform() = nvgResetTransform
+
+METHOD void transform(float a, float b, float c,
+                      float d, float e, float f) = nvgTransform
+
+METHOD void translate(float x, float y) = nvgTranslate
+
+METHOD void rotate(float angle) = nvgRotate
+
+METHOD void skew_x(float angle) = nvgSkewX
+
+METHOD void skew_y(float angle) = nvgSkewY
+
+METHOD void scale(float x, float y) = nvgScale
+
+METHOD void set_transform(R_LuaNvgTransform *transform)
+    R_nvg_transform_set(self, transform->matrix);
+END
+
+METHOD void transform_by(R_LuaNvgTransform *transform)
+    R_nvg_transform(self, transform->matrix);
+END
+
+
+METHOD void scissor(float x, float y, float w, float h) = nvgScissor
+
+METHOD void intersect_scissor(float x, float y,
+                              float w, float h) = nvgIntersectScissor
+
+METHOD void reset_scissor() = nvgResetScissor
+
+
+METHOD void begin_path() = nvgBeginPath
+
+METHOD void move_to(float x, float y) = nvgMoveTo
+
+METHOD void line_to(float x, float y) = nvgLineTo
+
+METHOD void bezier_to(float c1x, float c1y, float c2x,
+                      float c2y, float x, float y) = nvgBezierTo
+
+METHOD void quad_to(float cx, float cy, float x, float y) = nvgQuadTo
+
+METHOD void arc_to(float x1, float y1, float x2,
+                   float y2, float radius) = nvgArcTo
+
+METHOD void close_path() = nvgClosePath
+
+METHOD void path_winding(int dir) = nvgPathWinding
+
+METHOD void arc(float cx, float cy, float r,
+                float a0, float a1, int dir) = nvgArc
+
+METHOD void rect(float x, float y, float w, float h) = nvgRect
+
+METHOD void rounded_rect(float x, float y, float w,
+                         float h, float r) = nvgRoundedRect
+
+METHOD void rounded_rect_varying(float x, float y, float w, float h,
+                                 float rad_top_left, float rad_top_right,
+                                 float rad_bottom_right,
+                                 float rad_bottom_left) = nvgRoundedRectVarying
+
+METHOD void ellipse(float cx, float cy, float rx, float ry) = nvgEllipse
+
+METHOD void circle(float cx, float cy, float r) = nvgCircle
+
+METHOD void fill() = nvgFill
+
+METHOD void stroke() = nvgStroke
+
+
+PREAMBLE =
+POSTAMBLE =
+
+
+ENUM R.Nvg.Winding s/^NVG_//
+    NVG_CCW
+    NVG_CW
+END
+
+ENUM R.Nvg.Solidity s/^NVG_//
+    NVG_SOLID
+    NVG_HOLE
+END
+
+ENUM R.Nvg.LineCap s/^NVG_//
+    NVG_BUTT
+    NVG_ROUND
+    NVG_SQUARE
+    NVG_BEVEL
+    NVG_MITER
+END
+
+ENUM R.Nvg.Align s/^NVG_ALIGN_//
+    NVG_ALIGN_LEFT
+    NVG_ALIGN_CENTER
+    NVG_ALIGN_RIGHT
+    NVG_ALIGN_TOP
+    NVG_ALIGN_MIDDLE
+    NVG_ALIGN_BOTTOM
+    NVG_ALIGN_BASELINE
+END
+
+ENUM R.Nvg.BlendFactor s/^NVG_//
+    NVG_ZERO
+    NVG_ONE
+    NVG_SRC_COLOR
+    NVG_ONE_MINUS_SRC_COLOR
+    NVG_DST_COLOR
+    NVG_ONE_MINUS_DST_COLOR
+    NVG_SRC_ALPHA
+    NVG_ONE_MINUS_SRC_ALPHA
+    NVG_DST_ALPHA
+    NVG_ONE_MINUS_DST_ALPHA
+    NVG_SRC_ALPHA_SATURATE
+END
+
+ENUM R.Nvg.CompositeOperation s/^NVG_//
+    NVG_SOURCE_OVER
+    NVG_SOURCE_IN
+    NVG_SOURCE_OUT
+    NVG_ATOP
+    NVG_DESTINATION_OVER
+    NVG_DESTINATION_IN
+    NVG_DESTINATION_OUT
+    NVG_DESTINATION_ATOP
+    NVG_LIGHTER
+    NVG_COPY
+    NVG_XOR
+END
+
+
+INIT extern R_lua_nvg_init

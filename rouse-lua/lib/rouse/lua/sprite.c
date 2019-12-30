@@ -403,18 +403,35 @@ static int r_sprite_name_newindex_xl(lua_State *L)
 }
 
 
+static int content_dummy;
+static int user_dummy;
+
 static void free_user(R_UserData user)
 {
     R_lua_value_free(user.data);
 }
 
-
-static int r_sprite_user_index_xl(lua_State *L)
+static void set_user(lua_State *L, R_Sprite *sprite, void *key, int value_index)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
-    R_LuaValue *lv = R_sprite_user(self).data;
+    R_LuaValue *lv = R_sprite_user(sprite).data;
     if (lv) {
         R_lua_getreg(L, lv->reg);
+    }
+    else {
+        lua_newtable(L);
+        lv = R_lua_value_new(L, -1);
+        R_sprite_user_set(sprite, R_user_data(lv), free_user);
+    }
+    lua_pushvalue(L, value_index);
+    lua_rawsetp(L, -2, key);
+}
+
+static int get_user(lua_State *L, R_Sprite *sprite, void *key)
+{
+    R_LuaValue *lv = R_sprite_user(sprite).data;
+    if (lv) {
+        R_lua_getreg(L, lv->reg);
+        lua_rawgetp(L, -1, key);
     }
     else {
         lua_pushnil(L);
@@ -422,29 +439,20 @@ static int r_sprite_user_index_xl(lua_State *L)
     return 1;
 }
 
+
 static int r_sprite_user_newindex_xl(lua_State *L)
 {
     R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
     luaL_checkany(L, 2);
     int VALUE = 2;
-    R_LuaValue *lv = R_sprite_user(self).data;
-    bool have_value = !lua_isnil(L, VALUE);
-    if (lv) {
-        if (have_value) {
-            lua_pushvalue(L, VALUE);
-            R_lua_unreg(L, lv->reg);
-            lv->reg = R_lua_reg(L);
-        }
-        else {
-            R_lua_value_free(lv);
-            R_sprite_user_set(self, R_user_null(), NULL);
-        }
-    }
-    else if (have_value) {
-        lv = R_lua_value_new(L, VALUE);
-        R_sprite_user_set(self, R_user_data(lv), free_user);
-    }
+    set_user(L, self, &user_dummy, VALUE);
     return 0;
+}
+
+static int r_sprite_user_index_xl(lua_State *L)
+{
+    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    return get_user(L, self, &user_dummy);
 }
 
 static int r_sprite_parent_index_xl(lua_State *L)
@@ -506,10 +514,26 @@ static int r_sprite_content_newindex_xl(lua_State *L)
         R_sprite_draw_null(self);
     }
     else {
-        luaL_error(L, "Don't know how to draw a value of type %s",
-                      luaL_typename(L, VALUE));
+        return luaL_error(L, "Don't know how to draw a value of type %s",
+                          luaL_typename(L, VALUE));
     }
+    /*
+     * There's not really a sensible way to read the content back once set, but
+     * that's a very useful thing to do to e.g. get the asset dimensions. So
+     * we'll just remember the last value set and return it when requested. It
+     * won't mix well with C code setting it though, since then we won't know.
+     */
+    set_user(L, self, &content_dummy, VALUE);
     return 0;
+}
+
+static int r_sprite_content_index_xl(lua_State *L)
+{
+    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    int RETVAL;
+    return get_user(L, self, &content_dummy);
+    lua_pushvalue(L, RETVAL);
+    return 1;
 }
 
 static int r_sprite_method_set_xl(lua_State *L)
@@ -967,6 +991,7 @@ static luaL_Reg r_affinetransform_index_registry_xl[] = {
 
 static luaL_Reg r_sprite_index_registry_xl[] = {
     {"angle", r_sprite_angle_index_xl},
+    {"content", r_sprite_content_index_xl},
     {"name", r_sprite_name_index_xl},
     {"origin", r_sprite_origin_index_xl},
     {"origin_x", r_sprite_origin_x_index_xl},

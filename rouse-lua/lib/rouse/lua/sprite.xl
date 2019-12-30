@@ -106,42 +106,50 @@ END
 
 @c
 
+static int content_dummy;
+static int user_dummy;
+
 static void free_user(R_UserData user)
 {
     R_lua_value_free(user.data);
 }
 
-@xl
-
-INDEX ... user
-    R_LuaValue *lv = R_sprite_user(self).data;
+static void set_user(lua_State *L, R_Sprite *sprite, void *key, int value_index)
+{
+    R_LuaValue *lv = R_sprite_user(sprite).data;
     if (lv) {
         R_lua_getreg(L, lv->reg);
+    }
+    else {
+        lua_newtable(L);
+        lv = R_lua_value_new(L, -1);
+        R_sprite_user_set(sprite, R_user_data(lv), free_user);
+    }
+    lua_pushvalue(L, value_index);
+    lua_rawsetp(L, -2, key);
+}
+
+static int get_user(lua_State *L, R_Sprite *sprite, void *key)
+{
+    R_LuaValue *lv = R_sprite_user(sprite).data;
+    if (lv) {
+        R_lua_getreg(L, lv->reg);
+        lua_rawgetp(L, -1, key);
     }
     else {
         lua_pushnil(L);
     }
     return 1;
-END
+}
+
+@xl
 
 NEWINDEX any user
-    R_LuaValue *lv = R_sprite_user(self).data;
-    bool have_value = !lua_isnil(L, VALUE);
-    if (lv) {
-        if (have_value) {
-            lua_pushvalue(L, VALUE);
-            R_lua_unreg(L, lv->reg);
-            lv->reg = R_lua_reg(L);
-        }
-        else {
-            R_lua_value_free(lv);
-            R_sprite_user_set(self, R_user_null(), NULL);
-        }
-    }
-    else if (have_value) {
-        lv = R_lua_value_new(L, VALUE);
-        R_sprite_user_set(self, R_user_data(lv), free_user);
-    }
+    set_user(L, self, &user_dummy, VALUE);
+END
+
+INDEX ... user
+    return get_user(L, self, &user_dummy);
 END
 
 INDEX <NEW_NULLABLE>R_Sprite *parent
@@ -196,9 +204,20 @@ NEWINDEX any content
         R_sprite_draw_null(self);
     }
     else {
-        luaL_error(L, "Don't know how to draw a value of type %s",
-                      luaL_typename(L, VALUE));
+        return luaL_error(L, "Don't know how to draw a value of type %s",
+                          luaL_typename(L, VALUE));
     }
+    /*
+     * There's not really a sensible way to read the content back once set, but
+     * that's a very useful thing to do to e.g. get the asset dimensions. So
+     * we'll just remember the last value set and return it when requested. It
+     * won't mix well with C code setting it though, since then we won't know.
+     */
+    set_user(L, self, &content_dummy, VALUE);
+END
+
+INDEX any content
+    return get_user(L, self, &content_dummy);
 END
 
 SETFROMTABLE set

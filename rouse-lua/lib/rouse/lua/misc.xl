@@ -72,6 +72,9 @@ FUNCTION void R.die()
 END
 
 
+FUNCTION void R.set_framerate(float ticks_per_second) = R_framerate_set
+
+
 FUNCTION float R.rand_between(float a, float b) = R_rand_between
 
 INIT extern R_lua_misc_init

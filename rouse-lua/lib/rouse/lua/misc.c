@@ -87,6 +87,13 @@ static int r_die_xl(lua_State *L)
     return 0;
 }
 
+static int r_set_framerate_xl(lua_State *L)
+{
+    float ticks_per_second = XL_checkfloat(L, 1);
+    R_framerate_set(ticks_per_second);
+    return 0;
+}
+
 static int r_rand_between_xl(lua_State *L)
 {
     float a = XL_checkfloat(L, 1);
@@ -102,6 +109,7 @@ static luaL_Reg r_function_registry_xl[] = {
     {"die", r_die_xl},
     {"info", r_info_xl},
     {"rand_between", r_rand_between_xl},
+    {"set_framerate", r_set_framerate_xl},
     {"warn", r_warn_xl},
     {NULL, NULL},
 };

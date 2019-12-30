@@ -62,5 +62,7 @@ FUNCTION void R.Viewport.resize_window()
     R_window_viewport_resize();
 END
 
+FUNCTION void R.Viewport.set_window(int width, int height) = R_window_viewport_set
+
 
 INIT extern R_lua_viewport_init

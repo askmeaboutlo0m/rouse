@@ -180,6 +180,14 @@ static int r_viewport_resize_window_xl(lua_State *L)
     return 0;
 }
 
+static int r_viewport_set_window_xl(lua_State *L)
+{
+    int width = XL_checkint(L, 1);
+    int height = XL_checkint(L, 2);
+    R_window_viewport_set(width, height);
+    return 0;
+}
+
 static int r_viewport_index_dummy_xl;
 static int r_viewport_index_xl(lua_State *L)
 {
@@ -197,6 +205,7 @@ static luaL_Reg r_viewport_function_registry_xl[] = {
     {"reset", r_viewport_reset_xl},
     {"resize_window", r_viewport_resize_window_xl},
     {"set", r_viewport_set_xl},
+    {"set_window", r_viewport_set_window_xl},
     {"window", r_viewport_window_xl},
     {NULL, NULL},
 };

@@ -30,6 +30,7 @@ function SceneBase:init(scene, nvg, assets, width, height)
     self.root        = R.Sprite.new("root")
     self.sprites     = {}
     self.clear_color = R.Nvg.rgbaf(1.0, 1.0, 1.0, 1.0)
+    R.Viewport.set_window(self.width, self.height)
 end
 
 function SceneBase:on_event(event)

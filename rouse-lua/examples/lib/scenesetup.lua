@@ -25,6 +25,30 @@ function SetupSpec:init(setup, spec)
     self.spec  = spec
 end
 
+function SetupSpec:parent(name)
+    self.setup:find_spec(name)
+    self.spec.parent = name
+    return self
+end
+
+
+function SetupSpec:before(name)
+    local target_index = self.setup:find_index(name)
+    self.setup:move(self.spec.name, target_index)
+    return self
+end
+
+function SetupSpec:after(name)
+    local target_index = self.setup:find_index(name)
+    self.setup:move(self.spec.name, target_index + 1)
+    return self
+end
+
+
+function SetupSpec:content(content)
+    self.spec.content = content
+    return self
+end
 
 function SetupSpec:pivot_x(pivot_x)
     self.spec.pivot_x = pivot_x
@@ -44,9 +68,8 @@ end
 local SceneSetup = class()
 
 function SceneSetup:init(scene)
-    self.scene   = scene
-    self.specs   = {}
-    self.indexes = {}
+    self.scene = scene
+    self.specs = {}
 end
 
 function SceneSetup.assemble(cls, scene)
@@ -70,20 +93,38 @@ function SceneSetup:add_spec(spec)
     local index = #self.specs + 1
     local name  = spec.name
 
-    if name and self.indexes[name] then
+    if name and self:search_index(name) then
         errorf("Duplicate sprite spec '%s'", name)
     end
 
     self.specs[index] = spec
-    if name then
-        self.indexes[name] = index
+end
+
+function SceneSetup:search_index(name)
+    for i = 1, #self.specs do
+        if name == self.specs[i].name then
+            return i
+        end
     end
+    return nil
+end
+
+function SceneSetup:find_index(name)
+    return self:search_index(name) or errorf("Sprite spec '%s' not found", name)
 end
 
 function SceneSetup:find_spec(name)
-    local index = self.indexes[name]
-        or errorf("Sprite spec '%s' not found", name)
-    return self.specs[index]
+    return self.specs[self:find_index(name)]
+end
+
+
+function SceneSetup:move(name, target_index)
+    local source_index = self:find_index(name)
+    if source_index < target_index then
+        target_index = target_index - 1
+    end
+    local spec = table.remove(self.specs, source_index)
+    table.insert(self.specs, target_index, spec)
 end
 
 
@@ -94,9 +135,14 @@ function SceneSetup:json(key)
     end
 end
 
-function SceneSetup:edit(key)
-    local spec = self:find_spec(key)
+function SceneSetup:edit(name)
+    local spec = self:find_spec(name)
     return SetupSpec.new(self, spec)
+end
+
+function SceneSetup:remove(name)
+    local target_index = self:find_index(name)
+    return table.remove(self.specs, target_index)
 end
 
 

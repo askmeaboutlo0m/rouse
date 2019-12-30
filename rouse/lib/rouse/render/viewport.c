@@ -90,3 +90,11 @@ void R_window_viewport_resize(void)
     window_viewport.w = R_long2int(lroundf(w - x));
     window_viewport.h = R_long2int(lroundf(h - y));
 }
+
+void R_window_viewport_set(int width, int height)
+{
+    R_assert(width > 0 && height > 0, "viewport dimensions must be positive");
+    R_width  = R_int2float(width );
+    R_height = R_int2float(height);
+    R_window_viewport_resize();
+}

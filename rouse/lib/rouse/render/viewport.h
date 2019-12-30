@@ -45,3 +45,9 @@ R_Viewport R_window_viewport(void);
  * `R_height` are maintained.
  */
 void R_window_viewport_resize(void);
+
+/*
+ * Set `R_width` and `R_height` to the given parameters and resize the window
+ * viewport accordingly.
+ */
+void R_window_viewport_set(int width, int height);

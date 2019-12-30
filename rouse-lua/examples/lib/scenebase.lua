@@ -202,7 +202,7 @@ end
 
 function ErrorScene:on_event(event)
     self.super:on_event(event)
-    if self.waiting_for_input and input_event_types[event.type] then
+    if self.waiting_for_input and self.input_event_types[event.type] then
         self:next_scene(self.next_scene_fn)
         self.waiting_for_input = false
     end

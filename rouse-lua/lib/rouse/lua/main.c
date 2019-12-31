@@ -190,7 +190,7 @@ static int unravel_main_args(lua_State *L)
 void R_lua_main(lua_State *L)
 {
     luaL_checktype(L, -1, LUA_TTABLE);
-    R_LuaMainArgs largs = {L, R_lua_reg_at(L, 1)};
+    R_LuaMainArgs largs = {L, R_lua_reg_at(L, -1)};
     R_MainArgs    args  = R_main_args(on_scene, &largs);
 
     lua_pushcfunction(L, unravel_main_args);

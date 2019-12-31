@@ -106,8 +106,8 @@ static int r_json_parse_string_xl(lua_State *L)
                       ? json_parse_string_with_comments(string)
                       : json_parse_string(string);
     if (!value) {
-        luaL_error(L, "Can't parse JSON string (%s comments) '%s'", string,
-                   with_comments ? "with" : "without");
+        luaL_error(L, "Can't parse JSON string (%s comments) '%s'",
+                   with_comments ? "with" : "without", string);
     }
     return push_table_from_json(L, value);
 }
@@ -122,7 +122,7 @@ static int r_json_parse_file_xl(lua_State *L)
                       : json_parse_file(filename);
     if (!value) {
         luaL_error(L, "Can't parse JSON file (%s comments) '%s'",
-                   filename, with_comments ? "with" : "without");
+                   with_comments ? "with" : "without", filename);
     }
     return push_table_from_json(L, value);
 }

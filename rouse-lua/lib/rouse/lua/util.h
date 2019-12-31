@@ -20,6 +20,11 @@
 #endif
 
 
+#define R_LUA_DIE(L, ...) do { \
+        luaL_error(L, __VA_ARGS__); \
+        R_UNREACHABLE(); \
+    } while (0)
+
 #define R_LUA_ERROR_FORMAT(L, FORMAT, ...) do { \
         char *_errstr = R_format(FORMAT, __VA_ARGS__); \
         lua_pushstring(L, _errstr); \

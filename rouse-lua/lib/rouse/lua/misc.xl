@@ -23,6 +23,7 @@
 #include "lua_inc.h"
 #include "intern.h"
 #include "util.h"
+#include "main.h"
 
 static void log_message(lua_State *L, void (*log_fn)(const char *, int,
                                                      const char *, ...))
@@ -81,5 +82,24 @@ FUNCTION void R.set_framerate(float ticks_per_second) = R_framerate_set
 
 
 FUNCTION float R.rand_between(float a, float b) = R_rand_between
+
+
+@c
+
+static int on_fetch_done(lua_State *L)
+{
+    lua_pushvalue(L, lua_upvalueindex(1));
+    lua_call(L, 0, 0);
+    return 0;
+}
+
+@xl
+
+FUNCTION void R.fetch(const char *url, const char *path, any on_done)
+    lua_pushvalue(L, on_done);
+    lua_pushcclosure(L, on_fetch_done, 1);
+    R_lua_fetch(L, url, path);
+END
+
 
 INIT extern R_lua_misc_init

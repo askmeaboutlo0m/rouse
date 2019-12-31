@@ -28,6 +28,7 @@
 #include "lua_inc.h"
 #include "intern.h"
 #include "util.h"
+#include "main.h"
 
 static void log_message(lua_State *L, void (*log_fn)(const char *, int,
                                                      const char *, ...))
@@ -112,9 +113,31 @@ static int r_rand_between_xl(lua_State *L)
     return 1;
 }
 
+
+static int on_fetch_done(lua_State *L)
+{
+    lua_pushvalue(L, lua_upvalueindex(1));
+    lua_call(L, 0, 0);
+    return 0;
+}
+
+
+static int r_fetch_xl(lua_State *L)
+{
+    const char *url = luaL_checkstring(L, 1);
+    const char *path = luaL_checkstring(L, 2);
+    luaL_checkany(L, 3);
+    int on_done = 3;
+    lua_pushvalue(L, on_done);
+    lua_pushcclosure(L, on_fetch_done, 1);
+    R_lua_fetch(L, url, path);
+    return 0;
+}
+
 static luaL_Reg r_function_registry_xl[] = {
     {"debug", r_debug_xl},
     {"die", r_die_xl},
+    {"fetch", r_fetch_xl},
     {"get_platform", r_get_platform_xl},
     {"info", r_info_xl},
     {"rand_between", r_rand_between_xl},

@@ -71,6 +71,7 @@ set(rouse_lua_headers
     "${CMAKE_SOURCE_DIR}/lib/rouse/lua/xl.h")
 
 set(rouse_lua_sources
+    "${CMAKE_SOURCE_DIR}/lib/rouse/lua/fetch.c"
     "${CMAKE_SOURCE_DIR}/lib/rouse/lua/main.c"
     "${CMAKE_SOURCE_DIR}/lib/rouse/lua/state.c"
     "${CMAKE_SOURCE_DIR}/lib/rouse/lua/value.c"

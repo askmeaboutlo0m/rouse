@@ -28,6 +28,25 @@ function PreloadScene:init(args)
     self.on_done   = args.on_done   or error("No on_done callback given")
     self.loaded    = {font = {}, image = {}, json = {}}
     self.current   = 1
+
+    if R.get_platform() == "emscripten" then
+        self.fetched = 0
+        self:fetch_next_resource()
+    else
+        self.fetched = #args.resources
+    end
+end
+
+
+function PreloadScene:fetch_next_resource()
+    local next_to_fetch = self.fetched + 1
+    if next_to_fetch <= #self.resources then
+        local path = self.resources[next_to_fetch]
+        R.fetch(path, path, function ()
+            self.fetched = next_to_fetch
+            self:fetch_next_resource()
+        end)
+    end
 end
 
 
@@ -63,11 +82,15 @@ function PreloadScene:load_resource(path)
 end
 
 function PreloadScene:load_next_resource()
-    local path = self.resources[self.current]
-    if path then
-        self.current = self.current + 1
-        self:load_resource(string.trim(path))
-        return false
+    if self.current <= self.fetched then
+        local path = self.resources[self.current]
+        if path then
+            self.current = self.current + 1
+            self:load_resource(string.trim(path))
+            return false
+        else
+            return true
+        end
     else
         return true
     end
@@ -81,7 +104,7 @@ function PreloadScene:on_tick(rendered)
         done = self:load_next_resource()
     until done or SDL.get_ticks() >= limit
 
-    if done then
+    if self.current > #self.resources then
         R.Scene.next(function (scene)
             return self.on_done(scene, self)
         end)

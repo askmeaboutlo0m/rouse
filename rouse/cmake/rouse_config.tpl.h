@@ -49,4 +49,20 @@
  */
 #cmakedefine ROUSE_GL_CHECKS
 
+/*
+ * The platform we're running on, roughly. Emscripten and Windows in particular
+ * have some interesting properties that sometimes need special casing.
+ */
+#if defined(__EMSCRIPTEN__)
+#   define ROUSE_PLATFORM "emscripten"
+#elif defined(_WIN32)
+#   define ROUSE_PLATFORM "windows"
+#elif defined(__APPLE__)
+#   define ROUSE_PLATFORM "darwin"
+#elif defined(__linux__)
+#   define ROUSE_PLATFORM "linux"
+#else
+#   error "unknown ROUSE_PLATFORM, please add it here"
+#endif
+
 #endif

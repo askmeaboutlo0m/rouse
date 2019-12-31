@@ -55,7 +55,7 @@
 
 static inline int R_lua_pcall(lua_State *L, int nargs, int nresults)
 {
-    int msgh = lua_gettop(L) - nargs - 1;
+    int msgh = lua_gettop(L) - nargs;
     lua_pushcfunction(L, R_lua_msgh);
     lua_insert(L, msgh);
     int error = lua_pcall(L, nargs, nresults, msgh);

@@ -87,6 +87,14 @@ static int r_die_xl(lua_State *L)
     return 0;
 }
 
+static int r_get_platform_xl(lua_State *L)
+{
+    const char *RETVAL;
+    RETVAL = ROUSE_PLATFORM;
+    lua_pushstring(L, RETVAL);
+    return 1;
+}
+
 static int r_set_framerate_xl(lua_State *L)
 {
     float ticks_per_second = XL_checkfloat(L, 1);
@@ -107,6 +115,7 @@ static int r_rand_between_xl(lua_State *L)
 static luaL_Reg r_function_registry_xl[] = {
     {"debug", r_debug_xl},
     {"die", r_die_xl},
+    {"get_platform", r_get_platform_xl},
     {"info", r_info_xl},
     {"rand_between", r_rand_between_xl},
     {"set_framerate", r_set_framerate_xl},

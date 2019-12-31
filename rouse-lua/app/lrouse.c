@@ -123,7 +123,7 @@ static void fetch_bootstrap(lua_State *L)
 #endif
 
 
-int lrouse_main(int argc, char **argv)
+int main(int argc, char **argv)
 {
     lua_State *L = R_lua_state_new();
     lua_pushliteral(L, "main.lua");

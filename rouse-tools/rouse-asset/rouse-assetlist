@@ -21,7 +21,7 @@
 set -e
 base="$(basename "$1")"
 cd "$1"
-find . -type f \
+find -L . -type f \
     | sort \
     | perl -ne 'print if /\.(png|rvg|ttf|json)$/i' \
     | perl -ne 'BEGIN { $base = shift } print s{\A\.\/}{$base/}r unless m{\A\./assetlist\s*\z}' "$base" \

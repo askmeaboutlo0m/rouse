@@ -522,8 +522,9 @@ void R_sprite_child_remove(R_Sprite *sprite, R_Sprite *child)
 
     for (R_Sprite **pp = &sprite->children; *pp; pp = &(*pp)->next) {
         if (*pp == child) {
-            *pp         = child->next;
-            child->next = NULL;
+            *pp           = child->next;
+            child->next   = NULL;
+            child->parent = NULL;
             R_sprite_decref(child);
             return;
         }

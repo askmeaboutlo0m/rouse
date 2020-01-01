@@ -318,7 +318,15 @@ static int spin_events(void)
 }
 
 
-static R_Scene *swap_scene(void)
+static void tick_scene(R_Scene *scene, float seconds, bool rendered)
+{
+    R_animator_tick(scene->animator, rendered, seconds);
+    if (scene->on_tick) {
+        scene->on_tick(scene, rendered);
+    }
+}
+
+static R_Scene *swap_scene(float seconds)
 {
     if (next_scene_fn) {
         R_scene_free(current_scene);
@@ -326,6 +334,15 @@ static R_Scene *swap_scene(void)
         R_MAGIC_CHECK(R_Scene, current_scene);
         next_scene_fn  = NULL;
         next_scene_arg = NULL;
+        /*
+         * The `seconds` parameter only has a non-zero value if we're about to
+         * render the scene. In that case, force a tick on it so that it gets a
+         * chance to run its logic at least once. Otherwise we might catch it
+         * in a weird state for one frame.
+         */
+        if (seconds != 0.0f) {
+            tick_scene(current_scene, seconds, true);
+        }
     }
     return current_scene;
 }
@@ -351,24 +368,20 @@ static bool step_main_loop(struct MainLoop *ml)
         float   seconds = R_tick_length / 1000.0f;
 
         for (uint32_t i = 0; i < max; ++i) {
-            scene = swap_scene();
+            scene = swap_scene(0.0f);
             if (scene) {
-                bool rendered = i == max - 1;
-                R_animator_tick(scene->animator, rendered, seconds);
-                if (scene->on_tick) {
-                    scene->on_tick(scene, rendered);
-                }
+                tick_scene(scene, seconds, i == max - 1);
             }
         }
 
-        if (max > 0 && (scene = swap_scene()) && scene->on_render) {
+        if (max > 0 && (scene = swap_scene(seconds)) && scene->on_render) {
             R_GL_CLEAR_ERROR();
             scene->on_render(scene);
             SDL_GL_SwapWindow(R_window);
         }
     }
 
-    return ml->running && swap_scene();
+    return ml->running && swap_scene(0.0f);
 }
 
 #ifdef __EMSCRIPTEN__

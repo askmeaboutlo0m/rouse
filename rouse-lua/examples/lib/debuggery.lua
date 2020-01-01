@@ -1,0 +1,69 @@
+local Debuggery     = class()
+local DEFAULT_COLOR = R.Nvg.rgb(220, 0, 0)
+
+function Debuggery:init(args)
+    self.scene    = args.scene   or error("no scene given")
+    self.names    = args.names   or {}
+    self.enabled  = args.enabled ~= false
+    self.mark_pos = args.mark_pos
+
+    self.field = R.TextField.new {
+        font  = args.font       or -1,
+        size  = args.text_size  or 32.0,
+        color = args.text_color or DEFAULT_COLOR,
+        align = R.Nvg.Align.LEFT | R.Nvg.Align.MIDDLE,
+    }
+
+    self.stroke_color   = args.stroke_color or DEFAULT_COLOR
+    self.stroke_width   = 5.0
+    self.cross_size     = 20.0
+    self.sprite         = R.Sprite.new(self.sprite_name or "debuggery")
+    self.sprite.content = function (nvg, matrix)
+        if self.enabled then
+            self:draw(nvg, matrix)
+        end
+    end
+
+    if args.add_to_scene ~= false then
+        self.scene.root:add_child(self.sprite)
+    end
+end
+
+function Debuggery:draw(nvg, matrix)
+    nvg:set_transform(matrix)
+    nvg:stroke_color(self.stroke_color)
+    nvg:stroke_width(self.stroke_width)
+    local field    = self.field
+    local mark_pos = self.mark_pos
+
+    for i, name in ipairs(self.names) do
+        local sprite = self.scene:sprite(name)
+        local x      = sprite.world_origin_x
+        local y      = sprite.world_origin_y
+        local size   = self.cross_size
+
+        nvg:begin_path()
+        nvg:move_to(x - size, y - size)
+        nvg:line_to(x + size, y + size)
+        nvg:stroke()
+
+        nvg:begin_path()
+        nvg:move_to(x + size, y - size)
+        nvg:line_to(x - size, y + size)
+        nvg:stroke()
+
+        if mark_pos then
+            nvg:begin_path()
+            nvg:move_to(sprite.world_pos_x, sprite.world_pos_y)
+            nvg:line_to(x, y)
+            nvg:stroke()
+        end
+
+        field.string = sprite.name
+        field.x      = x + size
+        field.y      = y
+        field:draw(nvg, matrix)
+    end
+end
+
+return Debuggery

@@ -39,7 +39,7 @@ local SceneBase = dofile("examples/lib/scenebase.lua")
 local EaseScene = class(SceneBase)
 
 function EaseScene:init(scene)
-    self.super:init(scene, R.Nvg.new(0))
+    self.super.init(self, scene, R.Nvg.new(0))
     self.index   = 0
     self.counter = 0
     self:add_easing_graph()

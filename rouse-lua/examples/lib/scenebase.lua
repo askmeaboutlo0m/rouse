@@ -187,7 +187,7 @@ end
 local ErrorScene = class(SceneBase)
 
 function ErrorScene:init(scene, nvg, assets, next_scene_fn)
-    self.super:init(scene, nvg, assets)
+    self.super.init(self, scene, nvg, assets)
     self.clear_color       = R.Nvg.rgbaf(1.0, 0.0, 0.0, 1.0)
     self.next_scene_fn     = next_scene_fn
     self.waiting_for_input = true
@@ -201,7 +201,7 @@ function ErrorScene:init(scene, nvg, assets, next_scene_fn)
 end
 
 function ErrorScene:on_event(event)
-    self.super:on_event(event)
+    self.super.on_event(self, event)
     if self.waiting_for_input and self.input_event_types[event.type] then
         self:next_scene(self.next_scene_fn)
         self.waiting_for_input = false

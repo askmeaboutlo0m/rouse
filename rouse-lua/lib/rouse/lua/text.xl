@@ -26,7 +26,9 @@
 
 @xl
 
+PPTYPE R_Nvg
 UTYPE NVGcolor
+UTYPE R_LuaNvgTransform
 
 PPTYPE R_TextField R.TextField
 
@@ -76,6 +78,11 @@ FIELD float    y
 FIELD float    width
 
 SETFROMTABLE set
+
+
+METHOD void draw(R_Nvg *nvg, R_LuaNvgTransform *transform)
+    R_text_field_draw(self, R_nvg_context(nvg), transform->matrix);
+END
 
 
 INIT extern R_lua_text_field_init

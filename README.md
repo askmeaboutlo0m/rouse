@@ -30,6 +30,8 @@ There should probably be a link to a Discord server or something where people ca
 
 # LICENSE
 
-Copyright 2019 askmeaboutloom. Licensed under the MIT license, see [the LICENSE file](LICENSE) for details.
+Code is copyright 2019, 2020 askmeaboutloom. Licensed under the MIT license, see [the LICENSE file](LICENSE) for details.
 
-Licenses for third-party software are marked where applicable.
+Images and models are copyright 2019, 2020 askmeaboutloom, licensed under a [Creative Commons Attribution 4.0 International license (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/).
+
+Licenses for third-party software and other works are marked where applicable.

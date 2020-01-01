@@ -1,3 +1,11 @@
+if(CMAKE_CROSSCOMPILING)
+    message(STATUS "Cross-compiling for platform '${CMAKE_SYSTEM_NAME}'")
+endif()
+
+if(CMAKE_TOOLCHAIN_FILE)
+    message(STATUS "Using toolchain file '${CMAKE_TOOLCHAIN_FILE}'")
+endif()
+
 include("${CMAKE_CURRENT_LIST_DIR}/build_options.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/warnings.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/asan.cmake")

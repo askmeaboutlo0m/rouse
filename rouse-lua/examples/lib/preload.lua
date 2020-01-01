@@ -35,6 +35,13 @@ function PreloadScene:init(args)
     else
         self.fetched = #args.resources
     end
+
+    self.outer_color   = args.outer_color   or R.Nvg.rgbaf(0.0, 0.0, 0.0, 0.6)
+    self.outer_ratio_x = args.outer_ratio_x or 0.9
+    self.outer_ratio_y = args.outer_ratio_y or 0.1
+    self.inner_ratio_y = args.inner_ratio_y or 0.8
+    self.inner_color   = args.inner_color   or R.Nvg.rgb(255, 255, 255)
+    self.roundness     = args.roundness     or 10.0
 end
 
 
@@ -114,17 +121,34 @@ end
 
 function PreloadScene:on_render()
     R.Viewport.reset()
-    R.GL.clear(0.0, 0.0, 0.0, 1.0, 0.0, 0)
+    R.GL.clear(1.0, 1.0, 1.0, 1.0, 0.0, 0)
 
     local nvg = self.nvg
-    nvg:begin_frame(1920.0, 1080.0, 1.0)
+    local vp  = R.Viewport.window()
+    nvg:begin_frame(vp.w, vp.h, 1.0)
+
+    local outer_w = vp.w * self.outer_ratio_x
+    local outer_h = vp.h * self.outer_ratio_y
+    local outer_x = (vp.w - outer_w) / 2.0
+    local outer_y = (vp.h - outer_h) / 2.0
+
+    nvg:fill_color(self.outer_color)
     nvg:begin_path()
-
-    local ratio = self.current / math.max(#self.resources, 1)
-    nvg:fill_color(R.Nvg.rgb(255, 255, 255))
-    nvg:rect(0.0, 0.0, 1920.0 * ratio, 1080.0)
-
+    nvg:rounded_rect(outer_x, outer_y, outer_w, outer_h, self.roundness)
     nvg:fill()
+
+    local ratio   = self.current / math.max(#self.resources, 1.0)
+    local inner_h = outer_h * self.inner_ratio_y
+    local delta   = outer_h - inner_h
+    local inner_w = (outer_w - delta) * ratio
+    local inner_x = outer_x + delta / 2.0
+    local inner_y = outer_y + delta / 2.0
+
+    nvg:fill_color(self.inner_color)
+    nvg:begin_path()
+    nvg:rounded_rect(inner_x, inner_y, inner_w, inner_h, self.roundness)
+    nvg:fill()
+
     nvg:end_frame()
 end
 

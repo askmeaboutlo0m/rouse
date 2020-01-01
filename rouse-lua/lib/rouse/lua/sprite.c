@@ -90,6 +90,115 @@ static int r_v2_method_unpack_xl(lua_State *L)
     return 2;
 }
 
+
+#define TYPE_BAD   0
+#define TYPE_V2    (1 << 0)
+#define TYPE_FLOAT (1 << 1)
+
+#define TYPES_V2_V2    (TYPE_V2    | (TYPE_V2    << 2))
+#define TYPES_V2_FLOAT (TYPE_V2    | (TYPE_FLOAT << 2))
+#define TYPES_FLOAT_V2 (TYPE_FLOAT | (TYPE_V2    << 2))
+
+#define DECONSTRUCT_V2_TYPE(L, ARG, T, V, F) \
+    V = luaL_testudata(L, ARG, "R_V2"); \
+    if (V) { \
+        T = TYPE_V2; \
+    } \
+    else { \
+        int _success; \
+        lua_Number _number = lua_tonumberx(L, ARG, &_success); \
+        if (_success) { \
+            T = TYPE_FLOAT; \
+            F = R_lua_n2float(_number); \
+        } \
+        else { \
+            T = TYPE_BAD; \
+        } \
+    }
+
+#define DECONSTRUCT_V2_TYPES(L, A, B) \
+    int    t1,  t2; \
+    R_V2  *v1, *v2; \
+    float  f1,  f2; \
+    DECONSTRUCT_V2_TYPE(L, A, t1, v1, f1); \
+    DECONSTRUCT_V2_TYPE(L, B, t2, v2, f2); \
+    int types = t1 | (t2 << 2)
+
+#define DIE_WITH_BAD_V2_TYPES(L, OP, A, B) \
+    R_LUA_DIE(L, "R_V2 operation (%s " OP " %s) not applicable", \
+              lua_typename(L, lua_type(L, A)), lua_typename(L, lua_type(L, B)))
+
+
+static int r_v2_method_add_xl(lua_State *L)
+{
+    luaL_checkany(L, 1);
+    int a = 1;
+    luaL_checkany(L, 2);
+    int b = 2;
+    R_V2 RETVAL;
+    DECONSTRUCT_V2_TYPES(L, a, b);
+    switch (types) {
+        case TYPES_V2_V2:
+            RETVAL = R_v2_add(*v1, *v2);
+            break;
+        case TYPES_V2_FLOAT:
+            RETVAL = R_v2_adds(*v1, f2);
+            break;
+        case TYPES_FLOAT_V2:
+            RETVAL = R_v2_adds(*v2, f1);
+            break;
+        default:
+            DIE_WITH_BAD_V2_TYPES(L, "+", a, b);
+    }
+    XL_pushnewutype(L, &RETVAL, sizeof(R_V2), "R_V2");
+    return 1;
+}
+
+static int r_v2_method_sub_xl(lua_State *L)
+{
+    luaL_checkany(L, 1);
+    int a = 1;
+    luaL_checkany(L, 2);
+    int b = 2;
+    R_V2 RETVAL;
+    DECONSTRUCT_V2_TYPES(L, a, b);
+    XL_UNUSED(f1);
+    switch (types) {
+        case TYPES_V2_V2:
+            RETVAL = R_v2_sub(*v1, *v2);
+            break;
+        case TYPES_V2_FLOAT:
+            RETVAL = R_v2_subs(*v1, f2);
+            break;
+        default:
+            DIE_WITH_BAD_V2_TYPES(L, "-", a, b);
+    }
+    XL_pushnewutype(L, &RETVAL, sizeof(R_V2), "R_V2");
+    return 1;
+}
+
+static int r_v2_method_mul_xl(lua_State *L)
+{
+    luaL_checkany(L, 1);
+    int a = 1;
+    luaL_checkany(L, 2);
+    int b = 2;
+    R_V2 RETVAL;
+    DECONSTRUCT_V2_TYPES(L, a, b);
+    switch (types) {
+        case TYPES_V2_FLOAT:
+            RETVAL = R_v2_scale(*v1, f2);
+            break;
+        case TYPES_FLOAT_V2:
+            RETVAL = R_v2_scale(*v2, f1);
+            break;
+        default:
+            DIE_WITH_BAD_V2_TYPES(L, "*", a, b);
+    }
+    XL_pushnewutype(L, &RETVAL, sizeof(R_V2), "R_V2");
+    return 1;
+}
+
 static int r_v2_method_set_xl(lua_State *L)
 {
     return XL_setfromtable(L, "R_V2", 1, 2);
@@ -1046,8 +1155,11 @@ static luaL_Reg r_sprite_method_registry_xl[] = {
 };
 
 static luaL_Reg r_v2_method_registry_xl[] = {
+    {"__add", r_v2_method_add_xl},
     {"__index", r_v2_index_xl},
+    {"__mul", r_v2_method_mul_xl},
     {"__newindex", r_v2_newindex_xl},
+    {"__sub", r_v2_method_sub_xl},
     {"__tostring", r_v2_method_tostring_xl},
     {"set", r_v2_method_set_xl},
     {"unpack", r_v2_method_unpack_xl},

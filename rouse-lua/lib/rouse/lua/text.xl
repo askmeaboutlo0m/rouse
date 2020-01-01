@@ -26,6 +26,8 @@
 
 @xl
 
+UTYPE NVGcolor
+
 PPTYPE R_TextField R.TextField
 
 CONSTRUCTOR new()
@@ -62,15 +64,16 @@ END
 
 INDEXFIELD int refs
 
-FIELD int   font
-FIELD float size
-FIELD float blur
-FIELD float spacing
-FIELD float line_height
-FIELD int   align
-FIELD float x
-FIELD float y
-FIELD float width
+FIELD int      font
+FIELD NVGcolor color
+FIELD float    size
+FIELD float    blur
+FIELD float    spacing
+FIELD float    line_height
+FIELD int      align
+FIELD float    x
+FIELD float    y
+FIELD float    width
 
 SETFROMTABLE set
 

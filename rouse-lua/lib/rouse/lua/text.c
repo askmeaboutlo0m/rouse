@@ -105,6 +105,23 @@ static int r_textfield_font_newindex_xl(lua_State *L)
     return 0;
 }
 
+static int r_textfield_color_index_xl(lua_State *L)
+{
+    R_TextField *self = XL_checkpptype(L, 1, "R_TextField");
+    NVGcolor RETVAL;
+    RETVAL = self->color;
+    XL_pushnewutype(L, &RETVAL, sizeof(NVGcolor), "NVGcolor");
+    return 1;
+}
+
+static int r_textfield_color_newindex_xl(lua_State *L)
+{
+    R_TextField *self = XL_checkpptype(L, 1, "R_TextField");
+    NVGcolor VALUE = *((NVGcolor *)luaL_checkudata(L, 2, "NVGcolor"));
+    self->color = VALUE;
+    return 0;
+}
+
 static int r_textfield_size_index_xl(lua_State *L)
 {
     R_TextField *self = XL_checkpptype(L, 1, "R_TextField");
@@ -266,6 +283,7 @@ static luaL_Reg r_textfield_function_registry_xl[] = {
 static luaL_Reg r_textfield_index_registry_xl[] = {
     {"align", r_textfield_align_index_xl},
     {"blur", r_textfield_blur_index_xl},
+    {"color", r_textfield_color_index_xl},
     {"font", r_textfield_font_index_xl},
     {"line_height", r_textfield_line_height_index_xl},
     {"refs", r_textfield_refs_index_xl},
@@ -289,6 +307,7 @@ static luaL_Reg r_textfield_method_registry_xl[] = {
 static luaL_Reg r_textfield_newindex_registry_xl[] = {
     {"align", r_textfield_align_newindex_xl},
     {"blur", r_textfield_blur_newindex_xl},
+    {"color", r_textfield_color_newindex_xl},
     {"font", r_textfield_font_newindex_xl},
     {"line_height", r_textfield_line_height_newindex_xl},
     {"size", r_textfield_size_newindex_xl},

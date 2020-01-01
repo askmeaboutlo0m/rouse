@@ -328,20 +328,41 @@ static void tick_scene(R_Scene *scene, float seconds, bool rendered)
 
 static R_Scene *swap_scene(float seconds)
 {
-    if (next_scene_fn) {
+    /*
+     * While it's a strange thing to do, a scene *could* potentially set a new
+     * scene during its own initialization. Some kind of trampoline I guess. So
+     * we'll keep looping until there's no more next scene to set.
+     */
+    while (next_scene_fn) {
+        /*
+         * Of course an even stranger thing can occur: the free callback can
+         * change the next scene function. So we have to do that first.
+         */
         R_scene_free(current_scene);
-        current_scene  = next_scene_fn(next_scene_arg);
-        R_MAGIC_CHECK(R_Scene, current_scene);
+
+        /* Clear the global variables now so that they can be set again. */
+        R_SceneFn fn   = next_scene_fn;
+        void      *arg = next_scene_arg;
         next_scene_fn  = NULL;
         next_scene_arg = NULL;
+
         /*
-         * The `seconds` parameter only has a non-zero value if we're about to
-         * render the scene. In that case, force a tick on it so that it gets a
-         * chance to run its logic at least once. Otherwise we might catch it
-         * in a weird state for one frame.
+         * The free callback could have set the next scene function to NULL.
+         * That's weird, but we'll just treat it as if `R_quit()` was called.
          */
-        if (seconds != 0.0f) {
-            tick_scene(current_scene, seconds, true);
+        current_scene = fn ? fn(arg) : NULL;
+
+        if (current_scene) {
+            R_MAGIC_CHECK(R_Scene, current_scene);
+            /*
+             * The `seconds` parameter only has a non-zero value if we're about
+             * to render the scene. In that case, force a tick on it so that it
+             * gets a chance to run its logic at least once. Otherwise we might
+             * catch it in a weird state for one frame.
+             */
+            if (seconds != 0.0f) {
+                tick_scene(current_scene, seconds, true);
+            }
         }
     }
     return current_scene;

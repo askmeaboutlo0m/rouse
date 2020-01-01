@@ -77,6 +77,32 @@ static inline float R_lerp_capped(float a, float b, float ratio)
          : R_lerp(a, b, ratio);
 }
 
+/* vec2 */
+static inline R_V2 R_v2_add(R_V2 a, R_V2 b)
+{
+    return (R_V2){{a.x + b.x, a.y + b.y}};
+}
+
+static inline R_V2 R_v2_adds(R_V2 a, float s)
+{
+    return (R_V2){{a.x + s, a.y + s}};
+}
+
+static inline R_V2 R_v2_sub(R_V2 a, R_V2 b)
+{
+    return (R_V2){{a.x - b.x, a.y - b.y}};
+}
+
+static inline R_V2 R_v2_subs(R_V2 a, float s)
+{
+    return (R_V2){{a.x - s, a.y - s}};
+}
+
+static inline R_V2 R_v2_scale(R_V2 a, float s)
+{
+    return (R_V2){{a.x * s, a.y * s}};
+}
+
 /* cglm/vec3.h */
 static inline R_V3 R_v3_one(void)
 {

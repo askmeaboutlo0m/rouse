@@ -82,9 +82,12 @@ function SampleScene:init(scene, nvg, assets)
         :call(function () self:blink() end)
         :loop()
 
-    local font       = self:font_asset("DejaVuSansMono")
+    local font = self:font_asset("DejaVuSansMono")
+
     self.fps_counter = FpsCounter.new(self.nvg, font)
-    self.debug       = Debuggery.new {
+    self.root:add_child(self.fps_counter.sprite)
+
+    self.debug = Debuggery.new {
         scene    = self,
         font     = font,
         enabled  = false,

@@ -58,14 +58,14 @@ cmake_rouse_lua_args()  {
 
 build_rouse() {
     cd "$base/rouse"
-    eval "${cmake_command:-cmake} -B \"\$builddir\" -G \"\${generator:-Ninja}\"$cmake_common_args$cmake_rouse_args"
-    eval "${cmake_command:-cmake} --build \"\$builddir\""
+    eval "${cmake_configure_command:-cmake} -B \"\$builddir\" -G \"\${generator:-Ninja}\"$cmake_common_args$cmake_rouse_args"
+    eval "${cmake_build_command:-cmake} --build \"\$builddir\""
 }
 
 build_rouse_lua() {
     cd "$base/rouse-lua"
-    eval "${cmake_command:-cmake} -B \"\$builddir\" -G \"\${generator:-Ninja}\" -DROUSE_EXPORT_FILE=\"../rouse/$builddir/Rouse.cmake\"$cmake_common_args$cmake_rouse_lua_args"
-    eval "${cmake_command:-cmake} --build \"\$builddir\""
+    eval "${cmake_configure_command:-cmake} -B \"\$builddir\" -G \"\${generator:-Ninja}\" -DROUSE_EXPORT_FILE=\"../rouse/$builddir/Rouse.cmake\"$cmake_common_args$cmake_rouse_lua_args"
+    eval "${cmake_build_command:-cmake} --build \"\$builddir\""
 }
 
 build_all() {
@@ -100,7 +100,7 @@ build_emscripten() {
     if [ -z "$EMPREFIX" ]; then
         die 'EMPREFIX environment variable must be set'
     fi
-    cmake_command='emcmake cmake'
+    cmake_configure_command='emcmake cmake'
 
     cmake_common_args '-DCMAKE_TOOLCHAIN_FILE="$base/cross/emscripten.cmake"' \
                       '-DCMAKE_BUILD_TYPE=Release' \
@@ -114,7 +114,7 @@ build_emscripten() {
     sdl_image_flags="'-sUSE_SDL_IMAGE=2 -sSDL2_IMAGE_FORMATS=[\"png\"]'"
     cmake_rouse_args '-DUSE_PKGCONFIG=OFF' \
                      '-DBUILD_WITH_GL_CHECKS=OFF' \
-                     '-DCGLM_CFLAGS="-Isystem$EMPREFIX/include"' \
+                     '-DCGLM_CFLAGS="-isystem$EMPREFIX/include"' \
                      '-DCGLM_LDFLAGS="-L$EMPREFIX/lib"' \
                      '-DCGLM_LIBS="-lm libcglm.a"' \
                      '-DSDL2_CFLAGS=-sUSE_SDL=2' \

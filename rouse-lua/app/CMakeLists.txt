@@ -8,6 +8,7 @@ set_target_properties(lrouse PROPERTIES OUTPUT_NAME "lrouse")
 
 if(ROUSE_EMSCRIPTEN)
     target_compile_options(lrouse PRIVATE "-sFETCH=1")
-    target_link_options(   lrouse PRIVATE "-sFETCH=1")
+    target_link_options(   lrouse PRIVATE "-sFETCH=1"
+                                          "-sALLOW_MEMORY_GROWTH=1")
     set_property(TARGET lrouse PROPERTY SUFFIX ".html")
 endif()

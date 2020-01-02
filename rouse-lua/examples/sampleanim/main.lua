@@ -22,9 +22,18 @@ dofile("examples/lib/common.lua")
 
 local PreloadScene = dofile("examples/lib/preload.lua")
 
+local msaa = 8
+
+for i = 1, #arg do
+    local found = string.match(arg[i], "^--msaa=(%d+)$")
+    if found then
+        msaa = tonumber(found)
+    end
+end
+
 return simple_main_args {
     title    = "sampleanim",
-    msaa     = 8,
+    msaa     = msaa,
     on_scene = function (scene)
         return PreloadScene.new {
             resources = slurplines("assets/assetlist"),

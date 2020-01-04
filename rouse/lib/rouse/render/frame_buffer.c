@@ -347,6 +347,7 @@ unsigned char *R_frame_buffer_read(R_FrameBuffer *fb)
     }
 
     R_GL_CLEAR_ERROR();
+    R_GL(glBindFramebuffer, GL_FRAMEBUFFER, fb->handle);
     R_GL(glReadPixels, 0, 0, fb->width, fb->height, GL_RGBA,
                        GL_UNSIGNED_BYTE, fb->pixels);
 

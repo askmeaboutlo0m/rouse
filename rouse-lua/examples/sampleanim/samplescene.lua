@@ -25,8 +25,8 @@ local SampleSetup = dofile("samplesetup.lua")
 local SampleScene = class(SceneBase)
 
 
-function SampleScene:init(scene, nvg, assets)
-    self.super.init(self, scene, nvg, assets, 1920, 1080)
+function SampleScene:init(args)
+    self.super.init(self, table.merge(args, {width = 1920, height = 1080}))
     SampleSetup:assemble(self)
 
     self:seq("sampleanim", "quad_in_out")
@@ -99,6 +99,14 @@ function SampleScene:init(scene, nvg, assets)
     }
 
     self.pre_render = self:make_pre_render()
+
+    if DUMP_FRAME_BUFFER_EACH_FRAME then
+        local fb = self.frame_buffer
+        self.on_render = function (self)
+            SampleScene.on_render(self)
+            fb:write_to_stdout()
+        end
+    end
 end
 
 
@@ -199,9 +207,10 @@ function SampleScene:make_pre_render()
     end
 end
 
+
 function SampleScene:on_render()
     self.pre_render()
-    self.super.on_render(self)
+    self.render()
 end
 
 

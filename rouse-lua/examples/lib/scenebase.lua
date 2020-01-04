@@ -21,17 +21,53 @@
 local SeqBuilder = dofile("examples/lib/seqbuilder.lua")
 local SceneBase  = class()
 
-function SceneBase:init(scene, nvg, assets, width, height)
-    self.scene       = scene
-    self.nvg         = nvg
-    self.assets      = assets
-    self.width       = width  or 1920
-    self.height      = height or 1080
-    self.root        = R.Sprite.new("root")
-    self.sprites     = {}
-    self.clear_color = R.Nvg.rgbaf(1.0, 1.0, 1.0, 1.0)
+function SceneBase:init(args)
+    self.scene          = args.scene  or error("no scene given")
+    self.nvg            = args.nvg    or error("no nvg given")
+    self.width          = args.width  or error("no width given")
+    self.height         = args.height or error("no height given")
+    self.assets         = args.assets or {}
+    self.frame_renderer = args.frame_renderer
+    self.frame_buffer   = args.frame_buffer
+    self.root           = R.Sprite.new("root")
+    self.clear_color    = R.Nvg.rgbaf(1.0, 1.0, 1.0, 1.0)
+    self.sprites        = {}
     R.Viewport.set_window(self.width, self.height)
+    self:init_render_function()
 end
+
+function SceneBase:init_render_function()
+    local nvg    = self.nvg
+    local width  = self.width
+    local height = self.height
+    local root   = self.root
+
+    if self.frame_renderer and self.frame_buffer then
+        local fr    = self.frame_renderer
+        local fb    = self.frame_buffer
+        local fb_w  = fb.width
+        local fb_h  = fb.height
+        local fb_vp = R.Viewport.new(0, 0, fb_w, fb_h)
+
+        self.render = function ()
+            fb:bind()
+            local r, g, b, a = self.clear_color:unpack()
+            R.GL.clear(r, g, b, a, 0.0, 0)
+            root:draw(nvg, width, height, fb_w, fb_h)
+            fb:unbind()
+            R.GL.clear(r, g, b, a, 0.0, 0)
+            fr:draw(fb)
+        end
+    else
+        self.render = function ()
+            local r, g, b, a = self.clear_color:unpack()
+            R.GL.clear(r, g, b, a, 0.0, 0)
+            local vp = self.viewport or self:reset_viewport()
+            root:draw(nvg, width, height, vp.w, vp.h)
+        end
+    end
+end
+
 
 function SceneBase:on_event(event)
     if event.type == SDL.EventType.WINDOWEVENT and
@@ -48,10 +84,7 @@ function SceneBase:reset_viewport()
 end
 
 function SceneBase:on_render()
-    local r, g, b, a = self.clear_color:unpack()
-    R.GL.clear(r, g, b, a, 0.0, 0)
-    local vp = self.viewport or self:reset_viewport()
-    self.root:draw(self.nvg, self.width, self.height, vp.w, vp.h)
+    self.render()
 end
 
 function SceneBase:asset(prefix, key)
@@ -221,7 +254,13 @@ function SceneBase:next_scene(next_or_path)
 
     R.Scene.next(function (scene)
         local success, result = pcall(function ()
-            return next_scene_fn(scene, self.nvg, self.assets)
+            return next_scene_fn {
+                scene          = scene,
+                nvg            = self.nvg,
+                assets         = self.assets,
+                frame_renderer = self.frame_renderer,
+                frame_buffer   = self.frame_buffer,
+            }
         end)
         if success then
             return result

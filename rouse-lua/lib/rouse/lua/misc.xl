@@ -80,6 +80,10 @@ END
 
 FUNCTION void R.set_framerate(float ticks_per_second) = R_framerate_set
 
+FUNCTION void R.set_max_ticks_before_render(uint32_t max_ticks_before_render)
+    R_max_ticks_before_render = max_ticks_before_render;
+END
+
 
 FUNCTION float R.rand_between(float a, float b) = R_rand_between
 

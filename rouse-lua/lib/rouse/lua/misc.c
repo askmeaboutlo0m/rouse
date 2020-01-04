@@ -103,6 +103,13 @@ static int r_set_framerate_xl(lua_State *L)
     return 0;
 }
 
+static int r_set_max_ticks_before_render_xl(lua_State *L)
+{
+    uint32_t max_ticks_before_render = XL_checkuint32(L, 1);
+    R_max_ticks_before_render = max_ticks_before_render;
+    return 0;
+}
+
 static int r_rand_between_xl(lua_State *L)
 {
     float a = XL_checkfloat(L, 1);
@@ -142,6 +149,7 @@ static luaL_Reg r_function_registry_xl[] = {
     {"info", r_info_xl},
     {"rand_between", r_rand_between_xl},
     {"set_framerate", r_set_framerate_xl},
+    {"set_max_ticks_before_render", r_set_max_ticks_before_render_xl},
     {"warn", r_warn_xl},
     {NULL, NULL},
 };

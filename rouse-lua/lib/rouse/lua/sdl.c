@@ -59,6 +59,24 @@ static int sdl_set_fullscreen_desktop_xl(lua_State *L)
     return 0;
 }
 
+static int sdl_get_gl_swap_interval_xl(lua_State *L)
+{
+    int RETVAL;
+    RETVAL = SDL_GL_GetSwapInterval();
+    XL_pushint(L, RETVAL);
+    return 1;
+}
+
+static int sdl_set_gl_swap_interval_xl(lua_State *L)
+{
+    int interval = XL_checkint(L, 1);
+    if (SDL_GL_SetSwapInterval(interval) != 0) {
+        R_LUA_DIE(L, "Can't set GL swap interval to %d: %s",
+                  interval, SDL_GetError());
+    }
+    return 0;
+}
+
 static int sdl_windowevent_type_index_xl(lua_State *L)
 {
     SDL_WindowEvent *self = XL_checkutype(L, 1, "SDL_WindowEvent");
@@ -289,9 +307,11 @@ static int sdl_windowevent_index_xl(lua_State *L)
 }
 
 static luaL_Reg sdl_function_registry_xl[] = {
+    {"get_gl_swap_interval", sdl_get_gl_swap_interval_xl},
     {"get_ticks", sdl_get_ticks_xl},
     {"set_fullscreen", sdl_set_fullscreen_xl},
     {"set_fullscreen_desktop", sdl_set_fullscreen_desktop_xl},
+    {"set_gl_swap_interval", sdl_set_gl_swap_interval_xl},
     {"set_windowed", sdl_set_windowed_xl},
     {NULL, NULL},
 };

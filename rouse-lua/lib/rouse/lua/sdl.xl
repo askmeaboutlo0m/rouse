@@ -46,6 +46,16 @@ FUNCTION void SDL.set_fullscreen_desktop()
 END
 
 
+FUNCTION int SDL.get_gl_swap_interval() = SDL_GL_GetSwapInterval
+
+FUNCTION void SDL.set_gl_swap_interval(int interval)
+    if (SDL_GL_SetSwapInterval(interval) != 0) {
+        R_LUA_DIE(L, "Can't set GL swap interval to %d: %s",
+                  interval, SDL_GetError());
+    }
+END
+
+
 UTYPE SDL_WindowEvent
 
 INDEXFIELD uint32_t type

@@ -58,4 +58,14 @@ FUNCTION void R.FrameBuffer.unbind()
     R_frame_buffer_unbind();
 END
 
+METHOD void write_to_stdout()
+#ifdef __EMSCRIPTEN__
+    /* You're not gonna record video in Emscripten, so this isn't allowed. */
+    XL_UNUSED(self);
+    R_LUA_DIE(L, "write_to_stdout not supported in Emscripten");
+#else
+    R_frame_buffer_write(self, stdout);
+#endif
+END
+
 INIT extern R_lua_frame_buffer_init

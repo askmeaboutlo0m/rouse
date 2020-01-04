@@ -157,6 +157,19 @@ static int r_framebuffer_unbind_xl(lua_State *L)
     return 0;
 }
 
+static int r_framebuffer_method_write_to_stdout_xl(lua_State *L)
+{
+    R_FrameBuffer *self = XL_checkpptype(L, 1, "R_FrameBuffer");
+#ifdef __EMSCRIPTEN__
+    /* You're not gonna record video in Emscripten, so this isn't allowed. */
+    XL_UNUSED(self);
+    R_LUA_DIE(L, "write_to_stdout not supported in Emscripten");
+#else
+    R_frame_buffer_write(self, stdout);
+#endif
+    return 0;
+}
+
 static int r_framebuffer_index_dummy_xl;
 static int r_framebuffer_index_xl(lua_State *L)
 {
@@ -187,6 +200,7 @@ static luaL_Reg r_framebuffer_method_registry_xl[] = {
     {"__index", r_framebuffer_index_xl},
     {"bind", r_framebuffer_method_bind_xl},
     {"unbind", r_framebuffer_method_unbind_xl},
+    {"write_to_stdout", r_framebuffer_method_write_to_stdout_xl},
     {NULL, NULL},
 };
 

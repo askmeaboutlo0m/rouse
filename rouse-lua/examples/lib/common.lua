@@ -71,6 +71,17 @@ function is_userdata(x)
 end
 
 
+function table.merge(...)
+    local merged = {}
+    for i, arg in ipairs {...} do
+        for key, value in pairs(arg) do
+            merged[key] = value
+        end
+    end
+    return merged
+end
+
+
 function string.ltrim(s)
     return string.gsub(s, "^%s+", "")
 end

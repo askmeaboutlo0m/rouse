@@ -83,6 +83,7 @@ static void scene_on_free(R_Scene *scene)
     *pp = NULL;
     lua_pop(L, 1);
     R_lua_value_free(lv);
+    lua_gc(L, LUA_GCCOLLECT, 0);
 }
 
 
@@ -115,6 +116,7 @@ int R_lua_scene_new(lua_State *L)
     scene->on_free   = scene_on_free;
 
     lua_pushlightuserdata(L, scene);
+    lua_gc(L, LUA_GCCOLLECT, 0);
     return 1;
 }
 

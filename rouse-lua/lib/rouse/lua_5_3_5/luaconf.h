@@ -783,7 +783,9 @@
 */
 
 
-
+/* Force any dynamic linking off, we don't want to load random C libraries. */
+#undef LUA_DL_DLL
+#undef LUA_USE_DLOPEN
 
 
 #endif

@@ -3,6 +3,10 @@ set_target_properties(lua PROPERTIES OUTPUT_NAME rouse_lua_5_3_5)
 set_c11_standard(lua)
 add_asan_if_available(lua)
 
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    target_compile_definitions(lua PUBLIC LUA_USE_APICHECK)
+endif()
+
 
 set(xl2c "${PROJECT_SOURCE_DIR}/xlua/xl2c")
 set(rouse_lua_gen_sources)

@@ -1,0 +1,44 @@
+#!/bin/sh
+echo 'Building rouse for Windows' && \
+    cd /rouse/rouse && \
+    rm -rf buildwin && \
+    cmake -B buildwin -G Ninja \
+        -DCMAKE_SYSTEM_NAME=Windows \
+        -DCMAKE_SYSTEM_VERSION=1 \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF \
+        -DUSE_ASAN=OFF \
+        -DUSE_PKGCONFIG=OFF \
+        -DBUILD_WITH_MAGIC=OFF \
+        -DCGLM_CFLAGS="-I/deps/prefix/include" \
+        -DCGLM_LIBS="-L/deps/prefix/lib -l:libcglm.a -lm" \
+        -DSDL2_CFLAGS="-I/deps/prefix/include -Dmain=SDL_main" \
+        -DSDL2_LDFLAGS="-L/deps/prefix/lib" \
+        -DSDL2_LIBS="-lmingw32 -lSDL2main -lSDL2"\
+        -DSDL2_IMAGE_CFLAGS="-I/deps/prefix/include" \
+        -DSDL2_IMAGE_LDFLAGS="-L/deps/prefix/lib" \
+        -DSDL2_IMAGE_LIBS="-lSDL2_image" \
+        -DCMAKE_C_COMPILER="$(which x86_64-w64-mingw32-gcc)" \
+        -DCMAKE_C_COMPILER_AR="$(which x86_64-w64-mingw32-gcc-ar)" \
+        -DCMAKE_C_COMPILER_RANLIB="$(which x86_64-w64-mingw32-gcc-ranlib)" \
+        -DCMAKE_AR="$(which x86_64-w64-mingw32-ar)" && \
+    cmake --build buildwin && \
+    mkdir buildwin/dlls && \
+    cp -vr /deps/prefix/bin/* buildwin/dlls && \
+    echo 'Building rouse-lua for Windows' && \
+    cd /rouse/rouse-lua && \
+    rm -rf buildwin && \
+    cmake -B buildwin -G Ninja \
+        -DROUSE_EXPORT_FILE=../rouse/buildwin/Rouse.cmake \
+        -DCMAKE_SYSTEM_NAME=Windows \
+        -DCMAKE_SYSTEM_VERSION=1 \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF \
+        -DUSE_ASAN=OFF \
+        -DCMAKE_C_COMPILER="$(which x86_64-w64-mingw32-gcc)" \
+        -DCMAKE_C_COMPILER_AR="$(which x86_64-w64-mingw32-gcc-ar)" \
+        -DCMAKE_C_COMPILER_RANLIB="$(which x86_64-w64-mingw32-gcc-ranlib)" \
+        -DCMAKE_AR="$(which x86_64-w64-mingw32-ar)" && \
+    cmake --build buildwin && \
+    mkdir buildwin/dlls && \
+    cp -vr /deps/prefix/bin/* buildwin/dlls

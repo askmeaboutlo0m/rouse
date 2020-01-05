@@ -125,6 +125,14 @@ build_emscripten() {
 }
 
 
+build_windows() {
+    if [ -z "$(sudo docker images --format='{{.Repository}}' | grep '^winrouse$')" ]; then
+        cross/win/generate-docker-image
+    fi
+    cross/win/build-in-docker
+}
+
+
 if [ "$#" -ne 1 ]; then
     die_with_usage
 fi
@@ -141,6 +149,9 @@ case "$1" in
         ;;
     emscripten)
         build_emscripten
+        ;;
+    windows)
+        build_windows
         ;;
     *)
         die_with_usage

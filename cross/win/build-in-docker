@@ -1,0 +1,30 @@
+#!/bin/sh
+set -e
+
+cd "$(dirname "$0")"
+cd ../..
+base="$(pwd)"
+
+tag="$(sudo docker images --format='{{.Tag}} {{.ID}} {{.Repository}}' | \
+       grep ' winrouse$' | sort | head -n 1 | awk '{ print $1 }')"
+
+if [ -z "$tag" ]; then
+    echo 'No winrouse image found' 2>&1
+    echo 'Did you run cross/win/generate-docker-image first?' 2>&1
+    exit 1
+fi
+
+sudo docker run --rm -v "$base:/rouse" -it "winrouse:$tag" /rouse/cross/win/entrypoint
+sudo chown -R "$(id -un):$(id -gn)" rouse/buildwin rouse-lua/buildwin
+
+echo
+echo 'Building done. You probably still need the ANGLE .dll files:'
+echo
+echo '  - d3dcompiler_47.dll'
+echo
+echo '  - libegl.dll'
+echo
+echo '  - libglesv2.dll'
+echo
+echo 'Either build ANGLE from source or get them from Chrome or LWGL.'
+echo

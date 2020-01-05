@@ -1,0 +1,5 @@
+#!/bin/sh
+set -e
+cd "$(dirname "$0")"
+mkdir -p tmp
+sudo docker build -t "winrouse:$(date '+%Y%m%d')" -f Dockerfile tmp

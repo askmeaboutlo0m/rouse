@@ -26,9 +26,123 @@
 #endif
 
 
+#define OPEN_LUA_LIB(L, NAME, FN) do { \
+        luaL_requiref(L, NAME, FN, 1); \
+        lua_pop(L, 1); \
+    } while (0)
+
+static void open_lua_libs(lua_State *L)
+{
+    OPEN_LUA_LIB(L, "_G",            luaopen_base     );
+    OPEN_LUA_LIB(L, LUA_LOADLIBNAME, luaopen_package  );
+    OPEN_LUA_LIB(L, LUA_COLIBNAME,   luaopen_coroutine);
+    OPEN_LUA_LIB(L, LUA_TABLIBNAME,  luaopen_table    );
+    OPEN_LUA_LIB(L, LUA_IOLIBNAME,   luaopen_io       );
+    OPEN_LUA_LIB(L, LUA_OSLIBNAME,   luaopen_os       );
+    OPEN_LUA_LIB(L, LUA_STRLIBNAME,  luaopen_string   );
+    OPEN_LUA_LIB(L, LUA_MATHLIBNAME, luaopen_math     );
+    OPEN_LUA_LIB(L, LUA_UTF8LIBNAME, luaopen_utf8     );
+#ifdef ROUSE_DEBUG
+    OPEN_LUA_LIB(L, LUA_DBLIBNAME,   luaopen_debug    );
+#endif
+}
+
+static int unsupported_function(lua_State *L)
+{
+    const char *lib = lua_tostring(L, lua_upvalueindex(1));
+    const char *fn  = lua_tostring(L, lua_upvalueindex(2));
+    return luaL_error(L, "Calling %s.%s is not allowed", lib, fn);
+}
+
+static void disallow_function_in(lua_State *L, const char *lib, const char *fn)
+{
+    lua_pushstring(L, lib);
+    lua_pushstring(L, fn);
+    lua_pushcclosure(L, unsupported_function, 2);
+    lua_setfield(L, -2, fn);
+}
+
+static void disallow_functions(lua_State *L, const char *lib, ...)
+{
+    va_list ap;
+    va_start(ap, lib);
+    lua_getglobal(L, lib);
+
+    const char *fn;
+    while ((fn = va_arg(ap, const char *))) {
+        disallow_function_in(L, lib, fn);
+    }
+
+    lua_pop(L, 1);
+    va_end(ap);
+}
+
+static int call_wrapped(lua_State *L)
+{
+    int argc = lua_gettop(L);
+    lua_pushvalue(L, lua_upvalueindex(1));
+    lua_insert(L, 1);
+    lua_call(L, argc, LUA_MULTRET);
+    return lua_gettop(L);
+}
+
+static int wrapped_io_open(lua_State *L)
+{
+    size_t     len;
+    const char *mode = lua_tolstring(L, 2, &len);
+    if (mode && ((len >= 1 && (mode[0] == 'w' || mode[0] == 'a'))
+              || (len >= 2 && (mode[0] == 'r' && mode[1] == '+')))) {
+        return luaL_error(L, "Calling io.open in write, append "
+                             "or update mode is not allowed");
+    }
+    else {
+        return call_wrapped(L);
+    }
+}
+
+static int wrapped_io_output(lua_State *L)
+{
+    if (lua_isnoneornil(L, 1)) {
+        return call_wrapped(L);
+    }
+    else {
+        return luaL_error(L, "Calling io.output(file) is not allowed");
+    }
+}
+
+static void wrap_function(lua_State *L, const char *lib, const char *fn,
+                          lua_CFunction wrapper)
+{
+    lua_getglobal(L, lib);
+    lua_getfield(L, -1, fn);
+    lua_pushcclosure(L, wrapper, 1);
+    lua_setfield(L, -2, fn);
+    lua_pop(L, 1);
+}
+
+static void disallow_questionable_features(lua_State *L)
+{
+    disallow_functions(L, "io", "popen", "tmpfile", (const char *)NULL);
+    disallow_functions(L, "os", "execute", "remove", "rename", "setlocale",
+                                "tmpname", (const char *)NULL);
+    wrap_function(L, "io", "open",   wrapped_io_open  );
+    wrap_function(L, "io", "output", wrapped_io_output);
+}
+
+static lua_State *init_lua(void)
+{
+    lua_State *L = luaL_newstate();
+    if (!L) {
+        R_die("Can't open Lua state");
+    }
+    open_lua_libs(L);
+    disallow_questionable_features(L);
+    return L;
+}
+
+
 #define MAIN_PREFIX        "--main="
 #define EMBOOTSTRAP_PREFIX "--embootstrap="
-
 
 static void maybe_handle_arg(lua_State *L, const char *global_name,
                              const char *prefix, const char *arg)
@@ -125,7 +239,7 @@ static void fetch_bootstrap(lua_State *L)
 
 int main(int argc, char **argv)
 {
-    lua_State *L = R_lua_state_new();
+    lua_State *L = init_lua();
     lua_pushliteral(L, "main.lua");
     lua_setglobal(L, "MAIN");
 
@@ -140,7 +254,7 @@ int main(int argc, char **argv)
     fetch_bootstrap(L);
 #else
     run_main(L);
-    R_lua_state_free(L);
+    lua_close(L);
 #endif
 
     return 0;

@@ -220,7 +220,13 @@ end
 local ErrorScene = class(SceneBase)
 
 function ErrorScene:init(scene, nvg, assets, next_scene_fn)
-    self.super.init(self, scene, nvg, assets)
+    self.super.init(self, {
+        scene  = scene,
+        nvg    = nvg,
+        assets = assets,
+        width  = 1280,
+        height = 720,
+    })
     self.clear_color       = R.Nvg.rgbaf(1.0, 0.0, 0.0, 1.0)
     self.next_scene_fn     = next_scene_fn
     self.waiting_for_input = true

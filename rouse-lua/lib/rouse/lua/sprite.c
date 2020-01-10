@@ -464,12 +464,42 @@ static int r_affinetransform_method_set_xl(lua_State *L)
     return XL_setfromtable(L, "R_AffineTransform", 1, 2);
 }
 
+
+typedef struct R_LuaSpriteData {
+    R_MAGIC_FIELD
+    lua_State *L;
+    int       draw_reg;
+    int       user_reg;
+} R_LuaSpriteData;
+
+static R_UserData lua_sprite_data_new(lua_State *L)
+{
+    R_LuaSpriteData *data = R_NEW_INIT_STRUCT(data, R_LuaSpriteData,
+        R_MAGIC_INIT(R_LuaSpriteData) L, LUA_NOREF, LUA_NOREF);
+    R_MAGIC_CHECK(R_LuaSpriteData, data);
+    return R_user_data(data);
+}
+
+static void lua_sprite_data_free(R_UserData user)
+{
+    R_LuaSpriteData *data = user.data;
+    if (data) {
+        R_MAGIC_CHECK(R_LuaSpriteData, data);
+        lua_State *L = data->L;
+        R_lua_unreg(L, data->draw_reg);
+        R_lua_unreg(L, data->user_reg);
+        free(data);
+    }
+}
+
+
 static int r_sprite_new_xl(lua_State *L)
 {
     const char *name = luaL_checkstring(L, 1);
     R_Sprite *RETVAL;
     int argc = lua_gettop(L);
     RETVAL   = R_sprite_new(name);
+    R_sprite_user_set(RETVAL, lua_sprite_data_new(L), lua_sprite_data_free);
     XL_pushnewpptype(L, RETVAL, "R_Sprite");
     if (argc >= 2) {
         lua_getfield(L, -1, "set");
@@ -511,57 +541,25 @@ static int r_sprite_name_newindex_xl(lua_State *L)
     return 0;
 }
 
-
-static int content_dummy;
-static int user_dummy;
-
-static void free_user(R_UserData user)
-{
-    R_lua_value_free(user.data);
-}
-
-static void set_user(lua_State *L, R_Sprite *sprite, void *key, int value_index)
-{
-    R_LuaValue *lv = R_sprite_user(sprite).data;
-    if (lv) {
-        R_lua_getreg(L, lv->reg);
-    }
-    else {
-        lua_newtable(L);
-        lv = R_lua_value_new(L, -1);
-        R_sprite_user_set(sprite, R_user_data(lv), free_user);
-    }
-    lua_pushvalue(L, value_index);
-    lua_rawsetp(L, -2, key);
-}
-
-static int get_user(lua_State *L, R_Sprite *sprite, void *key)
-{
-    R_LuaValue *lv = R_sprite_user(sprite).data;
-    if (lv) {
-        R_lua_getreg(L, lv->reg);
-        lua_rawgetp(L, -1, key);
-    }
-    else {
-        lua_pushnil(L);
-    }
-    return 1;
-}
-
-
 static int r_sprite_user_newindex_xl(lua_State *L)
 {
     R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
     luaL_checkany(L, 2);
     int VALUE = 2;
-    set_user(L, self, &user_dummy, VALUE);
+    R_LuaSpriteData *data = R_sprite_user(self).data;
+    R_MAGIC_CHECK(R_LuaSpriteData, data);
+    R_lua_unreg(L, data->user_reg);
+    data->user_reg = R_lua_reg_at(L, VALUE);
     return 0;
 }
 
 static int r_sprite_user_index_xl(lua_State *L)
 {
     R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
-    return get_user(L, self, &user_dummy);
+    R_LuaSpriteData *data = R_sprite_user(self).data;
+    R_MAGIC_CHECK(R_LuaSpriteData, data);
+    R_lua_getreg(L, data->user_reg);
+    return 1;
 }
 
 static int r_sprite_parent_index_xl(lua_State *L)
@@ -632,16 +630,19 @@ static int r_sprite_content_newindex_xl(lua_State *L)
      * we'll just remember the last value set and return it when requested. It
      * won't mix well with C code setting it though, since then we won't know.
      */
-    set_user(L, self, &content_dummy, VALUE);
+    R_LuaSpriteData *data = R_sprite_user(self).data;
+    R_MAGIC_CHECK(R_LuaSpriteData, data);
+    R_lua_unreg(L, data->draw_reg);
+    data->draw_reg = R_lua_reg_at(L, VALUE);
     return 0;
 }
 
 static int r_sprite_content_index_xl(lua_State *L)
 {
     R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
-    int RETVAL;
-    return get_user(L, self, &content_dummy);
-    lua_pushvalue(L, RETVAL);
+    R_LuaSpriteData *data = R_sprite_user(self).data;
+    R_MAGIC_CHECK(R_LuaSpriteData, data);
+    R_lua_getreg(L, data->draw_reg);
     return 1;
 }
 

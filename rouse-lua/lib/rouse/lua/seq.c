@@ -53,12 +53,14 @@ static float tween_float_calc(R_UserData user, float source)
     lua_pushcfunction(L, protected_tween_float_calc);
     R_lua_getreg(L, lv->reg);
     XL_pushfloat(L, source);
-    if (lua_pcall(L, 2, 1, 0)) {
+    if (R_lua_pcall(L, 2, 1)) {
         R_LUA_ERROR_TO_WARNING(L);
         return 0.0f;
     }
     else {
-        return (float) lua_tonumber(L, -1);
+        float result = R_lua_n2float(lua_tonumber(L, -1));
+        lua_pop(L, 1);
+        return result;
     }
 }
 
@@ -378,7 +380,7 @@ static float delay_step(R_UNUSED R_StepTickArgs args, R_UserData user)
         return 0.0f;
     }
     else {
-        float delay = (float) lua_tonumber(L, -1);
+        float delay = R_lua_n2float(lua_tonumber(L, -1));
         lua_pop(L, 1);
         return delay;
     }
@@ -483,7 +485,7 @@ static float call_ease(float k, R_UserData user)
         return k;
     }
     else {
-        float result = (float) lua_tonumber(L, -1);
+        float result = R_lua_n2float(lua_tonumber(L, -1));
         lua_pop(L, 1);
         return result;
     }
@@ -537,7 +539,9 @@ static float tween_step(R_UNUSED R_StepTickArgs args, R_UserData user)
         return 0.0f;
     }
     else {
-        return (float) lua_tonumber(L, -1);
+        float result = R_lua_n2float(lua_tonumber(L, -1));
+        lua_pop(L, 1);
+        return result;
     }
 }
 

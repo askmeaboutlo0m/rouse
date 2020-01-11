@@ -425,6 +425,125 @@ static int r_affinetransform_angle_newindex_xl(lua_State *L)
     return 0;
 }
 
+static int r_affinetransform_base_index_xl(lua_State *L)
+{
+    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    R_V2 RETVAL;
+    RETVAL = self->base;
+    XL_pushnewutype(L, &RETVAL, sizeof(R_V2), "R_V2");
+    return 1;
+}
+
+static int r_affinetransform_base_newindex_xl(lua_State *L)
+{
+    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    R_V2 VALUE = *((R_V2 *)luaL_checkudata(L, 2, "R_V2"));
+    self->base = VALUE;
+    return 0;
+}
+
+static int r_affinetransform_base_x_index_xl(lua_State *L)
+{
+    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    float RETVAL;
+    RETVAL = self->base.x;
+    XL_pushfloat(L, RETVAL);
+    return 1;
+}
+
+static int r_affinetransform_base_x_newindex_xl(lua_State *L)
+{
+    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    float VALUE = XL_checkfloat(L, 2);
+    self->base.x = VALUE;
+    return 0;
+}
+
+static int r_affinetransform_base_y_index_xl(lua_State *L)
+{
+    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    float RETVAL;
+    RETVAL = self->base.y;
+    XL_pushfloat(L, RETVAL);
+    return 1;
+}
+
+static int r_affinetransform_base_y_newindex_xl(lua_State *L)
+{
+    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    float VALUE = XL_checkfloat(L, 2);
+    self->base.y = VALUE;
+    return 0;
+}
+
+static int r_affinetransform_rotation_index_xl(lua_State *L)
+{
+    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    float RETVAL;
+    RETVAL = R_affine_transform_rotation(self);
+    XL_pushfloat(L, RETVAL);
+    return 1;
+}
+
+static int r_affinetransform_rotation_newindex_xl(lua_State *L)
+{
+    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    float VALUE = XL_checkfloat(L, 2);
+    R_affine_transform_rotation_set(self, VALUE);
+    return 0;
+}
+
+static int r_affinetransform_rel_index_xl(lua_State *L)
+{
+    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    R_V2 RETVAL;
+    RETVAL = R_affine_transform_rel(self);
+    XL_pushnewutype(L, &RETVAL, sizeof(R_V2), "R_V2");
+    return 1;
+}
+
+static int r_affinetransform_rel_newindex_xl(lua_State *L)
+{
+    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    R_V2 VALUE = *((R_V2 *)luaL_checkudata(L, 2, "R_V2"));
+    R_affine_transform_rel_set(self, VALUE);
+    return 0;
+}
+
+static int r_affinetransform_rel_x_index_xl(lua_State *L)
+{
+    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    float RETVAL;
+    RETVAL = R_affine_transform_rel_x(self);
+    XL_pushfloat(L, RETVAL);
+    return 1;
+}
+
+static int r_affinetransform_rel_x_newindex_xl(lua_State *L)
+{
+    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    float VALUE = XL_checkfloat(L, 2);
+    R_affine_transform_rel_x_set(self, VALUE);
+    return 0;
+}
+
+static int r_affinetransform_rel_y_index_xl(lua_State *L)
+{
+    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    float RETVAL;
+    RETVAL = R_affine_transform_rel_y(self);
+    XL_pushfloat(L, RETVAL);
+    return 1;
+}
+
+static int r_affinetransform_rel_y_newindex_xl(lua_State *L)
+{
+    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    float VALUE = XL_checkfloat(L, 2);
+    R_affine_transform_rel_y_set(self, VALUE);
+    return 0;
+}
+
 static int r_affinetransform_x_index_xl(lua_State *L)
 {
     R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
@@ -777,11 +896,65 @@ static int r_sprite_angle_index_xl(lua_State *L)
     return 1;
 }
 
+static int r_sprite_base_index_xl(lua_State *L)
+{
+    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_V2 RETVAL;
+    RETVAL = R_sprite_base(self);
+    XL_pushnewutype(L, &RETVAL, sizeof(R_V2), "R_V2");
+    return 1;
+}
+
+static int r_sprite_base_x_index_xl(lua_State *L)
+{
+    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    float RETVAL;
+    RETVAL = R_sprite_base_x(self);
+    XL_pushfloat(L, RETVAL);
+    return 1;
+}
+
+static int r_sprite_base_y_index_xl(lua_State *L)
+{
+    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    float RETVAL;
+    RETVAL = R_sprite_base_y(self);
+    XL_pushfloat(L, RETVAL);
+    return 1;
+}
+
 static int r_sprite_rotation_index_xl(lua_State *L)
 {
     R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
     float RETVAL;
     RETVAL = R_sprite_rotation(self);
+    XL_pushfloat(L, RETVAL);
+    return 1;
+}
+
+static int r_sprite_rel_index_xl(lua_State *L)
+{
+    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_V2 RETVAL;
+    RETVAL = R_sprite_rel(self);
+    XL_pushnewutype(L, &RETVAL, sizeof(R_V2), "R_V2");
+    return 1;
+}
+
+static int r_sprite_rel_x_index_xl(lua_State *L)
+{
+    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    float RETVAL;
+    RETVAL = R_sprite_rel_x(self);
+    XL_pushfloat(L, RETVAL);
+    return 1;
+}
+
+static int r_sprite_rel_y_index_xl(lua_State *L)
+{
+    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    float RETVAL;
+    RETVAL = R_sprite_rel_y(self);
     XL_pushfloat(L, RETVAL);
     return 1;
 }
@@ -898,11 +1071,59 @@ static int r_sprite_angle_newindex_xl(lua_State *L)
     return 0;
 }
 
+static int r_sprite_base_newindex_xl(lua_State *L)
+{
+    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_V2 VALUE = *((R_V2 *)luaL_checkudata(L, 2, "R_V2"));
+    R_sprite_base_set(self, VALUE);
+    return 0;
+}
+
+static int r_sprite_base_x_newindex_xl(lua_State *L)
+{
+    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    float VALUE = XL_checkfloat(L, 2);
+    R_sprite_base_x_set(self, VALUE);
+    return 0;
+}
+
+static int r_sprite_base_y_newindex_xl(lua_State *L)
+{
+    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    float VALUE = XL_checkfloat(L, 2);
+    R_sprite_base_y_set(self, VALUE);
+    return 0;
+}
+
 static int r_sprite_rotation_newindex_xl(lua_State *L)
 {
     R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
     float VALUE = XL_checkfloat(L, 2);
     R_sprite_rotation_set(self, VALUE);
+    return 0;
+}
+
+static int r_sprite_rel_newindex_xl(lua_State *L)
+{
+    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_V2 VALUE = *((R_V2 *)luaL_checkudata(L, 2, "R_V2"));
+    R_sprite_rel_set(self, VALUE);
+    return 0;
+}
+
+static int r_sprite_rel_x_newindex_xl(lua_State *L)
+{
+    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    float VALUE = XL_checkfloat(L, 2);
+    R_sprite_rel_x_set(self, VALUE);
+    return 0;
+}
+
+static int r_sprite_rel_y_newindex_xl(lua_State *L)
+{
+    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    float VALUE = XL_checkfloat(L, 2);
+    R_sprite_rel_y_set(self, VALUE);
     return 0;
 }
 
@@ -974,6 +1195,13 @@ static int r_sprite_world_origin_y_index_xl(lua_State *L)
     RETVAL = R_sprite_world_origin_y(self);
     XL_pushfloat(L, RETVAL);
     return 1;
+}
+
+static int r_sprite_method_reset_base_xl(lua_State *L)
+{
+    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_sprite_base_set(self, R_sprite_pos(self));
+    return 0;
 }
 
 static int r_sprite_method_orphan_xl(lua_State *L)
@@ -1082,12 +1310,19 @@ static luaL_Reg r_v2_function_registry_xl[] = {
 
 static luaL_Reg r_affinetransform_index_registry_xl[] = {
     {"angle", r_affinetransform_angle_index_xl},
+    {"base", r_affinetransform_base_index_xl},
+    {"base_x", r_affinetransform_base_x_index_xl},
+    {"base_y", r_affinetransform_base_y_index_xl},
     {"origin", r_affinetransform_origin_index_xl},
     {"origin_x", r_affinetransform_origin_x_index_xl},
     {"origin_y", r_affinetransform_origin_y_index_xl},
     {"pos", r_affinetransform_pos_index_xl},
     {"pos_x", r_affinetransform_pos_x_index_xl},
     {"pos_y", r_affinetransform_pos_y_index_xl},
+    {"rel", r_affinetransform_rel_index_xl},
+    {"rel_x", r_affinetransform_rel_x_index_xl},
+    {"rel_y", r_affinetransform_rel_y_index_xl},
+    {"rotation", r_affinetransform_rotation_index_xl},
     {"scale", r_affinetransform_scale_index_xl},
     {"scale_x", r_affinetransform_scale_x_index_xl},
     {"scale_y", r_affinetransform_scale_y_index_xl},
@@ -1101,6 +1336,9 @@ static luaL_Reg r_affinetransform_index_registry_xl[] = {
 
 static luaL_Reg r_sprite_index_registry_xl[] = {
     {"angle", r_sprite_angle_index_xl},
+    {"base", r_sprite_base_index_xl},
+    {"base_x", r_sprite_base_x_index_xl},
+    {"base_y", r_sprite_base_y_index_xl},
     {"content", r_sprite_content_index_xl},
     {"name", r_sprite_name_index_xl},
     {"origin", r_sprite_origin_index_xl},
@@ -1110,6 +1348,9 @@ static luaL_Reg r_sprite_index_registry_xl[] = {
     {"pos", r_sprite_pos_index_xl},
     {"pos_x", r_sprite_pos_x_index_xl},
     {"pos_y", r_sprite_pos_y_index_xl},
+    {"rel", r_sprite_rel_index_xl},
+    {"rel_x", r_sprite_rel_x_index_xl},
+    {"rel_y", r_sprite_rel_y_index_xl},
     {"rotation", r_sprite_rotation_index_xl},
     {"scale", r_sprite_scale_index_xl},
     {"scale_x", r_sprite_scale_x_index_xl},
@@ -1151,6 +1392,7 @@ static luaL_Reg r_sprite_method_registry_xl[] = {
     {"draw", r_sprite_method_draw_xl},
     {"orphan", r_sprite_method_orphan_xl},
     {"remove_child", r_sprite_method_remove_child_xl},
+    {"reset_base", r_sprite_method_reset_base_xl},
     {"set", r_sprite_method_set_xl},
     {NULL, NULL},
 };
@@ -1169,12 +1411,19 @@ static luaL_Reg r_v2_method_registry_xl[] = {
 
 static luaL_Reg r_affinetransform_newindex_registry_xl[] = {
     {"angle", r_affinetransform_angle_newindex_xl},
+    {"base", r_affinetransform_base_newindex_xl},
+    {"base_x", r_affinetransform_base_x_newindex_xl},
+    {"base_y", r_affinetransform_base_y_newindex_xl},
     {"origin", r_affinetransform_origin_newindex_xl},
     {"origin_x", r_affinetransform_origin_x_newindex_xl},
     {"origin_y", r_affinetransform_origin_y_newindex_xl},
     {"pos", r_affinetransform_pos_newindex_xl},
     {"pos_x", r_affinetransform_pos_x_newindex_xl},
     {"pos_y", r_affinetransform_pos_y_newindex_xl},
+    {"rel", r_affinetransform_rel_newindex_xl},
+    {"rel_x", r_affinetransform_rel_x_newindex_xl},
+    {"rel_y", r_affinetransform_rel_y_newindex_xl},
+    {"rotation", r_affinetransform_rotation_newindex_xl},
     {"scale", r_affinetransform_scale_newindex_xl},
     {"scale_x", r_affinetransform_scale_x_newindex_xl},
     {"scale_y", r_affinetransform_scale_y_newindex_xl},
@@ -1188,6 +1437,9 @@ static luaL_Reg r_affinetransform_newindex_registry_xl[] = {
 
 static luaL_Reg r_sprite_newindex_registry_xl[] = {
     {"angle", r_sprite_angle_newindex_xl},
+    {"base", r_sprite_base_newindex_xl},
+    {"base_x", r_sprite_base_x_newindex_xl},
+    {"base_y", r_sprite_base_y_newindex_xl},
     {"content", r_sprite_content_newindex_xl},
     {"name", r_sprite_name_newindex_xl},
     {"origin", r_sprite_origin_newindex_xl},
@@ -1196,6 +1448,9 @@ static luaL_Reg r_sprite_newindex_registry_xl[] = {
     {"pos", r_sprite_pos_newindex_xl},
     {"pos_x", r_sprite_pos_x_newindex_xl},
     {"pos_y", r_sprite_pos_y_newindex_xl},
+    {"rel", r_sprite_rel_newindex_xl},
+    {"rel_x", r_sprite_rel_x_newindex_xl},
+    {"rel_y", r_sprite_rel_y_newindex_xl},
     {"rotation", r_sprite_rotation_newindex_xl},
     {"scale", r_sprite_scale_newindex_xl},
     {"scale_x", r_sprite_scale_x_newindex_xl},

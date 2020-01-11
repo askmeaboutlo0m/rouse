@@ -184,6 +184,8 @@ function SceneBase:add(spec)
         sprite.origin_y = content.height * spec.pivot_y
     end
 
+    sprite:reset_base()
+
     return sprite
 end
 

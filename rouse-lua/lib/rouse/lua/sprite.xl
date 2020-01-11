@@ -154,6 +154,18 @@ FIELD R_V2  skew
 FIELD float skew_x   = skew.x
 FIELD float skew_y   = skew.y
 FIELD float angle
+FIELD R_V2  base
+FIELD float base_x   = base.x
+FIELD float base_y   = base.y
+
+INDEX    float rotation = R_affine_transform_rotation
+NEWINDEX float rotation = R_affine_transform_rotation_set
+INDEX    R_V2  rel      = R_affine_transform_rel
+NEWINDEX R_V2  rel      = R_affine_transform_rel_set
+INDEX    float rel_x    = R_affine_transform_rel_x
+NEWINDEX float rel_x    = R_affine_transform_rel_x_set
+INDEX    float rel_y    = R_affine_transform_rel_y
+NEWINDEX float rel_y    = R_affine_transform_rel_y_set
 
 FIELD float x = pos.x
 FIELD float y = pos.y
@@ -330,7 +342,13 @@ INDEX R_V2  skew     = R_sprite_skew
 INDEX float skew_x   = R_sprite_skew_x
 INDEX float skew_y   = R_sprite_skew_y
 INDEX float angle    = R_sprite_angle
+INDEX R_V2  base     = R_sprite_base
+INDEX float base_x   = R_sprite_base_x
+INDEX float base_y   = R_sprite_base_y
 INDEX float rotation = R_sprite_rotation
+INDEX R_V2  rel      = R_sprite_rel
+INDEX float rel_x    = R_sprite_rel_x
+INDEX float rel_y    = R_sprite_rel_y
 
 NEWINDEX R_AffineTransform set_transform = R_sprite_transform_set
 
@@ -347,7 +365,13 @@ NEWINDEX R_V2  skew     = R_sprite_skew_set
 NEWINDEX float skew_x   = R_sprite_skew_x_set
 NEWINDEX float skew_y   = R_sprite_skew_y_set
 NEWINDEX float angle    = R_sprite_angle_set
+NEWINDEX R_V2  base     = R_sprite_base_set
+NEWINDEX float base_x   = R_sprite_base_x_set
+NEWINDEX float base_y   = R_sprite_base_y_set
 NEWINDEX float rotation = R_sprite_rotation_set
+NEWINDEX R_V2  rel      = R_sprite_rel_set
+NEWINDEX float rel_x    = R_sprite_rel_x_set
+NEWINDEX float rel_y    = R_sprite_rel_y_set
 
 INDEX    float x = R_sprite_pos_x
 NEWINDEX float x = R_sprite_pos_x_set
@@ -359,6 +383,10 @@ INDEX float world_pos_y = R_sprite_world_pos_y
 
 INDEX float world_origin_x = R_sprite_world_origin_x
 INDEX float world_origin_y = R_sprite_world_origin_y
+
+METHOD void reset_base()
+    R_sprite_base_set(self, R_sprite_pos(self));
+END
 
 
 METHOD void orphan() = R_sprite_orphan

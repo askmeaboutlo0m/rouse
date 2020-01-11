@@ -229,6 +229,28 @@ static int r_luatween_method_sprite_angle_xl(lua_State *L)
     return 1;
 }
 
+static int r_luatween_method_sprite_base_x_xl(lua_State *L)
+{
+    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
+    R_Sprite *sprite = XL_checkpptype(L, 2, "R_Sprite");
+    luaL_checkany(L, 3);
+    int value_fn = 3;
+    R_tween_sprite_base_x(self, sprite, tween_float_get(L, value_fn));
+    lua_settop(L, 1);
+    return 1;
+}
+
+static int r_luatween_method_sprite_base_y_xl(lua_State *L)
+{
+    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
+    R_Sprite *sprite = XL_checkpptype(L, 2, "R_Sprite");
+    luaL_checkany(L, 3);
+    int value_fn = 3;
+    R_tween_sprite_base_y(self, sprite, tween_float_get(L, value_fn));
+    lua_settop(L, 1);
+    return 1;
+}
+
 static int r_luatween_method_sprite_rotation_xl(lua_State *L)
 {
     R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
@@ -236,6 +258,28 @@ static int r_luatween_method_sprite_rotation_xl(lua_State *L)
     luaL_checkany(L, 3);
     int value_fn = 3;
     R_tween_sprite_rotation(self, sprite, tween_float_get(L, value_fn));
+    lua_settop(L, 1);
+    return 1;
+}
+
+static int r_luatween_method_sprite_rel_x_xl(lua_State *L)
+{
+    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
+    R_Sprite *sprite = XL_checkpptype(L, 2, "R_Sprite");
+    luaL_checkany(L, 3);
+    int value_fn = 3;
+    R_tween_sprite_rel_x(self, sprite, tween_float_get(L, value_fn));
+    lua_settop(L, 1);
+    return 1;
+}
+
+static int r_luatween_method_sprite_rel_y_xl(lua_State *L)
+{
+    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
+    R_Sprite *sprite = XL_checkpptype(L, 2, "R_Sprite");
+    luaL_checkany(L, 3);
+    int value_fn = 3;
+    R_tween_sprite_rel_y(self, sprite, tween_float_get(L, value_fn));
     lua_settop(L, 1);
     return 1;
 }
@@ -669,10 +713,14 @@ static luaL_Reg r_luatween_method_registry_xl[] = {
     {"build", r_luatween_method_build_xl},
     {"field", r_luatween_method_field_xl},
     {"sprite_angle", r_luatween_method_sprite_angle_xl},
+    {"sprite_base_x", r_luatween_method_sprite_base_x_xl},
+    {"sprite_base_y", r_luatween_method_sprite_base_y_xl},
     {"sprite_origin_x", r_luatween_method_sprite_origin_x_xl},
     {"sprite_origin_y", r_luatween_method_sprite_origin_y_xl},
     {"sprite_pos_x", r_luatween_method_sprite_pos_x_xl},
     {"sprite_pos_y", r_luatween_method_sprite_pos_y_xl},
+    {"sprite_rel_x", r_luatween_method_sprite_rel_x_xl},
+    {"sprite_rel_y", r_luatween_method_sprite_rel_y_xl},
     {"sprite_rotation", r_luatween_method_sprite_rotation_xl},
     {"sprite_scale_x", r_luatween_method_sprite_scale_x_xl},
     {"sprite_scale_y", r_luatween_method_sprite_scale_y_xl},

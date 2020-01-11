@@ -29,6 +29,7 @@ typedef struct R_AffineTransform {
     R_V2  scale;
     R_V2  skew;  /* in radians */
     float angle; /* in radians */
+    R_V2  base;
 } R_AffineTransform;
 
 typedef void (*R_SpriteDrawFn)(R_Nvg *, const float[static 6], R_UserData);
@@ -42,6 +43,50 @@ typedef struct R_Sprite R_Sprite;
  * scale at (1,1) and an angle of 0 rad (and therefore 0 degrees).
  */
 R_AffineTransform R_affine_transform(void);
+
+static inline float R_affine_transform_rotation(const R_AffineTransform *tf)
+{
+    return R_to_deg(tf->angle);
+}
+
+static inline R_V2 R_affine_transform_rel(const R_AffineTransform *tf)
+{
+    return R_v2_sub(tf->pos, tf->base);
+}
+
+static inline float R_affine_transform_rel_x(const R_AffineTransform *tf)
+{
+    return tf->pos.x - tf->base.x;
+}
+
+static inline float R_affine_transform_rel_y(const R_AffineTransform *tf)
+{
+    return tf->pos.y - tf->base.y;
+}
+
+static inline void R_affine_transform_rotation_set(R_AffineTransform *tf,
+                                                    float value)
+{
+    tf->angle = R_to_rad(value);
+}
+
+static inline void R_affine_transform_rel_set(R_AffineTransform *tf, R_V2 value)
+{
+    tf->pos = R_v2_add(tf->base, value);
+}
+
+static inline void R_affine_transform_rel_x_set(R_AffineTransform *tf,
+                                                float value)
+{
+    tf->pos.x = tf->base.x + value;
+}
+
+static inline void R_affine_transform_rel_y_set(R_AffineTransform *tf,
+                                                float value)
+{
+    tf->pos.y = tf->base.y + value;
+}
+
 
 /*
  * Create a new sprite with the given `name`, which may be `NULL` and will be
@@ -123,6 +168,12 @@ float R_sprite_skew_x  (R_Sprite *sprite);
 float R_sprite_skew_y  (R_Sprite *sprite);
 float R_sprite_angle   (R_Sprite *sprite); /* radians */
 float R_sprite_rotation(R_Sprite *sprite); /* degrees */
+R_V2  R_sprite_base    (R_Sprite *sprite);
+float R_sprite_base_x  (R_Sprite *sprite);
+float R_sprite_base_y  (R_Sprite *sprite);
+R_V2  R_sprite_rel     (R_Sprite *sprite);
+float R_sprite_rel_x   (R_Sprite *sprite);
+float R_sprite_rel_y   (R_Sprite *sprite);
 
 void R_sprite_transform_set(R_Sprite *sprite, R_AffineTransform tf);
 
@@ -140,6 +191,12 @@ void R_sprite_skew_x_set  (R_Sprite *sprite, float value);
 void R_sprite_skew_y_set  (R_Sprite *sprite, float value);
 void R_sprite_angle_set   (R_Sprite *sprite, float value); /* radians */
 void R_sprite_rotation_set(R_Sprite *sprite, float value); /* degrees */
+void R_sprite_base_set    (R_Sprite *sprite, R_V2  value);
+void R_sprite_base_x_set  (R_Sprite *sprite, float value);
+void R_sprite_base_y_set  (R_Sprite *sprite, float value);
+void R_sprite_rel_set     (R_Sprite *sprite, R_V2  value);
+void R_sprite_rel_x_set   (R_Sprite *sprite, float value);
+void R_sprite_rel_y_set   (R_Sprite *sprite, float value);
 
 R_V2  R_sprite_world_pos  (R_Sprite *sprite);
 float R_sprite_world_pos_x(R_Sprite *sprite);

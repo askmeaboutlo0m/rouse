@@ -52,7 +52,7 @@ static void tween_sprite_free(R_UserData user)
     R_sprite_decref(user.data);
 }
 
-#define DEF_SPRITE_TWEEN(NAME, FIELD) \
+#define DEF_SPRITE_TWEEN(NAME) \
     static float get_ ## NAME(R_UserData user) \
     { \
         R_Sprite* sprite = user.data; \
@@ -81,13 +81,17 @@ static void tween_sprite_free(R_UserData user)
                           set_ ## NAME, tween_sprite_free, NAME ## _to_json); \
     }
 
-DEF_SPRITE_TWEEN(origin_x, origin.x)
-DEF_SPRITE_TWEEN(origin_y, origin.y)
-DEF_SPRITE_TWEEN(pos_x, pos.x)
-DEF_SPRITE_TWEEN(pos_y, pos.y)
-DEF_SPRITE_TWEEN(scale_x, scale.x)
-DEF_SPRITE_TWEEN(scale_y, scale.y)
-DEF_SPRITE_TWEEN(skew_x, skew.x)
-DEF_SPRITE_TWEEN(skew_y, skew.y)
-DEF_SPRITE_TWEEN(angle, angle)
-DEF_SPRITE_TWEEN(rotation, rotation)
+DEF_SPRITE_TWEEN(origin_x)
+DEF_SPRITE_TWEEN(origin_y)
+DEF_SPRITE_TWEEN(pos_x)
+DEF_SPRITE_TWEEN(pos_y)
+DEF_SPRITE_TWEEN(scale_x)
+DEF_SPRITE_TWEEN(scale_y)
+DEF_SPRITE_TWEEN(skew_x)
+DEF_SPRITE_TWEEN(skew_y)
+DEF_SPRITE_TWEEN(angle)
+DEF_SPRITE_TWEEN(base_x)
+DEF_SPRITE_TWEEN(base_y)
+DEF_SPRITE_TWEEN(rotation)
+DEF_SPRITE_TWEEN(rel_x)
+DEF_SPRITE_TWEEN(rel_y)

@@ -106,8 +106,8 @@ struct R_Sprite {
 R_AffineTransform R_affine_transform(void)
 {
     return (R_AffineTransform){
-            R_MAGIC_INIT(R_AffineTransform) {{0.0f, 0.0f}},
-            {{0.0f, 0.0f}}, {{1.0f, 1.0f}}, {{0.0f, 0.0f}}, 0.0f};
+            R_MAGIC_INIT(R_AffineTransform) {{0.0f, 0.0f}}, {{0.0f, 0.0f}},
+            {{1.0f, 1.0f}}, {{0.0f, 0.0f}}, 0.0f, {{0.0f, 0.0f}}};
 }
 
 
@@ -302,51 +302,52 @@ void R_sprite_transform_set(R_Sprite *sprite, R_AffineTransform tf)
     ++sprite->current_id;
 }
 
-#define GET_TRANSFORM(TYPE, NAME, ACCESS) \
+#define RETRIEVE_FIELD(TF, ACCESS) (TF)->ACCESS
+#define RETRIEVE_FUNC( TF, ACCESS) R_affine_transform_ ## ACCESS(TF)
+
+#define ASSIGN_FIELD(TF, ACCESS, VALUE) (TF)->ACCESS = (VALUE)
+#define ASSIGN_FUNC( TF, ACCESS, VALUE) \
+    R_affine_transform_ ## ACCESS ## _set((TF), (VALUE))
+
+#define GET_TRANSFORM(TYPE, NAME, ACCESS, RETRIEVE) \
     TYPE R_sprite_ ## NAME(R_Sprite *sprite) \
     { \
         check_sprite_transform(sprite); \
-        return sprite->transform.ACCESS; \
+        return RETRIEVE(&sprite->transform, ACCESS); \
     }
 
-#define SET_TRANSFORM(TYPE, NAME, ACCESS) \
+#define SET_TRANSFORM(TYPE, NAME, ACCESS, ASSIGN) \
     void R_sprite_ ## NAME ## _set(R_Sprite *sprite, TYPE value) \
     { \
         check_sprite_transform(sprite); \
-        sprite->transform.ACCESS = value; \
+        ASSIGN(&sprite->transform, ACCESS, value); \
         ++sprite->current_id; \
     }
 
-#define GET_SET_TRANSFORM(TYPE, NAME, ACCESS) \
-    GET_TRANSFORM(TYPE, NAME, ACCESS) \
-    SET_TRANSFORM(TYPE, NAME, ACCESS)
+#define GET_SET_TRANSFORM(TYPE, NAME, ACCESS, RETRIEVE, ASSIGN) \
+    GET_TRANSFORM(TYPE, NAME, ACCESS, RETRIEVE) \
+    SET_TRANSFORM(TYPE, NAME, ACCESS, ASSIGN)
 
-GET_SET_TRANSFORM(R_V2,  origin,   origin)
-GET_SET_TRANSFORM(float, origin_x, origin.x)
-GET_SET_TRANSFORM(float, origin_y, origin.y)
-GET_SET_TRANSFORM(R_V2,  pos,      pos)
-GET_SET_TRANSFORM(float, pos_x,    pos.x)
-GET_SET_TRANSFORM(float, pos_y,    pos.y)
-GET_SET_TRANSFORM(R_V2,  scale,    scale)
-GET_SET_TRANSFORM(float, scale_x,  scale.x)
-GET_SET_TRANSFORM(float, scale_y,  scale.y)
-GET_SET_TRANSFORM(R_V2,  skew,     skew)
-GET_SET_TRANSFORM(float, skew_x,   skew.x)
-GET_SET_TRANSFORM(float, skew_y,   skew.y)
-GET_SET_TRANSFORM(float, angle,    angle)
-
-float R_sprite_rotation(R_Sprite *sprite)
-{
-    check_sprite_transform(sprite);
-    return R_to_deg(sprite->transform.angle);
-}
-
-void R_sprite_rotation_set(R_Sprite *sprite, float value)
-{
-    check_sprite_transform(sprite);
-    sprite->transform.angle = R_to_rad(value);
-    ++sprite->current_id;
-}
+GET_SET_TRANSFORM(R_V2,  origin,   origin,   RETRIEVE_FIELD, ASSIGN_FIELD)
+GET_SET_TRANSFORM(float, origin_x, origin.x, RETRIEVE_FIELD, ASSIGN_FIELD)
+GET_SET_TRANSFORM(float, origin_y, origin.y, RETRIEVE_FIELD, ASSIGN_FIELD)
+GET_SET_TRANSFORM(R_V2,  pos,      pos,      RETRIEVE_FIELD, ASSIGN_FIELD)
+GET_SET_TRANSFORM(float, pos_x,    pos.x,    RETRIEVE_FIELD, ASSIGN_FIELD)
+GET_SET_TRANSFORM(float, pos_y,    pos.y,    RETRIEVE_FIELD, ASSIGN_FIELD)
+GET_SET_TRANSFORM(R_V2,  scale,    scale,    RETRIEVE_FIELD, ASSIGN_FIELD)
+GET_SET_TRANSFORM(float, scale_x,  scale.x,  RETRIEVE_FIELD, ASSIGN_FIELD)
+GET_SET_TRANSFORM(float, scale_y,  scale.y,  RETRIEVE_FIELD, ASSIGN_FIELD)
+GET_SET_TRANSFORM(R_V2,  skew,     skew,     RETRIEVE_FIELD, ASSIGN_FIELD)
+GET_SET_TRANSFORM(float, skew_x,   skew.x,   RETRIEVE_FIELD, ASSIGN_FIELD)
+GET_SET_TRANSFORM(float, skew_y,   skew.y,   RETRIEVE_FIELD, ASSIGN_FIELD)
+GET_SET_TRANSFORM(float, angle,    angle,    RETRIEVE_FIELD, ASSIGN_FIELD)
+GET_SET_TRANSFORM(R_V2,  base,     base,     RETRIEVE_FIELD, ASSIGN_FIELD)
+GET_SET_TRANSFORM(float, base_x,   base.x,   RETRIEVE_FIELD, ASSIGN_FIELD)
+GET_SET_TRANSFORM(float, base_y,   base.y,   RETRIEVE_FIELD, ASSIGN_FIELD)
+GET_SET_TRANSFORM(float, rotation, rotation, RETRIEVE_FUNC,  ASSIGN_FUNC )
+GET_SET_TRANSFORM(R_V2,  rel,      rel,      RETRIEVE_FUNC,  ASSIGN_FUNC )
+GET_SET_TRANSFORM(float, rel_x,    rel_x,    RETRIEVE_FUNC,  ASSIGN_FUNC )
+GET_SET_TRANSFORM(float, rel_y,    rel_y,    RETRIEVE_FUNC,  ASSIGN_FUNC )
 
 
 static void apply_transform(float matrix[static 6], R_AffineTransform *tf)

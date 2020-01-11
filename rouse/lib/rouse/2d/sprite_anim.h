@@ -40,4 +40,12 @@ void R_tween_sprite_skew_y(R_Step *step, R_Sprite *sprite, R_TweenFloat value);
 
 void R_tween_sprite_angle(R_Step *step, R_Sprite *sprite, R_TweenFloat value);
 
+void R_tween_sprite_base_x(R_Step *step, R_Sprite *sprite, R_TweenFloat value);
+
+void R_tween_sprite_base_y(R_Step *step, R_Sprite *sprite, R_TweenFloat value);
+
 void R_tween_sprite_rotation(R_Step *step, R_Sprite *sprite, R_TweenFloat value);
+
+void R_tween_sprite_rel_x(R_Step *step, R_Sprite *sprite, R_TweenFloat value);
+
+void R_tween_sprite_rel_y(R_Step *step, R_Sprite *sprite, R_TweenFloat value);

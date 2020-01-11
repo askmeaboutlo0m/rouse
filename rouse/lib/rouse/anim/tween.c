@@ -75,12 +75,19 @@ struct R_TweenElement {
     R_TweenFieldsJsonFn  fields_to_json;
     union {
         struct {
-            float              source_float;
-            float              target_float;
-            R_TweenFloatGetFn  get_float;
-            R_TweenFloatSetFn  set_float;
-            R_TweenFloatCalcFn calc_float;
-        };
+            float              source;
+            float              target;
+            R_TweenFloatGetFn  get;
+            R_TweenFloatSetFn  set;
+            R_TweenFloatCalcFn calc;
+        } f;
+        struct {
+            R_V2               source;
+            float              target;
+            R_TweenScaleGetFn  get;
+            R_TweenScaleSetFn  set;
+            R_TweenScaleCalcFn calc;
+        } s;
     };
 };
 
@@ -337,24 +344,33 @@ R_TweenFloat R_tween_float_between(float a, float b)
 }
 
 
+static void tween_add_element(R_Step *step, R_TweenElement *elem)
+{
+    R_Tween *tween = R_step_state(step);
+    R_MAGIC_CHECK(R_Tween, tween);
+    elem->next      = tween->elements;
+    tween->elements = elem;
+}
+
+
 static void calc_float_element(R_TweenElement *elem)
 {
-    float source       = elem->get_float(elem->user);
-    elem->source_float = source;
-    elem->target_float = elem->calc_float(elem->value_user, source);
+    float source   = elem->f.get(elem->user);
+    elem->f.source = source;
+    elem->f.target = elem->f.calc(elem->value_user, source);
 }
 
 static void tick_float_element(R_TweenElement *elem, float ratio)
 {
-    float current = R_lerp(elem->source_float, elem->target_float, ratio);
-    elem->set_float(elem->user, current);
+    float current = R_lerp(elem->f.source, elem->f.target, ratio);
+    elem->f.set(elem->user, current);
 }
 
 static void float_element_to_json(R_TweenElement *elem, JSON_Object *obj)
 {
     json_object_set_string(obj, "element_type", "float_element");
-    json_object_set_number(obj, "source_float", elem->source_float);
-    json_object_set_number(obj, "target_float", elem->target_float);
+    json_object_set_number(obj, "f.source",     elem->f.source);
+    json_object_set_number(obj, "f.target",     elem->f.target);
 }
 
 static R_TweenElement *new_float_element(
@@ -371,17 +387,9 @@ static R_TweenElement *new_float_element(
             R_MAGIC_INIT(R_TweenElement) user, calc_float_element,
             tick_float_element, on_free, to_json, NULL, value_user,
             value_on_free, value_to_json, float_element_to_json,
-            {{0.0f, 0.0f, get_float, set_float, calc_float}});
+            {.f = {0.0f, 0.0f, get_float, set_float, calc_float}});
     R_MAGIC_CHECK(R_TweenElement, elem);
     return elem;
-}
-
-static void tween_add_element(R_Step *step, R_TweenElement *elem)
-{
-    R_Tween *tween = R_step_state(step);
-    R_MAGIC_CHECK(R_Tween, tween);
-    elem->next      = tween->elements;
-    tween->elements = elem;
 }
 
 void R_tween_add_float(R_Step *step, R_TweenFloat f, R_UserData user,
@@ -391,5 +399,104 @@ void R_tween_add_float(R_Step *step, R_TweenFloat f, R_UserData user,
     R_TweenElement *elem = new_float_element(user, on_free, to_json, f.user,
                                              f.on_free, f.to_json, get_float,
                                              set_float, f.on_calc);
+    tween_add_element(step, elem);
+}
+
+
+R_TweenScale R_tween_scale(R_TweenScaleCalcFn on_calc, R_TweenValueFreeFn on_free,
+                           R_TweenValueJsonFn to_json, R_UserData user)
+{
+    R_assert_not_null(on_calc);
+    return (R_TweenScale){on_calc, on_free, to_json, user};
+}
+
+
+static float calc_fixed_scale(R_UserData user, R_UNUSED R_V2 source)
+{
+    return user.f;
+}
+
+static void fixed_scale_to_json(JSON_Object *obj, R_UserData user)
+{
+    json_object_set_string(obj, "value_type", "fixed_scale");
+    json_object_set_number(obj, "value", user.f);
+}
+
+R_TweenScale R_tween_scale_fixed(float value)
+{
+    return R_tween_scale(calc_fixed_scale, NULL, fixed_scale_to_json,
+                         R_user_float(value));
+}
+
+
+static float calc_between_scale(R_UserData user, R_UNUSED R_V2 source)
+{
+    return R_rand_between(user.between.a, user.between.b);
+}
+
+static void between_scale_to_json(JSON_Object *obj, R_UserData user)
+{
+    json_object_set_string(obj, "value_type", "between_float");
+    json_object_set_number(obj, "a", user.between.a);
+    json_object_set_number(obj, "b", user.between.b);
+}
+
+R_TweenScale R_tween_scale_between(float a, float b)
+{
+    return R_tween_scale(calc_between_scale, NULL, between_scale_to_json,
+                         R_user_between(a, b));
+}
+
+
+static void calc_scale_element(R_TweenElement *elem)
+{
+    R_V2 source    = elem->s.get(elem->user);
+    elem->s.source = source;
+    elem->s.target = elem->s.calc(elem->value_user, source);
+}
+
+static void tick_scale_element(R_TweenElement *elem, float ratio)
+{
+    R_V2  source  = elem->s.source;
+    float target  = elem->s.target;
+    R_V2  current = R_v2(R_lerp(source.x, target, ratio),
+                         R_lerp(source.y, target, ratio));
+    elem->s.set(elem->user, current);
+}
+
+static void scale_element_to_json(R_TweenElement *elem, JSON_Object *obj)
+{
+    json_object_set_string(obj, "element_type", "scale_element");
+    json_object_set_number(obj, "s.source.x",   elem->s.source.x);
+    json_object_set_number(obj, "s.source.y",   elem->s.source.y);
+    json_object_set_number(obj, "s.target",     elem->s.target);
+}
+
+static R_TweenElement *new_scale_element(
+        R_UserData user, R_TweenElementFreeFn on_free,
+        R_TweenElementJsonFn to_json, R_UserData value_user,
+        R_TweenValueFreeFn value_on_free, R_TweenValueJsonFn value_to_json,
+        R_TweenScaleGetFn get_scale, R_TweenScaleSetFn set_scale,
+        R_TweenScaleCalcFn calc_scale)
+{
+    R_assert_not_null(get_scale);
+    R_assert_not_null(set_scale);
+    R_assert_not_null(calc_scale);
+    R_TweenElement *elem = R_NEW_INIT_STRUCT(elem, R_TweenElement,
+            R_MAGIC_INIT(R_TweenElement) user, calc_scale_element,
+            tick_scale_element, on_free, to_json, NULL, value_user,
+            value_on_free, value_to_json, scale_element_to_json,
+            {.s = {R_v2(0.0f, 0.0f), 0.0f, get_scale, set_scale, calc_scale}});
+    R_MAGIC_CHECK(R_TweenElement, elem);
+    return elem;
+}
+
+void R_tween_add_scale(R_Step *step, R_TweenScale s, R_UserData user,
+                       R_TweenScaleGetFn get_scale, R_TweenScaleSetFn set_scale,
+                       R_TweenElementFreeFn on_free, R_TweenElementJsonFn to_json)
+{
+    R_TweenElement *elem = new_scale_element(user, on_free, to_json, s.user,
+                                             s.on_free, s.to_json, get_scale,
+                                             set_scale, s.on_calc);
     tween_add_element(step, elem);
 }

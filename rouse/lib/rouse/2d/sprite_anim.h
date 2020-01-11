@@ -49,3 +49,5 @@ void R_tween_sprite_rotation(R_Step *step, R_Sprite *sprite, R_TweenFloat value)
 void R_tween_sprite_rel_x(R_Step *step, R_Sprite *sprite, R_TweenFloat value);
 
 void R_tween_sprite_rel_y(R_Step *step, R_Sprite *sprite, R_TweenFloat value);
+
+void R_tween_sprite_scale(R_Step *step, R_Sprite *sprite, R_TweenScale value);

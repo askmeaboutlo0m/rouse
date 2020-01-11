@@ -95,3 +95,33 @@ DEF_SPRITE_TWEEN(base_y)
 DEF_SPRITE_TWEEN(rotation)
 DEF_SPRITE_TWEEN(rel_x)
 DEF_SPRITE_TWEEN(rel_y)
+
+
+static R_V2 get_scale(R_UserData user)
+{
+    R_Sprite* sprite = user.data;
+    return R_sprite_scale(sprite);
+}
+
+static void set_scale(R_UserData user, R_V2 value)
+{
+    R_Sprite *sprite = user.data;
+    R_sprite_scale_set(sprite, value);
+}
+
+static void scale_to_json(JSON_Object *obj, R_UserData user)
+{
+    json_object_set_string(obj, "element_type",  "sprite_scale");
+    R_V2 scale = get_scale(user);
+    json_object_set_number(obj, "current_scale.x", scale.x);
+    json_object_set_number(obj, "current_scale.y", scale.y);
+    const char *name = R_sprite_name(user.data);
+    json_object_set_string(obj, "sprite", name ? name : "");
+}
+
+void R_tween_sprite_scale(R_Step *step, R_Sprite *sprite, R_TweenScale value)
+{
+    R_sprite_incref(sprite);
+    R_tween_add_scale(step, value, R_user_data(sprite), get_scale,
+                      set_scale, tween_sprite_free, scale_to_json);
+}

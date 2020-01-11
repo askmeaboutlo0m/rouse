@@ -135,6 +135,12 @@ function SceneSetup:json(key)
     end
 end
 
+function SceneSetup:add(name)
+    local spec = {name = name}
+    table.insert(self.specs, spec)
+    return SetupSpec.new(self, spec)
+end
+
 function SceneSetup:edit(name)
     local spec = self:find_spec(name)
     return SetupSpec.new(self, spec)

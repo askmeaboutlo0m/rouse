@@ -25,6 +25,16 @@ function SetupSpec:init(setup, spec)
     self.spec  = spec
 end
 
+function SetupSpec:like(name)
+    local other = self.setup:find_spec(name)
+    for key, value in pairs(other) do
+        if key ~= "name" then
+            self.spec[key] = value
+        end
+    end
+    return self
+end
+
 function SetupSpec:parent(name)
     self.setup:find_spec(name)
     self.spec.parent = name

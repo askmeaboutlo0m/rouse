@@ -385,6 +385,7 @@ NEWINDEX float x = R_sprite_pos_x_set
 INDEX    float y = R_sprite_pos_y
 NEWINDEX float y = R_sprite_pos_y_set
 
+INDEX R_V2  world_pos   = R_sprite_world_pos
 INDEX float world_pos_x = R_sprite_world_pos_x
 INDEX float world_pos_y = R_sprite_world_pos_y
 

@@ -223,6 +223,13 @@ END
 DESTRUCTOR = R_sprite_decref
 
 
+FUNCTION bool R_Sprite:__eq(any a, any b)
+    R_Sprite **app = luaL_testudata(L, a, "R_Sprite");
+    R_Sprite **bpp = luaL_testudata(L, b, "R_Sprite");
+    RETVAL = app == bpp || (app && bpp && *app == *bpp);
+END
+
+
 INDEX const char *name = R_sprite_name
 
 NEWINDEX any name

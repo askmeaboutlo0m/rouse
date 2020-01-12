@@ -636,6 +636,20 @@ static int r_sprite_method_gc_xl(lua_State *L)
     return 0;
 }
 
+static int r_sprite_method_eq_xl(lua_State *L)
+{
+    luaL_checkany(L, 1);
+    int a = 1;
+    luaL_checkany(L, 2);
+    int b = 2;
+    bool RETVAL;
+    R_Sprite **app = luaL_testudata(L, a, "R_Sprite");
+    R_Sprite **bpp = luaL_testudata(L, b, "R_Sprite");
+    RETVAL = app == bpp || (app && bpp && *app == *bpp);
+    lua_pushboolean(L, RETVAL);
+    return 1;
+}
+
 static int r_sprite_name_index_xl(lua_State *L)
 {
     R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
@@ -1383,6 +1397,7 @@ static luaL_Reg r_affinetransform_method_registry_xl[] = {
 };
 
 static luaL_Reg r_sprite_method_registry_xl[] = {
+    {"__eq", r_sprite_method_eq_xl},
     {"__gc", r_sprite_method_gc_xl},
     {"__index", r_sprite_index_xl},
     {"__newindex", r_sprite_newindex_xl},

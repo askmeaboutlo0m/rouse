@@ -75,6 +75,15 @@ static int r_bitmapimage_height_index_xl(lua_State *L)
     return 1;
 }
 
+static int r_bitmapimage_method_draw_xl(lua_State *L)
+{
+    R_BitmapImage *self = XL_checkpptype(L, 1, "R_BitmapImage");
+    R_Nvg *nvg = XL_checkpptype(L, 2, "R_Nvg");
+    R_LuaNvgTransform *m = XL_checkutype(L, 3, "R_LuaNvgTransform");
+    R_bitmap_image_draw(self, R_nvg_context(nvg), m->matrix);
+    return 0;
+}
+
 static int r_bitmapimage_index_dummy_xl;
 static int r_bitmapimage_index_xl(lua_State *L)
 {
@@ -96,6 +105,7 @@ static luaL_Reg r_bitmapimage_index_registry_xl[] = {
 static luaL_Reg r_bitmapimage_method_registry_xl[] = {
     {"__gc", r_bitmapimage_method_gc_xl},
     {"__index", r_bitmapimage_index_xl},
+    {"draw", r_bitmapimage_method_draw_xl},
     {NULL, NULL},
 };
 

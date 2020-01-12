@@ -27,6 +27,8 @@
 @xl
 
 PPTYPE R_Nvg
+UTYPE R_LuaNvgTransform
+
 PPTYPE R_BitmapImage R.BitmapImage
 
 CONSTRUCTOR from_file(R_Nvg *nvg, const char *path,
@@ -38,6 +40,11 @@ DESTRUCTOR = R_bitmap_image_decref
 INDEX int refs   = R_bitmap_image_refs
 INDEX int width  = R_bitmap_image_width
 INDEX int height = R_bitmap_image_height
+
+
+METHOD void draw(R_Nvg *nvg, R_LuaNvgTransform *m)
+    R_bitmap_image_draw(self, R_nvg_context(nvg), m->matrix);
+END
 
 
 INIT extern R_lua_bitmap_image_init

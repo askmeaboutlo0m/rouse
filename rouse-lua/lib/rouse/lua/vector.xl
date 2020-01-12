@@ -26,6 +26,9 @@
 
 @xl
 
+PPTYPE R_Nvg
+UTYPE R_LuaNvgTransform
+
 PPTYPE R_VectorImage R.VectorImage
 
 CONSTRUCTOR from_file(const char *path) = R_vector_image_from_file
@@ -36,6 +39,11 @@ DESTRUCTOR = R_vector_image_decref
 INDEX int refs   = R_vector_image_refs
 INDEX int width  = R_vector_image_width
 INDEX int height = R_vector_image_height
+
+
+METHOD void draw(R_Nvg *nvg, R_LuaNvgTransform *m)
+    R_vector_image_draw(self, R_nvg_context(nvg), m->matrix);
+END
 
 
 INIT extern R_lua_vector_image_init

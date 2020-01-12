@@ -75,6 +75,7 @@ struct R_Sprite {
     R_Sprite          *parent;
     R_Sprite          *children;
     R_Sprite          *next;
+    R_Sprite          *tracking;
     R_AffineTransform transform;
     /* These id things keep track of which transforms need to be recalculated.
      * This system is heavily inspired by the way PixiJS works. Each sprite
@@ -134,7 +135,7 @@ R_Sprite *R_sprite_new(const char *name)
 {
 #   define IDENTITY_AFFINE_MATRIX {1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f}
     R_Sprite *sprite = R_NEW_INIT_STRUCT(sprite, R_Sprite,
-            R_MAGIC_INIT(R_Sprite) 1, R_strdup(name), NULL, NULL, NULL,
+            R_MAGIC_INIT(R_Sprite) 1, R_strdup(name), NULL, NULL, NULL, NULL,
             R_affine_transform(), 0, 0, 0, 0, IDENTITY_AFFINE_MATRIX,
             IDENTITY_AFFINE_MATRIX, NULL, R_user_null(),
             {NULL, NULL, R_user_null()});
@@ -168,6 +169,7 @@ static void free_user(R_SpriteFreeFn on_free, R_UserData user)
 
 static void free_sprite(R_Sprite *sprite)
 {
+    R_sprite_decref(sprite->tracking);
     free_children(sprite->children);
     free_user(sprite->on_free, sprite->user);
     free_user(sprite->content.on_free, sprite->content.user);
@@ -386,28 +388,38 @@ static void calc_world(R_Sprite *sprite, R_Sprite *parent)
 
 static float *update_world(R_Sprite *sprite, bool update_parent)
 {
-    R_Sprite *parent = sprite->parent;
-    if (parent) {
-        /* If we're e.g. drawing the sprites, we're currently traversing and
-         * updating them from the root up anyway. In those cases, we can skip
-         * walking back up the tree and re-checking the parents. However, if
-         * we're just retrieving the global position in the middle of a tick,
-         * there's no walking going on already, so we have to do our own. */
-        if (update_parent) {
-            update_world(parent, true);
-        }
-        /* Recalculate matrices only as needed. */
-        if (sprite->local_id != sprite->current_id) {
-            calc_local(sprite);
-            calc_world(sprite, parent);
-        }
-        else if (sprite->parent_id != parent->world_id) {
-            calc_world(sprite, parent);
+    R_Sprite *tracking = sprite->tracking;
+    if (tracking) {
+        if (sprite->world_id != tracking->world_id) {
+            memcpy(sprite->world, tracking->world, sizeof(float[6]));
+            sprite->world_id = tracking->world_id;
         }
     }
-    else if (sprite->local_id != sprite->current_id) {
-        calc_local(sprite);
-        memcpy(sprite->world, sprite->local, sizeof(float[6]));
+    else {
+        R_Sprite *parent = sprite->parent;
+        if (parent) {
+            /* If we're e.g. drawing the sprites, we're currently traversing
+             * and updating them from the root up anyway. In those cases, we
+             * can skip walking back up the tree and re-checking the parents.
+             * However, if we're just retrieving the global position in the
+             * middle of a tick, there's no walking going on already, so we
+             * have to do our own. */
+            if (update_parent) {
+                update_world(parent, true);
+            }
+            /* Recalculate matrices only as needed. */
+            if (sprite->local_id != sprite->current_id) {
+                calc_local(sprite);
+                calc_world(sprite, parent);
+            }
+            else if (sprite->parent_id != parent->world_id) {
+                calc_world(sprite, parent);
+            }
+        }
+        else if (sprite->local_id != sprite->current_id) {
+            calc_local(sprite);
+            memcpy(sprite->world, sprite->local, sizeof(float[6]));
+        }
     }
     return sprite->world;
 }
@@ -454,6 +466,22 @@ float R_sprite_world_origin_y(R_Sprite *sprite)
     float *world = get_world(sprite);
     R_V2  origin = sprite->transform.origin;
     return origin.x * world[1] + origin.y * world[3] + world[5];
+}
+
+
+void R_sprite_track(R_Sprite *sprite, R_Sprite *tracking)
+{
+    check_sprite(sprite);
+    if (tracking) {
+        R_sprite_incref(tracking);
+        R_sprite_decref(sprite->tracking);
+        sprite->tracking = tracking;
+    }
+    else {
+        R_sprite_decref(sprite->tracking);
+        sprite->tracking = NULL;
+    }
+    sprite->world_id = -1;
 }
 
 

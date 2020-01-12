@@ -397,6 +397,18 @@ METHOD void reset_base()
 END
 
 
+METHOD void track(any arg)
+    R_Sprite *tracking;
+    if (lua_isnil(L, arg)) {
+        tracking = NULL;
+    }
+    else {
+        tracking = XL_checkpptype(L, arg, "R_Sprite");
+    }
+    R_sprite_track(self, tracking);
+END
+
+
 METHOD void orphan() = R_sprite_orphan
 
 METHOD int add_child(R_Sprite *child) = R_sprite_child_add

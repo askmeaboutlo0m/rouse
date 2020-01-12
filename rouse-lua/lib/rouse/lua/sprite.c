@@ -1227,6 +1227,22 @@ static int r_sprite_method_reset_base_xl(lua_State *L)
     return 0;
 }
 
+static int r_sprite_method_track_xl(lua_State *L)
+{
+    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    luaL_checkany(L, 2);
+    int arg = 2;
+    R_Sprite *tracking;
+    if (lua_isnil(L, arg)) {
+        tracking = NULL;
+    }
+    else {
+        tracking = XL_checkpptype(L, arg, "R_Sprite");
+    }
+    R_sprite_track(self, tracking);
+    return 0;
+}
+
 static int r_sprite_method_orphan_xl(lua_State *L)
 {
     R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
@@ -1419,6 +1435,7 @@ static luaL_Reg r_sprite_method_registry_xl[] = {
     {"remove_child", r_sprite_method_remove_child_xl},
     {"reset_base", r_sprite_method_reset_base_xl},
     {"set", r_sprite_method_set_xl},
+    {"track", r_sprite_method_track_xl},
     {NULL, NULL},
 };
 

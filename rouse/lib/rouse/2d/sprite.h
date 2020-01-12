@@ -207,6 +207,22 @@ float R_sprite_world_origin_x(R_Sprite *sprite);
 float R_sprite_world_origin_y(R_Sprite *sprite);
 
 /*
+ * Make this `sprite` use the `tracking` sprite's world matrix, completely
+ * disregarding its own local transform. If `tracking` is `NULL`, things are
+ * returned to the regular transform handling again.
+ *
+ * The `tracking` sprite will have its reference count incremented.
+ *
+ * This feature works properly when your `tracking` sprite is drawn first,
+ * which is just enough to work for the cases I need it for. If it's drawn
+ * afterwards, you'll probably get the matrix from the last frame unless you
+ * explicitly recalculate it. Using a `tracking` sprite that's a child of the
+ * `sprite` tracking it is also probably a bad idea. Those things should
+ * probably be fixed at some point to make this more generally usable.
+ */
+void R_sprite_track(R_Sprite *sprite, R_Sprite *tracking);
+
+/*
  * Returns the parent of the given `sprite`, or `NULL` if it doesn't have one.
  */
 R_Sprite *R_sprite_parent(R_Sprite *sprite);

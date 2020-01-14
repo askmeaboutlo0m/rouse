@@ -1205,6 +1205,15 @@ static int r_sprite_world_pos_y_index_xl(lua_State *L)
     return 1;
 }
 
+static int r_sprite_world_origin_index_xl(lua_State *L)
+{
+    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_V2 RETVAL;
+    RETVAL = R_sprite_world_origin(self);
+    XL_pushnewutype(L, &RETVAL, sizeof(R_V2), "R_V2");
+    return 1;
+}
+
 static int r_sprite_world_origin_x_index_xl(lua_State *L)
 {
     R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
@@ -1402,6 +1411,7 @@ static luaL_Reg r_sprite_index_registry_xl[] = {
     {"skew_y", r_sprite_skew_y_index_xl},
     {"transform", r_sprite_transform_index_xl},
     {"user", r_sprite_user_index_xl},
+    {"world_origin", r_sprite_world_origin_index_xl},
     {"world_origin_x", r_sprite_world_origin_x_index_xl},
     {"world_origin_y", r_sprite_world_origin_y_index_xl},
     {"world_pos", r_sprite_world_pos_index_xl},

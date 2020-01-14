@@ -81,6 +81,18 @@ function table.merge(...)
     return merged
 end
 
+function table.rollindex(t)
+    return math.random(1, #t)
+end
+
+function table.roll(t)
+    return t[table.rollindex(t)]
+end
+
+function table.pick(t)
+    return table.remove(t, table.rollindex(t))
+end
+
 
 function string.ltrim(s)
     return string.gsub(s, "^%s+", "")

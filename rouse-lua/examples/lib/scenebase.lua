@@ -176,6 +176,14 @@ function SceneBase:add(spec)
     sprite.x = x
     sprite.y = y
 
+    if spec.angle    then sprite.angle    = spec.angle    end
+    if spec.rotation then sprite.rotation = spec.rotation end
+
+    local scale_x = spec.scale_x or spec.scale
+    local scale_y = spec.scale_y or spec.scale
+    if scale_x then sprite.scale_x = scale_x end
+    if scale_y then sprite.scale_y = scale_y end
+
     if spec.pivot_x then
         sprite.origin_x = content.width * spec.pivot_x
     end
@@ -185,6 +193,10 @@ function SceneBase:add(spec)
     end
 
     sprite:reset_base()
+
+    if spec.track then
+        sprite:track(self:maybe_sprite(spec.track))
+    end
 
     return sprite
 end

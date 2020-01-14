@@ -1232,6 +1232,26 @@ static int r_sprite_world_origin_y_index_xl(lua_State *L)
     return 1;
 }
 
+static int r_sprite_method_to_local_xl(lua_State *L)
+{
+    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_V2 point = *((R_V2 *)luaL_checkudata(L, 2, "R_V2"));
+    R_V2 RETVAL;
+    RETVAL = R_sprite_to_local(self, point);
+    XL_pushnewutype(L, &RETVAL, sizeof(R_V2), "R_V2");
+    return 1;
+}
+
+static int r_sprite_method_to_world_xl(lua_State *L)
+{
+    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_V2 point = *((R_V2 *)luaL_checkudata(L, 2, "R_V2"));
+    R_V2 RETVAL;
+    RETVAL = R_sprite_to_world(self, point);
+    XL_pushnewutype(L, &RETVAL, sizeof(R_V2), "R_V2");
+    return 1;
+}
+
 static int r_sprite_method_reset_base_xl(lua_State *L)
 {
     R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
@@ -1448,6 +1468,8 @@ static luaL_Reg r_sprite_method_registry_xl[] = {
     {"remove_child", r_sprite_method_remove_child_xl},
     {"reset_base", r_sprite_method_reset_base_xl},
     {"set", r_sprite_method_set_xl},
+    {"to_local", r_sprite_method_to_local_xl},
+    {"to_world", r_sprite_method_to_world_xl},
     {"track", r_sprite_method_track_xl},
     {NULL, NULL},
 };

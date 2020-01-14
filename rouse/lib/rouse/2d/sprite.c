@@ -469,6 +469,37 @@ float R_sprite_world_origin_y(R_Sprite *sprite)
 }
 
 
+R_V2 R_sprite_to_local(R_Sprite *sprite, R_V2 point)
+{
+    float *world = get_world(sprite);
+    float x      = point.x;
+    float y      = point.y;
+    float a      = world[0];
+    float b      = world[1];
+    float c      = world[2];
+    float d      = world[3];
+    float tx     = world[4];
+    float ty     = world[5];
+    float id     = 1.0f / (a * d + c * -b);
+    return R_v2((d * id * x) + (-c * id * y) + ((( ty * c) - (tx * d)) * id),
+                (a * id * y) + (-b * id * x) + (((-ty * a) + (tx * b)) * id));
+}
+
+R_V2 R_sprite_to_world(R_Sprite *sprite, R_V2 point)
+{
+    float *world = get_world(sprite);
+    float x      = point.x;
+    float y      = point.y;
+    float a      = world[0];
+    float b      = world[1];
+    float c      = world[2];
+    float d      = world[3];
+    float tx     = world[4];
+    float ty     = world[5];
+    return R_v2((a * x) + (c * y) + tx, (b * x) + (d * y) + ty);
+}
+
+
 void R_sprite_track(R_Sprite *sprite, R_Sprite *tracking)
 {
     check_sprite(sprite);

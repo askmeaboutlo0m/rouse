@@ -206,6 +206,9 @@ R_V2  R_sprite_world_origin  (R_Sprite *sprite);
 float R_sprite_world_origin_x(R_Sprite *sprite);
 float R_sprite_world_origin_y(R_Sprite *sprite);
 
+R_V2 R_sprite_to_local(R_Sprite *sprite, R_V2 point);
+R_V2 R_sprite_to_world(R_Sprite *sprite, R_V2 point);
+
 /*
  * Make this `sprite` use the `tracking` sprite's world matrix, completely
  * disregarding its own local transform. If `tracking` is `NULL`, things are

@@ -614,9 +614,12 @@ static void lua_sprite_data_free(R_UserData user)
 
 static int r_sprite_new_xl(lua_State *L)
 {
-    const char *name = luaL_checkstring(L, 1);
+    luaL_checkany(L, 1);
+    int name_index = 1;
     R_Sprite *RETVAL;
     int argc = lua_gettop(L);
+    const char *name = lua_isnil(L, name_index) ? NULL
+                     : luaL_checkstring(L, name_index);
     RETVAL   = R_sprite_new(name);
     R_sprite_user_set(RETVAL, lua_sprite_data_new(L), lua_sprite_data_free);
     XL_pushnewpptype(L, RETVAL, "R_Sprite");

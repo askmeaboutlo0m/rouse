@@ -207,8 +207,10 @@ static void lua_sprite_data_free(R_UserData user)
 
 PPTYPE R_Sprite R.Sprite
 
-CONSTRUCTOR new(const char *name)
+CONSTRUCTOR new(any name_index)
     int argc = lua_gettop(L);
+    const char *name = lua_isnil(L, name_index) ? NULL
+                     : luaL_checkstring(L, name_index);
     RETVAL   = R_sprite_new(name);
     R_sprite_user_set(RETVAL, lua_sprite_data_new(L), lua_sprite_data_free);
 LEAVE

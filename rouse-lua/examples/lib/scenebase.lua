@@ -201,6 +201,19 @@ function SceneBase:add(spec)
     return sprite
 end
 
+function SceneBase:remove(sprite_or_name)
+    local sprite, name
+    if type(sprite_or_name) == "string" then
+        sprite = self:sprite(sprite_or_name)
+        name   = sprite_or_name
+    else
+        sprite = sprite_or_name
+        name   = sprite.name
+    end
+    sprite:orphan()
+    self.sprites[name] = nil
+end
+
 
 function SceneBase:maybe_look_up(object_or_name, lookup_fn)
     if type(object_or_name) == "string" then

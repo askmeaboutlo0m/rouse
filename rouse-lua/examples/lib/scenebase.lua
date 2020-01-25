@@ -173,9 +173,6 @@ function SceneBase:add(spec)
         y = y - parent.world_pos_y
     end
 
-    sprite.x = x
-    sprite.y = y
-
     if spec.angle    then sprite.angle    = spec.angle    end
     if spec.rotation then sprite.rotation = spec.rotation end
 
@@ -185,12 +182,23 @@ function SceneBase:add(spec)
     if scale_y then sprite.scale_y = scale_y end
 
     if spec.pivot_x then
-        sprite.origin_x = content.width * spec.pivot_x
+        local origin_x  = content.width * spec.pivot_x
+        sprite.origin_x = origin_x
+        if spec.pos_from_origin or spec.x_from_origin then
+            x = x + origin_x
+        end
     end
 
     if spec.pivot_y then
-        sprite.origin_y = content.height * spec.pivot_y
+        local origin_y  = content.height * spec.pivot_y
+        sprite.origin_y = origin_y
+        if spec.pos_from_origin or spec.y_from_origin then
+            y = y + origin_y
+        end
     end
+
+    sprite.x = x
+    sprite.y = y
 
     sprite:reset_base()
 

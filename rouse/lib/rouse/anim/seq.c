@@ -439,3 +439,54 @@ JSON_Value *R_animator_to_json(R_Animator *an)
     R_MAGIC_CHECK(R_Animator, an);
     return sequences_to_json(an);
 }
+
+
+static void kill_sequence(R_Sequence *seq)
+{
+    seq->killed = true;
+}
+
+void R_animator_kill_by(R_Animator *an, R_SequenceKillPredicate pred,
+                        R_UserData user)
+{
+    R_MAGIC_CHECK(R_Animator, an);
+    if (pred) {
+        for (R_Sequence *seq = an->first; seq; seq = seq->next) {
+            if (!seq->killed && pred(seq, user)) {
+                kill_sequence(seq);
+            }
+        }
+    }
+    else {
+        for (R_Sequence *seq = an->first; seq; seq = seq->next) {
+            kill_sequence(seq);
+        }
+    }
+}
+
+void R_animator_kill_all(R_Animator *an)
+{
+    R_animator_kill_by(an, NULL, R_user_null());
+}
+
+
+static bool same_sequence_predicate(R_Sequence *seq, R_UserData user)
+{
+    return seq == user.data;
+}
+
+void R_animator_kill(R_Animator *an, R_Sequence *seq)
+{
+    R_animator_kill_by(an, same_sequence_predicate, R_user_data(seq));
+}
+
+
+static bool same_id_predicate(R_Sequence *seq, R_UserData user)
+{
+    return seq->id == user.i;
+}
+
+void R_animator_kill_by_id(R_Animator *an, int id)
+{
+    R_animator_kill_by(an, same_id_predicate, R_user_int(id));
+}

@@ -147,14 +147,42 @@ static int r_scene_next_xl(lua_State *L)
     return 0;
 }
 
+static int r_scene_method_kill_all_xl(lua_State *L)
+{
+    R_Scene *self = XL_checkpptype(L, 1, "R_Scene");
+    R_animator_kill_all(self->animator);
+    return 0;
+}
+
+static int r_scene_method_kill_by_id_xl(lua_State *L)
+{
+    R_Scene *self = XL_checkpptype(L, 1, "R_Scene");
+    int id = XL_checkint(L, 2);
+    R_animator_kill_by_id(self->animator, id);
+    return 0;
+}
+
+static int r_scene_index_xl(lua_State *L)
+{
+    return XL_index_fallback(L, "R_Scene", 1, 2);
+}
+
 static luaL_Reg r_scene_function_registry_xl[] = {
     {"next", r_scene_next_xl},
     {NULL, NULL},
 };
 
+static luaL_Reg r_scene_method_registry_xl[] = {
+    {"__index", r_scene_index_xl},
+    {"kill_all", r_scene_method_kill_all_xl},
+    {"kill_by_id", r_scene_method_kill_by_id_xl},
+    {NULL, NULL},
+};
+
 int R_lua_scene_init(lua_State *L)
 {
-    XL_initmetatable(L, "R_Scene", NULL);
+    XL_initmetatable(L, "R_Scene", r_scene_method_registry_xl);
+    XL_initmetatable(L, "R_Scene", r_scene_method_registry_xl);
     XL_initfunctions(L, r_scene_function_registry_xl, "R", "Scene", (const char *)NULL);
     return 0;
 }

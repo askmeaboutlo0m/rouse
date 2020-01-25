@@ -254,6 +254,15 @@ function SceneBase:seq(topic_or_name, ...)
 end
 
 
+function SceneBase:kill_all()
+    self.scene:kill_all()
+end
+
+function SceneBase:kill_by_id(id)
+    self.scene:kill_by_id(id)
+end
+
+
 local ErrorScene = class(SceneBase)
 
 function ErrorScene:init(scene, nvg, assets, next_scene_fn)

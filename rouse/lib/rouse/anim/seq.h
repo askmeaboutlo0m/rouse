@@ -48,6 +48,8 @@ typedef void         (*R_StepJsonFn)(JSON_Object *, void *);
 typedef void (*R_SequenceDoneFn)(R_UserData);
 typedef void (*R_SequenceFreeFn)(R_UserData);
 
+typedef bool (*R_SequenceKillPredicate)(R_Sequence *seq, R_UserData);
+
 
 R_Step *R_step_new(void *state, R_StepTickFn on_tick, R_StepFreeFn on_free,
                    R_StepJsonFn to_json);
@@ -81,3 +83,13 @@ int R_animator_add(R_Animator *an, R_Sequence *seq, int max_laps,
 void R_animator_tick(R_Animator *an, bool rendered, float seconds);
 
 JSON_Value *R_animator_to_json(R_Animator *an);
+
+
+void R_animator_kill_by(R_Animator *an, R_SequenceKillPredicate pred,
+                        R_UserData user);
+
+void R_animator_kill_all(R_Animator *an);
+
+void R_animator_kill(R_Animator *an, R_Sequence *seq);
+
+void R_animator_kill_by_id(R_Animator *an, int id);

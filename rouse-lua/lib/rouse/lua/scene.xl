@@ -145,4 +145,13 @@ FUNCTION void R.Scene.next(any fn)
 END
 
 
+METHOD void kill_all()
+    R_animator_kill_all(self->animator);
+END
+
+METHOD void kill_by_id(int id)
+    R_animator_kill_by_id(self->animator, id);
+END
+
+
 INIT extern R_lua_scene_init

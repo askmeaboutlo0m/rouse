@@ -129,6 +129,19 @@ static void disallow_questionable_features(lua_State *L)
     wrap_function(L, "io", "output", wrapped_io_output);
 }
 
+static void seed_random(lua_State *L)
+{
+    int top = lua_gettop(L);
+    lua_getglobal(L, "os");
+    lua_getfield(L, -1, "time");
+    lua_call(L, 0, 1);
+    lua_getglobal(L, "math");
+    lua_getfield(L, -1, "randomseed");
+    lua_pushvalue(L, -3);
+    lua_call(L, 1, 0);
+    lua_settop(L, top);
+}
+
 static lua_State *init_lua(void)
 {
     lua_State *L = luaL_newstate();
@@ -137,6 +150,7 @@ static lua_State *init_lua(void)
     }
     open_lua_libs(L);
     disallow_questionable_features(L);
+    seed_random(L);
     return L;
 }
 

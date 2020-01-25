@@ -219,7 +219,9 @@ function SceneBase:remove(sprite_or_name)
         name   = sprite.name
     end
     sprite:orphan()
-    self.sprites[name] = nil
+    if name then
+        self.sprites[name] = nil
+    end
 end
 
 

@@ -74,9 +74,9 @@ R_Animator *R_animator_new(void);
 
 void R_animator_free(R_Animator *an);
 
-void R_animator_add(R_Animator *an, R_Sequence *seq, int max_laps,
-                    R_SequenceDoneFn on_done, R_SequenceFreeFn on_free,
-                    R_UserData user);
+int R_animator_add(R_Animator *an, R_Sequence *seq, int max_laps,
+                   R_SequenceDoneFn on_done, R_SequenceFreeFn on_free,
+                   R_UserData user);
 
 void R_animator_tick(R_Animator *an, bool rendered, float seconds);
 

@@ -45,7 +45,7 @@ struct R_Step {
 struct R_Sequence {
     R_MAGIC_FIELD
     R_Animator       *an;
-    int              lap, max_laps;
+    int              id, lap, max_laps;
     bool             killed;
     R_SequenceDoneFn on_done;
     R_SequenceFreeFn on_free;
@@ -56,6 +56,7 @@ struct R_Sequence {
 
 struct R_Animator {
     R_MAGIC_FIELD
+    int        last_id;
     R_Sequence *first, *last;
 };
 
@@ -137,7 +138,7 @@ JSON_Value *R_step_to_json(R_Step *step)
 R_Sequence *R_sequence_new(void)
 {
     R_Sequence *seq = R_NEW_INIT_STRUCT(seq, R_Sequence,
-            R_MAGIC_INIT(R_Sequence) NULL, -1, 0, false,
+            R_MAGIC_INIT(R_Sequence) NULL, -1, -1, 0, false,
             NULL, NULL, R_user_null(), NULL, NULL, NULL);
     R_MAGIC_CHECK(R_Sequence, seq);
     return seq;
@@ -295,7 +296,7 @@ JSON_Value *R_sequence_to_json(R_Sequence *seq)
 R_Animator *R_animator_new(void)
 {
     R_Animator *an = R_NEW_INIT_STRUCT(an, R_Animator,
-            R_MAGIC_INIT(R_Animator) NULL, NULL);
+            R_MAGIC_INIT(R_Animator) 0, NULL, NULL);
     R_MAGIC_CHECK(R_Animator, an);
     return an;
 }
@@ -335,9 +336,9 @@ static void add_sequence_to_animator(R_Animator *an, R_Sequence *seq)
     an->last = seq;
 }
 
-static void set_up_sequence_after_adding(R_Animator *an, R_Sequence *seq,
-                                         int max_laps, R_SequenceDoneFn on_done,
-                                         R_SequenceFreeFn on_free, R_UserData user)
+static int set_up_sequence_after_adding(R_Animator *an, R_Sequence *seq,
+                                        int max_laps, R_SequenceDoneFn on_done,
+                                        R_SequenceFreeFn on_free, R_UserData user)
 {
     seq->an       = an;
     seq->lap      = 0;
@@ -346,11 +347,12 @@ static void set_up_sequence_after_adding(R_Animator *an, R_Sequence *seq,
     seq->on_done  = on_done;
     seq->on_free  = on_free;
     seq->user     = user;
+    return seq->id = ++an->last_id;
 }
 
-void R_animator_add(R_Animator *an, R_Sequence *seq, int max_laps,
-                    R_SequenceDoneFn on_done, R_SequenceFreeFn on_free,
-                    R_UserData user)
+int R_animator_add(R_Animator *an, R_Sequence *seq, int max_laps,
+                   R_SequenceDoneFn on_done, R_SequenceFreeFn on_free,
+                   R_UserData user)
 {
     R_assert(max_laps >= 0 || !on_done, "can't use on_done with infinite laps");
     R_MAGIC_CHECK(R_Animator, an);
@@ -360,7 +362,8 @@ void R_animator_add(R_Animator *an, R_Sequence *seq, int max_laps,
         R_die("%s: added sequence is empty", __func__);
     }
     add_sequence_to_animator(an, seq);
-    set_up_sequence_after_adding(an, seq, max_laps, on_done, on_free, user);
+    return set_up_sequence_after_adding(an, seq, max_laps,
+                                        on_done, on_free, user);
 }
 
 

@@ -345,7 +345,7 @@ function SeqBuilder:build_sequence(laps, on_done)
     for i, step in ipairs(self.steps) do
         step(sequence)
     end
-    sequence:run(self.scene.scene, laps, on_done)
+    return sequence:run(self.scene.scene, laps, on_done)
 end
 
 function SeqBuilder:start_or_loop0(name)

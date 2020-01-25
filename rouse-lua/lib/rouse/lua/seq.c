@@ -754,6 +754,7 @@ static void seq_on_free(R_UserData user)
 
 static int r_sequence_method_run_xl(lua_State *L)
 {
+    int RETVAL;
     R_Sequence **pp   = luaL_checkudata(L, 1, "R_Sequence");
     R_Scene    *scene = XL_checkpptype(L, 2, "R_Scene");
     int        laps   = (int) luaL_optinteger(L, 3, R_SEQUENCE_RUN_FOREVER);
@@ -776,9 +777,10 @@ static int r_sequence_method_run_xl(lua_State *L)
         user    = R_user_data(R_lua_value_new(L, 4));
     }
 
-    R_animator_add(scene->animator, *pp, laps, on_done, on_free, user);
+    RETVAL = R_animator_add(scene->animator, *pp, laps, on_done, on_free, user);
     *pp = NULL;
-    return 0;
+    XL_pushint(L, RETVAL);
+    return 1;
 }
 
 static int r_luatween_index_xl(lua_State *L)

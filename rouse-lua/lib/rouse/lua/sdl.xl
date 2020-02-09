@@ -95,6 +95,39 @@ INDEX bool released
 END
 
 
+UTYPE SDL_MouseMotionEvent
+
+INDEXFIELD uint32_t type
+INDEXFIELD uint32_t timestamp
+INDEXFIELD uint32_t window_id = windowID
+INDEXFIELD uint32_t which
+INDEXFIELD uint32_t state
+INDEXFIELD int32_t  x
+INDEXFIELD int32_t  y
+INDEXFIELD int32_t  xrel
+INDEXFIELD int32_t  yrel
+
+INDEX bool left_button
+    RETVAL = self->state | SDL_BUTTON_LMASK;
+END
+
+INDEX bool middle_button
+    RETVAL = self->state | SDL_BUTTON_MMASK;
+END
+
+INDEX bool right_button
+    RETVAL = self->state | SDL_BUTTON_RMASK;
+END
+
+INDEX bool x1_button
+    RETVAL = self->state | SDL_BUTTON_X1MASK;
+END
+
+INDEX bool x2_button
+    RETVAL = self->state | SDL_BUTTON_X2MASK;
+END
+
+
 UTYPE SDL_MouseButtonEvent
 
 INDEXFIELD uint32_t type
@@ -179,6 +212,10 @@ END
 
 INDEX <NEW>SDL_KeyboardEvent *key
     GET_IN_EVENT_UNION(key, SDL_KEYDOWN, SDL_KEYUP);
+END
+
+INDEX <NEW>SDL_MouseMotionEvent *motion
+    GET_IN_EVENT_UNION(motion, SDL_MOUSEMOTION);
 END
 
 INDEX <NEW>SDL_MouseButtonEvent *button
@@ -781,6 +818,10 @@ ENUM SDL.Button s/SDL_BUTTON_//
     SDL_BUTTON_RMASK
     SDL_BUTTON_X1MASK
     SDL_BUTTON_X2MASK
+END
+
+ENUM SDL.Touch s/SDL_TOUCH_//
+    SDL_TOUCH_MOUSEID
 END
 
 INIT extern R_lua_sdl_init

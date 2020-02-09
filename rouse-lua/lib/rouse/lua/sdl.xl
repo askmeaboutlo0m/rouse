@@ -95,6 +95,46 @@ INDEX bool released
 END
 
 
+UTYPE SDL_MouseButtonEvent
+
+INDEXFIELD uint32_t type
+INDEXFIELD uint32_t timestamp
+INDEXFIELD uint32_t window_id = windowID
+INDEXFIELD uint32_t which
+INDEXFIELD uint8_t  button
+INDEXFIELD uint8_t  state
+INDEXFIELD int32_t  x
+INDEXFIELD int32_t  y
+
+INDEX bool pressed
+    RETVAL = self->state == SDL_PRESSED;
+END
+
+INDEX bool released
+    RETVAL = self->state == SDL_RELEASED;
+END
+
+INDEX bool left_button
+    RETVAL = self->button == SDL_BUTTON_LEFT;
+END
+
+INDEX bool middle_button
+    RETVAL = self->button == SDL_BUTTON_MIDDLE;
+END
+
+INDEX bool right_button
+    RETVAL = self->button == SDL_BUTTON_RIGHT;
+END
+
+INDEX bool x1_button
+    RETVAL = self->button == SDL_BUTTON_X1;
+END
+
+INDEX bool x2_button
+    RETVAL = self->button == SDL_BUTTON_X2;
+END
+
+
 UTYPE SDL_Event SDL.Event
 
 INDEXFIELD uint32_t type
@@ -139,6 +179,10 @@ END
 
 INDEX <NEW>SDL_KeyboardEvent *key
     GET_IN_EVENT_UNION(key, SDL_KEYDOWN, SDL_KEYUP);
+END
+
+INDEX <NEW>SDL_MouseButtonEvent *button
+    GET_IN_EVENT_UNION(button, SDL_MOUSEBUTTONDOWN, SDL_MOUSEBUTTONUP);
 END
 
 ENUM SDL.EventType s/^SDL_//
@@ -724,6 +768,19 @@ ENUM SDL.Keymod s/KMOD_//
     KMOD_SHIFT
     KMOD_ALT
     KMOD_GUI
+END
+
+ENUM SDL.Button s/SDL_BUTTON_//
+    SDL_BUTTON_LEFT
+    SDL_BUTTON_MIDDLE
+    SDL_BUTTON_RIGHT
+    SDL_BUTTON_X1
+    SDL_BUTTON_X2
+    SDL_BUTTON_LMASK
+    SDL_BUTTON_MMASK
+    SDL_BUTTON_RMASK
+    SDL_BUTTON_X1MASK
+    SDL_BUTTON_X2MASK
 END
 
 INIT extern R_lua_sdl_init

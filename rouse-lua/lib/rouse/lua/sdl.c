@@ -221,6 +221,141 @@ static int sdl_keyboardevent_released_index_xl(lua_State *L)
     return 1;
 }
 
+static int sdl_mousebuttonevent_type_index_xl(lua_State *L)
+{
+    SDL_MouseButtonEvent *self = XL_checkutype(L, 1, "SDL_MouseButtonEvent");
+    uint32_t RETVAL;
+    RETVAL = self->type;
+    XL_pushuint32(L, RETVAL);
+    return 1;
+}
+
+static int sdl_mousebuttonevent_timestamp_index_xl(lua_State *L)
+{
+    SDL_MouseButtonEvent *self = XL_checkutype(L, 1, "SDL_MouseButtonEvent");
+    uint32_t RETVAL;
+    RETVAL = self->timestamp;
+    XL_pushuint32(L, RETVAL);
+    return 1;
+}
+
+static int sdl_mousebuttonevent_window_id_index_xl(lua_State *L)
+{
+    SDL_MouseButtonEvent *self = XL_checkutype(L, 1, "SDL_MouseButtonEvent");
+    uint32_t RETVAL;
+    RETVAL = self->windowID;
+    XL_pushuint32(L, RETVAL);
+    return 1;
+}
+
+static int sdl_mousebuttonevent_which_index_xl(lua_State *L)
+{
+    SDL_MouseButtonEvent *self = XL_checkutype(L, 1, "SDL_MouseButtonEvent");
+    uint32_t RETVAL;
+    RETVAL = self->which;
+    XL_pushuint32(L, RETVAL);
+    return 1;
+}
+
+static int sdl_mousebuttonevent_button_index_xl(lua_State *L)
+{
+    SDL_MouseButtonEvent *self = XL_checkutype(L, 1, "SDL_MouseButtonEvent");
+    uint8_t RETVAL;
+    RETVAL = self->button;
+    XL_pushuint8(L, RETVAL);
+    return 1;
+}
+
+static int sdl_mousebuttonevent_state_index_xl(lua_State *L)
+{
+    SDL_MouseButtonEvent *self = XL_checkutype(L, 1, "SDL_MouseButtonEvent");
+    uint8_t RETVAL;
+    RETVAL = self->state;
+    XL_pushuint8(L, RETVAL);
+    return 1;
+}
+
+static int sdl_mousebuttonevent_x_index_xl(lua_State *L)
+{
+    SDL_MouseButtonEvent *self = XL_checkutype(L, 1, "SDL_MouseButtonEvent");
+    int32_t RETVAL;
+    RETVAL = self->x;
+    XL_pushint32(L, RETVAL);
+    return 1;
+}
+
+static int sdl_mousebuttonevent_y_index_xl(lua_State *L)
+{
+    SDL_MouseButtonEvent *self = XL_checkutype(L, 1, "SDL_MouseButtonEvent");
+    int32_t RETVAL;
+    RETVAL = self->y;
+    XL_pushint32(L, RETVAL);
+    return 1;
+}
+
+static int sdl_mousebuttonevent_pressed_index_xl(lua_State *L)
+{
+    SDL_MouseButtonEvent *self = XL_checkutype(L, 1, "SDL_MouseButtonEvent");
+    bool RETVAL;
+    RETVAL = self->state == SDL_PRESSED;
+    lua_pushboolean(L, RETVAL);
+    return 1;
+}
+
+static int sdl_mousebuttonevent_released_index_xl(lua_State *L)
+{
+    SDL_MouseButtonEvent *self = XL_checkutype(L, 1, "SDL_MouseButtonEvent");
+    bool RETVAL;
+    RETVAL = self->state == SDL_RELEASED;
+    lua_pushboolean(L, RETVAL);
+    return 1;
+}
+
+static int sdl_mousebuttonevent_left_button_index_xl(lua_State *L)
+{
+    SDL_MouseButtonEvent *self = XL_checkutype(L, 1, "SDL_MouseButtonEvent");
+    bool RETVAL;
+    RETVAL = self->button == SDL_BUTTON_LEFT;
+    lua_pushboolean(L, RETVAL);
+    return 1;
+}
+
+static int sdl_mousebuttonevent_middle_button_index_xl(lua_State *L)
+{
+    SDL_MouseButtonEvent *self = XL_checkutype(L, 1, "SDL_MouseButtonEvent");
+    bool RETVAL;
+    RETVAL = self->button == SDL_BUTTON_MIDDLE;
+    lua_pushboolean(L, RETVAL);
+    return 1;
+}
+
+static int sdl_mousebuttonevent_right_button_index_xl(lua_State *L)
+{
+    SDL_MouseButtonEvent *self = XL_checkutype(L, 1, "SDL_MouseButtonEvent");
+    bool RETVAL;
+    RETVAL = self->button == SDL_BUTTON_RIGHT;
+    lua_pushboolean(L, RETVAL);
+    return 1;
+}
+
+static int sdl_mousebuttonevent_x1_button_index_xl(lua_State *L)
+{
+    SDL_MouseButtonEvent *self = XL_checkutype(L, 1, "SDL_MouseButtonEvent");
+    bool RETVAL;
+    RETVAL = self->button == SDL_BUTTON_X1;
+    lua_pushboolean(L, RETVAL);
+    return 1;
+}
+
+static int sdl_mousebuttonevent_x2_button_index_xl(lua_State *L)
+{
+    SDL_MouseButtonEvent *self = XL_checkutype(L, 1, "SDL_MouseButtonEvent");
+    bool RETVAL;
+    RETVAL = self->button == SDL_BUTTON_X2;
+    lua_pushboolean(L, RETVAL);
+    return 1;
+}
+
 static int sdl_event_type_index_xl(lua_State *L)
 {
     SDL_Event *self = XL_checkutype(L, 1, "SDL_Event");
@@ -288,6 +423,15 @@ static int sdl_event_key_index_xl(lua_State *L)
     return 1;
 }
 
+static int sdl_event_button_index_xl(lua_State *L)
+{
+    SDL_Event *self = XL_checkutype(L, 1, "SDL_Event");
+    SDL_MouseButtonEvent RETVAL;
+    GET_IN_EVENT_UNION(button, SDL_MOUSEBUTTONDOWN, SDL_MOUSEBUTTONUP);
+    XL_pushnewutype(L, &RETVAL, sizeof(SDL_MouseButtonEvent), "SDL_MouseButtonEvent");
+    return 1;
+}
+
 static int sdl_event_index_dummy_xl;
 static int sdl_event_index_xl(lua_State *L)
 {
@@ -298,6 +442,12 @@ static int sdl_keyboardevent_index_dummy_xl;
 static int sdl_keyboardevent_index_xl(lua_State *L)
 {
     return XL_index(L, "SDL_KeyboardEvent", &sdl_keyboardevent_index_dummy_xl, 1, 2);
+}
+
+static int sdl_mousebuttonevent_index_dummy_xl;
+static int sdl_mousebuttonevent_index_xl(lua_State *L)
+{
+    return XL_index(L, "SDL_MouseButtonEvent", &sdl_mousebuttonevent_index_dummy_xl, 1, 2);
 }
 
 static int sdl_windowevent_index_dummy_xl;
@@ -317,6 +467,7 @@ static luaL_Reg sdl_function_registry_xl[] = {
 };
 
 static luaL_Reg sdl_event_index_registry_xl[] = {
+    {"button", sdl_event_button_index_xl},
     {"key", sdl_event_key_index_xl},
     {"timestamp", sdl_event_timestamp_index_xl},
     {"type", sdl_event_type_index_xl},
@@ -338,6 +489,25 @@ static luaL_Reg sdl_keyboardevent_index_registry_xl[] = {
     {NULL, NULL},
 };
 
+static luaL_Reg sdl_mousebuttonevent_index_registry_xl[] = {
+    {"button", sdl_mousebuttonevent_button_index_xl},
+    {"left_button", sdl_mousebuttonevent_left_button_index_xl},
+    {"middle_button", sdl_mousebuttonevent_middle_button_index_xl},
+    {"pressed", sdl_mousebuttonevent_pressed_index_xl},
+    {"released", sdl_mousebuttonevent_released_index_xl},
+    {"right_button", sdl_mousebuttonevent_right_button_index_xl},
+    {"state", sdl_mousebuttonevent_state_index_xl},
+    {"timestamp", sdl_mousebuttonevent_timestamp_index_xl},
+    {"type", sdl_mousebuttonevent_type_index_xl},
+    {"which", sdl_mousebuttonevent_which_index_xl},
+    {"window_id", sdl_mousebuttonevent_window_id_index_xl},
+    {"x", sdl_mousebuttonevent_x_index_xl},
+    {"x1_button", sdl_mousebuttonevent_x1_button_index_xl},
+    {"x2_button", sdl_mousebuttonevent_x2_button_index_xl},
+    {"y", sdl_mousebuttonevent_y_index_xl},
+    {NULL, NULL},
+};
+
 static luaL_Reg sdl_windowevent_index_registry_xl[] = {
     {"data1", sdl_windowevent_data1_index_xl},
     {"data2", sdl_windowevent_data2_index_xl},
@@ -355,6 +525,11 @@ static luaL_Reg sdl_event_method_registry_xl[] = {
 
 static luaL_Reg sdl_keyboardevent_method_registry_xl[] = {
     {"__index", sdl_keyboardevent_index_xl},
+    {NULL, NULL},
+};
+
+static luaL_Reg sdl_mousebuttonevent_method_registry_xl[] = {
+    {"__index", sdl_mousebuttonevent_index_xl},
     {NULL, NULL},
 };
 
@@ -954,13 +1129,29 @@ static XL_EnumEntry sdl_keymod_enum_xl[] = {
     {NULL, (lua_Integer) 0},
 };
 
+static XL_EnumEntry sdl_button_enum_xl[] = {
+    {"LEFT", (lua_Integer) SDL_BUTTON_LEFT},
+    {"MIDDLE", (lua_Integer) SDL_BUTTON_MIDDLE},
+    {"RIGHT", (lua_Integer) SDL_BUTTON_RIGHT},
+    {"X1", (lua_Integer) SDL_BUTTON_X1},
+    {"X2", (lua_Integer) SDL_BUTTON_X2},
+    {"LMASK", (lua_Integer) SDL_BUTTON_LMASK},
+    {"MMASK", (lua_Integer) SDL_BUTTON_MMASK},
+    {"RMASK", (lua_Integer) SDL_BUTTON_RMASK},
+    {"X1MASK", (lua_Integer) SDL_BUTTON_X1MASK},
+    {"X2MASK", (lua_Integer) SDL_BUTTON_X2MASK},
+    {NULL, (lua_Integer) 0},
+};
+
 int R_lua_sdl_init(lua_State *L)
 {
     XL_initmetatable(L, "SDL_Event", sdl_event_method_registry_xl);
     XL_initmetatable(L, "SDL_KeyboardEvent", sdl_keyboardevent_method_registry_xl);
+    XL_initmetatable(L, "SDL_MouseButtonEvent", sdl_mousebuttonevent_method_registry_xl);
     XL_initmetatable(L, "SDL_WindowEvent", sdl_windowevent_method_registry_xl);
     XL_initindextable(L, &sdl_event_index_dummy_xl, sdl_event_index_registry_xl);
     XL_initindextable(L, &sdl_keyboardevent_index_dummy_xl, sdl_keyboardevent_index_registry_xl);
+    XL_initindextable(L, &sdl_mousebuttonevent_index_dummy_xl, sdl_mousebuttonevent_index_registry_xl);
     XL_initindextable(L, &sdl_windowevent_index_dummy_xl, sdl_windowevent_index_registry_xl);
     XL_initfunctions(L, sdl_function_registry_xl, "SDL", (const char *)NULL);
     XL_initenum(L, sdl_eventtype_enum_xl, "SDL", "EventType", (const char *)NULL);
@@ -969,5 +1160,6 @@ int R_lua_sdl_init(lua_State *L)
     XL_initenum(L, sdl_scancode_enum_xl, "SDL", "Scancode", (const char *)NULL);
     XL_initenum(L, sdl_keycode_enum_xl, "SDL", "Keycode", (const char *)NULL);
     XL_initenum(L, sdl_keymod_enum_xl, "SDL", "Keymod", (const char *)NULL);
+    XL_initenum(L, sdl_button_enum_xl, "SDL", "Button", (const char *)NULL);
     return 0;
 }

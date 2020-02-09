@@ -107,6 +107,25 @@ function string.trim(s)
 end
 
 
+function string.split(s, pattern)
+    local pieces = {}
+    local index  = 0
+
+    while index do
+        local from, to = string.find(s, pattern, index)
+        if from then
+            table.insert(pieces, string.sub(s, index, from - 1))
+            index = to + 1
+        else
+            table.insert(pieces, string.sub(s, index, #s))
+            index = nil
+        end
+    end
+
+    return pieces
+end
+
+
 function simple_main_args(args)
     local msaa      = args.msaa
     local have_msaa = msaa and msaa > 1

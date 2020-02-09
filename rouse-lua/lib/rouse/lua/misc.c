@@ -25,6 +25,7 @@
  * SOFTWARE.
  */
 #include <rouse.h>
+#include <time.h>
 #include "lua_inc.h"
 #include "intern.h"
 #include "util.h"
@@ -141,12 +142,25 @@ static int r_fetch_xl(lua_State *L)
     return 0;
 }
 
+static int r_millitime_as_double_xl(lua_State *L)
+{
+    double RETVAL;
+    struct timespec ts;
+    timespec_get(&ts, TIME_UTC);
+    double seconds = (double) ts.tv_sec;
+    double millis  = (double)(ts.tv_nsec / 1000000L);
+    RETVAL = seconds + millis / 1000.0;
+    XL_pushnewutype(L, &RETVAL, sizeof(double), "double");
+    return 1;
+}
+
 static luaL_Reg r_function_registry_xl[] = {
     {"debug", r_debug_xl},
     {"die", r_die_xl},
     {"fetch", r_fetch_xl},
     {"get_platform", r_get_platform_xl},
     {"info", r_info_xl},
+    {"millitime_as_double", r_millitime_as_double_xl},
     {"rand_between", r_rand_between_xl},
     {"set_framerate", r_set_framerate_xl},
     {"set_max_ticks_before_render", r_set_max_ticks_before_render_xl},

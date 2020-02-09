@@ -20,6 +20,7 @@
  * SOFTWARE.
  */
 #include <rouse.h>
+#include <time.h>
 #include "lua_inc.h"
 #include "intern.h"
 #include "util.h"
@@ -103,6 +104,17 @@ FUNCTION void R.fetch(const char *url, const char *path, any on_done)
     lua_pushvalue(L, on_done);
     lua_pushcclosure(L, on_fetch_done, 1);
     R_lua_fetch(L, url, path);
+END
+
+
+UTYPE double
+
+FUNCTION double R.millitime_as_double()
+    struct timespec ts;
+    timespec_get(&ts, TIME_UTC);
+    double seconds = (double) ts.tv_sec;
+    double millis  = (double)(ts.tv_nsec / 1000000L);
+    RETVAL = seconds + millis / 1000.0;
 END
 
 

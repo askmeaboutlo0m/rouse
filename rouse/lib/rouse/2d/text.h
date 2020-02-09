@@ -46,5 +46,7 @@ R_TextField *R_text_field_incref(R_TextField *field);
 R_TextField *R_text_field_decref(R_TextField *field);
 int R_text_field_refs(R_TextField *field);
 
+R_V4 R_text_field_bounds(R_TextField *field, NVGcontext *ctx);
+
 void R_text_field_draw(R_TextField *field, NVGcontext *ctx,
                        const float matrix[static 6]);

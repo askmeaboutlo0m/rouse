@@ -263,6 +263,18 @@ static int r_textfield_method_set_xl(lua_State *L)
     return XL_setfromtable(L, "R_TextField", 1, 2);
 }
 
+static int r_textfield_method_bounds_xl(lua_State *L)
+{
+    R_TextField *self = XL_checkpptype(L, 1, "R_TextField");
+    R_Nvg *nvg = XL_checkpptype(L, 2, "R_Nvg");
+    R_V4 bounds = R_text_field_bounds(self, R_nvg_context(nvg));
+    XL_pushfloat(L, bounds.x);
+    XL_pushfloat(L, bounds.y);
+    XL_pushfloat(L, bounds.z);
+    XL_pushfloat(L, bounds.w);
+    return 4;
+}
+
 static int r_textfield_method_draw_xl(lua_State *L)
 {
     R_TextField *self = XL_checkpptype(L, 1, "R_TextField");
@@ -309,6 +321,7 @@ static luaL_Reg r_textfield_method_registry_xl[] = {
     {"__gc", r_textfield_method_gc_xl},
     {"__index", r_textfield_index_xl},
     {"__newindex", r_textfield_newindex_xl},
+    {"bounds", r_textfield_method_bounds_xl},
     {"draw", r_textfield_method_draw_xl},
     {"set", r_textfield_method_set_xl},
     {NULL, NULL},

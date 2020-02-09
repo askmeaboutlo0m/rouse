@@ -80,6 +80,15 @@ FIELD float    width
 SETFROMTABLE set
 
 
+METHOD ... bounds(R_Nvg *nvg)
+    R_V4 bounds = R_text_field_bounds(self, R_nvg_context(nvg));
+    XL_pushfloat(L, bounds.x);
+    XL_pushfloat(L, bounds.y);
+    XL_pushfloat(L, bounds.z);
+    XL_pushfloat(L, bounds.w);
+    return 4;
+END
+
 METHOD void draw(R_Nvg *nvg, R_LuaNvgTransform *transform)
     R_text_field_draw(self, R_nvg_context(nvg), transform->matrix);
 END

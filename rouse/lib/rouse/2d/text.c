@@ -64,6 +64,46 @@ static void free_text_field(R_TextField *field)
 R_DEFINE_REFCOUNT_FUNCS(R_TextField, text_field, refs)
 
 
+static void set_nvg_state(R_TextField *field, NVGcontext *ctx)
+{
+    nvgFillColor(ctx, field->color);
+    nvgFontFaceId(ctx, field->font);
+    nvgFontSize(ctx, field->size);
+    nvgFontBlur(ctx, field->blur);
+    nvgTextLetterSpacing(ctx, field->spacing);
+    nvgTextLineHeight(ctx, field->line_height);
+    nvgTextAlign(ctx, field->align);
+}
+
+R_V4 R_text_field_bounds(R_TextField *field, NVGcontext *ctx)
+{
+    check_text_field(field);
+    int      font    = field->font;
+    R_String *string = field->string;
+
+    float  x = field->x;
+    float  y = field->y;
+    size_t len;
+
+    if (font != -1 && string && (len = R_string_len(string)) > 0) {
+        const char *start = R_string_body(string);
+        const char *end   = start + len;
+        set_nvg_state(field, ctx);
+        R_V4 bounds;
+        if (field->width > 0.0f) {
+            nvgTextBoxBounds(ctx, x, y, field->width, start, end, bounds.raw);
+        }
+        else {
+            nvgTextBounds(ctx, x, y, start, end, bounds.raw);
+        }
+        return bounds;
+    }
+    else {
+        return R_v4(x, y, x, y);
+    }
+}
+
+
 static void draw_text(NVGcontext *vg, R_String *string,
                       float x, float y, float width)
 {
@@ -83,17 +123,10 @@ void R_text_field_draw(R_TextField *field, NVGcontext *ctx,
                        const float matrix[static 6])
 {
     check_text_field(field);
-    int      font    = field->font;
     R_String *string = field->string;
-    if (font != -1 && string && R_string_len(string) > 0) {
+    if (field->font != -1 && string && R_string_len(string) > 0) {
         R_nvg_transform_set(ctx, matrix);
-        nvgFillColor(ctx, field->color);
-        nvgFontFaceId(ctx, font);
-        nvgFontSize(ctx, field->size);
-        nvgFontBlur(ctx, field->blur);
-        nvgTextLetterSpacing(ctx, field->spacing);
-        nvgTextLineHeight(ctx, field->line_height);
-        nvgTextAlign(ctx, field->align);
+        set_nvg_state(field, ctx);
         draw_text(ctx, string, field->x, field->y, field->width);
     }
 }

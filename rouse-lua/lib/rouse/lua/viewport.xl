@@ -65,4 +65,12 @@ END
 FUNCTION void R.Viewport.set_window(int width, int height) = R_window_viewport_set
 
 
+FUNCTION ... R.Viewport.from_window_coords(int window_x, int window_y)
+    R_Viewport vp = R_window_viewport();
+    XL_pushfloat(L, R_int2float(window_x - vp.x) * (R_width  / R_int2float(vp.w)));
+    XL_pushfloat(L, R_int2float(window_y - vp.y) * (R_height / R_int2float(vp.h)));
+    return 2;
+END
+
+
 INIT extern R_lua_viewport_init

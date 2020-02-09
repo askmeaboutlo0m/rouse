@@ -18,7 +18,7 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-local SeqBuilder = dofile("examples/lib/seqbuilder.lua")
+local SeqBuilder = dofile("scripts/lib/seqbuilder.lua")
 local SceneBase  = class()
 
 function SceneBase:init(args)

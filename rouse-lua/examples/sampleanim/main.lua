@@ -18,9 +18,9 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-dofile("examples/lib/common.lua")
+dofile("scripts/lib/common.lua")
 
-local PreloadScene = dofile("examples/lib/preload.lua")
+local PreloadScene = dofile("scripts/lib/preload.lua")
 
 local msaa   = 8
 local fb     = nil

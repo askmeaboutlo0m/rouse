@@ -18,7 +18,7 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-local SceneSetup  = dofile("examples/lib/scenesetup.lua")
+local SceneSetup  = dofile("scripts/lib/scenesetup.lua")
 local SampleSetup = class(SceneSetup)
 
 function SampleSetup:build()

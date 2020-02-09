@@ -18,9 +18,9 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-local SceneBase   = dofile("examples/lib/scenebase.lua")
-local FpsCounter  = dofile("examples/lib/fpscounter.lua")
-local Debuggery   = dofile("examples/lib/debuggery.lua")
+local SceneBase   = dofile("scripts/lib/scenebase.lua")
+local FpsCounter  = dofile("scripts/lib/fpscounter.lua")
+local Debuggery   = dofile("scripts/lib/debuggery.lua")
 local SampleSetup = dofile("samplesetup.lua")
 local SampleScene = class(SceneBase)
 

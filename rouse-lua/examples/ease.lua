@@ -1,4 +1,4 @@
-dofile("examples/lib/common.lua")
+dofile("scripts/lib/common.lua")
 
 local GRAPH_WIDTH   = 600
 local GRAPH_HEIGHT  = 600
@@ -35,7 +35,7 @@ local easings = {
     "expo_in_out",
 }
 
-local SceneBase = dofile("examples/lib/scenebase.lua")
+local SceneBase = dofile("scripts/lib/scenebase.lua")
 local EaseScene = class(SceneBase)
 
 function EaseScene:init(scene)

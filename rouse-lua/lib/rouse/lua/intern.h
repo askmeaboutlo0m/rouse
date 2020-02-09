@@ -35,6 +35,7 @@ R_EaseFn R_lua_named_ease(lua_State *L, int name_index);
 
 #define R_LUA_INIT_LIST(X) \
     X(R_lua_bitmap_image_init) \
+    X(R_lua_double_init) \
     X(R_lua_ease_init) \
     X(R_lua_frame_buffer_init) \
     X(R_lua_frame_renderer_init) \

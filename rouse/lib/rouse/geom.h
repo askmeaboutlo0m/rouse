@@ -103,6 +103,17 @@ static inline R_V2 R_v2_scale(R_V2 a, float s)
     return (R_V2){{a.x * s, a.y * s}};
 }
 
+static inline float R_v2_distance2(R_V2 a, R_V2 b)
+{
+    return glm_pow2(a.raw[0] - b.raw[0])
+         + glm_pow2(a.raw[1] - b.raw[1]);
+}
+
+static inline float R_v2_distance(R_V2 a, R_V2 b)
+{
+    return sqrtf(R_v2_distance2(a, b));
+}
+
 /* cglm/vec3.h */
 static inline R_V3 R_v3_one(void)
 {

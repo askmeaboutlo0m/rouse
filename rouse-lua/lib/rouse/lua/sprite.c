@@ -199,6 +199,26 @@ static int r_v2_method_mul_xl(lua_State *L)
     return 1;
 }
 
+static int r_v2_method_distance2_xl(lua_State *L)
+{
+    R_V2 *self = XL_checkutype(L, 1, "R_V2");
+    R_V2 *b = XL_checkutype(L, 2, "R_V2");
+    float RETVAL;
+    RETVAL = R_v2_distance2(*self, *b);
+    XL_pushfloat(L, RETVAL);
+    return 1;
+}
+
+static int r_v2_method_distance_xl(lua_State *L)
+{
+    R_V2 *self = XL_checkutype(L, 1, "R_V2");
+    R_V2 *b = XL_checkutype(L, 2, "R_V2");
+    float RETVAL;
+    RETVAL = R_v2_distance(*self, *b);
+    XL_pushfloat(L, RETVAL);
+    return 1;
+}
+
 static int r_v2_method_set_xl(lua_State *L)
 {
     return XL_setfromtable(L, "R_V2", 1, 2);
@@ -1481,6 +1501,8 @@ static luaL_Reg r_v2_method_registry_xl[] = {
     {"__newindex", r_v2_newindex_xl},
     {"__sub", r_v2_method_sub_xl},
     {"__tostring", r_v2_method_tostring_xl},
+    {"distance", r_v2_method_distance_xl},
+    {"distance2", r_v2_method_distance2_xl},
     {"set", r_v2_method_set_xl},
     {"unpack", r_v2_method_unpack_xl},
     {NULL, NULL},

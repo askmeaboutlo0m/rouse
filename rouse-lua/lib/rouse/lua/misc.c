@@ -25,11 +25,17 @@
  * SOFTWARE.
  */
 #include <rouse.h>
-#include <time.h>
 #include "lua_inc.h"
 #include "intern.h"
 #include "util.h"
 #include "main.h"
+
+#ifdef _WIN32
+#   include <windows.h>
+#else
+#   include <time.h>
+#endif
+
 
 static void log_message(lua_State *L, void (*log_fn)(const char *, int,
                                                      const char *, ...))
@@ -142,14 +148,26 @@ static int r_fetch_xl(lua_State *L)
     return 0;
 }
 
-static int r_millitime_as_double_xl(lua_State *L)
+static int r_timestamp_as_double_xl(lua_State *L)
 {
     double RETVAL;
+#ifdef _WIN32
+    /* Gives the number of 100 nanosecond intervals since 1601-01-01. */
+    FILETIME ft;
+    GetSystemTimeAsFileTime(&ft);
+    /* FILETIME is not aligned properly, so we gotta move it over. */
+    LARGE_INTEGER timestamp;
+    timestamp.LowPart  = ft.dwLowDateTime;
+    timestamp.HighPart = (LONG) ft.dwHighDateTime;
+    /* Subtract the difference between 1970 and 1601 to get the right epoch. */
+    timestamp.QuadPart -= 116444736000000000LL;
+    /* And finally turn it into a double of seconds and a fraction. */
+    RETVAL = (double) timestamp.QuadPart / 10000000.0;
+#else
     struct timespec ts;
     timespec_get(&ts, TIME_UTC);
-    double seconds = (double) ts.tv_sec;
-    double millis  = (double)(ts.tv_nsec / 1000000L);
-    RETVAL = seconds + millis / 1000.0;
+    RETVAL = (double) ts.tv_sec + (double) ts.tv_nsec / 1000000000.0;
+#endif
     XL_pushnewutype(L, &RETVAL, sizeof(double), "double");
     return 1;
 }
@@ -160,10 +178,10 @@ static luaL_Reg r_function_registry_xl[] = {
     {"fetch", r_fetch_xl},
     {"get_platform", r_get_platform_xl},
     {"info", r_info_xl},
-    {"millitime_as_double", r_millitime_as_double_xl},
     {"rand_between", r_rand_between_xl},
     {"set_framerate", r_set_framerate_xl},
     {"set_max_ticks_before_render", r_set_max_ticks_before_render_xl},
+    {"timestamp_as_double", r_timestamp_as_double_xl},
     {"warn", r_warn_xl},
     {NULL, NULL},
 };

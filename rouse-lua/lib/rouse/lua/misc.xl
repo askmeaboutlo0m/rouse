@@ -20,11 +20,17 @@
  * SOFTWARE.
  */
 #include <rouse.h>
-#include <time.h>
 #include "lua_inc.h"
 #include "intern.h"
 #include "util.h"
 #include "main.h"
+
+#ifdef _WIN32
+#   include <windows.h>
+#else
+#   include <time.h>
+#endif
+
 
 static void log_message(lua_State *L, void (*log_fn)(const char *, int,
                                                      const char *, ...))
@@ -109,12 +115,24 @@ END
 
 UTYPE double
 
-FUNCTION double R.millitime_as_double()
+FUNCTION double R.timestamp_as_double()
+#ifdef _WIN32
+    /* Gives the number of 100 nanosecond intervals since 1601-01-01. */
+    FILETIME ft;
+    GetSystemTimeAsFileTime(&ft);
+    /* FILETIME is not aligned properly, so we gotta move it over. */
+    LARGE_INTEGER timestamp;
+    timestamp.LowPart  = ft.dwLowDateTime;
+    timestamp.HighPart = (LONG) ft.dwHighDateTime;
+    /* Subtract the difference between 1970 and 1601 to get the right epoch. */
+    timestamp.QuadPart -= 116444736000000000LL;
+    /* And finally turn it into a double of seconds and a fraction. */
+    RETVAL = (double) timestamp.QuadPart / 10000000.0;
+#else
     struct timespec ts;
     timespec_get(&ts, TIME_UTC);
-    double seconds = (double) ts.tv_sec;
-    double millis  = (double)(ts.tv_nsec / 1000000L);
-    RETVAL = seconds + millis / 1000.0;
+    RETVAL = (double) ts.tv_sec + (double) ts.tv_nsec / 1000000000.0;
+#endif
 END
 
 

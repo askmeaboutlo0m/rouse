@@ -66,7 +66,7 @@ sub separate {
 
     $ENV{ROUSE_DIRNAME} = $dirname;
 
-    open my $fh, '-|', 'gimp', '-inb', $script, '-b', '(gimp-quit 1)'
+    open my $fh, '-|', 'gimp', '-i', '-n', '-b', $script, '-b', '(gimp-quit 1)'
         or die "can't run gimp: $!\n";
 
     my $output = do { local $/; <$fh> };

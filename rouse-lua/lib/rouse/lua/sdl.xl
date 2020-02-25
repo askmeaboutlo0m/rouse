@@ -30,6 +30,11 @@
 FUNCTION uint32_t SDL.get_ticks() = SDL_GetTicks
 
 
+FUNCTION uint32_t SDL.get_window_flags()
+    RETVAL = SDL_GetWindowFlags(R_window);
+END
+
+
 FUNCTION void SDL.set_windowed()
     XL_UNUSED(L);
     SDL_SetWindowFullscreen(R_window, 0);
@@ -43,6 +48,28 @@ END
 FUNCTION void SDL.set_fullscreen_desktop()
     XL_UNUSED(L);
     SDL_SetWindowFullscreen(R_window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+END
+
+
+@c
+#define ANY_FULLSCREEN \
+    (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_FULLSCREEN_DESKTOP)
+
+static void toggle_window(uint32_t flags)
+{
+    bool is_fullscreen = SDL_GetWindowFlags(R_window) & ANY_FULLSCREEN;
+    SDL_SetWindowFullscreen(R_window, is_fullscreen ? 0 : flags);
+}
+@xl
+
+FUNCTION void SDL.toggle_fullscreen()
+    XL_UNUSED(L);
+    toggle_window(SDL_WINDOW_FULLSCREEN);
+END
+
+FUNCTION void SDL.toggle_fullscreen_desktop()
+    XL_UNUSED(L);
+    toggle_window(SDL_WINDOW_FULLSCREEN_DESKTOP);
 END
 
 
@@ -220,6 +247,30 @@ END
 
 INDEX <NEW>SDL_MouseButtonEvent *button
     GET_IN_EVENT_UNION(button, SDL_MOUSEBUTTONDOWN, SDL_MOUSEBUTTONUP);
+END
+
+ENUM SDL.Window s/^SDL_WINDOW_//
+    SDL_WINDOW_FULLSCREEN
+    SDL_WINDOW_OPENGL
+    SDL_WINDOW_SHOWN
+    SDL_WINDOW_HIDDEN
+    SDL_WINDOW_BORDERLESS
+    SDL_WINDOW_RESIZABLE
+    SDL_WINDOW_MINIMIZED
+    SDL_WINDOW_MAXIMIZED
+    SDL_WINDOW_INPUT_GRABBED
+    SDL_WINDOW_INPUT_FOCUS
+    SDL_WINDOW_MOUSE_FOCUS
+    SDL_WINDOW_FULLSCREEN_DESKTOP
+    SDL_WINDOW_FOREIGN
+    SDL_WINDOW_ALLOW_HIGHDPI
+    SDL_WINDOW_MOUSE_CAPTURE
+    SDL_WINDOW_ALWAYS_ON_TOP
+    SDL_WINDOW_SKIP_TASKBAR
+    SDL_WINDOW_UTILITY
+    SDL_WINDOW_TOOLTIP
+    SDL_WINDOW_POPUP_MENU
+    SDL_WINDOW_VULKAN
 END
 
 ENUM SDL.EventType s/^SDL_//

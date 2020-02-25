@@ -38,6 +38,14 @@ static int sdl_get_ticks_xl(lua_State *L)
     return 1;
 }
 
+static int sdl_get_window_flags_xl(lua_State *L)
+{
+    uint32_t RETVAL;
+    RETVAL = SDL_GetWindowFlags(R_window);
+    XL_pushuint32(L, RETVAL);
+    return 1;
+}
+
 static int sdl_set_windowed_xl(lua_State *L)
 {
     XL_UNUSED(L);
@@ -56,6 +64,29 @@ static int sdl_set_fullscreen_desktop_xl(lua_State *L)
 {
     XL_UNUSED(L);
     SDL_SetWindowFullscreen(R_window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+    return 0;
+}
+
+#define ANY_FULLSCREEN \
+    (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_FULLSCREEN_DESKTOP)
+
+static void toggle_window(uint32_t flags)
+{
+    bool is_fullscreen = SDL_GetWindowFlags(R_window) & ANY_FULLSCREEN;
+    SDL_SetWindowFullscreen(R_window, is_fullscreen ? 0 : flags);
+}
+
+static int sdl_toggle_fullscreen_xl(lua_State *L)
+{
+    XL_UNUSED(L);
+    toggle_window(SDL_WINDOW_FULLSCREEN);
+    return 0;
+}
+
+static int sdl_toggle_fullscreen_desktop_xl(lua_State *L)
+{
+    XL_UNUSED(L);
+    toggle_window(SDL_WINDOW_FULLSCREEN_DESKTOP);
     return 0;
 }
 
@@ -600,10 +631,13 @@ static int sdl_windowevent_index_xl(lua_State *L)
 static luaL_Reg sdl_function_registry_xl[] = {
     {"get_gl_swap_interval", sdl_get_gl_swap_interval_xl},
     {"get_ticks", sdl_get_ticks_xl},
+    {"get_window_flags", sdl_get_window_flags_xl},
     {"set_fullscreen", sdl_set_fullscreen_xl},
     {"set_fullscreen_desktop", sdl_set_fullscreen_desktop_xl},
     {"set_gl_swap_interval", sdl_set_gl_swap_interval_xl},
     {"set_windowed", sdl_set_windowed_xl},
+    {"toggle_fullscreen", sdl_toggle_fullscreen_xl},
+    {"toggle_fullscreen_desktop", sdl_toggle_fullscreen_desktop_xl},
     {NULL, NULL},
 };
 
@@ -701,6 +735,31 @@ static luaL_Reg sdl_mousemotionevent_method_registry_xl[] = {
 static luaL_Reg sdl_windowevent_method_registry_xl[] = {
     {"__index", sdl_windowevent_index_xl},
     {NULL, NULL},
+};
+
+static XL_EnumEntry sdl_window_enum_xl[] = {
+    {"FULLSCREEN", (lua_Integer) SDL_WINDOW_FULLSCREEN},
+    {"OPENGL", (lua_Integer) SDL_WINDOW_OPENGL},
+    {"SHOWN", (lua_Integer) SDL_WINDOW_SHOWN},
+    {"HIDDEN", (lua_Integer) SDL_WINDOW_HIDDEN},
+    {"BORDERLESS", (lua_Integer) SDL_WINDOW_BORDERLESS},
+    {"RESIZABLE", (lua_Integer) SDL_WINDOW_RESIZABLE},
+    {"MINIMIZED", (lua_Integer) SDL_WINDOW_MINIMIZED},
+    {"MAXIMIZED", (lua_Integer) SDL_WINDOW_MAXIMIZED},
+    {"INPUT_GRABBED", (lua_Integer) SDL_WINDOW_INPUT_GRABBED},
+    {"INPUT_FOCUS", (lua_Integer) SDL_WINDOW_INPUT_FOCUS},
+    {"MOUSE_FOCUS", (lua_Integer) SDL_WINDOW_MOUSE_FOCUS},
+    {"FULLSCREEN_DESKTOP", (lua_Integer) SDL_WINDOW_FULLSCREEN_DESKTOP},
+    {"FOREIGN", (lua_Integer) SDL_WINDOW_FOREIGN},
+    {"ALLOW_HIGHDPI", (lua_Integer) SDL_WINDOW_ALLOW_HIGHDPI},
+    {"MOUSE_CAPTURE", (lua_Integer) SDL_WINDOW_MOUSE_CAPTURE},
+    {"ALWAYS_ON_TOP", (lua_Integer) SDL_WINDOW_ALWAYS_ON_TOP},
+    {"SKIP_TASKBAR", (lua_Integer) SDL_WINDOW_SKIP_TASKBAR},
+    {"UTILITY", (lua_Integer) SDL_WINDOW_UTILITY},
+    {"TOOLTIP", (lua_Integer) SDL_WINDOW_TOOLTIP},
+    {"POPUP_MENU", (lua_Integer) SDL_WINDOW_POPUP_MENU},
+    {"VULKAN", (lua_Integer) SDL_WINDOW_VULKAN},
+    {NULL, (lua_Integer) 0},
 };
 
 static XL_EnumEntry sdl_eventtype_enum_xl[] = {
@@ -1326,6 +1385,7 @@ int R_lua_sdl_init(lua_State *L)
     XL_initindextable(L, &sdl_mousemotionevent_index_dummy_xl, sdl_mousemotionevent_index_registry_xl);
     XL_initindextable(L, &sdl_windowevent_index_dummy_xl, sdl_windowevent_index_registry_xl);
     XL_initfunctions(L, sdl_function_registry_xl, "SDL", (const char *)NULL);
+    XL_initenum(L, sdl_window_enum_xl, "SDL", "Window", (const char *)NULL);
     XL_initenum(L, sdl_eventtype_enum_xl, "SDL", "EventType", (const char *)NULL);
     XL_initenum(L, sdl_windoweventtype_enum_xl, "SDL", "WindowEventType", (const char *)NULL);
     XL_initenum(L, sdl_keyboardevent_state_enum_xl, "SDL", "KeyboardEvent", "State", (const char *)NULL);

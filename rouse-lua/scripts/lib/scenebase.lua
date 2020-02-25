@@ -69,10 +69,25 @@ function SceneBase:init_render_function()
 end
 
 
+local KEYDOWN      = SDL.EventType.KEYDOWN
+local WINDOWEVENT  = SDL.EventType.WINDOWEVENT
+local SIZE_CHANGED = SDL.WindowEventType.SIZE_CHANGED
+local RETURN       = SDL.Scancode.RETURN
+local RETURN2      = SDL.Scancode.RETURN2
+local ALT          = SDL.Keymod.ALT
+
 function SceneBase:on_event(event)
-    if event.type == SDL.EventType.WINDOWEVENT and
-       event.window.event == SDL.WindowEventType.SIZE_CHANGED then
-        self.viewport = nil
+    local event_type = event.type
+    if event_type == WINDOWEVENT then
+        if event.window.event == SIZE_CHANGED then
+            self.viewport = nil
+        end
+    elseif event_type == KEYDOWN then
+        local key      = event.key
+        local scancode = key.scancode
+        if (scancode == RETURN or scancode == RETURN2) and (key.mod & ALT) ~= 0 then
+            SDL.toggle_fullscreen_desktop()
+        end
     end
 end
 

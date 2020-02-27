@@ -22,14 +22,19 @@ local PreloadScene = class()
 
 
 function PreloadScene:init(args)
-    self.nvg       = args.nvg or R.Nvg.new(0)
-    self.ms        = args.ms or 10
-    self.resources = args.resources or error("No resources to load given")
-    self.on_done   = args.on_done   or error("No on_done callback given")
-    self.loaded    = {font = {}, image = {}, json = {}}
-    self.current   = 1
+    self.nvg        = args.nvg or R.Nvg.new(0)
+    self.ms         = args.ms or 10
+    self.on_done    = args.on_done or error("No on_done callback given")
+    self.loaded     = {font = {}, image = {}, json = {}}
+    self.current    = 1
+    self.bytes      = 0
+    self.temp_bytes = 0
 
-    if R.get_platform() == "emscripten" then
+    self.resources, self.total_bytes = self:parse_resources(
+            args.resources or error("No resources to load given"))
+
+    self.fetching = R.get_platform() == "emscripten"
+    if self.fetching then
         self.fetched = 0
         self:fetch_next_resource()
     else
@@ -44,15 +49,38 @@ function PreloadScene:init(args)
     self.roundness     = args.roundness     or 10.0
 end
 
+function PreloadScene:parse_resources(lines)
+    local resources   = {}
+    local total_bytes = 0
+    for i, line in ipairs(lines) do
+        local trimmed      = string.trim(line)
+        local digits, path = string.match(trimmed, "^(%d+)%s+(.+)$")
+        if digits and path then
+            local bytes  = tonumber(digits)
+            total_bytes  = total_bytes + bytes
+            resources[i] = {path, bytes}
+        else
+            errorf("Can't parse resource path: '%s'", trimmed)
+        end
+    end
+    return resources, total_bytes
+end
+
 
 function PreloadScene:fetch_next_resource()
     local next_to_fetch = self.fetched + 1
     if next_to_fetch <= #self.resources then
-        local path = self.resources[next_to_fetch]
-        R.fetch(path, path, function ()
-            self.fetched = next_to_fetch
+        local path, bytes = table.unpack(self.resources[next_to_fetch])
+        local on_progress = function (bytes)
+            self.temp_bytes = bytes
+        end
+        local on_done = function ()
+            self.temp_bytes = 0
+            self.bytes      = self.bytes + bytes
+            self.fetched    = next_to_fetch
             self:fetch_next_resource()
-        end)
+        end
+        R.fetch(path, path, on_progress, on_done)
     end
 end
 
@@ -90,10 +118,13 @@ end
 
 function PreloadScene:load_next_resource()
     if self.current <= self.fetched then
-        local path = self.resources[self.current]
+        local path, bytes = table.unpack(self.resources[self.current])
         if path then
             self.current = self.current + 1
             self:load_resource(string.trim(path))
+            if not self.fetching then
+                self.bytes = self.bytes + bytes
+            end
             return false
         else
             return true
@@ -137,7 +168,8 @@ function PreloadScene:on_render()
     nvg:rounded_rect(outer_x, outer_y, outer_w, outer_h, self.roundness)
     nvg:fill()
 
-    local ratio   = self.current / math.max(#self.resources, 1.0)
+    local bytes   = self.bytes + self.temp_bytes
+    local ratio   = math.min(bytes / math.max(self.total_bytes, 1), 1.0)
     local inner_h = outer_h * self.inner_ratio_y
     local delta   = outer_h - inner_h
     local inner_w = (outer_w - delta) * ratio

@@ -141,7 +141,10 @@ static int r_fetch_xl(lua_State *L)
     const char *url = luaL_checkstring(L, 1);
     const char *path = luaL_checkstring(L, 2);
     luaL_checkany(L, 3);
-    int on_done = 3;
+    int on_progress = 3;
+    luaL_checkany(L, 4);
+    int on_done = 4;
+    lua_pushvalue(L, on_progress);
     lua_pushvalue(L, on_done);
     lua_pushcclosure(L, on_fetch_done, 1);
     R_lua_fetch(L, url, path);

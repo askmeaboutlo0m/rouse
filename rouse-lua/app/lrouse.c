@@ -215,6 +215,7 @@ static int bootstrap_next(lua_State *L)
     lua_Integer i = luaL_checkinteger(L, lua_upvalueindex(2));
     if (lua_geti(L, lua_upvalueindex(1), i)) {
         const char *path = luaL_checkstring(L, -1);
+        lua_pushnil(L);
         lua_pushvalue(L, lua_upvalueindex(1));
         lua_pushinteger(L, i + 1);
         lua_pushcclosure(L, bootstrap_next, 2);
@@ -244,6 +245,7 @@ static int on_bootstrap_fetched(lua_State *L)
 static void fetch_bootstrap(lua_State *L)
 {
     const char *url = get_global_string(L, "EMBOOTSTRAP");
+    lua_pushnil(L);
     lua_pushcfunction(L, on_bootstrap_fetched);
     R_lua_fetch(L, url, NULL);
 }

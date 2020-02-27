@@ -15,17 +15,20 @@
 typedef struct R_LuaFetch {
     lua_State *L;
     int       path_reg;
+    int       on_progress_reg;
     int       on_done_reg;
 } R_LuaFetch;
 
 static R_LuaFetch *fetch_new(lua_State *L, const char *path)
 {
-    int on_done_reg = R_lua_reg(L);
+    int on_done_reg     = R_lua_reg(L);
+    int on_progress_reg = R_lua_reg(L);
+
     lua_pushstring(L, path);
     int path_reg = R_lua_reg(L);
 
     R_LuaFetch *lf = R_NEW_INIT_STRUCT(lf, R_LuaFetch,
-            L, path_reg, on_done_reg);
+            L, path_reg, on_progress_reg, on_done_reg);
 
     return lf;
 }
@@ -34,6 +37,7 @@ static void fetch_free(R_LuaFetch *lf)
 {
     if (lf) {
         R_lua_unreg(lf->L, lf->path_reg);
+        R_lua_unreg(lf->L, lf->on_progress_reg);
         R_lua_unreg(lf->L, lf->on_done_reg);
         free(lf);
     }
@@ -125,6 +129,22 @@ static void fetch_success(emscripten_fetch_t *fetch) {
     fetch_done(fetch);
 }
 
+static void fetch_progress(emscripten_fetch_t *fetch)
+{
+    R_LuaFetch *lf = fetch->userData;
+    if (lf->on_progress_reg != LUA_REFNIL) {
+        lua_State *L = lf->L;
+        R_lua_getreg(L, lf->on_progress_reg);
+
+        uint64_t progress = fetch->dataOffset + fetch->numBytes;
+        lua_pushinteger(L, (lua_Integer) progress);
+
+        if (R_lua_pcall(L, 1, 0)) {
+            R_LUA_ERROR_TO_WARNING(L);
+        }
+    }
+}
+
 static void fetch_error(emscripten_fetch_t *fetch) {
     fetch_done(fetch);
 }
@@ -138,6 +158,7 @@ void R_lua_fetch(lua_State *L, const char *url, const char *path)
     attr.userData   = fetch_new(L, path);
     attr.attributes = EMSCRIPTEN_FETCH_LOAD_TO_MEMORY;
     attr.onsuccess  = fetch_success;
+    attr.onprogress = fetch_progress;
     attr.onerror    = fetch_error;
     emscripten_fetch(&attr, url);
 }

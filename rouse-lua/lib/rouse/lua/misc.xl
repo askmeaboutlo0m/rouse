@@ -106,7 +106,9 @@ static int on_fetch_done(lua_State *L)
 
 @xl
 
-FUNCTION void R.fetch(const char *url, const char *path, any on_done)
+FUNCTION void R.fetch(const char *url, const char *path,
+                      any on_progress, any on_done)
+    lua_pushvalue(L, on_progress);
     lua_pushvalue(L, on_done);
     lua_pushcclosure(L, on_fetch_done, 1);
     R_lua_fetch(L, url, path);

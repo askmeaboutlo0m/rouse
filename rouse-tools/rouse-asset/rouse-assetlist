@@ -24,5 +24,5 @@ cd "$1"
 find -L . -type f \
     | sort \
     | perl -ne 'print if /\.(png|rvg|ttf|json)$/i' \
-    | perl -ne 'BEGIN { $base = shift } print s{\A\.\/}{$base/}r unless m{\A\./assetlist\s*\z}' "$base" \
+    | perl -ne 'BEGIN { $base = shift } chomp; print -s, " ", s{\A\.\/}{$base/}r, "\n" unless m{\A\./assetlist\s*\z}' "$base" \
     > assetlist

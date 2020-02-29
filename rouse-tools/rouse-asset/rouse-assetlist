@@ -19,10 +19,22 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 set -e
-base="$(basename "$1")"
-cd "$1"
-find -L . -type f \
-    | sort \
-    | perl -ne 'print if /\.(png|rvg|ttf|json)$/i' \
-    | perl -ne 'BEGIN { $base = shift } chomp; print -s, " ", s{\A\.\/}{$base/}r, "\n" unless m{\A\./assetlist\s*\z}' "$base" \
-    > assetlist
+
+assetdir="$1"
+shift
+
+
+(
+    base="$(basename "$assetdir")"
+    cd "$assetdir"
+    find -L . -type f \
+        | sort \
+        | perl -ne 'print if /\.(png|rvg|ttf|json)$/i' \
+        | perl -ne 'BEGIN { $base = shift } chomp; print -s, " ", s{\A\.\/}{$base/}r, "\n" unless m{\A\./assetlist\s*\z}' "$base" \
+        > assetlist
+)
+
+while [ "$#" -gt 0 ]; do
+    perl -e '$_ = shift; chomp; print -s, " ", $_, "\n"' "$1" >>"$assetdir/assetlist"
+    shift
+done

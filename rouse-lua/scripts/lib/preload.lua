@@ -85,6 +85,8 @@ function PreloadScene:fetch_next_resource()
 end
 
 
+PreloadScene.load_type_lua = false
+
 function PreloadScene:load_type_json(key, path)
     return "json", R.Json.parse_file(path)
 end
@@ -111,7 +113,12 @@ function PreloadScene:load_resource(path)
         else
             self.loaded[prefix][key] = asset
         end
-    else
+    elseif loader ~= false then
+        -- A `false` loader means it's intentionally not loaded.
+        -- For example, Lua files just need to be fetched for
+        -- Emscripten, the loading happens explicitly later.
+        -- A `nil` loader will trigger this warning though, since
+        -- it's some kind of file extension we don't understand.
         R.warn("Don't know how to load a '%s': %s", suffix, path)
     end
 end

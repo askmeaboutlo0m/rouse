@@ -36,9 +36,16 @@ function PreloadScene:init(args)
     self.fetching = R.get_platform() == "emscripten"
     if self.fetching then
         self.fetched = 0
-        self:fetch_next_resource()
+        local packfile = args.packfile
+        if packfile then
+            self.total_bytes = packfile.bytes
+            self:fetch_pack(packfile.url)
+        else
+            self:fetch_next_resource()
+        end
     else
-        self.fetched = #args.resources
+        self.fetched = #self.resources
+        self.bytes   = self.total_bytes
     end
 
     self.outer_color   = args.outer_color   or R.Nvg.rgbaf(0.0, 0.0, 0.0, 0.6)
@@ -66,6 +73,16 @@ function PreloadScene:parse_resources(lines)
     return resources, total_bytes
 end
 
+
+function PreloadScene:fetch_pack(url)
+    local on_progress = function (bytes)
+        self.bytes = bytes
+    end
+    local on_done = function ()
+        self.fetched = #self.resources
+    end
+    R.fetch_pack(url, on_progress, on_done)
+end
 
 function PreloadScene:fetch_next_resource()
     local next_to_fetch = self.fetched + 1

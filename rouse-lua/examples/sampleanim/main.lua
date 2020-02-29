@@ -90,6 +90,7 @@ return simple_main_args {
 
         return PreloadScene.new {
             resources = slurplines("assets/assetlist"),
+            packfile  = {url = "assets.pack", bytes = 436381},
             on_done   = function (scene, preloader)
                 local args = {
                     scene  = scene,

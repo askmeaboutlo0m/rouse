@@ -29,3 +29,10 @@
 15 assets/sampleanim/right_iris.rvg
 2002 assets/sampleanim/sampleanim.json
 15 assets/sampleanim/sampleanim.rvg
+3074 scripts/lib/debuggery.lua
+2226 scripts/lib/fpscounter.lua
+9979 scripts/lib/scenebase.lua
+4414 scripts/lib/scenesetup.lua
+10246 scripts/lib/seqbuilder.lua
+7313 samplescene.lua
+1825 samplesetup.lua

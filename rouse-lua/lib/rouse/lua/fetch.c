@@ -98,6 +98,46 @@ static int write_fetched(lua_State *L)
 }
 
 
+typedef struct R_LuaPackRead {
+    int        offset;
+    int        size;
+    const char *data;
+} R_LuaPackRead;
+
+static int read_lpr(int size, unsigned char *out, R_UserData user)
+{
+    R_LuaPackRead *lpr = user.data;
+    int nbytes = R_MIN(size, lpr->size - lpr->offset);
+    memcpy(out, lpr->data + lpr->offset, R_int2size(nbytes));
+    lpr->offset += nbytes;
+    return nbytes;
+}
+
+static void unpack(emscripten_fetch_t *fetch)
+{
+    unsigned char buffer[1024];
+    R_LuaPackRead lpr   = {0, (int) fetch->numBytes, fetch->data};
+    R_Parse       parse = R_parse(fetch->url, read_lpr, R_user_data(&lpr),
+                                  sizeof(buffer), buffer);
+
+    while (lpr.offset < lpr.size) {
+        int  nbytes = (int) R_parse_read_uint(&parse);
+        char *path  = R_parse_read_string_to_buffer(&parse);
+        int  left   = lpr.size - lpr.offset;
+
+        if (left < nbytes) {
+            R_die("Need %d bytes in pack file, but only have %d left",
+                  nbytes, left);
+        }
+        else {
+            make_parent_dirs(path);
+            spew(path, lpr.data + lpr.offset, (size_t) nbytes);
+            lpr.offset += (int) nbytes;
+        }
+    }
+}
+
+
 static void fetch_done(emscripten_fetch_t *fetch)
 {
     R_LuaFetch *lf = fetch->userData;
@@ -129,6 +169,12 @@ static void fetch_success(emscripten_fetch_t *fetch) {
     fetch_done(fetch);
 }
 
+static void fetch_pack_success(emscripten_fetch_t *fetch)
+{
+    unpack(fetch);
+    fetch_done(fetch);
+}
+
 static void fetch_progress(emscripten_fetch_t *fetch)
 {
     R_LuaFetch *lf = fetch->userData;
@@ -150,17 +196,28 @@ static void fetch_error(emscripten_fetch_t *fetch) {
 }
 
 
-void R_lua_fetch(lua_State *L, const char *url, const char *path)
+static void fetch(lua_State *L, const char *url, const char *path,
+                  void (*on_success)(emscripten_fetch_t *))
 {
     emscripten_fetch_attr_t attr;
     emscripten_fetch_attr_init(&attr);
     strcpy(attr.requestMethod, "GET");
     attr.userData   = fetch_new(L, path);
     attr.attributes = EMSCRIPTEN_FETCH_LOAD_TO_MEMORY;
-    attr.onsuccess  = fetch_success;
+    attr.onsuccess  = on_success;
     attr.onprogress = fetch_progress;
     attr.onerror    = fetch_error;
     emscripten_fetch(&attr, url);
+}
+
+void R_lua_fetch(lua_State *L, const char *url, const char *path)
+{
+    fetch(L, url, path, fetch_success);
+}
+
+void R_lua_fetch_pack(lua_State *L, const char *url)
+{
+    fetch(L, url, NULL, fetch_pack_success);
 }
 
 #else
@@ -169,6 +226,11 @@ void R_lua_fetch(lua_State *L, R_UNUSED const char *url,
                  R_UNUSED const char *path)
 {
     R_LUA_DIE(L, "Fetching files only implemented on Emscripten");
+}
+
+void R_lua_fetch_pack(lua_State *L, const char *url)
+{
+    R_lua_fetch(L, url, NULL);
 }
 
 #endif

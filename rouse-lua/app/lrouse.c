@@ -210,6 +210,12 @@ static void run_main(lua_State *L)
 
 #ifdef __EMSCRIPTEN__
 
+static int on_bootstrap_pack_fetched(lua_State *L)
+{
+    run_main(L);
+    return 0;
+}
+
 static int bootstrap_next(lua_State *L)
 {
     lua_Integer i = luaL_checkinteger(L, lua_upvalueindex(2));
@@ -242,12 +248,22 @@ static int on_bootstrap_fetched(lua_State *L)
     return 0;
 }
 
+#define PACK_PREFIX "pack:"
+
 static void fetch_bootstrap(lua_State *L)
 {
     const char *url = get_global_string(L, "EMBOOTSTRAP");
     lua_pushnil(L);
-    lua_pushcfunction(L, on_bootstrap_fetched);
-    R_lua_fetch(L, url, NULL);
+
+    size_t prefix_len = strlen(PACK_PREFIX);
+    if (strncmp(PACK_PREFIX, url, prefix_len) == 0) {
+        lua_pushcfunction(L, on_bootstrap_pack_fetched);
+        R_lua_fetch_pack(L, url + prefix_len);
+    }
+    else {
+        lua_pushcfunction(L, on_bootstrap_fetched);
+        R_lua_fetch(L, url, NULL);
+    }
 }
 
 #endif
@@ -260,7 +276,7 @@ int main(int argc, char **argv)
     lua_setglobal(L, "MAIN");
 
 #ifdef __EMSCRIPTEN__
-    lua_pushliteral(L, "embootstrap.lua");
+    lua_pushliteral(L, PACK_PREFIX "embootstrap.pack");
     lua_setglobal(L, "EMBOOTSTRAP");
 #endif
 

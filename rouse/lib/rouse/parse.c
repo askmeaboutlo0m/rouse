@@ -97,6 +97,17 @@ unsigned short R_parse_read_ushort(R_Parse *parse)
     return R_int2ushort(lo + (hi << 8));
 }
 
+unsigned int R_parse_read_uint(R_Parse *parse)
+{
+    R_MAGIC_CHECK(R_Parse, parse);
+    R_parse_read_bytes(parse, 4);
+    unsigned int a = parse->buffer[0];
+    unsigned int b = parse->buffer[1];
+    unsigned int c = parse->buffer[2];
+    unsigned int d = parse->buffer[3];
+    return a + (b << 8u) + (c << 16u) + (d << 24u);
+}
+
 
 float R_parse_read_float(R_Parse *parse)
 {
@@ -132,6 +143,20 @@ char *R_parse_read_string(R_Parse *parse)
     R_parse_read_into(parse, len, (unsigned char *)buf);
     buf[len] = '\0';
     return buf;
+}
+
+char *R_parse_read_string_to_buffer(R_Parse *parse)
+{
+    R_MAGIC_CHECK(R_Parse, parse);
+    int len = R_parse_read_ushort(parse);
+    if (len == 0) {
+        return NULL;
+    }
+    else {
+        R_parse_read_bytes_with_extra_space(parse, len, 1);
+        parse->buffer[len] = (unsigned char) '\0';
+        return (char *)parse->buffer;
+    }
 }
 
 

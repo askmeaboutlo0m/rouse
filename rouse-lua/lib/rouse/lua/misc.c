@@ -151,6 +151,20 @@ static int r_fetch_xl(lua_State *L)
     return 0;
 }
 
+static int r_fetch_pack_xl(lua_State *L)
+{
+    const char *url = luaL_checkstring(L, 1);
+    luaL_checkany(L, 2);
+    int on_progress = 2;
+    luaL_checkany(L, 3);
+    int on_done = 3;
+    lua_pushvalue(L, on_progress);
+    lua_pushvalue(L, on_done);
+    lua_pushcclosure(L, on_fetch_done, 1);
+    R_lua_fetch_pack(L, url);
+    return 0;
+}
+
 static int r_timestamp_as_double_xl(lua_State *L)
 {
     double RETVAL;
@@ -179,6 +193,7 @@ static luaL_Reg r_function_registry_xl[] = {
     {"debug", r_debug_xl},
     {"die", r_die_xl},
     {"fetch", r_fetch_xl},
+    {"fetch_pack", r_fetch_pack_xl},
     {"get_platform", r_get_platform_xl},
     {"info", r_info_xl},
     {"rand_between", r_rand_between_xl},

@@ -18,3 +18,5 @@ void R_lua_main(lua_State *L);
  * The callback function is popped from the stack!
  */
 void R_lua_fetch(lua_State *L, const char *url, const char *path);
+
+void R_lua_fetch_pack(lua_State *L, const char *url);

@@ -86,6 +86,10 @@ char R_parse_read_char(R_Parse *parse);
  */
 unsigned short R_parse_read_ushort(R_Parse *parse);
 
+/*
+ * Same as `R_parse_read_ushort`, except for 4 bytes and an unsigned int.
+ */
+unsigned int R_parse_read_uint(R_Parse *parse);
 
 /*
  * Read a floating point value from `parse_read`. The value must be represented
@@ -104,6 +108,12 @@ float R_parse_read_float(R_Parse *parse);
  * `NULL` will be returned, *not* a buffer with just a zero byte in it.
  */
 char *R_parse_read_string(R_Parse *parse);
+
+/*
+ * Like `R_parse_read_string`, except it just sticks it into `parse->buffer`.
+ * Returns that, so don't free it or ovewrite it until you're done.
+ */
+char *R_parse_read_string_to_buffer(R_Parse *parse);
 
 
 /*

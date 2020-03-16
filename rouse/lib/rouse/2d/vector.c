@@ -493,8 +493,10 @@ void R_vector_image_draw(R_VectorImage *vi, NVGcontext *ctx,
                          const float parent_matrix[static 6])
 {
     check_vector_image(vi);
-    int count = vi->count;
-    for (int i = 0; i < count; ++i) {
-        run_vector_command(&vi->commands[i], ctx, parent_matrix);
+    if (parent_matrix[0] > 0.0f && parent_matrix[3] > 0.0f) {
+        int count = vi->count;
+        for (int i = 0; i < count; ++i) {
+            run_vector_command(&vi->commands[i], ctx, parent_matrix);
+        }
     }
 }

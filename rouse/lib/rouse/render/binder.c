@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 askmeaboutloom
+ * Copyright (c) 2019, 2020 askmeaboutloom
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,8 +39,7 @@
 static int count_attribute_args(va_list ap)
 {
     int count = 0;
-    R_BinderBind fn;
-    while ((fn = va_arg(ap, R_BinderBind))) {
+    while (va_arg(ap, R_BinderBind)) {
         va_arg(ap, R_UserData);
         ++count;
     }

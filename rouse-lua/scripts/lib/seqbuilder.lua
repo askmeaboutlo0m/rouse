@@ -270,7 +270,7 @@ function SeqBuilder:call(...)
     if argc == 1 then
         return self:call1(args[1])
     else
-        arg_count_error("delay", argc)
+        arg_count_error("call", argc)
     end
 end
 

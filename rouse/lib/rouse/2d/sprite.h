@@ -1,7 +1,7 @@
 /*
  * sprite.h - 2D sprite rendering and transformage
  *
- * Copyright (c) 2019 askmeaboutloom
+ * Copyright (c) 2019, 2020 askmeaboutloom
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,7 @@ typedef struct R_AffineTransform {
     R_V2  scale;
     R_V2  skew;  /* in radians */
     float angle; /* in radians */
+    float alpha;
     R_V2  base;
 } R_AffineTransform;
 
@@ -168,6 +169,7 @@ float R_sprite_skew_x  (R_Sprite *sprite);
 float R_sprite_skew_y  (R_Sprite *sprite);
 float R_sprite_angle   (R_Sprite *sprite); /* radians */
 float R_sprite_rotation(R_Sprite *sprite); /* degrees */
+float R_sprite_alpha   (R_Sprite *sprite);
 R_V2  R_sprite_base    (R_Sprite *sprite);
 float R_sprite_base_x  (R_Sprite *sprite);
 float R_sprite_base_y  (R_Sprite *sprite);
@@ -190,6 +192,7 @@ void R_sprite_skew_set    (R_Sprite *sprite, R_V2  value);
 void R_sprite_skew_x_set  (R_Sprite *sprite, float value);
 void R_sprite_skew_y_set  (R_Sprite *sprite, float value);
 void R_sprite_angle_set   (R_Sprite *sprite, float value); /* radians */
+void R_sprite_alpha_set   (R_Sprite *sprite, float value);
 void R_sprite_rotation_set(R_Sprite *sprite, float value); /* degrees */
 void R_sprite_base_set    (R_Sprite *sprite, R_V2  value);
 void R_sprite_base_x_set  (R_Sprite *sprite, float value);

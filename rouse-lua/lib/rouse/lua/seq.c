@@ -313,6 +313,17 @@ static int r_luatween_method_sprite_angle_xl(lua_State *L)
     return 1;
 }
 
+static int r_luatween_method_sprite_alpha_xl(lua_State *L)
+{
+    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
+    R_Sprite *sprite = XL_checkpptype(L, 2, "R_Sprite");
+    luaL_checkany(L, 3);
+    int value_fn = 3;
+    R_tween_sprite_alpha(self, sprite, tween_float_get(L, value_fn));
+    lua_settop(L, 1);
+    return 1;
+}
+
 static int r_luatween_method_sprite_base_x_xl(lua_State *L)
 {
     R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
@@ -816,6 +827,7 @@ static luaL_Reg r_luatween_method_registry_xl[] = {
     {"__index", r_luatween_index_xl},
     {"build", r_luatween_method_build_xl},
     {"field", r_luatween_method_field_xl},
+    {"sprite_alpha", r_luatween_method_sprite_alpha_xl},
     {"sprite_angle", r_luatween_method_sprite_angle_xl},
     {"sprite_base_x", r_luatween_method_sprite_base_x_xl},
     {"sprite_base_y", r_luatween_method_sprite_base_y_xl},

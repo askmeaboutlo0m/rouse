@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 askmeaboutloom
+ * Copyright (c) 2019, 2020 askmeaboutloom
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -108,7 +108,7 @@ R_AffineTransform R_affine_transform(void)
 {
     return (R_AffineTransform){
             R_MAGIC_INIT(R_AffineTransform) {{0.0f, 0.0f}}, {{0.0f, 0.0f}},
-            {{1.0f, 1.0f}}, {{0.0f, 0.0f}}, 0.0f, {{0.0f, 0.0f}}};
+            {{1.0f, 1.0f}}, {{0.0f, 0.0f}}, 0.0f, 1.0f, {{0.0f, 0.0f}}};
 }
 
 
@@ -343,6 +343,7 @@ GET_SET_TRANSFORM(R_V2,  skew,     skew,     RETRIEVE_FIELD, ASSIGN_FIELD)
 GET_SET_TRANSFORM(float, skew_x,   skew.x,   RETRIEVE_FIELD, ASSIGN_FIELD)
 GET_SET_TRANSFORM(float, skew_y,   skew.y,   RETRIEVE_FIELD, ASSIGN_FIELD)
 GET_SET_TRANSFORM(float, angle,    angle,    RETRIEVE_FIELD, ASSIGN_FIELD)
+GET_SET_TRANSFORM(float, alpha,    alpha,    RETRIEVE_FIELD, ASSIGN_FIELD)
 GET_SET_TRANSFORM(R_V2,  base,     base,     RETRIEVE_FIELD, ASSIGN_FIELD)
 GET_SET_TRANSFORM(float, base_x,   base.x,   RETRIEVE_FIELD, ASSIGN_FIELD)
 GET_SET_TRANSFORM(float, base_y,   base.y,   RETRIEVE_FIELD, ASSIGN_FIELD)
@@ -644,8 +645,20 @@ static void draw_sprite(R_Sprite *sprite, R_Nvg *nvg,
                         const float canvas_matrix[static 6])
 {
     R_MAGIC_CHECK(R_Sprite, sprite);
+
+    NVGcontext *ctx  = R_nvg_context(nvg);
+    float      alpha = sprite->transform.alpha;
+    if (alpha < 1.0f) {
+        nvgSave(ctx);
+        nvgGlobalAlpha(ctx, R_CLAMP(alpha, 0.0f, 1.0f));
+    }
+
     draw_self(sprite, nvg, canvas_matrix);
     draw_children(sprite, nvg, canvas_matrix);
+
+    if (alpha < 1.0f) {
+        nvgRestore(ctx);
+    }
 }
 
 void R_sprite_draw(R_Sprite *sprite, R_Nvg *nvg,

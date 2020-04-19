@@ -81,8 +81,8 @@ end
 for name, aliases in pairs {origin_x = {"ox"}, origin_y = {"oy"}, pos_x = {"x"},
                             pos_y = {"y"}, scale_x = {"sx"}, scale_y = {"sy"},
                             skew_x = {"kx"}, skew_y = {"ky"}, angle = {"n"},
-                            base_x = {"bx"}, base_y = {"by"}, rotation = {"r"},
-                            rel_x = {"rx"}, rel_y = {"ry"}} do
+                            alpha = {"a"}, base_x = {"bx"}, base_y = {"by"},
+                            rotation = {"r"}, rel_x = {"rx"}, rel_y = {"ry"}} do
     local tween_name = "sprite_" .. name
     TweenBuilder[name] = function (self, ...)
         local topic = self.topic

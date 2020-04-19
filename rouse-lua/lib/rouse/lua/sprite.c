@@ -445,6 +445,23 @@ static int r_affinetransform_angle_newindex_xl(lua_State *L)
     return 0;
 }
 
+static int r_affinetransform_alpha_index_xl(lua_State *L)
+{
+    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    float RETVAL;
+    RETVAL = self->alpha;
+    XL_pushfloat(L, RETVAL);
+    return 1;
+}
+
+static int r_affinetransform_alpha_newindex_xl(lua_State *L)
+{
+    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    float VALUE = XL_checkfloat(L, 2);
+    self->alpha = VALUE;
+    return 0;
+}
+
 static int r_affinetransform_base_index_xl(lua_State *L)
 {
     R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
@@ -1400,6 +1417,7 @@ static luaL_Reg r_v2_function_registry_xl[] = {
 };
 
 static luaL_Reg r_affinetransform_index_registry_xl[] = {
+    {"alpha", r_affinetransform_alpha_index_xl},
     {"angle", r_affinetransform_angle_index_xl},
     {"base", r_affinetransform_base_index_xl},
     {"base_x", r_affinetransform_base_x_index_xl},
@@ -1509,6 +1527,7 @@ static luaL_Reg r_v2_method_registry_xl[] = {
 };
 
 static luaL_Reg r_affinetransform_newindex_registry_xl[] = {
+    {"alpha", r_affinetransform_alpha_newindex_xl},
     {"angle", r_affinetransform_angle_newindex_xl},
     {"base", r_affinetransform_base_newindex_xl},
     {"base_x", r_affinetransform_base_x_newindex_xl},

@@ -66,6 +66,10 @@ function is_string(x)
     return type(x) == "string"
 end
 
+function is_thread(x)
+    return type(x) == "thread"
+end
+
 function is_userdata(x)
     return type(x) == "userdata"
 end

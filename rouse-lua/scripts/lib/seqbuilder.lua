@@ -250,6 +250,15 @@ function SeqBuilder:call1(a)
         return self:add_step(function (sequence)
             sequence:call(a)
         end)
+    elseif is_thread(a) then
+        return self:add_step(function (sequence)
+            sequence:call(function ()
+                local ok, msg = coroutine.resume(a)
+                if not ok then
+                    error(msg)
+                end
+            end)
+        end)
     else
         arg_types_error("call", a)
     end

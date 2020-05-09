@@ -15,6 +15,7 @@
 exec 'emcc', map {
     /^--preload-file=/ ? ('--preload-file', substr $_, 15) :
     /^--embed-file=/   ? ('--embed-file',   substr $_, 13) :
+    /^--shell-file=/   ? ('--shell-file',   substr $_, 13) :
     /^-s[A-Z]/         ? ('-s',             substr $_,  2) :
     $_
 } @ARGV;

@@ -1215,6 +1215,24 @@ static int r_sprite_y_newindex_xl(lua_State *L)
     return 0;
 }
 
+static int r_sprite_scales_index_xl(lua_State *L)
+{
+    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    float RETVAL;
+    R_V2 scale = R_sprite_scale(self);
+    RETVAL = (scale.x * 0.5f) + (scale.y * 0.5f);
+    XL_pushfloat(L, RETVAL);
+    return 1;
+}
+
+static int r_sprite_scales_newindex_xl(lua_State *L)
+{
+    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    float VALUE = XL_checkfloat(L, 2);
+    R_sprite_scale_set(self, R_v2(VALUE, VALUE));
+    return 0;
+}
+
 static int r_sprite_world_pos_index_xl(lua_State *L)
 {
     R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
@@ -1464,6 +1482,7 @@ static luaL_Reg r_sprite_index_registry_xl[] = {
     {"scale", r_sprite_scale_index_xl},
     {"scale_x", r_sprite_scale_x_index_xl},
     {"scale_y", r_sprite_scale_y_index_xl},
+    {"scales", r_sprite_scales_index_xl},
     {"skew", r_sprite_skew_index_xl},
     {"skew_x", r_sprite_skew_x_index_xl},
     {"skew_y", r_sprite_skew_y_index_xl},
@@ -1573,6 +1592,7 @@ static luaL_Reg r_sprite_newindex_registry_xl[] = {
     {"scale", r_sprite_scale_newindex_xl},
     {"scale_x", r_sprite_scale_x_newindex_xl},
     {"scale_y", r_sprite_scale_y_newindex_xl},
+    {"scales", r_sprite_scales_newindex_xl},
     {"set_transform", r_sprite_set_transform_newindex_xl},
     {"skew", r_sprite_skew_newindex_xl},
     {"skew_x", r_sprite_skew_x_newindex_xl},

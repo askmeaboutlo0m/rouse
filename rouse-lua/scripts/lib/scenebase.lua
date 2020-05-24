@@ -50,6 +50,7 @@ function SceneBase:init_render_function()
         local fb_vp = R.Viewport.new(0, 0, fb_w, fb_h)
 
         self.render = function ()
+            self:before_render(nvg, width, height, fb_w, fb_h)
             fb:bind()
             local r, g, b, a = self.clear_color:unpack()
             R.GL.clear(r, g, b, a, 0.0, 0)
@@ -60,10 +61,12 @@ function SceneBase:init_render_function()
         end
     else
         self.render = function ()
+            local vp     = self.viewport or self:reset_viewport()
+            local vw, vh = vp.w, vp.h
+            self:before_render(nvg, width, height, vw, vh)
             local r, g, b, a = self.clear_color:unpack()
             R.GL.clear(r, g, b, a, 0.0, 0)
-            local vp = self.viewport or self:reset_viewport()
-            root:draw(nvg, width, height, vp.w, vp.h)
+            root:draw(nvg, width, height, vw, vh)
         end
     end
 end
@@ -96,6 +99,10 @@ function SceneBase:reset_viewport()
     local vp      = R.Viewport.window()
     self.viewport = vp
     return vp
+end
+
+function SceneBase:before_render()
+    -- Nothing, override me.
 end
 
 function SceneBase:on_render()

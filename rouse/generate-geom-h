@@ -255,6 +255,11 @@ static inline R_V2 R_v2(float a, float b)
     return (R_V2){{a, b}};
 }
 
+static inline R_V2 R_v2_polar(float len, float angle)
+{
+    return R_v2(len * cosf(angle), len * sinf(angle));
+}
+
 static inline R_V3 R_v3(float a, float b, float c)
 {
     return (R_V3){{a, b, c}};

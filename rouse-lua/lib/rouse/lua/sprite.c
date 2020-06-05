@@ -40,6 +40,16 @@ static int r_v2_new_xl(lua_State *L)
     return 1;
 }
 
+static int r_v2_polar_xl(lua_State *L)
+{
+    float len = XL_checkfloat(L, 1);
+    float angle = XL_checkfloat(L, 2);
+    R_V2 RETVAL;
+    RETVAL = R_v2_polar(len, angle);
+    XL_pushnewutype(L, &RETVAL, sizeof(R_V2), "R_V2");
+    return 1;
+}
+
 static int r_v2_x_index_xl(lua_State *L)
 {
     R_V2 *self = XL_checkutype(L, 1, "R_V2");
@@ -72,6 +82,34 @@ static int r_v2_y_newindex_xl(lua_State *L)
     float VALUE = XL_checkfloat(L, 2);
     self->y = VALUE;
     return 0;
+}
+
+static int r_v2_length_index_xl(lua_State *L)
+{
+    R_V2 *self = XL_checkutype(L, 1, "R_V2");
+    float RETVAL;
+    float x = self->x;
+    float y = self->y;
+    RETVAL = sqrtf(x * x + y * y);
+    XL_pushfloat(L, RETVAL);
+    return 1;
+}
+
+static int r_v2_angle_index_xl(lua_State *L)
+{
+    R_V2 *self = XL_checkutype(L, 1, "R_V2");
+    int RETVAL;
+    float x = self->x;
+    float y = self->y;
+    if (x == 0.0f && y == 0.0f) {
+        lua_pushnil(L);
+    }
+    else {
+        XL_pushfloat(L, atan2f(y, x));
+    }
+    return 1;
+    lua_pushvalue(L, RETVAL);
+    return 1;
 }
 
 static int r_v2_method_tostring_xl(lua_State *L)
@@ -1431,6 +1469,7 @@ static luaL_Reg r_sprite_function_registry_xl[] = {
 
 static luaL_Reg r_v2_function_registry_xl[] = {
     {"new", r_v2_new_xl},
+    {"polar", r_v2_polar_xl},
     {NULL, NULL},
 };
 
@@ -1500,6 +1539,8 @@ static luaL_Reg r_sprite_index_registry_xl[] = {
 };
 
 static luaL_Reg r_v2_index_registry_xl[] = {
+    {"angle", r_v2_angle_index_xl},
+    {"length", r_v2_length_index_xl},
     {"x", r_v2_x_index_xl},
     {"y", r_v2_y_index_xl},
     {NULL, NULL},

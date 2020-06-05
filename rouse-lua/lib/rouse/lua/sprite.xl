@@ -34,8 +34,28 @@ UTYPE R_V2 R.V2
 
 CONSTRUCTOR new(float x, float y) = R_v2
 
+CONSTRUCTOR polar(float len, float angle) = R_v2_polar
+
 FIELD float x
 FIELD float y
+
+INDEX float length
+    float x = self->x;
+    float y = self->y;
+    RETVAL = sqrtf(x * x + y * y);
+END
+
+INDEX any angle
+    float x = self->x;
+    float y = self->y;
+    if (x == 0.0f && y == 0.0f) {
+        lua_pushnil(L);
+    }
+    else {
+        XL_pushfloat(L, atan2f(y, x));
+    }
+    return 1;
+END
 
 METHOD ... __tostring()
     lua_pushfstring(L, "R_V2(%f, %f)", R_lua_float2n(self->x),

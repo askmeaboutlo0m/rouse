@@ -231,7 +231,16 @@ static bool keep_stepping_sequence(R_Sequence *seq, bool rendered,
 void R_sequence_tick(R_Sequence *seq, bool rendered, float seconds)
 {
     R_MAGIC_CHECK(R_Sequence, seq);
+#if (ROUSE_MAX_STEPS_PER_TICK > 0)
+    int step_count = 0;
+#endif
     while (keep_stepping_sequence(seq, rendered, seconds)) {
+#if (ROUSE_MAX_STEPS_PER_TICK > 0)
+        if (++step_count >= ROUSE_MAX_STEPS_PER_TICK) {
+            R_die("Sequence %p seems stuck, %d steps in a single tick",
+                  (void *)seq, step_count);
+        }
+#endif
         if (!(seq->current = seq->current->next)) {
             seq->current = seq->first;
             ++seq->lap;

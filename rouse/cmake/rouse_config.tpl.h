@@ -65,4 +65,12 @@
 #   error "unknown ROUSE_PLATFORM, please add it here"
 #endif
 
+/*
+ * Maximum steps that are allowed per tick before we consider a sequence stuck
+ * and abort the program. Set to 1000 by default in debug mode, which is far
+ * more steps than any animation sequence should perform in one tick. Set to 0
+ * in release mode by default, which means no checking at all.
+ */
+#define ROUSE_MAX_STEPS_PER_TICK @ROUSE_MAX_STEPS_PER_TICK@
+
 #endif

@@ -66,6 +66,11 @@ static void      *next_scene_arg = NULL;
 
 
 
+float R_framerate_get(void)
+{
+    return 1000.0f / R_tick_length;
+}
+
 void R_framerate_set(float ticks_per_second)
 {
     R_tick_length = 1000.0f / ticks_per_second;

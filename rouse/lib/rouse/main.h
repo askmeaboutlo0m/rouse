@@ -181,9 +181,10 @@ extern float R_width;
 extern float R_height;
 
 /*
- * Sets `R_tick_length` with the human-friendly unit of ticks per second.
+ * Get and set `R_tick_length` with the human-friendly unit of ticks per second.
  */
-void R_framerate_set(float ticks_per_second);
+float R_framerate_get(void);
+void  R_framerate_set(float ticks_per_second);
 
 R_MainArgs R_main_args(R_SceneFn on_scene, void *user);
 

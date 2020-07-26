@@ -295,7 +295,7 @@ static void set_named_easing(lua_State *L, const char *name, R_EaseFn ease)
 {
     R_LuaEaseFn le = {R_MAGIC_INIT(R_LuaEaseFn) ease};
     R_MAGIC_CHECK(R_LuaEaseFn, &le);
-    XL_pushnewutype(L, &le, sizeof(le), "R_LuaEaseFn");
+    XL_pushnewutypeuv(L, &le, sizeof(le), "R_LuaEaseFn", 0);
     lua_setfield(L, -2, name);
 }
 

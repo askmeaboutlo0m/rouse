@@ -74,7 +74,7 @@ static int new_tween_float_fixed(lua_State *L)
 {
     float value = XL_checkfloat(L, lua_upvalueindex(1));
     R_TweenFloat tf = R_tween_float_fixed(value);
-    XL_pushnewutype(L, &tf, sizeof(tf), "R_TweenFloat");
+    XL_pushnewutypeuv(L, &tf, sizeof(tf), "R_TweenFloat", 0);
     return 1;
 }
 
@@ -83,7 +83,7 @@ static int new_tween_float_between(lua_State *L)
     float a = XL_checkfloat(L, lua_upvalueindex(1));
     float b = XL_checkfloat(L, lua_upvalueindex(2));
     R_TweenFloat tf = R_tween_float_between(a, b);
-    XL_pushnewutype(L, &tf, sizeof(tf), "R_TweenFloat");
+    XL_pushnewutypeuv(L, &tf, sizeof(tf), "R_TweenFloat", 0);
     return 1;
 }
 
@@ -92,7 +92,7 @@ static int new_tween_float_custom(lua_State *L)
     R_LuaValue *lv = R_lua_value_new(L, lua_upvalueindex(1));
     R_TweenFloat tf = R_tween_float(tween_float_calc, tween_float_free,
                                     NULL, R_user_data(lv));
-    XL_pushnewutype(L, &tf, sizeof(tf), "R_TweenFloat");
+    XL_pushnewutypeuv(L, &tf, sizeof(tf), "R_TweenFloat", 0);
     return 1;
 }
 
@@ -137,7 +137,7 @@ static float tween_scale_calc(R_UserData user, R_V2 source)
     R_LUA_VALUE_DECLARE_UNPACK(user.data, lv, L);
     lua_pushcfunction(L, protected_tween_float_or_scale_calc);
     R_lua_getreg(L, lv->reg);
-    XL_pushnewutype(L, &source, sizeof(source), "R_V2");
+    XL_pushnewutypeuv(L, &source, sizeof(source), "R_V2", 0);
     if (R_lua_pcall(L, 2, 1)) {
         R_LUA_ERROR_TO_WARNING(L);
         return 0.0f;
@@ -158,7 +158,7 @@ static int new_tween_scale_fixed(lua_State *L)
 {
     float value = XL_checkfloat(L, lua_upvalueindex(1));
     R_TweenScale ts = R_tween_scale_fixed(value);
-    XL_pushnewutype(L, &ts, sizeof(ts), "R_TweenScale");
+    XL_pushnewutypeuv(L, &ts, sizeof(ts), "R_TweenScale", 0);
     return 1;
 }
 
@@ -167,7 +167,7 @@ static int new_tween_scale_between(lua_State *L)
     float a = XL_checkfloat(L, lua_upvalueindex(1));
     float b = XL_checkfloat(L, lua_upvalueindex(2));
     R_TweenScale ts = R_tween_scale_between(a, b);
-    XL_pushnewutype(L, &ts, sizeof(ts), "R_TweenScale");
+    XL_pushnewutypeuv(L, &ts, sizeof(ts), "R_TweenScale", 0);
     return 1;
 }
 
@@ -176,7 +176,7 @@ static int new_tween_scale_custom(lua_State *L)
     R_LuaValue *lv = R_lua_value_new(L, lua_upvalueindex(1));
     R_TweenScale ts = R_tween_scale(tween_scale_calc, tween_scale_free,
                                     NULL, R_user_data(lv));
-    XL_pushnewutype(L, &ts, sizeof(ts), "R_TweenScale");
+    XL_pushnewutypeuv(L, &ts, sizeof(ts), "R_TweenScale", 0);
     return 1;
 }
 
@@ -210,7 +210,7 @@ END
 
 
 PPTYPE R_Sprite
-PPTYPE R_LuaTween R.LuaTween
+PPTYPE R_LuaTween R.LuaTween 1
 
 @@PERL
 for my $name (qw(origin_x origin_y pos_x pos_y scale_x scale_y skew_x skew_y
@@ -309,7 +309,7 @@ END
 
 METHOD ... build()
     XL_UNUSED(self);
-    lua_getuservalue(L, 1);
+    XL_getiuservalue(L, 1, 1);
     return 1;
 END
 
@@ -525,7 +525,7 @@ METHOD <NEW>R_LuaTween *tween_fixed(float seconds)
     R_sequence_add(self, RETVAL);
 LEAVE
     lua_pushvalue(L, 1);
-    lua_setuservalue(L, -2);
+    XL_setiuservalue(L, -2, 1);
 END
 
 METHOD <NEW>R_LuaTween *tween_between(float a, float b)
@@ -534,7 +534,7 @@ METHOD <NEW>R_LuaTween *tween_between(float a, float b)
     R_sequence_add(self, RETVAL);
 LEAVE
     lua_pushvalue(L, 1);
-    lua_setuservalue(L, -2);
+    XL_setiuservalue(L, -2, 1);
 END
 
 METHOD <NEW>R_LuaTween *tween_custom(any fn)
@@ -545,7 +545,7 @@ METHOD <NEW>R_LuaTween *tween_custom(any fn)
     R_sequence_add(self, RETVAL);
 LEAVE
     lua_pushvalue(L, 1);
-    lua_setuservalue(L, -2);
+    XL_setiuservalue(L, -2, 1);
 END
 
 

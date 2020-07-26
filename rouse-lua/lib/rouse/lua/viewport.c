@@ -38,7 +38,7 @@ static int r_viewport_new_xl(lua_State *L)
     int h = XL_checkint(L, 4);
     R_Viewport RETVAL;
     RETVAL = (R_Viewport){x, y, w, h};
-    XL_pushnewutype(L, &RETVAL, sizeof(R_Viewport), "R_Viewport");
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_Viewport), "R_Viewport", 0);
     return 1;
 }
 
@@ -169,7 +169,7 @@ static int r_viewport_window_xl(lua_State *L)
     R_Viewport RETVAL;
     XL_UNUSED(L);
     RETVAL = R_window_viewport();
-    XL_pushnewutype(L, &RETVAL, sizeof(R_Viewport), "R_Viewport");
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_Viewport), "R_Viewport", 0);
     return 1;
 }
 

@@ -34,7 +34,7 @@ static int r_framebuffer_new_xl(lua_State *L)
 {
     R_FrameBuffer *RETVAL;
     return luaL_error(L, "R.FrameBuffer.new not yet implemented");
-    XL_pushnewpptype(L, RETVAL, "R_FrameBuffer");
+    XL_pushnewpptypeuv(L, RETVAL, "R_FrameBuffer", 0);
     return 1;
 }
 
@@ -44,7 +44,7 @@ static int r_framebuffer_new_2d_xl(lua_State *L)
     int height = XL_checkint(L, 2);
     R_FrameBuffer *RETVAL;
     RETVAL = R_frame_buffer_2d_new(width, height);
-    XL_pushnewpptype(L, RETVAL, "R_FrameBuffer");
+    XL_pushnewpptypeuv(L, RETVAL, "R_FrameBuffer", 0);
     return 1;
 }
 

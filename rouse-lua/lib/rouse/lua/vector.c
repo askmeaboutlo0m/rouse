@@ -35,7 +35,7 @@ static int r_vectorimage_from_file_xl(lua_State *L)
     const char *path = luaL_checkstring(L, 1);
     R_VectorImage *RETVAL;
     RETVAL = R_vector_image_from_file(path);
-    XL_pushnewpptype(L, RETVAL, "R_VectorImage");
+    XL_pushnewpptypeuv(L, RETVAL, "R_VectorImage", 0);
     return 1;
 }
 

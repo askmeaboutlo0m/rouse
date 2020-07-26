@@ -93,7 +93,7 @@ static int r_nvg_rgb_xl(lua_State *L)
     unsigned char b = XL_checkuchar(L, 3);
     NVGcolor RETVAL;
     RETVAL = nvgRGB(r, g, b);
-    XL_pushnewutype(L, &RETVAL, sizeof(NVGcolor), "NVGcolor");
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(NVGcolor), "NVGcolor", 0);
     return 1;
 }
 
@@ -104,7 +104,7 @@ static int r_nvg_rgbf_xl(lua_State *L)
     float b = XL_checkfloat(L, 3);
     NVGcolor RETVAL;
     RETVAL = nvgRGBf(r, g, b);
-    XL_pushnewutype(L, &RETVAL, sizeof(NVGcolor), "NVGcolor");
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(NVGcolor), "NVGcolor", 0);
     return 1;
 }
 
@@ -116,7 +116,7 @@ static int r_nvg_rgba_xl(lua_State *L)
     unsigned char a = XL_checkuchar(L, 4);
     NVGcolor RETVAL;
     RETVAL = nvgRGBA(r, g, b, a);
-    XL_pushnewutype(L, &RETVAL, sizeof(NVGcolor), "NVGcolor");
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(NVGcolor), "NVGcolor", 0);
     return 1;
 }
 
@@ -128,7 +128,7 @@ static int r_nvg_rgbaf_xl(lua_State *L)
     float a = XL_checkfloat(L, 4);
     NVGcolor RETVAL;
     RETVAL = nvgRGBAf(r, g, b, a);
-    XL_pushnewutype(L, &RETVAL, sizeof(NVGcolor), "NVGcolor");
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(NVGcolor), "NVGcolor", 0);
     return 1;
 }
 
@@ -254,7 +254,7 @@ static int r_nvg_new_xl(lua_State *L)
     int flags = XL_checkint(L, 1);
     R_Nvg *RETVAL;
     RETVAL = R_nvg_new(flags);
-    XL_pushnewpptype(L, RETVAL, "R_Nvg");
+    XL_pushnewpptypeuv(L, RETVAL, "R_Nvg", 0);
     return 1;
 }
 

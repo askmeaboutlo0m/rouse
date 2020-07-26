@@ -302,9 +302,10 @@ static void draw_lua_value(R_Nvg *nvg, const float matrix[static 6],
 {
     R_LUA_VALUE_DECLARE_UNPACK(user.data, lv, L);
     R_lua_getreg(L, lv->reg);
-    XL_pushnewpptype(L, nvg, "R_Nvg");
+    XL_pushnewpptypeuv(L, nvg, "R_Nvg", 0);
     R_nvg_incref(nvg);
-    XL_pushnewutype(L, matrix, sizeof(R_LuaNvgTransform), "R_LuaNvgTransform");
+    XL_pushnewutypeuv(L, matrix, sizeof(R_LuaNvgTransform),
+                      "R_LuaNvgTransform", 0);
     if (lua_pcall(L, 2, 0, 0)) {
         R_LUA_ERROR_TO_WARNING(L);
     }

@@ -35,7 +35,7 @@ static int r_textfield_new_xl(lua_State *L)
     R_TextField *RETVAL;
     int argc = lua_gettop(L);
     RETVAL   = R_text_field_new();
-    XL_pushnewpptype(L, RETVAL, "R_TextField");
+    XL_pushnewpptypeuv(L, RETVAL, "R_TextField", 0);
     if (argc >= 1) {
         lua_getfield(L, -1, "set");
         lua_pushvalue(L, -2);
@@ -110,7 +110,7 @@ static int r_textfield_color_index_xl(lua_State *L)
     R_TextField *self = XL_checkpptype(L, 1, "R_TextField");
     NVGcolor RETVAL;
     RETVAL = self->color;
-    XL_pushnewutype(L, &RETVAL, sizeof(NVGcolor), "NVGcolor");
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(NVGcolor), "NVGcolor", 0);
     return 1;
 }
 

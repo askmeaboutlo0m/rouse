@@ -37,7 +37,7 @@ static int r_bitmapimage_from_file_xl(lua_State *L)
     int flags = XL_checkint(L, 3);
     R_BitmapImage *RETVAL;
     RETVAL = R_bitmap_image_from_file(nvg, path, flags);
-    XL_pushnewpptype(L, RETVAL, "R_BitmapImage");
+    XL_pushnewpptypeuv(L, RETVAL, "R_BitmapImage", 0);
     return 1;
 }
 

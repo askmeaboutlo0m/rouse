@@ -201,7 +201,7 @@ static int r_timestamp_as_double_xl(lua_State *L)
     timespec_get(&ts, TIME_UTC);
     RETVAL = (double) ts.tv_sec + (double) ts.tv_nsec / 1000000000.0;
 #endif
-    XL_pushnewutype(L, &RETVAL, sizeof(double), "double");
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(double), "double", 0);
     return 1;
 }
 

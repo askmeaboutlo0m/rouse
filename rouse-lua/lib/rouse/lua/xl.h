@@ -27,11 +27,18 @@ void XL_pushuint8 (lua_State *L, uint8_t       value);
 void XL_pushint32 (lua_State *L, int32_t       value);
 void XL_pushuint32(lua_State *L, uint32_t      value);
 
-void **XL_pushnewpptype         (lua_State *L, void *value, const char *tname);
-void **XL_pushnewpptype_nullable(lua_State *L, void *value, const char *tname);
+void **XL_pushnewpptypeuv(lua_State *L, void *value,
+                          const char *tname, int nuvalue);
 
-void *XL_pushnewutype(lua_State *L, const void *value,
-                      size_t size, const char *tname);
+void **XL_pushnewpptypeuv_nullable(lua_State *L, void *value,
+                                   const char *tname, int nuvalue);
+
+void *XL_pushnewutypeuv(lua_State *L, const void *value,
+                        size_t size, const char *tname,
+                        int nuvalue);
+
+void XL_getiuservalue(lua_State *L, int index, int n);
+void XL_setiuservalue(lua_State *L, int index, int n);
 
 int XL_index_fallback(lua_State *L, const char *tname,
                       int selfindex, int keyindex);

@@ -105,18 +105,20 @@ void XL_pushuint32(lua_State *L, uint32_t value)
     lua_pushinteger(L, (lua_Integer) value);
 }
 
-void **XL_pushnewpptype(lua_State *L, void *value, const char *tname)
+void **XL_pushnewpptypeuv(lua_State *L, void *value,
+                          const char *tname, int nuvalue)
 {
-    void **pp = lua_newuserdata(L, sizeof(*pp));
+    void **pp = lua_newuserdatauv(L, sizeof(*pp), nuvalue);
     *pp = value;
     luaL_setmetatable(L, tname);
     return pp;
 }
 
-void **XL_pushnewpptype_nullable(lua_State *L, void *value, const char *tname)
+void **XL_pushnewpptypeuv_nullable(lua_State *L, void *value,
+                                   const char *tname, int nuvalue)
 {
     if (value) {
-        return XL_pushnewpptype(L, value, tname);
+        return XL_pushnewpptypeuv(L, value, tname, nuvalue);
     }
     else {
         lua_pushnil(L);
@@ -124,12 +126,28 @@ void **XL_pushnewpptype_nullable(lua_State *L, void *value, const char *tname)
     }
 }
 
-void *XL_pushnewutype(lua_State *L, const void *value,
-                      size_t size, const char *tname)
+void *XL_pushnewutypeuv(lua_State *L, const void *value,
+                        size_t size, const char *tname,
+                        int nuvalue)
 {
-    void *u = memcpy(lua_newuserdata(L, size), value, size);
+    void *u = memcpy(lua_newuserdatauv(L, size, nuvalue), value, size);
     luaL_setmetatable(L, tname);
     return u;
+}
+
+
+void XL_getiuservalue(lua_State *L, int index, int n)
+{
+    if (lua_getiuservalue(L, index, n) == LUA_TNONE) {
+        luaL_error(L, "Can't get nonexistent uservalue %d", n);
+    }
+}
+
+void XL_setiuservalue(lua_State *L, int index, int n)
+{
+    if (lua_setiuservalue(L, index, n) == 0) {
+        luaL_error(L, "Can't set nonexistent uservalue %d", n);
+    }
 }
 
 

@@ -73,7 +73,7 @@ static int new_tween_float_fixed(lua_State *L)
 {
     float value = XL_checkfloat(L, lua_upvalueindex(1));
     R_TweenFloat tf = R_tween_float_fixed(value);
-    XL_pushnewutype(L, &tf, sizeof(tf), "R_TweenFloat");
+    XL_pushnewutypeuv(L, &tf, sizeof(tf), "R_TweenFloat", 0);
     return 1;
 }
 
@@ -82,7 +82,7 @@ static int new_tween_float_between(lua_State *L)
     float a = XL_checkfloat(L, lua_upvalueindex(1));
     float b = XL_checkfloat(L, lua_upvalueindex(2));
     R_TweenFloat tf = R_tween_float_between(a, b);
-    XL_pushnewutype(L, &tf, sizeof(tf), "R_TweenFloat");
+    XL_pushnewutypeuv(L, &tf, sizeof(tf), "R_TweenFloat", 0);
     return 1;
 }
 
@@ -91,7 +91,7 @@ static int new_tween_float_custom(lua_State *L)
     R_LuaValue *lv = R_lua_value_new(L, lua_upvalueindex(1));
     R_TweenFloat tf = R_tween_float(tween_float_calc, tween_float_free,
                                     NULL, R_user_data(lv));
-    XL_pushnewutype(L, &tf, sizeof(tf), "R_TweenFloat");
+    XL_pushnewutypeuv(L, &tf, sizeof(tf), "R_TweenFloat", 0);
     return 1;
 }
 
@@ -136,7 +136,7 @@ static float tween_scale_calc(R_UserData user, R_V2 source)
     R_LUA_VALUE_DECLARE_UNPACK(user.data, lv, L);
     lua_pushcfunction(L, protected_tween_float_or_scale_calc);
     R_lua_getreg(L, lv->reg);
-    XL_pushnewutype(L, &source, sizeof(source), "R_V2");
+    XL_pushnewutypeuv(L, &source, sizeof(source), "R_V2", 0);
     if (R_lua_pcall(L, 2, 1)) {
         R_LUA_ERROR_TO_WARNING(L);
         return 0.0f;
@@ -157,7 +157,7 @@ static int new_tween_scale_fixed(lua_State *L)
 {
     float value = XL_checkfloat(L, lua_upvalueindex(1));
     R_TweenScale ts = R_tween_scale_fixed(value);
-    XL_pushnewutype(L, &ts, sizeof(ts), "R_TweenScale");
+    XL_pushnewutypeuv(L, &ts, sizeof(ts), "R_TweenScale", 0);
     return 1;
 }
 
@@ -166,7 +166,7 @@ static int new_tween_scale_between(lua_State *L)
     float a = XL_checkfloat(L, lua_upvalueindex(1));
     float b = XL_checkfloat(L, lua_upvalueindex(2));
     R_TweenScale ts = R_tween_scale_between(a, b);
-    XL_pushnewutype(L, &ts, sizeof(ts), "R_TweenScale");
+    XL_pushnewutypeuv(L, &ts, sizeof(ts), "R_TweenScale", 0);
     return 1;
 }
 
@@ -175,7 +175,7 @@ static int new_tween_scale_custom(lua_State *L)
     R_LuaValue *lv = R_lua_value_new(L, lua_upvalueindex(1));
     R_TweenScale ts = R_tween_scale(tween_scale_calc, tween_scale_free,
                                     NULL, R_user_data(lv));
-    XL_pushnewutype(L, &ts, sizeof(ts), "R_TweenScale");
+    XL_pushnewutypeuv(L, &ts, sizeof(ts), "R_TweenScale", 0);
     return 1;
 }
 
@@ -478,7 +478,7 @@ static int r_luatween_method_build_xl(lua_State *L)
 {
     R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
     XL_UNUSED(self);
-    lua_getuservalue(L, 1);
+    XL_getiuservalue(L, 1, 1);
     return 1;
 }
 
@@ -486,7 +486,7 @@ static int r_sequence_new_xl(lua_State *L)
 {
     R_Sequence *RETVAL;
     RETVAL = R_sequence_new();
-    XL_pushnewpptype(L, RETVAL, "R_Sequence");
+    XL_pushnewpptypeuv(L, RETVAL, "R_Sequence", 0);
     return 1;
 }
 
@@ -709,9 +709,9 @@ static int r_sequence_method_tween_fixed_xl(lua_State *L)
     R_LuaEase ease = to_ease(L, 3);
     RETVAL = R_tween_new_fixed(seconds, ease.fn, ease.on_free, ease.user);
     R_sequence_add(self, RETVAL);
-    XL_pushnewpptype(L, RETVAL, "R_LuaTween");
+    XL_pushnewpptypeuv(L, RETVAL, "R_LuaTween", 1);
     lua_pushvalue(L, 1);
-    lua_setuservalue(L, -2);
+    XL_setiuservalue(L, -2, 1);
     return 1;
 }
 
@@ -724,9 +724,9 @@ static int r_sequence_method_tween_between_xl(lua_State *L)
     R_LuaEase ease = to_ease(L, 4);
     RETVAL = R_tween_new_between(a, b, ease.fn, ease.on_free, ease.user);
     R_sequence_add(self, RETVAL);
-    XL_pushnewpptype(L, RETVAL, "R_LuaTween");
+    XL_pushnewpptypeuv(L, RETVAL, "R_LuaTween", 1);
     lua_pushvalue(L, 1);
-    lua_setuservalue(L, -2);
+    XL_setiuservalue(L, -2, 1);
     return 1;
 }
 
@@ -741,9 +741,9 @@ static int r_sequence_method_tween_custom_xl(lua_State *L)
                          R_user_data(R_lua_value_new(L, fn)),
                          ease.fn, ease.on_free, ease.user);
     R_sequence_add(self, RETVAL);
-    XL_pushnewpptype(L, RETVAL, "R_LuaTween");
+    XL_pushnewpptypeuv(L, RETVAL, "R_LuaTween", 1);
     lua_pushvalue(L, 1);
-    lua_setuservalue(L, -2);
+    XL_setiuservalue(L, -2, 1);
     return 1;
 }
 

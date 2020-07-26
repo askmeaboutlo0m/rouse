@@ -92,13 +92,14 @@ my $package_qr = qr/\w+(?:\.\w+)+/;
 my $return_qr  = qr/.*?\S.*?/;
 
 sub parse_type ($self, $kind, $in, $line) {
-    $line =~ /\A(\w+)(?:\s+($package_qr))?\s*/
+    $line =~ /\A(\w+)(?:\s+($package_qr))?(?:\s+([0-9]+))?\s*/
         or die "Can't parse \U$kind\E '$line'\n";
-    my ($name, $package) = ($1, $2);
+    my ($name, $package, $nuvalue) = ($1, $2, $3);
     my $type = $self->{types}{$name} ||= {
-        kind => $kind,
-        name => $name,
+        kind     => $kind,
+        name     => $name,
         packages => [],
+        nuvalue  => 0 + ($3 // 0),
     };
     die "Redeclaration of type '$name' as a $kind\n" if $type->{kind} ne $kind;
     push @{$type->{packages}}, $package if $package;

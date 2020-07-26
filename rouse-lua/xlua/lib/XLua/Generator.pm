@@ -162,12 +162,12 @@ sub c_name ($name) {
 }
 
 
-sub generate_pptype ($self, $name, $packages) {
+sub generate_pptype ($self, $name, $packages, $nuvalue) {
     my $decl   = sprintf '%s *$var', $name;
     my $check  = sprintf '$decl = XL_checkpptype(L, $index, \"%s\")', $name;
     my $ncheck = sprintf '$decl = XL_checkpptype_nullable(L, $index, \"%s\")', $name;
-    my $new    = sprintf 'XL_pushnewpptype(L, $var, \"%s\")', $name;
-    my $new_n  = sprintf 'XL_pushnewpptype_nullable(L, $var, \"%s\")', $name;
+    my $new    = sprintf 'XL_pushnewpptypeuv(L, $var, \"%s\", %d)', $name, $nuvalue;
+    my $new_n  = sprintf 'XL_pushnewpptypeuv_nullable(L, $var, \"%s\", %d)', $name, $nuvalue;
     my $die    = sprintf '" . die("A plain %s* can\'t be pushed\n") . "', $name;
     my %type   = (decl => $decl, check => $check, metatable => $name);
 
@@ -181,12 +181,12 @@ sub generate_pptype ($self, $name, $packages) {
     }
 }
 
-sub generate_utype ($self, $name, $packages) {
+sub generate_utype ($self, $name, $packages, $nuvalue) {
     my $decl  = sprintf '%s *$var', $name;
     my $ndecl = sprintf '%s $var', $name;
     my $check = sprintf '$decl = XL_checkutype(L, $index, \"%s\")', $name;
-    my $new   = sprintf 'XL_pushnewutype(L, $var, sizeof(%1$s), \"%1$s\")', $name;
-    my $nnew  = sprintf 'XL_pushnewutype(L, &$var, sizeof(%1$s), \"%1$s\")', $name;
+    my $new   = sprintf 'XL_pushnewutypeuv(L, $var, sizeof(%1$s), \"%1$s\", %2$d)', $name, $nuvalue;
+    my $nnew  = sprintf 'XL_pushnewutypeuv(L, &$var, sizeof(%1$s), \"%1$s\", %2$d)', $name, $nuvalue;
     my $die   = sprintf '" . die("A plain %s* can\'t be pushed\n") . "', $name;
     my $ndie  = sprintf '" . die("A new %s* can\'t be an argument\n") . "', $name;
     my %type  = (decl => $decl, check => $check, metatable => $name);
@@ -214,7 +214,7 @@ sub generate_utype ($self, $name, $packages) {
 sub generate_types ($self, $types) {
     for my $type (values %$types) {
         my $method = "generate_$type->{kind}";
-        $self->$method(@{$type}{'name', 'packages'});
+        $self->$method(@{$type}{'name', 'packages', 'nuvalue'});
     }
 }
 

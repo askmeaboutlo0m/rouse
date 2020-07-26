@@ -61,7 +61,7 @@ static int r_double_new_xl(lua_State *L)
 {
     double RETVAL;
     RETVAL = to_double(L, 1);
-    XL_pushnewutype(L, &RETVAL, sizeof(double), "double");
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(double), "double", 0);
     return 1;
 }
 
@@ -78,7 +78,7 @@ static int double_method_add_xl(lua_State *L)
 {
     double RETVAL;
     RETVAL = to_double(L, 1) + to_double(L, 2);
-    XL_pushnewutype(L, &RETVAL, sizeof(double), "double");
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(double), "double", 0);
     return 1;
 }
 
@@ -86,7 +86,7 @@ static int double_method_sub_xl(lua_State *L)
 {
     double RETVAL;
     RETVAL = to_double(L, 1) - to_double(L, 2);
-    XL_pushnewutype(L, &RETVAL, sizeof(double), "double");
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(double), "double", 0);
     return 1;
 }
 
@@ -94,7 +94,7 @@ static int double_method_mul_xl(lua_State *L)
 {
     double RETVAL;
     RETVAL = to_double(L, 1) * to_double(L, 2);
-    XL_pushnewutype(L, &RETVAL, sizeof(double), "double");
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(double), "double", 0);
     return 1;
 }
 
@@ -102,7 +102,7 @@ static int double_method_div_xl(lua_State *L)
 {
     double RETVAL;
     RETVAL = to_double(L, 1) / to_double(L, 2);
-    XL_pushnewutype(L, &RETVAL, sizeof(double), "double");
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(double), "double", 0);
     return 1;
 }
 
@@ -110,7 +110,7 @@ static int double_method_pow_xl(lua_State *L)
 {
     double RETVAL;
     RETVAL = pow(to_double(L, 1), to_double(L, 2));
-    XL_pushnewutype(L, &RETVAL, sizeof(double), "double");
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(double), "double", 0);
     return 1;
 }
 
@@ -118,7 +118,7 @@ static int double_method_unm_xl(lua_State *L)
 {
     double RETVAL;
     RETVAL = -to_double(L, 1);
-    XL_pushnewutype(L, &RETVAL, sizeof(double), "double");
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(double), "double", 0);
     return 1;
 }
 

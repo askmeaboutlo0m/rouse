@@ -36,7 +36,7 @@ static int r_v2_new_xl(lua_State *L)
     float y = XL_checkfloat(L, 2);
     R_V2 RETVAL;
     RETVAL = R_v2(x, y);
-    XL_pushnewutype(L, &RETVAL, sizeof(R_V2), "R_V2");
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
     return 1;
 }
 
@@ -46,7 +46,7 @@ static int r_v2_polar_xl(lua_State *L)
     float angle = XL_checkfloat(L, 2);
     R_V2 RETVAL;
     RETVAL = R_v2_polar(len, angle);
-    XL_pushnewutype(L, &RETVAL, sizeof(R_V2), "R_V2");
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
     return 1;
 }
 
@@ -188,7 +188,7 @@ static int r_v2_method_add_xl(lua_State *L)
         default:
             DIE_WITH_BAD_V2_TYPES(L, "+", a, b);
     }
-    XL_pushnewutype(L, &RETVAL, sizeof(R_V2), "R_V2");
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
     return 1;
 }
 
@@ -211,7 +211,7 @@ static int r_v2_method_sub_xl(lua_State *L)
         default:
             DIE_WITH_BAD_V2_TYPES(L, "-", a, b);
     }
-    XL_pushnewutype(L, &RETVAL, sizeof(R_V2), "R_V2");
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
     return 1;
 }
 
@@ -233,7 +233,7 @@ static int r_v2_method_mul_xl(lua_State *L)
         default:
             DIE_WITH_BAD_V2_TYPES(L, "*", a, b);
     }
-    XL_pushnewutype(L, &RETVAL, sizeof(R_V2), "R_V2");
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
     return 1;
 }
 
@@ -267,7 +267,7 @@ static int r_affinetransform_origin_index_xl(lua_State *L)
     R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
     R_V2 RETVAL;
     RETVAL = self->origin;
-    XL_pushnewutype(L, &RETVAL, sizeof(R_V2), "R_V2");
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
     return 1;
 }
 
@@ -318,7 +318,7 @@ static int r_affinetransform_pos_index_xl(lua_State *L)
     R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
     R_V2 RETVAL;
     RETVAL = self->pos;
-    XL_pushnewutype(L, &RETVAL, sizeof(R_V2), "R_V2");
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
     return 1;
 }
 
@@ -369,7 +369,7 @@ static int r_affinetransform_scale_index_xl(lua_State *L)
     R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
     R_V2 RETVAL;
     RETVAL = self->scale;
-    XL_pushnewutype(L, &RETVAL, sizeof(R_V2), "R_V2");
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
     return 1;
 }
 
@@ -420,7 +420,7 @@ static int r_affinetransform_skew_index_xl(lua_State *L)
     R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
     R_V2 RETVAL;
     RETVAL = self->skew;
-    XL_pushnewutype(L, &RETVAL, sizeof(R_V2), "R_V2");
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
     return 1;
 }
 
@@ -505,7 +505,7 @@ static int r_affinetransform_base_index_xl(lua_State *L)
     R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
     R_V2 RETVAL;
     RETVAL = self->base;
-    XL_pushnewutype(L, &RETVAL, sizeof(R_V2), "R_V2");
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
     return 1;
 }
 
@@ -573,7 +573,7 @@ static int r_affinetransform_rel_index_xl(lua_State *L)
     R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
     R_V2 RETVAL;
     RETVAL = R_affine_transform_rel(self);
-    XL_pushnewutype(L, &RETVAL, sizeof(R_V2), "R_V2");
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
     return 1;
 }
 
@@ -697,7 +697,7 @@ static int r_sprite_new_xl(lua_State *L)
                      : luaL_checkstring(L, name_index);
     RETVAL   = R_sprite_new(name);
     R_sprite_user_set(RETVAL, lua_sprite_data_new(L), lua_sprite_data_free);
-    XL_pushnewpptype(L, RETVAL, "R_Sprite");
+    XL_pushnewpptypeuv(L, RETVAL, "R_Sprite", 0);
     if (argc >= 2) {
         lua_getfield(L, -1, "set");
         lua_pushvalue(L, -2);
@@ -781,7 +781,7 @@ static int r_sprite_parent_index_xl(lua_State *L)
     if (RETVAL) {
         R_sprite_incref(RETVAL);
     }
-    XL_pushnewpptype_nullable(L, RETVAL, "R_Sprite");
+    XL_pushnewpptypeuv_nullable(L, RETVAL, "R_Sprite", 0);
     return 1;
 }
 
@@ -791,9 +791,10 @@ static void draw_lua_value(R_Nvg *nvg, const float matrix[static 6],
 {
     R_LUA_VALUE_DECLARE_UNPACK(user.data, lv, L);
     R_lua_getreg(L, lv->reg);
-    XL_pushnewpptype(L, nvg, "R_Nvg");
+    XL_pushnewpptypeuv(L, nvg, "R_Nvg", 0);
     R_nvg_incref(nvg);
-    XL_pushnewutype(L, matrix, sizeof(R_LuaNvgTransform), "R_LuaNvgTransform");
+    XL_pushnewutypeuv(L, matrix, sizeof(R_LuaNvgTransform),
+                      "R_LuaNvgTransform", 0);
     if (lua_pcall(L, 2, 0, 0)) {
         R_LUA_ERROR_TO_WARNING(L);
     }
@@ -867,7 +868,7 @@ static int r_sprite_transform_index_xl(lua_State *L)
     R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
     R_AffineTransform RETVAL;
     RETVAL = R_sprite_transform(self);
-    XL_pushnewutype(L, &RETVAL, sizeof(R_AffineTransform), "R_AffineTransform");
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_AffineTransform), "R_AffineTransform", 0);
     return 1;
 }
 
@@ -876,7 +877,7 @@ static int r_sprite_origin_index_xl(lua_State *L)
     R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
     R_V2 RETVAL;
     RETVAL = R_sprite_origin(self);
-    XL_pushnewutype(L, &RETVAL, sizeof(R_V2), "R_V2");
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
     return 1;
 }
 
@@ -903,7 +904,7 @@ static int r_sprite_pos_index_xl(lua_State *L)
     R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
     R_V2 RETVAL;
     RETVAL = R_sprite_pos(self);
-    XL_pushnewutype(L, &RETVAL, sizeof(R_V2), "R_V2");
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
     return 1;
 }
 
@@ -930,7 +931,7 @@ static int r_sprite_scale_index_xl(lua_State *L)
     R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
     R_V2 RETVAL;
     RETVAL = R_sprite_scale(self);
-    XL_pushnewutype(L, &RETVAL, sizeof(R_V2), "R_V2");
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
     return 1;
 }
 
@@ -957,7 +958,7 @@ static int r_sprite_skew_index_xl(lua_State *L)
     R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
     R_V2 RETVAL;
     RETVAL = R_sprite_skew(self);
-    XL_pushnewutype(L, &RETVAL, sizeof(R_V2), "R_V2");
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
     return 1;
 }
 
@@ -993,7 +994,7 @@ static int r_sprite_base_index_xl(lua_State *L)
     R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
     R_V2 RETVAL;
     RETVAL = R_sprite_base(self);
-    XL_pushnewutype(L, &RETVAL, sizeof(R_V2), "R_V2");
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
     return 1;
 }
 
@@ -1029,7 +1030,7 @@ static int r_sprite_rel_index_xl(lua_State *L)
     R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
     R_V2 RETVAL;
     RETVAL = R_sprite_rel(self);
-    XL_pushnewutype(L, &RETVAL, sizeof(R_V2), "R_V2");
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
     return 1;
 }
 
@@ -1276,7 +1277,7 @@ static int r_sprite_world_pos_index_xl(lua_State *L)
     R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
     R_V2 RETVAL;
     RETVAL = R_sprite_world_pos(self);
-    XL_pushnewutype(L, &RETVAL, sizeof(R_V2), "R_V2");
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
     return 1;
 }
 
@@ -1303,7 +1304,7 @@ static int r_sprite_world_origin_index_xl(lua_State *L)
     R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
     R_V2 RETVAL;
     RETVAL = R_sprite_world_origin(self);
-    XL_pushnewutype(L, &RETVAL, sizeof(R_V2), "R_V2");
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
     return 1;
 }
 
@@ -1331,7 +1332,7 @@ static int r_sprite_method_to_local_xl(lua_State *L)
     R_V2 point = *((R_V2 *)luaL_checkudata(L, 2, "R_V2"));
     R_V2 RETVAL;
     RETVAL = R_sprite_to_local(self, point);
-    XL_pushnewutype(L, &RETVAL, sizeof(R_V2), "R_V2");
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
     return 1;
 }
 
@@ -1341,7 +1342,7 @@ static int r_sprite_method_to_world_xl(lua_State *L)
     R_V2 point = *((R_V2 *)luaL_checkudata(L, 2, "R_V2"));
     R_V2 RETVAL;
     RETVAL = R_sprite_to_world(self, point);
-    XL_pushnewutype(L, &RETVAL, sizeof(R_V2), "R_V2");
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
     return 1;
 }
 

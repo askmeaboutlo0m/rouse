@@ -35,7 +35,7 @@ static int r_framerenderer_new_xl(lua_State *L)
     R_FrameRenderer *RETVAL;
     bool alpha_blending = lua_toboolean(L, 1);
     RETVAL = R_frame_renderer_new(alpha_blending);
-    XL_pushnewpptype(L, RETVAL, "R_FrameRenderer");
+    XL_pushnewpptypeuv(L, RETVAL, "R_FrameRenderer", 0);
     return 1;
 }
 

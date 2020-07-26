@@ -47,7 +47,7 @@ static int protected_scene_callback(lua_State *L)
     R_LUA_VALUE_DECLARE_UNPACK(SCENE->user.data, lv, L); \
     lua_pushcfunction(L, protected_scene_callback); \
     R_lua_getreg(L, lv->reg); \
-    lua_getuservalue(L, -1); \
+    XL_getiuservalue(L, -1, 1); \
     lua_replace(L, -2); \
     lua_pushliteral(L, NAME); \
     PUSH_MORE_ARGS; \
@@ -57,7 +57,7 @@ static int protected_scene_callback(lua_State *L)
 
 static void push_event(lua_State *L, SDL_Event *event)
 {
-    XL_pushnewutype(L, event, sizeof(*event), "SDL_Event");
+    XL_pushnewutypeuv(L, event, sizeof(*event), "SDL_Event", 0);
 }
 
 static void scene_on_event(R_Scene *scene, SDL_Event *event)
@@ -101,7 +101,7 @@ int R_lua_scene_new(lua_State *L)
     scene->on_render = scene_on_render;
     scene->on_tick   = scene_on_tick;
 
-    void **pp = XL_pushnewpptype(L, scene, "R_Scene");
+    void **pp = XL_pushnewpptypeuv(L, scene, "R_Scene", 1);
     lua_pushvalue(L, -2);
     lua_pushvalue(L, -2);
 
@@ -111,7 +111,7 @@ int R_lua_scene_new(lua_State *L)
         return lua_error(L);
     }
 
-    lua_setuservalue(L, -2);
+    XL_setiuservalue(L, -2, 1);
     scene->user.data = R_lua_value_new(L, -1);
     scene->on_free   = scene_on_free;
 

@@ -567,7 +567,7 @@ static int sdl_event_window_index_xl(lua_State *L)
     SDL_Event *self = XL_checkutype(L, 1, "SDL_Event");
     SDL_WindowEvent RETVAL;
     GET_IN_EVENT_UNION(window, SDL_WINDOWEVENT);
-    XL_pushnewutype(L, &RETVAL, sizeof(SDL_WindowEvent), "SDL_WindowEvent");
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(SDL_WindowEvent), "SDL_WindowEvent", 0);
     return 1;
 }
 
@@ -576,7 +576,7 @@ static int sdl_event_key_index_xl(lua_State *L)
     SDL_Event *self = XL_checkutype(L, 1, "SDL_Event");
     SDL_KeyboardEvent RETVAL;
     GET_IN_EVENT_UNION(key, SDL_KEYDOWN, SDL_KEYUP);
-    XL_pushnewutype(L, &RETVAL, sizeof(SDL_KeyboardEvent), "SDL_KeyboardEvent");
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(SDL_KeyboardEvent), "SDL_KeyboardEvent", 0);
     return 1;
 }
 
@@ -585,7 +585,7 @@ static int sdl_event_motion_index_xl(lua_State *L)
     SDL_Event *self = XL_checkutype(L, 1, "SDL_Event");
     SDL_MouseMotionEvent RETVAL;
     GET_IN_EVENT_UNION(motion, SDL_MOUSEMOTION);
-    XL_pushnewutype(L, &RETVAL, sizeof(SDL_MouseMotionEvent), "SDL_MouseMotionEvent");
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(SDL_MouseMotionEvent), "SDL_MouseMotionEvent", 0);
     return 1;
 }
 
@@ -594,7 +594,7 @@ static int sdl_event_button_index_xl(lua_State *L)
     SDL_Event *self = XL_checkutype(L, 1, "SDL_Event");
     SDL_MouseButtonEvent RETVAL;
     GET_IN_EVENT_UNION(button, SDL_MOUSEBUTTONDOWN, SDL_MOUSEBUTTONUP);
-    XL_pushnewutype(L, &RETVAL, sizeof(SDL_MouseButtonEvent), "SDL_MouseButtonEvent");
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(SDL_MouseButtonEvent), "SDL_MouseButtonEvent", 0);
     return 1;
 }
 

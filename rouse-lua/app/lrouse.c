@@ -26,6 +26,46 @@
 #endif
 
 
+typedef struct WarnString {
+    char   *buf;
+    size_t len, size;
+} WarnString;
+
+static void on_warn(void *ud, const char *msg, int tocont)
+{
+    WarnString *ws = ud;
+    size_t     len = strlen(msg);
+
+    /* Avoid buffering if we were passed the whole warning in one go. */
+    if (ws->len > 0 || tocont) {
+        if (len > 0) {
+            size_t needed = ws->len + len;
+            if (ws->size < needed) {
+                ws->buf  = R_realloc(ws->buf, needed);
+                ws->size = needed;
+            }
+            memcpy(ws->buf + ws->len, msg, len);
+            ws->len = needed;
+        }
+
+        if (!tocont) {
+            R_warn("Lua warning: %.*s", R_size2int(ws->len), ws->buf);
+            ws->len = 0;
+        }
+    }
+    else {
+        R_warn("Lua warning: %s", msg);
+    }
+}
+
+static WarnString *attach_warn_function(lua_State *L)
+{
+    WarnString *ws = R_NEW_INIT_STRUCT(ws, WarnString, NULL, 0, 0);
+    lua_setwarnf(L, on_warn, ws);
+    return ws;
+}
+
+
 #define OPEN_LUA_LIB(L, NAME, FN) do { \
         luaL_requiref(L, NAME, FN, 1); \
         lua_pop(L, 1); \
@@ -142,16 +182,13 @@ static void seed_random(lua_State *L)
     lua_settop(L, top);
 }
 
-static lua_State *init_lua(void)
+static WarnString *init_lua(lua_State *L)
 {
-    lua_State *L = luaL_newstate();
-    if (!L) {
-        R_die("Can't open Lua state");
-    }
+    WarnString *ws = attach_warn_function(L);
     open_lua_libs(L);
     disallow_questionable_features(L);
     seed_random(L);
-    return L;
+    return ws;
 }
 
 
@@ -271,7 +308,12 @@ static void fetch_bootstrap(lua_State *L)
 
 int main(int argc, char **argv)
 {
-    lua_State *L = init_lua();
+    lua_State *L = luaL_newstate();
+    if (!L) {
+        R_die("Can't open Lua state");
+    }
+
+    WarnString *ws = init_lua(L);
     lua_pushliteral(L, "main.lua");
     lua_setglobal(L, "MAIN");
 
@@ -289,5 +331,7 @@ int main(int argc, char **argv)
     lua_close(L);
 #endif
 
+    free(ws->buf);
+    free(ws);
     return 0;
 }

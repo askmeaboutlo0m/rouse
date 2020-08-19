@@ -13,56 +13,56 @@ DISTRIBUTIONS
       perl 5.006
       strict 0
       warnings 0
-  Imager-1.011
-    pathname: T/TO/TONYC/Imager-1.011.tar.gz
+  Imager-1.012
+    pathname: T/TO/TONYC/Imager-1.012.tar.gz
     provides:
-      Imager 1.011
-      Imager::Color 1.012
-      Imager::Color::Float 1.005
-      Imager::Color::Table 1.003
-      Imager::CountColor 0.02
-      Imager::Expr 1.007
-      Imager::Expr::Assem 1.003
-      Imager::Expr::Infix 1.007
-      Imager::Expr::Postfix 1.007
-      Imager::ExtUtils 1.002
-      Imager::FORMATS 1.011
-      Imager::File::CUR undef
-      Imager::File::ICO 0.06
-      Imager::File::SGI 0.04
-      Imager::Fill 1.012
-      Imager::Filter::DynTest 0.02
-      Imager::Filter::Flines 0.03
-      Imager::Filter::Mandelbrot 0.04
-      Imager::Font 1.038
-      Imager::Font::BBox 1.006
-      Imager::Font::FreeType2 1.020
-      Imager::Font::Image undef
-      Imager::Font::Test 1.0001
-      Imager::Font::Truetype 1.012
-      Imager::Font::Type1 1.012
-      Imager::Font::Wrap 1.004
-      Imager::Fountain 1.007
-      Imager::IO 1.011
-      Imager::Matrix2d 1.012
-      Imager::Preprocess 1.001
-      Imager::Probe 1.006
-      Imager::Regops undef
-      Imager::Test 1.004
-      Imager::Test::OverUtf8 1.004
-      Imager::Transform 1.006
+      Imager 1.012
+      Imager::Color 1.013
+      Imager::Color::Float 1.006
+      Imager::Color::Table 1.004
+      Imager::CountColor 0.03
+      Imager::Expr 1.008
+      Imager::Expr::Assem 1.004
+      Imager::Expr::Infix 1.008
+      Imager::Expr::Postfix 1.008
+      Imager::ExtUtils 1.003
+      Imager::FORMATS 1.012
+      Imager::File::CUR 1.000
+      Imager::File::ICO 0.07
+      Imager::File::SGI 0.05
+      Imager::Fill 1.013
+      Imager::Filter::DynTest 0.03
+      Imager::Filter::Flines 0.04
+      Imager::Filter::Mandelbrot 0.05
+      Imager::Font 1.039
+      Imager::Font::BBox 1.007
+      Imager::Font::FreeType2 1.021
+      Imager::Font::Image 1.000
+      Imager::Font::Test 1.002
+      Imager::Font::Truetype 1.013
+      Imager::Font::Type1 1.013
+      Imager::Font::Wrap 1.005
+      Imager::Fountain 1.008
+      Imager::IO 1.012
+      Imager::Matrix2d 1.013
+      Imager::Preprocess 1.002
+      Imager::Probe 1.007
+      Imager::Regops 1.000
+      Imager::Test 1.005
+      Imager::Test::OverUtf8 1.005
+      Imager::Transform 1.007
     requirements:
       ExtUtils::MakeMaker 0
       Scalar::Util 1.00
       Test::More 0.99
       XSLoader 0
-  Inline-0.83
-    pathname: T/TI/TINITA/Inline-0.83.tar.gz
+  Inline-0.86
+    pathname: I/IN/INGY/Inline-0.86.tar.gz
     provides:
-      Foo::Tester 0.83
-      Inline 0.83
-      Inline::Foo 0.83
-      Inline::MakeMaker 0.83
+      Foo::Tester 0.86
+      Inline 0.86
+      Inline::Foo 0.86
+      Inline::MakeMaker 0.86
       Inline::denter undef
     requirements:
       Digest::MD5 0
@@ -107,11 +107,11 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 6.5702
       Test::More 0
       Text::Balanced 1.95
-  Path-Tiny-0.108
-    pathname: D/DA/DAGOLDEN/Path-Tiny-0.108.tar.gz
+  Path-Tiny-0.114
+    pathname: D/DA/DAGOLDEN/Path-Tiny-0.114.tar.gz
     provides:
-      Path::Tiny 0.108
-      Path::Tiny::Error 0.108
+      Path::Tiny 0.114
+      Path::Tiny::Error 0.114
     requirements:
       Carp 0
       Cwd 0
@@ -133,10 +133,10 @@ DISTRIBUTIONS
       strict 0
       warnings 0
       warnings::register 0
-  Pegex-0.70
-    pathname: I/IN/INGY/Pegex-0.70.tar.gz
+  Pegex-0.75
+    pathname: I/IN/INGY/Pegex-0.75.tar.gz
     provides:
-      Pegex 0.70
+      Pegex 0.75
       Pegex::Base undef
       Pegex::Bootstrap undef
       Pegex::Compiler undef
@@ -155,7 +155,73 @@ DISTRIBUTIONS
       Pegex::Tree undef
       Pegex::Tree::Wrap undef
     requirements:
+      Carp 0
       ExtUtils::MakeMaker 0
       File::ShareDir::Install 0.06
+      JSON::PP 0
       Scalar::Util 0
+      XXX 0.35
+      YAML::PP 0.019
       perl 5.008001
+  XXX-0.35
+    pathname: I/IN/INGY/XXX-0.35.tar.gz
+    provides:
+      XXX 0.35
+    requirements:
+      ExtUtils::MakeMaker 0
+      YAML::PP 0.018
+      perl 5.008001
+  YAML-PP-0.023
+    pathname: T/TI/TINITA/YAML-PP-0.023.tar.gz
+    provides:
+      YAML::PP 0.023
+      YAML::PP::Common 0.023
+      YAML::PP::Constructor 0.023
+      YAML::PP::Dumper 0.023
+      YAML::PP::Emitter 0.023
+      YAML::PP::Exception 0.023
+      YAML::PP::Grammar 0.023
+      YAML::PP::Highlight 0.023
+      YAML::PP::Lexer 0.023
+      YAML::PP::Loader 0.023
+      YAML::PP::Parser 0.023
+      YAML::PP::Perl 0.023
+      YAML::PP::Preserve::Hash 0.023
+      YAML::PP::Preserve::Scalar 0.023
+      YAML::PP::Reader 0.023
+      YAML::PP::Reader::File 0.023
+      YAML::PP::Render 0.023
+      YAML::PP::Representer 0.023
+      YAML::PP::Schema 0.023
+      YAML::PP::Schema::Binary 0.023
+      YAML::PP::Schema::Core 0.023
+      YAML::PP::Schema::Failsafe 0.023
+      YAML::PP::Schema::Include 0.023
+      YAML::PP::Schema::JSON 0.023
+      YAML::PP::Schema::Merge 0.023
+      YAML::PP::Schema::Perl 0.023
+      YAML::PP::Schema::Tie::IxHash 0.023
+      YAML::PP::Schema::YAML1_1 0.023
+      YAML::PP::Type::MergeKey 0.023
+      YAML::PP::Writer 0.023
+      YAML::PP::Writer::File 0.023
+    requirements:
+      B 0
+      B::Deparse 0
+      Carp 0
+      Data::Dumper 0
+      Encode 0
+      Exporter 0
+      ExtUtils::MakeMaker 0
+      File::Basename 0
+      Getopt::Long 0
+      MIME::Base64 0
+      Module::Load 0
+      Scalar::Util 1.07
+      Tie::Hash 0
+      base 0
+      constant 0
+      overload 0
+      perl 5.008000
+      strict 0
+      warnings 0

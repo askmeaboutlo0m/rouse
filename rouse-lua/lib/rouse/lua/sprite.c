@@ -989,6 +989,15 @@ static int r_sprite_angle_index_xl(lua_State *L)
     return 1;
 }
 
+static int r_sprite_alpha_index_xl(lua_State *L)
+{
+    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    float RETVAL;
+    RETVAL = R_sprite_alpha(self);
+    XL_pushfloat(L, RETVAL);
+    return 1;
+}
+
 static int r_sprite_base_index_xl(lua_State *L)
 {
     R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
@@ -1161,6 +1170,14 @@ static int r_sprite_angle_newindex_xl(lua_State *L)
     R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
     float VALUE = XL_checkfloat(L, 2);
     R_sprite_angle_set(self, VALUE);
+    return 0;
+}
+
+static int r_sprite_alpha_newindex_xl(lua_State *L)
+{
+    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    float VALUE = XL_checkfloat(L, 2);
+    R_sprite_alpha_set(self, VALUE);
     return 0;
 }
 
@@ -1502,6 +1519,7 @@ static luaL_Reg r_affinetransform_index_registry_xl[] = {
 };
 
 static luaL_Reg r_sprite_index_registry_xl[] = {
+    {"alpha", r_sprite_alpha_index_xl},
     {"angle", r_sprite_angle_index_xl},
     {"base", r_sprite_base_index_xl},
     {"base_x", r_sprite_base_x_index_xl},
@@ -1615,6 +1633,7 @@ static luaL_Reg r_affinetransform_newindex_registry_xl[] = {
 };
 
 static luaL_Reg r_sprite_newindex_registry_xl[] = {
+    {"alpha", r_sprite_alpha_newindex_xl},
     {"angle", r_sprite_angle_newindex_xl},
     {"base", r_sprite_base_newindex_xl},
     {"base_x", r_sprite_base_x_newindex_xl},

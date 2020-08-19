@@ -156,6 +156,10 @@ function TweenBuilder:add_to_sequence(make_tween)
     end)
 end
 
+function TweenBuilder:time0()
+    return self:time1(0.0)
+end
+
 function TweenBuilder:time1(a)
     if is_number(a) then
         return self:add_to_sequence(function (sequence, ease)
@@ -183,7 +187,9 @@ end
 function TweenBuilder:time(...)
     local args = {...}
     local argc = #args
-    if argc == 1 then
+    if argc == 0 then
+        return self:time0()
+    elseif argc == 1 then
         return self:time1(args[1])
     elseif argc == 2 then
         return self:time2(args[1], args[2])

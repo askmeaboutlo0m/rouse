@@ -466,6 +466,17 @@ METHOD void remove_child(R_Sprite *child) = R_sprite_child_remove
 
 METHOD int child_index(R_Sprite *child) = R_sprite_child_index
 
+INDEX ... index
+    R_Sprite *parent = R_sprite_parent(self);
+    if (parent) {
+        XL_pushint(L, R_sprite_child_index(parent, self));
+    }
+    else {
+        lua_pushnil(L);
+    }
+    return 1;
+END
+
 
 METHOD void draw(R_Nvg *nvg, int logical_width, int logical_height,
                  int target_width, int target_height) = R_sprite_draw

@@ -1432,6 +1432,19 @@ static int r_sprite_method_child_index_xl(lua_State *L)
     return 1;
 }
 
+static int r_sprite_index_index_xl(lua_State *L)
+{
+    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *parent = R_sprite_parent(self);
+    if (parent) {
+        XL_pushint(L, R_sprite_child_index(parent, self));
+    }
+    else {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+
 static int r_sprite_method_draw_xl(lua_State *L)
 {
     R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
@@ -1525,6 +1538,7 @@ static luaL_Reg r_sprite_index_registry_xl[] = {
     {"base_x", r_sprite_base_x_index_xl},
     {"base_y", r_sprite_base_y_index_xl},
     {"content", r_sprite_content_index_xl},
+    {"index", r_sprite_index_index_xl},
     {"name", r_sprite_name_index_xl},
     {"origin", r_sprite_origin_index_xl},
     {"origin_x", r_sprite_origin_x_index_xl},

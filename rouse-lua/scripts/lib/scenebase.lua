@@ -1,4 +1,4 @@
--- Copyright (c) 2019 askmeaboutloom
+-- Copyright (c) 2019, 2020 askmeaboutloom
 --
 -- Permission is hereby granted, free of charge, to any person obtaining a copy
 -- of this software and associated documentation files (the "Software"), to deal
@@ -197,6 +197,7 @@ function SceneBase:add(spec)
 
     if spec.angle    then sprite.angle    = spec.angle    end
     if spec.rotation then sprite.rotation = spec.rotation end
+    if spec.alpha    then sprite.alpha    = spec.alpha    end
 
     local scale_x = spec.scale_x or spec.scale
     local scale_y = spec.scale_y or spec.scale

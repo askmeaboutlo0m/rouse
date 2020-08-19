@@ -1,4 +1,4 @@
--- Copyright (c) 2019 askmeaboutloom
+-- Copyright (c) 2019, 2020 askmeaboutloom
 --
 -- Permission is hereby granted, free of charge, to any person obtaining a copy
 -- of this software and associated documentation files (the "Software"), to deal
@@ -86,6 +86,38 @@ end
 
 function SetupSpec:pivots(pivot_x, pivot_y)
     return self:pivot_x(pivot_x):pivot_y(pivot_y)
+end
+
+function SetupSpec:scale_x(scale_x)
+    self.spec.scale_x = scale_x
+    return self
+end
+
+function SetupSpec:scale_y(scale_y)
+    self.spec.scale_y = scale_y
+    return self
+end
+
+function SetupSpec:scales(scale_x, scale_y)
+    return self:scale_x(scale_x):scale_y(scale_y)
+end
+
+function SetupSpec:scale(scale)
+    return self:scales(scale, scale)
+end
+
+function SetupSpec:angle(angle)
+    self.spec.angle = angle
+    return self
+end
+
+function SetupSpec:rotation(rotation)
+    return self:angle(math.rad(rotation))
+end
+
+function SetupSpec:alpha(alpha)
+    self.spec.alpha = alpha
+    return self
 end
 
 

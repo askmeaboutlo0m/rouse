@@ -85,11 +85,15 @@ sub flatten {
 
 
 sub apply_attributes {
-    my ($cs, $raster) = @_;
+    my ($cs, $raster, $optimize) = @_;
     for my $c (@$cs) {
         $c->{raster} = $raster         if $raster;
         $c->{raster} = JSON::PP::false if $c->{vector};
-        apply_attributes($c->{children}, $c->{raster});
+        if (defined $c->{optimize}) {
+            $optimize = $c->{optimize} < 0.0 ? undef : $c->{optimize};
+        }
+        $c->{optimize} = $optimize;
+        apply_attributes($c->{children}, $c->{raster}, $optimize);
     }
 }
 
@@ -213,11 +217,16 @@ sub quantify {
 
 
 sub potrace {
-    my ($img) = @_;
+    my ($img, $optimize) = @_;
     my $color = quantify($img) || return;
     rouse_posterize($img, 0.5);
 
-    open2 my $read, my $write, 'potrace', '-sC', "#$color"
+    my @args;
+    if ($optimize) {
+        push @args, '-O', $optimize;
+    }
+
+    open2 my $read, my $write, 'potrace', @args, '-sC', "#$color"
         or die "can't run potrace: $!\n";
 
     $img->write(fh => $write, type => 'bmp') or die $img->errstr;
@@ -251,7 +260,7 @@ sub svgify {
         next unless $d->{svg};
 
         my $img = Imager->new(file => $d->{png}) or die Imager->errstr;
-        my $svg = potrace($img) || blank_svg(@{$d}{'width', 'height'});
+        my $svg = potrace($img, $d->{optimize}) || blank_svg(@{$d}{'width', 'height'});
 
         path($d->{svg})->spew($svg);
     }

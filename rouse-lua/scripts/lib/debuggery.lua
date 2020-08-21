@@ -23,7 +23,7 @@ local DEFAULT_COLOR = R.Nvg.rgb(220, 0, 0)
 
 function Debuggery:init(args)
     self.scene    = args.scene   or error("no scene given")
-    self.names    = args.names   or {}
+    self.sprites  = args.sprites or args.names or {}
     self.enabled  = args.enabled ~= false
     self.mark_pos = args.mark_pos
 
@@ -56,11 +56,14 @@ function Debuggery:draw(nvg, matrix)
     local field    = self.field
     local mark_pos = self.mark_pos
 
-    for i, name in ipairs(self.names) do
-        local sprite = self.scene:sprite(name)
-        local x      = sprite.world_origin_x
-        local y      = sprite.world_origin_y
-        local size   = self.cross_size
+    for i, sprite_or_name in ipairs(self.sprites) do
+        local sprite = is_string(sprite_or_name)
+                   and self.scene:sprite(sprite_or_name)
+                   or  sprite_or_name
+
+        local x    = sprite.world_origin_x
+        local y    = sprite.world_origin_y
+        local size = self.cross_size
 
         nvg:begin_path()
         nvg:move_to(x - size, y - size)
@@ -79,10 +82,13 @@ function Debuggery:draw(nvg, matrix)
             nvg:stroke()
         end
 
-        field.string = sprite.name
-        field.x      = x + size
-        field.y      = y
-        field:draw(nvg, matrix)
+        local name = sprite.name
+        if name then
+            field.string = sprite.name
+            field.x      = x + size
+            field.y      = y
+            field:draw(nvg, matrix)
+        end
     end
 end
 

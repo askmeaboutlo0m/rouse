@@ -18,7 +18,7 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-local SeqBuilder = dofile("scripts/lib/seqbuilder.lua")
+local SeqBuilder = redofile("scripts/lib/seqbuilder.lua")
 local SceneBase  = class()
 
 function SceneBase:init(args)
@@ -320,7 +320,7 @@ function SceneBase:next_scene(next_or_path)
     local next_scene_fn
     if type(next_or_path) == "string" then
         next_scene_fn = function (...)
-            local scene_class = dofile(next_or_path)
+            local scene_class = redofile(next_or_path)
             return scene_class.new(...)
         end
     else

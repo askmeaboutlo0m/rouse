@@ -37,6 +37,11 @@ function class(base)
 end
 
 
+function slurp(filename)
+    local fh <close> = assert(io.open(filename, "rb"))
+    return fh:read("*a")
+end
+
 function slurplines(filename)
     local lines = {}
     for line in io.lines(filename) do
@@ -44,6 +49,30 @@ function slurplines(filename)
     end
     return lines
 end
+
+
+always_redofile_from_cache = false
+
+redofile = (function ()
+    local cache = {}
+    return function (filename)
+        local cached  = cache[filename]
+        if cached and always_redofile_from_cache then
+            return cached.value
+        end
+
+        local content = slurp(filename)
+        if cached and cached.content == content then
+            return cached.value
+        else
+            local chunk = assert(load(content, filename))
+            local value = chunk()
+            cache[filename] = {content = content, value = value}
+            return value
+        end
+    end
+end)()
+
 
 function errorf(formatstring, ...)
     error(string.format(formatstring, ...))

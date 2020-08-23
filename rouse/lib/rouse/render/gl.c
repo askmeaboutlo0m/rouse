@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 askmeaboutloom
+ * Copyright (c) 2019, 2020 askmeaboutloom
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,11 +53,18 @@ R_GL_PROC_LIST
 R_GL_PROC_EXT_LIST
 #undef R_GL_PROC_X
 
+/*
+ * Converting a void * to a function pointer isn't ISO C, so it triggers a
+ * pedantic warning. This here is a standards-compliant workaround apparently,
+ * according to my dlsym docs. It doesn't trigger the warning anyway.
+ */
+#define R_DL_ASSIGN(FUNC_PTR, VOID_PTR) *(void **)(&FUNC_PTR) = VOID_PTR
+
 #define GET_GL_PROC(TYPE, NAME) do { \
         void *_proc = SDL_GL_GetProcAddress(#NAME); \
         if (_proc) { \
             R_debug("got proc address: " #TYPE " " #NAME " at %p", _proc); \
-            NAME = (TYPE) _proc; \
+            R_DL_ASSIGN(NAME, _proc); \
         } \
         else { \
             R_warn("did not find proc address for " #TYPE " " #NAME ", " \
@@ -69,15 +76,7 @@ static void load_gl_procs(void)
 {
     R_debug("populating gl proc function pointers");
 #   define R_GL_PROC_X(TYPE, NAME) GET_GL_PROC(TYPE, NAME);
-    /*
-     * This needs a cast from `void *` to function pointers. While that's not
-     * strictly ISO C, it's how SDL (and just about everything else) does it.
-     * So turn off the pedantic warning about that for these little sections.
-     */
-#   pragma GCC diagnostic push
-#   pragma GCC diagnostic ignored "-Wpedantic"
     R_GL_PROC_LIST
-#   pragma GCC diagnostic pop
 #   undef R_GL_PROC_X
     R_GL_CLEAR_ERROR();
 }

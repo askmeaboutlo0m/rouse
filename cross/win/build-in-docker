@@ -6,7 +6,7 @@ cd ../..
 base="$(pwd)"
 
 tag="$(sudo docker images --format='{{.Tag}} {{.ID}} {{.Repository}}' | \
-       grep ' winrouse$' | sort | head -n 1 | awk '{ print $1 }')"
+       grep ' winrouse$' | sort -r | head -n 1 | awk '{ print $1 }')"
 
 if [ -z "$tag" ]; then
     echo 'No winrouse image found' 2>&1
@@ -14,7 +14,9 @@ if [ -z "$tag" ]; then
     exit 1
 fi
 
-sudo docker run --rm -v "$base:/rouse" -it "winrouse:$tag" /rouse/cross/win/entrypoint
+image="winrouse:$tag"
+echo "Building with image '$image'..."
+sudo docker run --rm -v "$base:/rouse" -it "$image" /rouse/cross/win/entrypoint
 sudo chown -R "$(id -un):$(id -gn)" rouse/buildwin rouse-lua/buildwin
 
 echo

@@ -89,7 +89,8 @@ build_release() {
                       '-DBUILD_WITH_MAGIC=OFF' \
                       '-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON'
 
-    cmake_rouse_args '-DBUILD_WITH_GL_CHECKS=OFF'
+    cmake_rouse_args '-DBUILD_WITH_GL_CHECKS=OFF' \
+                     '-DBUILD_WITH_AL_CHECKS=OFF'
 
     build_all
 }

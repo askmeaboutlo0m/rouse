@@ -35,7 +35,7 @@
 #include "../common.h"
 #include "../parse.h"
 #include "nvg.h"
-#include "refcount.h"
+#include "../refcount.h"
 #include "vector.h"
 
 /*

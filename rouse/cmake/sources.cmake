@@ -5,7 +5,6 @@ set(rouse_headers
     "${CMAKE_SOURCE_DIR}/lib/rouse.h"
     "${CMAKE_SOURCE_DIR}/lib/rouse/2d/bitmap.h"
     "${CMAKE_SOURCE_DIR}/lib/rouse/2d/nvg.h"
-    "${CMAKE_SOURCE_DIR}/lib/rouse/2d/refcount.h"
     "${CMAKE_SOURCE_DIR}/lib/rouse/2d/sprite.h"
     "${CMAKE_SOURCE_DIR}/lib/rouse/2d/sprite_anim.h"
     "${CMAKE_SOURCE_DIR}/lib/rouse/2d/text.h"
@@ -16,6 +15,7 @@ set(rouse_headers
     "${CMAKE_SOURCE_DIR}/lib/rouse/3rdparty/KHR/khrplatform.h"
     "${CMAKE_SOURCE_DIR}/lib/rouse/3rdparty/gles2_inc.h"
     "${CMAKE_SOURCE_DIR}/lib/rouse/3rdparty/nanovg_inc.h"
+    "${CMAKE_SOURCE_DIR}/lib/rouse/3rdparty/openal_inc.h"
     "${CMAKE_SOURCE_DIR}/lib/rouse/anim/call.h"
     "${CMAKE_SOURCE_DIR}/lib/rouse/anim/delay.h"
     "${CMAKE_SOURCE_DIR}/lib/rouse/anim/ease.h"
@@ -24,11 +24,13 @@ set(rouse_headers
     "${CMAKE_SOURCE_DIR}/lib/rouse/anim/util.h"
     "${CMAKE_SOURCE_DIR}/lib/rouse/camera.h"
     "${CMAKE_SOURCE_DIR}/lib/rouse/common.h"
+    "${CMAKE_SOURCE_DIR}/lib/rouse/dl.h"
     "${CMAKE_SOURCE_DIR}/lib/rouse/geom.h"
     "${CMAKE_SOURCE_DIR}/lib/rouse/json.h"
     "${CMAKE_SOURCE_DIR}/lib/rouse/main.h"
     "${CMAKE_SOURCE_DIR}/lib/rouse/model.h"
     "${CMAKE_SOURCE_DIR}/lib/rouse/parse.h"
+    "${CMAKE_SOURCE_DIR}/lib/rouse/refcount.h"
     "${CMAKE_SOURCE_DIR}/lib/rouse/render/binder.h"
     "${CMAKE_SOURCE_DIR}/lib/rouse/render/frame_buffer.h"
     "${CMAKE_SOURCE_DIR}/lib/rouse/render/frame_renderer.h"
@@ -82,3 +84,17 @@ set(nanovg_headers
 set(nanovg_sources
     "${CMAKE_SOURCE_DIR}/lib/rouse/3rdparty/nanovg/nanovg.c"
     "${CMAKE_SOURCE_DIR}/lib/rouse/3rdparty/nanovg_gles2.c")
+
+set(stb_vorbis_headers
+    "${CMAKE_SOURCE_DIR}/lib/rouse/3rdparty/stb_vorbis.h")
+
+set(stb_vorbis_sources
+    "${CMAKE_SOURCE_DIR}/lib/rouse/3rdparty/stb_vorbis.c")
+
+set(rouse_audio_headers
+    "${CMAKE_SOURCE_DIR}/lib/rouse/audio/al.h"
+    "${CMAKE_SOURCE_DIR}/lib/rouse/audio/sample.h")
+
+set(rouse_audio_sources
+    "${CMAKE_SOURCE_DIR}/lib/rouse/audio/al.c"
+    "${CMAKE_SOURCE_DIR}/lib/rouse/audio/sample.c")

@@ -33,6 +33,7 @@
 #include <SDL2/SDL_image.h>
 #include <rouse_config.h>
 #include "../common.h"
+#include "../dl.h"
 #include "gl.h"
 
 #define R_GL_DEFINE_FALLBACKS
@@ -53,13 +54,6 @@ R_GL_PROC_LIST
 R_GL_PROC_EXT_LIST
 #undef R_GL_PROC_X
 
-/*
- * Converting a void * to a function pointer isn't ISO C, so it triggers a
- * pedantic warning. This here is a standards-compliant workaround apparently,
- * according to my dlsym docs. It doesn't trigger the warning anyway.
- */
-#define R_DL_ASSIGN(FUNC_PTR, VOID_PTR) *(void **)(&FUNC_PTR) = VOID_PTR
-
 #define GET_GL_PROC(TYPE, NAME) do { \
         void *_proc = SDL_GL_GetProcAddress(#NAME); \
         if (_proc) { \
@@ -67,8 +61,7 @@ R_GL_PROC_EXT_LIST
             R_DL_ASSIGN(NAME, _proc); \
         } \
         else { \
-            R_warn("did not find proc address for " #TYPE " " #NAME ", " \
-                   "this may cause a crash, TODO: install fallback handler"); \
+            R_warn("did not find proc address for " #TYPE " " #NAME); \
         } \
     } while (0)
 
@@ -83,13 +76,10 @@ static void load_gl_procs(void)
 
 static void load_ext_multisampled_render_to_texture_procs(void)
 {
-#   pragma GCC diagnostic push
-#   pragma GCC diagnostic ignored "-Wpedantic"
     GET_GL_PROC(PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEEXTPROC,
                 glFramebufferTexture2DMultisampleEXT);
     GET_GL_PROC(PFNGLRENDERBUFFERSTORAGEMULTISAMPLEEXTPROC,
                 glRenderbufferStorageMultisampleEXT);
-#   pragma GCC diagnostic pop
 #   undef R_GL_PROC_X
     R_GL_CLEAR_ERROR();
 }

@@ -76,6 +76,13 @@ extern "C" {
 #include "rouse/2d/sprite_anim.h"
 #include "rouse/main.h"
 
+#ifdef ROUSE_AL_ENABLED
+#   include "rouse/3rdparty/openal_inc.h"
+#   include "rouse/3rdparty/stb_vorbis.h"
+#   include "rouse/audio/sample.h"
+#   include "rouse/audio/al.h"
+#endif
+
 #ifdef __cplusplus
 }
 #endif

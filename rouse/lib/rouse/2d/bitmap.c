@@ -33,7 +33,7 @@
 #include "../common.h"
 #include "../render/gl.h"
 #include "nvg.h"
-#include "refcount.h"
+#include "../refcount.h"
 #include "bitmap.h"
 
 struct R_BitmapImage {

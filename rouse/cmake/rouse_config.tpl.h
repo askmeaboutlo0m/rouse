@@ -49,6 +49,10 @@
  */
 #cmakedefine ROUSE_GL_CHECKS
 
+#cmakedefine ROUSE_AL_ENABLED
+
+#cmakedefine ROUSE_AL_CHECKS
+
 /*
  * The platform we're running on, roughly. Emscripten and Windows in particular
  * have some interesting properties that sometimes need special casing.

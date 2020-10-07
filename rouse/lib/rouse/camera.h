@@ -51,6 +51,9 @@ R_FirstPerson *R_first_person_new(R_V3 pos, float h, float v);
 
 void R_first_person_free(R_FirstPerson *fp);
 
+void R_first_person_directions(R_FirstPerson *fp, R_V3 *out_forward,
+                               R_V3 *out_right, R_V3 *out_up);
+
 void R_first_person_look(R_FirstPerson *fp, float hd, float vd);
 void R_first_person_move(R_FirstPerson *fp, float forward, float right, float up);
 void R_first_person_apply(R_FirstPerson *fp, R_Camera *camera);

@@ -31,7 +31,7 @@
 #include "../3rdparty/nanovg_inc.h"
 #include <rouse_config.h>
 #include "../common.h"
-#include "refcount.h"
+#include "../refcount.h"
 #include "nvg.h"
 
 struct R_Nvg {

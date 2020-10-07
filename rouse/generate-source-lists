@@ -84,8 +84,17 @@ sub is_parson_path {
     return shift =~ /parson\.[ch]/;
 }
 
+sub is_stb_vorbis_path {
+    return shift =~ /stb_vorbis\.[ch]/;
+}
+
+sub is_rouse_audio_path {
+    return shift =~ m{audio/};
+}
+
 sub is_rouse_path {
-    return !is_nanovg_path(@_) && !is_parson_path(@_);
+    return !is_nanovg_path(@_) && !is_parson_path(@_)
+        && !is_stb_vorbis_path(@_) && !is_rouse_audio_path(@_);
 }
 
 sub filter_path_list {
@@ -114,4 +123,12 @@ generate_sources_and_headers('parson', $libdir, sub {
 
 generate_sources_and_headers('nanovg', $libdir, sub {
     return filter_paths(\&is_nanovg_path, @_);
+});
+
+generate_sources_and_headers('stb_vorbis', $libdir, sub {
+    return filter_paths(\&is_stb_vorbis_path, @_);
+});
+
+generate_sources_and_headers('rouse_audio', $libdir, sub {
+    return filter_paths(\&is_rouse_audio_path, @_);
 });

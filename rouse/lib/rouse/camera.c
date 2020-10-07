@@ -94,6 +94,35 @@ void R_first_person_free(R_FirstPerson *fp)
     }
 }
 
+
+void R_first_person_directions(R_FirstPerson *fp, R_V3 *out_forward,
+                               R_V3 *out_right, R_V3 *out_up)
+{
+    R_MAGIC_CHECK(R_FirstPerson, fp);
+
+    R_V3 forward;
+    if (out_forward || out_up) {
+        forward = R_v3_dir(fp->h, fp->v);
+        if (out_forward) {
+            *out_forward = forward;
+        }
+
+    }
+
+    R_V3 right;
+    if (out_right || out_up) {
+        right = R_v3_right(fp->h);
+        if (out_right) {
+            *out_right = right;
+        }
+    }
+
+    if (out_up) {
+        *out_up = R_v3_cross(right, forward);
+    }
+}
+
+
 void R_first_person_look(R_FirstPerson *fp, float hd, float vd)
 {
     R_MAGIC_CHECK(R_FirstPerson, fp);
@@ -116,8 +145,7 @@ void R_first_person_apply(R_FirstPerson *fp, R_Camera *camera)
 {
     R_MAGIC_CHECK(R_FirstPerson, fp);
     R_MAGIC_CHECK(R_Camera, camera);
-    R_V3 fv      = R_v3_dir(fp->h, fp->v);
-    R_V3 rv      = R_v3_right(fp->h);
-    R_V3 uv      = R_v3_cross(rv, fv);
+    R_V3 fv, rv, uv;
+    R_first_person_directions(fp, &fv, &rv, &uv);
     camera->view = R_m4_look_at(fp->pos, R_v3_add(fp->pos, fv), uv);
 }

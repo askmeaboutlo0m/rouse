@@ -92,16 +92,27 @@ typedef struct R_WindowArgs {
     uint32_t   flags;
 } R_WindowArgs;
 
+typedef const char *(*R_AlGetDeviceNameHook       )(void *);
+typedef const int  *(*R_AlGetContextAttributesHook)(void *);
+
+typedef struct R_AlArgs {
+    bool                         enabled;
+    R_AlGetDeviceNameHook        get_device_name;
+    R_AlGetContextAttributesHook get_context_attributes;
+} R_AlArgs;
+
 typedef struct R_MainArgs {
     R_MAGIC_FIELD
     uint32_t         sdl_init_flags;
     int              img_init_flags;
     R_SdlGlArgs      gl;
+    R_AlArgs         al;
     R_WindowArgs     window;
     R_InitSdlHook    on_sdl_init;
     R_InitImgHook    on_img_init;
     R_InitWindowHook on_window_init;
     R_InitHook       on_gl_init;
+    R_InitHook       on_al_init;
     R_InitHook       on_post_init;
     R_SceneFn        on_scene;
     void             *user;
@@ -124,7 +135,7 @@ typedef struct R_MainArgs {
 struct R_Scene {
     R_MAGIC_FIELD
     /* Animation sequencing bookkeepery. Don't touch. */
-    R_Animator *animator;
+    void *animator;
     /* This is where your scene-specific data goes. */
     R_UserData user;
     /* Event handling callback. Just uses SDL's event loop. */
@@ -179,6 +190,11 @@ extern uint32_t R_max_ticks_before_render;
  */
 extern float R_width;
 extern float R_height;
+/*
+ * If you can play audio or not. OpenAL initialization may fail after requesting
+ * it on startup, so check this to figure out if you can *actually* play audio.
+ */
+extern bool R_al_enabled;
 
 /*
  * Get and set `R_tick_length` with the human-friendly unit of ticks per second.

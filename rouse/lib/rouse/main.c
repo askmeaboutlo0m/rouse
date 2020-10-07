@@ -43,6 +43,11 @@
 #include "stringify.h"
 #include "main.h"
 
+#ifdef ROUSE_AL_ENABLED
+#   include "audio/sample.h"
+#   include "audio/al.h"
+#endif
+
 #ifdef __EMSCRIPTEN__
 #   include <emscripten.h>
 #endif
@@ -59,6 +64,7 @@ float    R_tick_length             = R_TICK_LENGTH_DEFAULT;
 uint32_t R_max_ticks_before_render = R_MAX_TICKS_BEFORE_RENDER_DEFAULT;
 float    R_width                   = R_WIDTH_DEFAULT;
 float    R_height                  = R_HEIGHT_DEFAULT;
+bool     R_al_enabled              = false;
 
 static R_Scene   *current_scene  = NULL;
 static R_SceneFn next_scene_fn   = NULL;
@@ -106,6 +112,11 @@ static R_SdlGlArgs gl_args(void)
     };
 }
 
+static R_AlArgs al_args(void)
+{
+    return (R_AlArgs) {false, NULL, NULL};
+}
+
 static R_WindowArgs window_args(void)
 {
     return (R_WindowArgs){R_WINDOW_TITLE_DEFAULT, R_WINDOW_X_DEFAULT,
@@ -116,8 +127,9 @@ static R_WindowArgs window_args(void)
 R_MainArgs R_main_args(R_SceneFn on_scene, void *user)
 {
     R_MainArgs args = {R_MAGIC_INIT(R_MainArgs) R_SDL_INIT_FLAGS_DEFAULT,
-                       R_IMG_INIT_FLAGS_DEFAULT, gl_args(), window_args(),
-                       NULL, NULL, NULL, NULL, NULL, on_scene, user};
+                       R_IMG_INIT_FLAGS_DEFAULT, gl_args(), al_args(),
+                       window_args(), NULL, NULL, NULL, NULL, NULL, NULL,
+                       on_scene, user};
     R_MAGIC_CHECK(R_MainArgs, &args);
     return args;
 }
@@ -234,6 +246,32 @@ static void init_gl(R_InitHook on_gl_init, void *user)
     R_gl_init();
 }
 
+static void init_al(const R_AlArgs *al, R_InitHook on_al_init, void *user)
+{
+    if (on_al_init) {
+        on_al_init(user);
+    }
+#ifdef ROUSE_AL_ENABLED
+    if (al->enabled) {
+        R_debug("initializing OpenAL audio");
+        R_al_enabled = R_al_init(
+            al->get_device_name, al->get_context_attributes, user);
+    }
+    else {
+        R_debug("not initializing OpenAL audio (as requested)");
+    }
+#else
+    if (al->enabled) {
+        R_warn("OpenAL audio initialization requested, but "
+               "OpenAL support is not compiled in");
+    }
+    else {
+        R_debug("not initializing OpenAL audio (as requested, "
+                "it's not compiled in anyway)");
+    }
+#endif
+}
+
 static void post_init(R_InitHook on_post_init, void *user)
 {
     R_window_viewport_resize();
@@ -272,12 +310,16 @@ static void init(const R_MainArgs *args)
     init_window(window->title, window->x, window->y, window->width,
                 window->height, window->flags, args->on_window_init, user);
     init_gl(args->on_gl_init, user);
+    init_al(&args->al, args->on_al_init, args->user);
     post_init(args->on_post_init, user);
 }
 
 static void deinit(void)
 {
     R_scene_free(current_scene);
+#ifdef ROUSE_AL_ENABLED
+    R_al_deinit();
+#endif
     SDL_GL_DeleteContext(R_glcontext);
     SDL_DestroyWindow(R_window);
     IMG_Quit();

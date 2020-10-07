@@ -33,7 +33,7 @@
 #include "../string.h"
 #include "../geom.h"
 #include "nvg.h"
-#include "refcount.h"
+#include "../refcount.h"
 #include "text.h"
 
 

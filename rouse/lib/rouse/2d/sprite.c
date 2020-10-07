@@ -65,7 +65,7 @@
 #include "bitmap.h"
 #include "text.h"
 #include "vector.h"
-#include "refcount.h"
+#include "../refcount.h"
 #include "sprite.h"
 
 struct R_Sprite {

@@ -40,5 +40,10 @@ report_asan_targets()
 report_clang_tidy_targets()
 
 
-export(TARGETS rouse nanovg parson cglm sdl2 sdl2_image
-       NAMESPACE Rouse:: FILE Rouse.cmake)
+set(rouse_exports rouse nanovg parson cglm sdl2 sdl2_image)
+
+if(BUILD_WITH_OPENAL)
+    list(APPEND rouse_exports openal stb_vorbis)
+endif()
+
+export(TARGETS ${rouse_exports} NAMESPACE Rouse:: FILE Rouse.cmake)

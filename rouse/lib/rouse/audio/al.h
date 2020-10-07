@@ -5,51 +5,57 @@
 #   error "ROUSE_AL_ENABLED not defined, al.h is not available"
 #endif
 
+#ifdef __EMSCRIPTEN__
+#   define R_AL(FUNC) FUNC
+#else
+#   define R_AL(FUNC) R_ ## FUNC
+#endif
+
 #ifdef ROUSE_AL_CHECKS
 #   define R_AL_CLEAR_ERROR() do { \
             int _alerror; \
-            while ((_alerror = R_alGetError()) != AL_NO_ERROR) { \
+            while ((_alerror = R_AL(alGetError)()) != AL_NO_ERROR) { \
                 R_al_warn(_alerror, "R_AL_CLEAR_ERROR"); \
             } \
         } while (0)
 
 #   define R_AL_CHECK_RESULT_WARN(WHERE, RESULT) do { \
             if (!(RESULT)) { \
-                R_al_warn(R_alGetError(), WHERE); \
+                R_al_warn(R_AL(alGetError)(), WHERE); \
             } \
         } while (0)
 
 #   define R_AL_CHECK_RESULT(WHERE, RESULT) do { \
             if (!(RESULT)) { \
-                R_al_die(R_alGetError(), WHERE); \
+                R_al_die(R_AL(alGetError)(), WHERE); \
             } \
         } while (0)
 
 #   define R_AL_CHECK(FUNC, ...) do { \
-            R_AL_CHECK_RESULT(#FUNC, R_ ## FUNC(__VA_ARGS__)); \
+            R_AL_CHECK_RESULT(#FUNC, R_AL(FUNC)(__VA_ARGS__)); \
         } while (0)
 
 #   define R_AL_CHECK_VOID(FUNC, ...) do { \
-            R_ ## FUNC(__VA_ARGS__); \
-            int _alerror = R_alGetError(); \
+            R_AL(FUNC)(__VA_ARGS__); \
+            int _alerror = R_AL(alGetError)(); \
             if (_alerror != AL_NO_ERROR) { \
                 R_al_die(_alerror, #FUNC); \
             } \
         } while (0)
 
 #   define R_AL_CHECK_WARN(FUNC, ...) do { \
-            R_AL_CHECK_RESULT_WARN(#FUNC, R_ ## FUNC(__VA_ARGS__)); \
+            R_AL_CHECK_RESULT_WARN(#FUNC, R_AL(FUNC)(__VA_ARGS__)); \
         } while (0)
 
 #   define R_AL_ASSIGN(TARGET, FUNC, ...) do { \
-            R_AL_CHECK_RESULT(#FUNC, (TARGET) = R_ ## FUNC(__VA_ARGS__)); \
+            R_AL_CHECK_RESULT(#FUNC, (TARGET) = R_AL(FUNC)(__VA_ARGS__)); \
         } while (0)
 #else
 #   define R_AL_CLEAR_ERROR()             ((void) 0)
-#   define R_AL_CHECK(FUNC, ...)          R_ ## FUNC(__VA_ARGS__)
-#   define R_AL_CHECK_VOID(FUNC, ...)     R_ ## FUNC(__VA_ARGS__)
-#   define R_AL_CHECK_WARN(FUNC, ...)     R_ ## FUNC(__VA_ARGS__)
-#   define R_AL_ASSIGN(TARGET, FUNC, ...) (TARGET) = R_ ## FUNC(__VA_ARGS__)
+#   define R_AL_CHECK(FUNC, ...)          R_AL(FUNC)(__VA_ARGS__)
+#   define R_AL_CHECK_VOID(FUNC, ...)     R_AL(FUNC)(__VA_ARGS__)
+#   define R_AL_CHECK_WARN(FUNC, ...)     R_AL(FUNC)(__VA_ARGS__)
+#   define R_AL_ASSIGN(TARGET, FUNC, ...) (TARGET) = R_AL(FUNC)(__VA_ARGS__)
 #endif
 
 

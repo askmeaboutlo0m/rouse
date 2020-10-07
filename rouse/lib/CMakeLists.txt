@@ -23,11 +23,18 @@ if(BUILD_WITH_OPENAL)
                                STB_VORBIS_NO_FAST_SCALED_FLOAT)
     set_c11_standard(stb_vorbis)
     add_asan_if_available(stb_vorbis)
-    set(rouse_openal_libs stb_vorbis Rouse::openal ${CMAKE_DL_LIBS})
+
+    set(rouse_openal_libs stb_vorbis Rouse::openal)
+    if(BUILD_WITH_AL_DL)
+        list(APPEND rouse_openal_libs ${CMAKE_DL_LIBS})
+    endif()
+
     list(APPEND rouse_all_sources "${rouse_audio_sources}" "${rouse_audio_headers}")
 else()
     unset(rouse_openal_libs)
 endif()
+
+message(STATUS "rouse_openal_libs: ${rouse_openal_libs}")
 
 
 set(rouse_geom_h          "${CMAKE_CURRENT_SOURCE_DIR}/rouse/geom.h")

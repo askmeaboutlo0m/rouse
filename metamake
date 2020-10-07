@@ -115,13 +115,17 @@ build_emscripten() {
     sdl_image_flags="'-sUSE_SDL_IMAGE=2 -sSDL2_IMAGE_FORMATS=[\"png\"]'"
     cmake_rouse_args '-DUSE_PKGCONFIG=OFF' \
                      '-DBUILD_WITH_GL_CHECKS=OFF' \
+                     '-DBUILD_WITH_AL_CHECKS=OFF' \
+                     '-DBUILD_WITH_AL_DL=OFF' \
                      '-DCGLM_CFLAGS="-isystem$EMPREFIX/include"' \
                      '-DCGLM_LDFLAGS="-L$EMPREFIX/lib"' \
                      '-DCGLM_LIBS="-lm libcglm.a"' \
                      '-DSDL2_CFLAGS=-sUSE_SDL=2' \
                      '-DSDL2_LDFLAGS=-sUSE_SDL=2' \
                      "-DSDL2_IMAGE_CFLAGS=$sdl_image_flags" \
-                     "-DSDL2_IMAGE_LDFLAGS=$sdl_image_flags"
+                     "-DSDL2_IMAGE_LDFLAGS=$sdl_image_flags" \
+                     "-DOPENAL_CFLAGS=$(pkg-config --cflags openal)" \
+                     '-DOPENAL_LDFLAGS=-lopenal'
     build_all
 }
 

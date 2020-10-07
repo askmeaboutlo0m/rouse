@@ -32,7 +32,6 @@
 #include <SDL2/SDL.h>
 #include "../common.h"
 #include "../geom.h"
-#include "../dl.h"
 #include "sample.h"
 #include "../refcount.h"
 #include "../main.h"
@@ -53,11 +52,24 @@ struct R_AlSource {
     R_AlBuffer   *buffer;
 };
 
+/*
+ * Emscripten links OpenAL functions at compile time, all other
+ * platforms link it at runtime using dlsym or similar mechanisms.
+ */
+#ifdef __EMSCRIPTEN__
+
+static bool load_openal(void)
+{
+    return true;
+}
+
+#else
+
+#include "../dl.h"
 
 #define R_AL_PROC_X(TYPE, NAME) TYPE R_ ## NAME = R_ ## NAME ## _fallback;
 R_AL_PROC_LIST
 #undef R_AL_PROC_X
-
 
 #define GET_AL_PROC(HANDLE, TYPE, NAME) do { \
         void *_proc = R_DL_SYM(HANDLE, #NAME); \
@@ -91,6 +103,8 @@ static bool load_openal(void)
     }
 }
 
+#endif
+
 
 static ALCdevice *init_al_device(R_AlGetDeviceNameHook get_device_name,
                                  void *user)
@@ -117,7 +131,7 @@ static ALCcontext *init_al_context(
 
 static const char *get_al_string(int name)
 {
-    const char *value = R_alGetString(name);
+    const char *value = R_AL(alGetString)(name);
     R_AL_CLEAR_ERROR();
     return value ? value : "(NULL)";
 }
@@ -162,7 +176,7 @@ bool R_al_init(R_AlGetDeviceNameHook        get_device_name,
 static void deinit_context(void)
 {
     R_AL_CHECK_WARN(alcMakeContextCurrent, NULL);
-    R_alcDestroyContext(context); /* returns void, so I guess it can't fail */
+    R_AL(alcDestroyContext)(context); /* returns void, so I guess it can't fail */
     context = NULL;
 }
 

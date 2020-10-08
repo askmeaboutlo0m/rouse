@@ -20,7 +20,7 @@ sudo docker run --rm -v "$base:/rouse" -it "$image" /rouse/cross/win/entrypoint
 sudo chown -R "$(id -un):$(id -gn)" rouse/buildwin rouse-lua/buildwin
 
 echo
-echo 'Building done. You probably still need the ANGLE .dll files:'
+echo 'Building done. You probably still need the ANGLE and OpenAL .dll files:'
 echo
 echo '  - d3dcompiler_47.dll'
 echo
@@ -28,5 +28,7 @@ echo '  - libegl.dll'
 echo
 echo '  - libglesv2.dll'
 echo
-echo 'Either build ANGLE from source or get them from Chrome or LWGL.'
+echo '  - openal.dll (or OpenAL.dll, lowercase it for rouse)'
+echo
+echo 'Either build them from source or get them from Chrome and LWGL.'
 echo

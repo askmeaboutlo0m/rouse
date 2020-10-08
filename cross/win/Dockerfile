@@ -1,6 +1,6 @@
 FROM alpine:20191219
 RUN apk update && \
-    apk add autoconf automake cmake git libtool make mingw-w64-gcc ninja && \
+    apk add autoconf automake cmake git libtool make mingw-w64-gcc ninja openal-soft-dev && \
     mkdir -p /deps /deps/prefix /deps/prefix/bin /deps/prefix/include /deps/prefix/lib && \
     cd /deps && \
     git clone https://github.com/recp/cglm && \

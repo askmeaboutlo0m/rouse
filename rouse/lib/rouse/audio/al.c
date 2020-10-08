@@ -72,13 +72,16 @@ R_AL_PROC_LIST
 #undef R_AL_PROC_X
 
 #define GET_AL_PROC(HANDLE, TYPE, NAME) do { \
-        void *_proc = R_DL_SYM(HANDLE, #NAME); \
+        void        *_proc; \
+        const char  *_error; \
+        R_DL_SYM(HANDLE, #NAME, _proc, _error); \
         if (_proc) { \
             R_debug("got proc address: " #TYPE " " #NAME " at %p", _proc); \
             R_DL_ASSIGN(R_ ## NAME, _proc); \
         } \
         else { \
-            R_warn("did not find proc address for " #TYPE " " #NAME); \
+            R_warn("did not find proc address for " \
+                   #TYPE " " #NAME ": %s", _error); \
         } \
     } while (0)
 
@@ -92,13 +95,15 @@ static void load_openal_functions(void *handle)
 
 static bool load_openal(void)
 {
-    void *handle = R_DL_OPEN("openal");
+    void       *handle;
+    const char *error;
+    R_DL_OPEN("openal", handle, error);
     if (handle) {
         load_openal_functions(handle);
         return true;
     }
     else {
-        R_warn("Can't link openal: %s", R_DL_ERROR());
+        R_warn("Can't link openal: %s", error ? error : "(NULL)");
         return false;
     }
 }

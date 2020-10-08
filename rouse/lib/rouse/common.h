@@ -456,3 +456,15 @@ bool R_str_equal(const char *a, const char *b);
  * `NULL`, it'll be filled with the number of bytes read.
  */
 char *R_slurp(const char *path, long *out_len);
+
+/*
+ * Windows doesn't really provide a sensible stringification for its
+ * `GetLastError` function, so this will have to stand in for it. It formats
+ * the given error to a static string buffer that will be re-used, so the
+ * returned string will only be valid until the next call to this function.
+ * May return `NULL` if FormatMessage fails for whatever reason. May also
+ * call `SetLastError`, so keep your error code around if you need it.
+ */
+#ifdef _WIN32
+const char *R_win32_strerror(unsigned long error);
+#endif

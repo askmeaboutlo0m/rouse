@@ -30,6 +30,9 @@
 #include <string.h>
 #include <SDL2/SDL.h>
 #include <rouse_config.h>
+#ifdef _WIN32
+#   include <windows.h>
+#endif
 #include "common.h"
 
 
@@ -299,3 +302,22 @@ char *R_slurp(const char *path, long *out_len)
     }
     return buf;
 }
+
+
+#ifdef _WIN32
+const char *R_win32_strerror(unsigned long error)
+{
+    static char buf[1024];
+
+    unsigned long flags  = FORMAT_MESSAGE_FROM_SYSTEM
+                         | FORMAT_MESSAGE_IGNORE_INSERTS;
+    unsigned long langid = MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT);
+
+    if (FormatMessage(flags, NULL, error, langid, buf, sizeof(buf), NULL) > 0) {
+        return buf;
+    }
+    else {
+        return NULL;
+    }
+}
+#endif

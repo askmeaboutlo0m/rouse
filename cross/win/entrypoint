@@ -10,6 +10,7 @@ echo 'Building rouse for Windows' && \
         -DUSE_ASAN=OFF \
         -DUSE_PKGCONFIG=OFF \
         -DBUILD_WITH_MAGIC=OFF \
+        -DBUILD_WITH_GL_CHECKS=OFF \
         -DCGLM_CFLAGS="-I/deps/prefix/include" \
         -DCGLM_LIBS="-L/deps/prefix/lib -l:libcglm.a -lm" \
         -DSDL2_CFLAGS="-I/deps/prefix/include -Dmain=SDL_main" \

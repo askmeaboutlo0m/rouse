@@ -25,7 +25,7 @@ function PreloadScene:init(args)
     self.nvg        = args.nvg or R.Nvg.new(0)
     self.ms         = args.ms or 10
     self.on_done    = args.on_done or error("No on_done callback given")
-    self.loaded     = {font = {}, image = {}, json = {}}
+    self.loaded     = {font = {}, image = {}, json = {}, sound = {}}
     self.current    = 1
     self.bytes      = 0
     self.temp_bytes = 0
@@ -108,6 +108,14 @@ function PreloadScene:load_type_json(key, path)
     return "json", R.Json.parse_file(path)
 end
 
+function PreloadScene:load_type_ogg(key, path)
+    if R.get_al_enabled() then
+        return "sound", R.Al.Buffer.from_file(path)
+    else
+        return false, "sound not enabled"
+    end
+end
+
 function PreloadScene:load_type_png(key, path)
     return "image", R.BitmapImage.from_file(self.nvg, path, 0)
 end
@@ -124,11 +132,15 @@ function PreloadScene:load_resource(path)
     local key, suffix = string.match(path, "([^/]+)%.([^%./]+)$")
     local loader      = self["load_type_" .. suffix]
     if loader then
-        local prefix, asset = loader(self, key, path)
-        if self.loaded[prefix][key] then
-            R.warn("Duplicate asset '%s': %s", key, path)
+        local prefix, asset_or_reason = loader(self, key, path)
+        if prefix then
+            if self.loaded[prefix][key] then
+                R.warn("Duplicate asset '%s': %s", key, path)
+            else
+                self.loaded[prefix][key] = asset_or_reason
+            end
         else
-            self.loaded[prefix][key] = asset
+            R.debug("Not loading '%s': %s", path, asset_or_reason)
         end
     elseif loader ~= false then
         -- A `false` loader means it's intentionally not loaded.

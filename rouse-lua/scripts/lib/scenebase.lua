@@ -141,6 +141,10 @@ function SceneBase:json_asset(key)
     return self:asset("json", key)
 end
 
+function SceneBase:sound_asset(key)
+    return self:asset("sound", key)
+end
+
 
 function SceneBase:sprite(...)
     local retvals = {}

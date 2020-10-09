@@ -176,6 +176,9 @@ function simple_main_args(args)
             multisamplebuffers = have_msaa and 1 or 0,
             multisamplesamples = have_msaa and msaa or nil,
         },
+        al = {
+            enabled = args.openal and true or false,
+        },
         on_scene = args.on_scene,
     }
 end

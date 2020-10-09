@@ -87,13 +87,26 @@ static R_Scene *on_scene(void *user)
 }
 
 
+static void set_bool_arg(lua_State *L, int index, const char *name, bool *target)
+{
+    if (lua_getfield(L, index, name)) {
+        if (lua_isboolean(L, -1)) {
+            *target = lua_toboolean(L, -1);
+        }
+        else {
+            R_warn("%s argument is not a boolean", name);
+        }
+    }
+    lua_pop(L, 1);
+}
+
 static void set_int_arg(lua_State *L, int index, const char *name, int *target)
 {
     if (lua_getfield(L, index, name)) {
         int         success;
-        lua_Integer samples = lua_tointegerx(L, -1, &success);
+        lua_Integer value = lua_tointegerx(L, -1, &success);
         if (success) {
-            *target = R_lua_i2int(samples);
+            *target = R_lua_i2int(value);
         }
         else {
             R_warn("%s argument is not an integer", name);
@@ -162,6 +175,13 @@ static int unravel_window_args(lua_State *L)
     return 0;
 }
 
+static int unravel_al_args(lua_State *L)
+{
+    R_AlArgs *al = lua_touserdata(L, 1);
+    set_bool_arg(L, 2, "enabled", &al->enabled);
+    return 0;
+}
+
 static void unravel_subargs(lua_State *L, const char *key, void *subargs,
                             lua_CFunction unravel_fn)
 {
@@ -184,6 +204,7 @@ static int unravel_main_args(lua_State *L)
     R_MainArgs *args = lua_touserdata(L, 1);
     unravel_subargs(L, "gl",     &args->gl,     unravel_sdl_gl_args);
     unravel_subargs(L, "window", &args->window, unravel_window_args);
+    unravel_subargs(L, "al",     &args->al,     unravel_al_args);
     return 0;
 }
 

@@ -150,6 +150,14 @@ function SceneBase:sprite(...)
     return table.unpack(retvals)
 end
 
+function SceneBase:maybe_sprite(...)
+    local retvals = {}
+    for i, name in ipairs {...} do
+        retvals[i] = self.sprites[name] or false
+    end
+    return table.unpack(retvals)
+end
+
 
 function SceneBase:figure_out_content(name, content)
     if content == nil then

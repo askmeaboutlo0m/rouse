@@ -60,6 +60,20 @@ function SetupSpec:content(content)
     return self
 end
 
+function SetupSpec:x(x)
+    self.spec.x = x
+    return self
+end
+
+function SetupSpec:y(y)
+    self.spec.y = y
+    return self
+end
+
+function SetupSpec:pos(x, y)
+    return self:x(x):y(y)
+end
+
 function SetupSpec:world_x(world_x)
     self.spec.world_x = world_x
     return self

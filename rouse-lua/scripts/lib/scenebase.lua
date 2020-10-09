@@ -252,7 +252,7 @@ function SceneBase:add(spec)
     sprite:reset_base()
 
     if spec.track then
-        sprite:track(self:maybe_sprite(spec.track))
+        sprite:track(self:maybe_look_up_sprite(spec.track))
     end
 
     return sprite
@@ -282,23 +282,23 @@ function SceneBase:maybe_look_up(object_or_name, lookup_fn)
     end
 end
 
-function SceneBase:maybe_sprite(sprite_or_name)
+function SceneBase:maybe_look_up_sprite(sprite_or_name)
     return self:maybe_look_up(sprite_or_name, self.sprite)
 end
 
-function SceneBase:maybe_image_asset(asset_or_name)
+function SceneBase:maybe_look_up_image_asset(asset_or_name)
     return self:maybe_look_up(asset_or_name, self.image_asset)
 end
 
 function SceneBase:frame(sprite_or_name, asset_or_name)
-    local sprite   = self:maybe_sprite(sprite_or_name)
-    local asset    = self:maybe_image_asset(asset_or_name)
+    local sprite   = self:maybe_look_up_sprite(sprite_or_name)
+    local asset    = self:maybe_look_up_image_asset(asset_or_name)
     sprite.content = asset
     return sprite, asset
 end
 
 function SceneBase:seq(topic_or_name, ...)
-    local topic = self:maybe_sprite(topic_or_name)
+    local topic = self:maybe_look_up_sprite(topic_or_name)
     return SeqBuilder.new(self, topic, ...)
 end
 

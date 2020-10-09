@@ -51,24 +51,22 @@ function slurplines(filename)
 end
 
 
-always_redofile_from_cache = false
+redofile_caching = false
 
 redofile = (function ()
     local cache = {}
     return function (filename)
-        local cached  = cache[filename]
-        if cached and always_redofile_from_cache then
-            return cached.value
-        end
-
-        local content = slurp(filename)
-        if cached and cached.content == content then
-            return cached.value
+        if redofile_caching then
+            local cached = cache[filename]
+            if cached then
+                return cached
+            else
+                local value     = dofile(filename)
+                cache[filename] = value
+                return value
+            end
         else
-            local chunk = assert(load(content, filename))
-            local value = chunk()
-            cache[filename] = {content = content, value = value}
-            return value
+            return dofile(filename)
         end
     end
 end)()

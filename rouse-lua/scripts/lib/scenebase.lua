@@ -49,15 +49,29 @@ function SceneBase:init_render_function()
         local fb_h  = fb.height
         local fb_vp = R.Viewport.new(0, 0, fb_w, fb_h)
 
-        self.render = function ()
-            self:before_render(nvg, width, height, fb_w, fb_h)
-            fb:bind()
-            local r, g, b, a = self.clear_color:unpack()
-            R.GL.clear(r, g, b, a, 0.0, 0)
-            root:draw(nvg, width, height, fb_w, fb_h)
-            fb:unbind()
-            R.GL.clear(r, g, b, a, 0.0, 0)
-            fr:draw(fb)
+        if rawget(_G, "DUMP_FRAME_BUFFER_EACH_FRAME") then
+            self.render = function ()
+                self:before_render(nvg, width, height, fb_w, fb_h)
+                fb:bind()
+                local r, g, b, a = self.clear_color:unpack()
+                R.GL.clear(r, g, b, a, 0.0, 0)
+                root:draw(nvg, width, height, fb_w, fb_h)
+                fb:unbind()
+                R.GL.clear(r, g, b, a, 0.0, 0)
+                fr:draw(fb)
+                fb:write_to_stdout()
+            end
+        else
+            self.render = function ()
+                self:before_render(nvg, width, height, fb_w, fb_h)
+                fb:bind()
+                local r, g, b, a = self.clear_color:unpack()
+                R.GL.clear(r, g, b, a, 0.0, 0)
+                root:draw(nvg, width, height, fb_w, fb_h)
+                fb:unbind()
+                R.GL.clear(r, g, b, a, 0.0, 0)
+                fr:draw(fb)
+            end
         end
     else
         self.render = function ()

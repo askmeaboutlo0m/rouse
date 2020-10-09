@@ -344,8 +344,11 @@ R_AlBuffer *R_al_buffer_from_file(const char *path)
 
 static void free_al_buffer(R_AlBuffer *buffer)
 {
-    R_AL_CLEAR_ERROR();
-    R_AL_CHECK_VOID(alDeleteBuffers, 1, &buffer->id);
+    /* Don't try to perform cleanup when OpenAL is already shut down. */
+    if (context) {
+        R_AL_CLEAR_ERROR();
+        R_AL_CHECK_VOID(alDeleteBuffers, 1, &buffer->id);
+    }
     free(buffer);
 }
 
@@ -395,8 +398,11 @@ void R_al_source_free(R_AlSource *source)
 {
     if (source) {
         R_MAGIC_CHECK(R_AlSource, source);
-        R_AL_CLEAR_ERROR();
-        R_AL_CHECK_VOID(alDeleteSources, 1, &source->id);
+        /* Don't try to perform cleanup when OpenAL is already shut down. */
+        if (context) {
+            R_AL_CLEAR_ERROR();
+            R_AL_CHECK_VOID(alDeleteSources, 1, &source->id);
+        }
         R_al_buffer_decref(source->buffer);
         free(source);
     }

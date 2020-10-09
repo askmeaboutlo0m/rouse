@@ -14,20 +14,20 @@
 #ifdef ROUSE_AL_CHECKS
 #   define R_AL_CLEAR_ERROR() do { \
             int _alerror; \
-            while ((_alerror = R_AL(alGetError)()) != AL_NO_ERROR) { \
+            while ((_alerror = R_al_get_error()) != AL_NO_ERROR) { \
                 R_al_warn(_alerror, "R_AL_CLEAR_ERROR"); \
             } \
         } while (0)
 
 #   define R_AL_CHECK_RESULT_WARN(WHERE, RESULT) do { \
             if (!(RESULT)) { \
-                R_al_warn(R_AL(alGetError)(), WHERE); \
+                R_al_warn(R_al_get_error(), WHERE); \
             } \
         } while (0)
 
 #   define R_AL_CHECK_RESULT(WHERE, RESULT) do { \
             if (!(RESULT)) { \
-                R_al_die(R_AL(alGetError)(), WHERE); \
+                R_al_die(R_al_get_error(), WHERE); \
             } \
         } while (0)
 
@@ -37,7 +37,7 @@
 
 #   define R_AL_CHECK_VOID(FUNC, ...) do { \
             R_AL(FUNC)(__VA_ARGS__); \
-            int _alerror = R_AL(alGetError)(); \
+            int _alerror = R_al_get_error(); \
             if (_alerror != AL_NO_ERROR) { \
                 R_al_die(_alerror, #FUNC); \
             } \
@@ -71,6 +71,9 @@ bool R_al_init(R_AlGetDeviceNameHook        get_device_name,
                void                         *user);
 
 void R_al_deinit(void);
+
+
+int R_al_get_error(void);
 
 noreturn void R_al_die(int err, const char *where);
 

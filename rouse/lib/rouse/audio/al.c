@@ -202,6 +202,11 @@ void R_al_deinit(void)
 }
 
 
+int R_al_get_error(void)
+{
+    return context ? R_AL(alGetError)() : AL_NO_ERROR;
+}
+
 void R_al_die(int err, const char *where)
 {
     R_die("OpenAL error %d (%s) in %s", err,
@@ -213,7 +218,6 @@ void R_al_warn(int err, const char *where)
     R_warn("OpenAL error %d (%s) in %s", err,
            R_al_strerror(err), where ? where : "");
 }
-
 
 const char *R_al_strerror(int err)
 {

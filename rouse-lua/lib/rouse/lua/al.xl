@@ -1,0 +1,168 @@
+/*
+ * Copyright (c) 2020 askmeaboutloom
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+#include <rouse.h>
+#include "lua_inc.h"
+#include "intern.h"
+#include "util.h"
+
+@xl
+
+PPTYPE R_Sample
+UTYPE  R_V3
+
+BEFORE
+#ifdef ROUSE_AL_ENABLED
+END
+
+AFTER
+#else
+    R_LUA_DIE(L, "OpenAL not compiled in")
+#endif
+END
+
+
+PPTYPE R_AlBuffer R.Al.Buffer
+
+CONSTRUCTOR from_sample(R_Sample *sample) = R_al_buffer_from_sample
+
+CONSTRUCTOR from_file(const char *path) = R_al_buffer_from_file
+
+DESTRUCTOR = R_al_buffer_decref
+
+FUNCTION bool R_AlBuffer:__eq(any a, any b)
+    R_AlBuffer **app = luaL_testudata(L, a, "R_AlBuffer");
+    R_AlBuffer **bpp = luaL_testudata(L, b, "R_AlBuffer");
+    RETVAL = app == bpp || (app && bpp && *app == *bpp);
+END
+
+INDEX unsigned int id = R_al_buffer_id
+
+
+PPTYPE R_AlSource R.Al.Source
+
+@c
+
+static void maybe_set(lua_State *L, int argc, int index)
+{
+    if (argc >= index) {
+        lua_getfield(L, -1, "set");
+        lua_pushvalue(L, -2);
+        lua_pushvalue(L, index);
+        lua_call(L, 2, 0);
+    }
+}
+
+@xl
+
+CONSTRUCTOR new()
+    int argc = lua_gettop(L);
+    RETVAL   = R_al_source_new();
+LEAVE
+    maybe_set(L, argc, XL_REQUIRED_ARGC + 1);
+END
+
+CONSTRUCTOR from_buffer(R_AlBuffer *buffer)
+    int argc = lua_gettop(L);
+    RETVAL   = R_al_source_from_buffer(buffer);
+LEAVE
+    maybe_set(L, argc, XL_REQUIRED_ARGC + 1);
+END
+
+CONSTRUCTOR from_file(const char *path)
+    int argc = lua_gettop(L);
+    RETVAL = R_al_source_from_file(path);
+LEAVE
+    maybe_set(L, argc, XL_REQUIRED_ARGC + 1);
+END
+
+DESTRUCTOR = R_al_source_free
+
+
+INDEX unsigned int id = R_al_source_id
+
+INDEX <NEW_NULLABLE>R_AlBuffer *buffer
+    RETVAL = R_al_source_buffer(self);
+    if (RETVAL) {
+        R_al_buffer_incref(RETVAL);
+    }
+END
+
+NEWINDEX R_AlBuffer *buffer = R_al_source_buffer_set
+
+INDEX R_V3  pos                = R_al_source_pos
+INDEX float pos_x              = R_al_source_pos_x
+INDEX float pos_y              = R_al_source_pos_y
+INDEX float pos_z              = R_al_source_pos_z
+INDEX R_V3  velocity           = R_al_source_velocity
+INDEX float velocity_x         = R_al_source_velocity_x
+INDEX float velocity_y         = R_al_source_velocity_y
+INDEX float velocity_z         = R_al_source_velocity_z
+INDEX float gain               = R_al_source_gain
+INDEX float pitch              = R_al_source_pitch
+INDEX float reference_distance = R_al_source_reference_distance
+INDEX float offset_in_seconds  = R_al_source_offset_in_seconds
+INDEX bool  looping            = R_al_source_looping
+
+NEWINDEX R_V3  pos                = R_al_source_pos_set
+NEWINDEX float pos_x              = R_al_source_pos_x_set
+NEWINDEX float pos_y              = R_al_source_pos_y_set
+NEWINDEX float pos_z              = R_al_source_pos_z_set
+NEWINDEX R_V3  velocity           = R_al_source_velocity_set
+NEWINDEX float velocity_x         = R_al_source_velocity_x_set
+NEWINDEX float velocity_y         = R_al_source_velocity_y_set
+NEWINDEX float velocity_z         = R_al_source_velocity_z_set
+NEWINDEX float gain               = R_al_source_gain_set
+NEWINDEX float pitch              = R_al_source_pitch_set
+NEWINDEX float reference_distance = R_al_source_reference_distance_set
+NEWINDEX float offset_in_seconds  = R_al_source_offset_in_seconds_set
+NEWINDEX bool  looping            = R_al_source_looping_set
+
+INDEX    float x = R_al_source_pos_x
+NEWINDEX float x = R_al_source_pos_x_set
+INDEX    float y = R_al_source_pos_y
+NEWINDEX float y = R_al_source_pos_y_set
+INDEX    float z = R_al_source_pos_z
+NEWINDEX float z = R_al_source_pos_z_set
+
+SETFROMTABLE set
+
+
+METHOD void play  () = R_al_source_play
+METHOD void stop  () = R_al_source_stop
+METHOD void rewind() = R_al_source_rewind
+METHOD void pause () = R_al_source_pause
+
+
+INDEX const char *state
+    switch (R_al_source_state(self)) {
+        case AL_INITIAL: RETVAL = "initial"; break;
+        case AL_PLAYING: RETVAL = "playing"; break;
+        case AL_PAUSED:  RETVAL = "paused" ; break;
+        case AL_STOPPED: RETVAL = "stopped"; break;
+        default:         RETVAL = "unknown"; break;
+    }
+END
+
+INDEX bool playing = R_al_source_playing
+
+
+INIT extern R_lua_al_init

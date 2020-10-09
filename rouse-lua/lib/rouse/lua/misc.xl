@@ -97,6 +97,10 @@ FUNCTION void R.set_max_ticks_before_render(uint32_t max_ticks_before_render)
     R_max_ticks_before_render = max_ticks_before_render;
 END
 
+FUNCTION bool R.get_al_enabled()
+    RETVAL = R_al_enabled;
+END
+
 
 FUNCTION float R.rand_between(float a, float b) = R_rand_between
 

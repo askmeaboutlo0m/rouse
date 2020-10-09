@@ -78,15 +78,18 @@ set(rouse_lua_sources
     "${CMAKE_SOURCE_DIR}/lib/rouse/lua/xl.c")
 
 set(rouse_lua_xls
+    "${CMAKE_SOURCE_DIR}/lib/rouse/lua/al.xl"
     "${CMAKE_SOURCE_DIR}/lib/rouse/lua/bitmap.xl"
     "${CMAKE_SOURCE_DIR}/lib/rouse/lua/double.xl"
     "${CMAKE_SOURCE_DIR}/lib/rouse/lua/ease.xl"
     "${CMAKE_SOURCE_DIR}/lib/rouse/lua/frame_buffer.xl"
     "${CMAKE_SOURCE_DIR}/lib/rouse/lua/frame_renderer.xl"
+    "${CMAKE_SOURCE_DIR}/lib/rouse/lua/geom.xl"
     "${CMAKE_SOURCE_DIR}/lib/rouse/lua/gl.xl"
     "${CMAKE_SOURCE_DIR}/lib/rouse/lua/json.xl"
     "${CMAKE_SOURCE_DIR}/lib/rouse/lua/misc.xl"
     "${CMAKE_SOURCE_DIR}/lib/rouse/lua/nvg.xl"
+    "${CMAKE_SOURCE_DIR}/lib/rouse/lua/sample.xl"
     "${CMAKE_SOURCE_DIR}/lib/rouse/lua/scene.xl"
     "${CMAKE_SOURCE_DIR}/lib/rouse/lua/sdl.xl"
     "${CMAKE_SOURCE_DIR}/lib/rouse/lua/seq.xl"

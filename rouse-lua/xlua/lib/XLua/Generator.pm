@@ -1,4 +1,4 @@
-# Copyright (c) 2019 askmeaboutloom
+# Copyright (c) 2019, 2020 askmeaboutloom
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -282,11 +282,21 @@ sub generate_body ($self, $preamble, $bodies, $postamble, $return, $has_retval) 
 sub generate_function_block ($self, $block, $suffix = '', $register = undef) {
     my $block_name = $block->{name} // '';
     my $func_name  = c_name("$block->{package}.$block_name$suffix");
+
+    my $want_argc = encode_json($block) =~ /\bXL_REQUIRED_ARGC\b/;
+    if ($want_argc) {
+        my $argc = @{$block->{args}};
+        $self->println("#define XL_REQUIRED_ARGC $argc");
+    }
+
     $self->println("static int $func_name(lua_State *L)");
     $self->println('{');
+    $self->println($block->{before}) if $block->{before};
     $self->generate_args($block->{args});
     $self->generate_body(@{$block}{qw(preamble body postamble return has_retval)});
+    $self->println($block->{after}) if $block->{after};
     $self->println('}');
+    $self->println("#undef XL_REQUIRED_ARGC") if $want_argc;
 
     my $kind    = $register || ($block->{is_method} ? 'method' : 'function');
     my $package = $block->{register} || $block->{package};

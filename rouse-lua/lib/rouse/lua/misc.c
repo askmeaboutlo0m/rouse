@@ -133,6 +133,14 @@ static int r_set_max_ticks_before_render_xl(lua_State *L)
     return 0;
 }
 
+static int r_get_al_enabled_xl(lua_State *L)
+{
+    bool RETVAL;
+    RETVAL = R_al_enabled;
+    lua_pushboolean(L, RETVAL);
+    return 1;
+}
+
 static int r_rand_between_xl(lua_State *L)
 {
     float a = XL_checkfloat(L, 1);
@@ -210,6 +218,7 @@ static luaL_Reg r_function_registry_xl[] = {
     {"die", r_die_xl},
     {"fetch", r_fetch_xl},
     {"fetch_pack", r_fetch_pack_xl},
+    {"get_al_enabled", r_get_al_enabled_xl},
     {"get_framerate", r_get_framerate_xl},
     {"get_platform", r_get_platform_xl},
     {"get_tick_length", r_get_tick_length_xl},

@@ -31,13 +31,19 @@ sub new ($class) {
         metatables => [],
         last_type  => undef,
         fieldcheck => undef,
+        before     => undef,
         preamble   => undef,
         postamble  => undef,
+        after      => undef,
         init       => {
             linkage => 'static',
             name    => 'init',
         },
     }, $class;
+}
+
+sub ambles ($self) {
+    return %{$self}{qw/before preamble postamble after/};
 }
 
 sub add_block ($self, $block) {
@@ -217,9 +223,8 @@ sub parse_function_directive ($self, $in, $line) {
         is_method  => $is_method,
         name       => $name,
         args       => $args,
-        preamble   => $self->{preamble},
-        postamble  => $self->{postamble},
         body       => $body,
+        $self->ambles,
     });
 }
 
@@ -272,9 +277,8 @@ sub parse_index_directive ($self, $in, $line) {
         package    => $callee,
         is_method  => JSON::PP::true,
         args       => $args,
-        preamble   => $self->{preamble},
-        postamble  => $self->{postamble},
         body       => $body,
+        $self->ambles,
     });
 }
 
@@ -303,9 +307,8 @@ sub parse_newindex_directive ($self, $in, $line) {
         package    => $callee,
         is_method  => JSON::PP::true,
         args       => $args,
-        preamble   => $self->{preamble},
-        postamble  => $self->{postamble},
         body       => $body,
+        $self->ambles,
     });
 }
 
@@ -323,9 +326,8 @@ sub parse_intindex_directive ($self, $in, $line) {
         package    => $callee,
         is_method  => JSON::PP::true,
         args       => $args,
-        preamble   => $self->{preamble},
-        postamble  => $self->{postamble},
         body       => $body,
+        $self->ambles,
     });
 }
 
@@ -342,9 +344,8 @@ sub parse_intnewindex_directive ($self, $in, $line) {
         package    => $callee,
         is_method  => JSON::PP::true,
         args       => $args,
-        preamble   => $self->{preamble},
-        postamble  => $self->{postamble},
         body       => $body,
+        $self->ambles,
     });
 }
 
@@ -373,12 +374,20 @@ sub parse_amble ($self, $kind, $in, $line) {
     }
 }
 
+sub parse_before_directive ($self, $in, $line) {
+    $self->{before} = $self->parse_amble('BEFORE', $in, $line);
+}
+
 sub parse_preamble_directive ($self, $in, $line) {
     $self->{preamble} = $self->parse_amble('PREAMBLE', $in, $line);
 }
 
 sub parse_postamble_directive ($self, $in, $line) {
     $self->{postamble} = $self->parse_amble('POSTAMBLE', $in, $line);
+}
+
+sub parse_after_directive ($self, $in, $line) {
+    $self->{after} = $self->parse_amble('AFTER', $in, $line);
 }
 
 sub parse_indexfield_directive ($self, $in, $line) {

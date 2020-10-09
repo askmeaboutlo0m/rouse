@@ -34,11 +34,13 @@ R_EaseFn R_lua_named_ease(lua_State *L, int name_index);
 
 
 #define R_LUA_INIT_LIST(X) \
+    X(R_lua_al_init) \
     X(R_lua_bitmap_image_init) \
     X(R_lua_double_init) \
     X(R_lua_ease_init) \
     X(R_lua_frame_buffer_init) \
     X(R_lua_frame_renderer_init) \
+    X(R_lua_geom_init) \
     X(R_lua_gl_init) \
     X(R_lua_json_init) \
     X(R_lua_misc_init) \
@@ -46,6 +48,7 @@ R_EaseFn R_lua_named_ease(lua_State *L, int name_index);
     X(R_lua_scene_init) \
     X(R_lua_sdl_init) \
     X(R_lua_seq_init) \
+    X(R_lua_sample_init) \
     X(R_lua_sprite_init) \
     X(R_lua_text_field_init) \
     X(R_lua_vector_image_init) \

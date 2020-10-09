@@ -22,11 +22,12 @@ local SeqBuilder = redofile("scripts/lib/seqbuilder.lua")
 local SceneBase  = class()
 
 function SceneBase:init(args)
-    self.scene          = args.scene  or error("no scene given")
-    self.nvg            = args.nvg    or error("no nvg given")
-    self.width          = args.width  or error("no width given")
-    self.height         = args.height or error("no height given")
-    self.assets         = args.assets or {}
+    self.scene          = args.scene   or error("no scene given")
+    self.nvg            = args.nvg     or error("no nvg given")
+    self.width          = args.width   or error("no width given")
+    self.height         = args.height  or error("no height given")
+    self.assets         = args.assets  or {}
+    self.sources        = args.sources or {}
     self.frame_renderer = args.frame_renderer
     self.frame_buffer   = args.frame_buffer
     self.root           = R.Sprite.new("root")
@@ -312,6 +313,68 @@ function SceneBase:kill_by_id(id)
 end
 
 
+SceneBase.have_sound = R.get_al_enabled()
+
+if SceneBase.have_sound then
+    function SceneBase:allocate_sound_sources(count)
+        local sources   = self.sources
+        local allocated = {}
+        local i         = 1
+
+        while i <= #sources and #allocated < count do
+            local source = sources[i]
+            if not source.playing then
+                table.insert(allocated, source)
+            end
+            i = i + 1
+        end
+
+        while #allocated < count do
+            local source = R.Al.Source.new()
+            table.insert(sources,   source)
+            table.insert(allocated, source)
+        end
+
+        return table.unpack(allocated)
+    end
+
+    function SceneBase:maybe_look_up_sound(sound_or_name)
+        return self:maybe_look_up(sound_or_name, self.sound_asset)
+    end
+
+    function SceneBase:play_sound_from(source, sound_or_name, args)
+        local sound   = self:maybe_look_up_sound(sound_or_name)
+        source.buffer = sound
+        if args then
+            source:set(args)
+        end
+        source:play()
+    end
+
+    function SceneBase:play_sound(sound_or_name, args)
+        local source = self:allocate_sound_sources(1)
+        self:play_sound_from(source, sound_or_name, args)
+        return source
+    end
+else
+    function SceneBase:allocate_sound_sources(count)
+        error("OpenAL is not enabled")
+    end
+
+    function SceneBase:maybe_look_up_sound(sound_or_name)
+        error("OpenAL is not enabled")
+    end
+
+    function SceneBase:play_sound_from(source, sound_or_name, args)
+        -- nothing
+    end
+
+    function SceneBase:play_sound(sound_or_name, args)
+        return nil
+    end
+end
+
+
 local ErrorScene = class(SceneBase)
 
 function ErrorScene:init(scene, nvg, assets, next_scene_fn)
@@ -359,6 +422,7 @@ function SceneBase:next_scene(next_or_path)
                 scene          = scene,
                 nvg            = self.nvg,
                 assets         = self.assets,
+                sources        = self.sources,
                 frame_renderer = self.frame_renderer,
                 frame_buffer   = self.frame_buffer,
             }

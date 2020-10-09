@@ -240,12 +240,12 @@ const char *R_al_strerror(int err)
 }
 
 
-R_V3 R_al_listener_position(void)
+R_V3 R_al_listener_pos(void)
 {
-    R_V3 position;
+    R_V3 pos;
     R_AL_CHECK_VOID(alGetListener3f, AL_POSITION,
-                    &position.x, &position.y, &position.z);
-    return position;
+                    &pos.x, &pos.y, &pos.z);
+    return pos;
 }
 
 R_V3 R_al_listener_velocity(void)
@@ -273,10 +273,9 @@ float R_al_listener_gain(void)
 }
 
 
-void R_al_listener_position_set(R_V3 position)
+void R_al_listener_pos_set(R_V3 pos)
 {
-    R_AL_CHECK_VOID(alListener3f, AL_POSITION,
-                    position.x, position.y, position.z);
+    R_AL_CHECK_VOID(alListener3f, AL_POSITION, pos.x, pos.y, pos.z);
 }
 
 void R_al_listener_velocity_set(R_V3 velocity)
@@ -374,24 +373,24 @@ R_AlSource *R_al_source_new(void)
     return source;
 }
 
-R_AlSource *R_al_source_new_from_buffer(R_AlBuffer *buffer)
+R_AlSource *R_al_source_from_buffer(R_AlBuffer *buffer)
 {
     R_AlSource *source = R_al_source_new();
     R_al_source_buffer_set(source, buffer);
     return source;
 }
 
-R_AlSource *R_al_source_new_from_buffer_noinc(R_AlBuffer *buffer)
+R_AlSource *R_al_source_from_buffer_noinc(R_AlBuffer *buffer)
 {
     R_AlSource *source = R_al_source_new();
     R_al_source_buffer_set_noinc(source, buffer);
     return source;
 }
 
-R_AlSource *R_al_source_new_from_file(const char *path)
+R_AlSource *R_al_source_from_file(const char *path)
 {
     R_AlBuffer *buffer = R_al_buffer_from_file(path);
-    return R_al_source_new_from_buffer_noinc(buffer);
+    return R_al_source_from_buffer_noinc(buffer);
 }
 
 void R_al_source_free(R_AlSource *source)
@@ -457,13 +456,28 @@ void R_al_source_buffer_set_noinc(R_AlSource *source, R_AlBuffer *buffer)
 }
 
 
-R_V3 R_al_source_position(R_AlSource *source)
+R_V3 R_al_source_pos(R_AlSource *source)
 {
     unsigned int source_id = R_al_source_id(source);
-    R_V3         position;
+    R_V3         pos;
     R_AL_CHECK_VOID(alGetSource3f, source_id, AL_POSITION,
-                    &position.x, &position.y, &position.z);
-    return position;
+                    &pos.x, &pos.y, &pos.z);
+    return pos;
+}
+
+float R_al_source_pos_x(R_AlSource *source)
+{
+    return R_al_source_pos(source).x;
+}
+
+float R_al_source_pos_y(R_AlSource *source)
+{
+    return R_al_source_pos(source).y;
+}
+
+float R_al_source_pos_z(R_AlSource *source)
+{
+    return R_al_source_pos(source).z;
 }
 
 R_V3 R_al_source_velocity(R_AlSource *source)
@@ -473,6 +487,21 @@ R_V3 R_al_source_velocity(R_AlSource *source)
     R_AL_CHECK_VOID(alGetSource3f, source_id, AL_VELOCITY,
                     &velocity.x, &velocity.y, &velocity.z);
     return velocity;
+}
+
+float R_al_source_velocity_x(R_AlSource *source)
+{
+    return R_al_source_velocity(source).x;
+}
+
+float R_al_source_velocity_y(R_AlSource *source)
+{
+    return R_al_source_velocity(source).y;
+}
+
+float R_al_source_velocity_z(R_AlSource *source)
+{
+    return R_al_source_velocity(source).z;
 }
 
 float R_al_source_gain(R_AlSource *source)
@@ -516,11 +545,29 @@ bool R_al_source_looping(R_AlSource *source)
 }
 
 
-void R_al_source_position_set(R_AlSource *source, R_V3 position)
+void R_al_source_pos_set(R_AlSource *source, R_V3 pos)
 {
     unsigned int source_id = R_al_source_id(source);
     R_AL_CHECK_VOID(alSource3f, source_id, AL_POSITION,
-                    position.x, position.y, position.z);
+                    pos.x, pos.y, pos.z);
+}
+
+void R_al_source_pos_x_set(R_AlSource *source, float x)
+{
+    R_V3 pos = R_al_source_pos(source);
+    R_al_source_pos_set(source, R_v3(x, pos.y, pos.z));
+}
+
+void R_al_source_pos_y_set(R_AlSource *source, float y)
+{
+    R_V3 pos = R_al_source_pos(source);
+    R_al_source_pos_set(source, R_v3(pos.x, y, pos.z));
+}
+
+void R_al_source_pos_z_set(R_AlSource *source, float z)
+{
+    R_V3 pos = R_al_source_pos(source);
+    R_al_source_pos_set(source, R_v3(pos.x, pos.y, z));
 }
 
 void R_al_source_velocity_set(R_AlSource *source, R_V3 velocity)
@@ -528,6 +575,24 @@ void R_al_source_velocity_set(R_AlSource *source, R_V3 velocity)
     unsigned int source_id = R_al_source_id(source);
     R_AL_CHECK_VOID(alSource3f, source_id, AL_VELOCITY,
                     velocity.x, velocity.y, velocity.z);
+}
+
+void R_al_source_velocity_x_set(R_AlSource *source, float x)
+{
+    R_V3 velocity = R_al_source_velocity(source);
+    R_al_source_velocity_set(source, R_v3(x, velocity.y, velocity.z));
+}
+
+void R_al_source_velocity_y_set(R_AlSource *source, float y)
+{
+    R_V3 velocity = R_al_source_velocity(source);
+    R_al_source_velocity_set(source, R_v3(velocity.x, y, velocity.z));
+}
+
+void R_al_source_velocity_z_set(R_AlSource *source, float z)
+{
+    R_V3 velocity = R_al_source_velocity(source);
+    R_al_source_velocity_set(source, R_v3(velocity.x, velocity.y, z));
 }
 
 void R_al_source_gain_set(R_AlSource *source, float gain)

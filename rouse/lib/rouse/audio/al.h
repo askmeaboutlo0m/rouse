@@ -82,12 +82,12 @@ void R_al_warn(int err, const char *where);
 const char *R_al_strerror(int err);
 
 
-R_V3            R_al_listener_position   (void);
+R_V3            R_al_listener_pos        (void);
 R_V3            R_al_listener_velocity   (void);
 R_AlOrientation R_al_listener_orientation(void);
 float           R_al_listener_gain       (void);
 
-void R_al_listener_position_set   (R_V3            position);
+void R_al_listener_pos_set        (R_V3            pos);
 void R_al_listener_velocity_set   (R_V3            velocity);
 void R_al_listener_orientation_set(R_AlOrientation orientation);
 void R_al_listener_gain_set       (float           gain);
@@ -102,9 +102,9 @@ unsigned int R_al_buffer_id(R_AlBuffer *buffer);
 
 
 R_AlSource *R_al_source_new(void);
-R_AlSource *R_al_source_new_from_buffer(R_AlBuffer *buffer);
-R_AlSource *R_al_source_new_from_buffer_noinc(R_AlBuffer *buffer);
-R_AlSource *R_al_source_new_from_file(const char *path);
+R_AlSource *R_al_source_from_buffer(R_AlBuffer *buffer);
+R_AlSource *R_al_source_from_buffer_noinc(R_AlBuffer *buffer);
+R_AlSource *R_al_source_from_file(const char *path);
 
 void R_al_source_free(R_AlSource *source);
 
@@ -114,16 +114,28 @@ R_AlBuffer *R_al_source_buffer(R_AlSource *source);
 void R_al_source_buffer_set(R_AlSource *source, R_AlBuffer *buffer);
 void R_al_source_buffer_set_noinc(R_AlSource *source, R_AlBuffer *buffer);
 
-R_V3  R_al_source_position          (R_AlSource *source);
+R_V3  R_al_source_pos               (R_AlSource *source);
+float R_al_source_pos_x             (R_AlSource *source);
+float R_al_source_pos_y             (R_AlSource *source);
+float R_al_source_pos_z             (R_AlSource *source);
 R_V3  R_al_source_velocity          (R_AlSource *source);
+float R_al_source_velocity_x        (R_AlSource *source);
+float R_al_source_velocity_y        (R_AlSource *source);
+float R_al_source_velocity_z        (R_AlSource *source);
 float R_al_source_gain              (R_AlSource *source);
 float R_al_source_pitch             (R_AlSource *source);
 float R_al_source_reference_distance(R_AlSource *source);
 float R_al_source_offset_in_seconds (R_AlSource *source);
 bool  R_al_source_looping           (R_AlSource *source);
 
-void R_al_source_position_set          (R_AlSource *source, R_V3  position);
+void R_al_source_pos_set               (R_AlSource *source, R_V3  pos);
+void R_al_source_pos_x_set             (R_AlSource *source, float x);
+void R_al_source_pos_y_set             (R_AlSource *source, float y);
+void R_al_source_pos_z_set             (R_AlSource *source, float z);
 void R_al_source_velocity_set          (R_AlSource *source, R_V3  velocity);
+void R_al_source_velocity_x_set        (R_AlSource *source, float x);
+void R_al_source_velocity_y_set        (R_AlSource *source, float y);
+void R_al_source_velocity_z_set        (R_AlSource *source, float z);
 void R_al_source_gain_set              (R_AlSource *source, float gain);
 void R_al_source_pitch_set             (R_AlSource *source, float pitch);
 void R_al_source_reference_distance_set(R_AlSource *source, float distance);

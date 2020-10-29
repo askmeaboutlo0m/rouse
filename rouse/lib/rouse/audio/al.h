@@ -118,7 +118,8 @@ R_AlSource *R_al_source_from_buffer(R_AlBuffer *buffer);
 R_AlSource *R_al_source_from_buffer_noinc(R_AlBuffer *buffer);
 R_AlSource *R_al_source_from_file(const char *path);
 
-void R_al_source_free(R_AlSource *source);
+R_AlSource *R_al_source_incref(R_AlSource *source);
+R_AlSource *R_al_source_decref(R_AlSource *source);
 
 unsigned int R_al_source_id(R_AlSource *source);
 

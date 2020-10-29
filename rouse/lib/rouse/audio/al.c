@@ -48,6 +48,7 @@ struct R_AlBuffer {
 
 struct R_AlSource {
     R_MAGIC_FIELD
+    int          refs;
     unsigned int id;
     R_AlBuffer   *buffer;
 };
@@ -426,6 +427,13 @@ unsigned int R_al_buffer_id(R_AlBuffer *buffer)
 }
 
 
+static inline void check_al_source(
+    R_UNUSED_UNLESS_DEBUG_OR_MAGIC R_AlSource *source)
+{
+    R_MAGIC_CHECK(R_AlSource, source);
+    R_assert(source->refs > 0, "refcount must always be positive");
+}
+
 R_AlSource *R_al_source_new(void)
 {
     R_AL_CLEAR_ERROR();
@@ -434,8 +442,8 @@ R_AlSource *R_al_source_new(void)
     R_AL_CHECK_VOID(alGenSources, 1, &source_id);
 
     R_AlSource *source = R_NEW_INIT_STRUCT(source, R_AlSource,
-            R_MAGIC_INIT(R_AlSource) source_id, NULL);
-    R_MAGIC_CHECK(R_AlSource, source);
+            R_MAGIC_INIT(R_AlSource) 1, source_id, NULL);
+    check_al_source(source);
     return source;
 }
 
@@ -459,7 +467,7 @@ R_AlSource *R_al_source_from_file(const char *path)
     return R_al_source_from_buffer_noinc(buffer);
 }
 
-void R_al_source_free(R_AlSource *source)
+static void free_al_source(R_AlSource *source)
 {
     if (source) {
         R_MAGIC_CHECK(R_AlSource, source);
@@ -473,21 +481,23 @@ void R_al_source_free(R_AlSource *source)
     }
 }
 
+R_DEFINE_REFCOUNT_FUNCS(R_AlSource, al_source, refs)
+
 unsigned int R_al_source_id(R_AlSource *source)
 {
-    R_MAGIC_CHECK(R_AlSource, source);
+    check_al_source(source);
     return source->id;
 }
 
 R_AlBuffer *R_al_source_buffer(R_AlSource *source)
 {
-    R_MAGIC_CHECK(R_AlSource, source);
+    check_al_source(source);
     return source->buffer;
 }
 
 void R_al_source_buffer_set(R_AlSource *source, R_AlBuffer *buffer)
 {
-    R_MAGIC_CHECK(R_AlSource, source);
+    check_al_source(source);
 
     R_AlBuffer *prev_buffer = source->buffer;
     if (prev_buffer == buffer) {

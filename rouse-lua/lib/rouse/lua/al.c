@@ -164,7 +164,7 @@ static int r_alsource_method_gc_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
     R_AlSource *self = XL_checkpptype_nullable(L, 1, "R_AlSource");
-    R_al_source_free(self);
+    R_al_source_decref(self);
     return 0;
 #else
     R_LUA_DIE(L, "OpenAL not compiled in")

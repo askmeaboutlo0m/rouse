@@ -94,7 +94,7 @@ LEAVE
     maybe_set(L, argc, XL_REQUIRED_ARGC + 1);
 END
 
-DESTRUCTOR = R_al_source_free
+DESTRUCTOR = R_al_source_decref
 
 
 INDEX unsigned int id = R_al_source_id

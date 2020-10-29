@@ -81,6 +81,7 @@ extern "C" {
 #   include "rouse/3rdparty/stb_vorbis.h"
 #   include "rouse/audio/sample.h"
 #   include "rouse/audio/al.h"
+#   include "rouse/audio/sound_anim.h"
 #endif
 
 #ifdef __cplusplus

@@ -93,8 +93,10 @@ set(stb_vorbis_sources
 
 set(rouse_audio_headers
     "${CMAKE_SOURCE_DIR}/lib/rouse/audio/al.h"
-    "${CMAKE_SOURCE_DIR}/lib/rouse/audio/sample.h")
+    "${CMAKE_SOURCE_DIR}/lib/rouse/audio/sample.h"
+    "${CMAKE_SOURCE_DIR}/lib/rouse/audio/sound_anim.h")
 
 set(rouse_audio_sources
     "${CMAKE_SOURCE_DIR}/lib/rouse/audio/al.c"
-    "${CMAKE_SOURCE_DIR}/lib/rouse/audio/sample.c")
+    "${CMAKE_SOURCE_DIR}/lib/rouse/audio/sample.c"
+    "${CMAKE_SOURCE_DIR}/lib/rouse/audio/sound_anim.c")

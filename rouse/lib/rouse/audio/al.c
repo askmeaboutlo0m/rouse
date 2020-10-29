@@ -248,12 +248,42 @@ R_V3 R_al_listener_pos(void)
     return pos;
 }
 
+float R_al_listener_pos_x(void)
+{
+    return R_al_listener_pos().x;
+}
+
+float R_al_listener_pos_y(void)
+{
+    return R_al_listener_pos().y;
+}
+
+float R_al_listener_pos_z(void)
+{
+    return R_al_listener_pos().z;
+}
+
 R_V3 R_al_listener_velocity(void)
 {
     R_V3 velocity;
     R_AL_CHECK_VOID(alGetListener3f, AL_VELOCITY,
                     &velocity.x, &velocity.y, &velocity.z);
     return velocity;
+}
+
+float R_al_listener_velocity_x(void)
+{
+    return R_al_listener_velocity().x;
+}
+
+float R_al_listener_velocity_y(void)
+{
+    return R_al_listener_velocity().y;
+}
+
+float R_al_listener_velocity_z(void)
+{
+    return R_al_listener_velocity().z;
 }
 
 R_AlOrientation R_al_listener_orientation(void)
@@ -278,10 +308,46 @@ void R_al_listener_pos_set(R_V3 pos)
     R_AL_CHECK_VOID(alListener3f, AL_POSITION, pos.x, pos.y, pos.z);
 }
 
+void R_al_listener_pos_x_set(float x)
+{
+    R_V3 pos = R_al_listener_pos();
+    R_al_listener_pos_set(R_v3(x, pos.y, pos.z));
+}
+
+void R_al_listener_pos_y_set(float y)
+{
+    R_V3 pos = R_al_listener_pos();
+    R_al_listener_pos_set(R_v3(pos.x, y, pos.z));
+}
+
+void R_al_listener_pos_z_set(float z)
+{
+    R_V3 pos = R_al_listener_pos();
+    R_al_listener_pos_set(R_v3(pos.x, pos.y, z));
+}
+
 void R_al_listener_velocity_set(R_V3 velocity)
 {
     R_AL_CHECK_VOID(alListener3f, AL_VELOCITY,
                     velocity.x, velocity.y, velocity.z);
+}
+
+void R_al_listener_velocity_x_set(float x)
+{
+    R_V3 pos = R_al_listener_velocity();
+    R_al_listener_velocity_set(R_v3(x, pos.y, pos.z));
+}
+
+void R_al_listener_velocity_y_set(float y)
+{
+    R_V3 pos = R_al_listener_velocity();
+    R_al_listener_velocity_set(R_v3(pos.x, y, pos.z));
+}
+
+void R_al_listener_velocity_z_set(float z)
+{
+    R_V3 pos = R_al_listener_velocity();
+    R_al_listener_velocity_set(R_v3(pos.x, pos.y, z));
 }
 
 void R_al_listener_orientation_set(R_AlOrientation orientation)

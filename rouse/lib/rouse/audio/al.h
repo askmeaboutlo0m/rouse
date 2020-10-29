@@ -83,12 +83,24 @@ const char *R_al_strerror(int err);
 
 
 R_V3            R_al_listener_pos        (void);
+float           R_al_listener_pos_x      (void);
+float           R_al_listener_pos_y      (void);
+float           R_al_listener_pos_z      (void);
 R_V3            R_al_listener_velocity   (void);
+float           R_al_listener_velocity_x (void);
+float           R_al_listener_velocity_y (void);
+float           R_al_listener_velocity_z (void);
 R_AlOrientation R_al_listener_orientation(void);
 float           R_al_listener_gain       (void);
 
 void R_al_listener_pos_set        (R_V3            pos);
+void R_al_listener_pos_x_set      (float           x);
+void R_al_listener_pos_y_set      (float           y);
+void R_al_listener_pos_z_set      (float           z);
 void R_al_listener_velocity_set   (R_V3            velocity);
+void R_al_listener_velocity_x_set (float           x);
+void R_al_listener_velocity_y_set (float           y);
+void R_al_listener_velocity_z_set (float           z);
 void R_al_listener_orientation_set(R_AlOrientation orientation);
 void R_al_listener_gain_set       (float           gain);
 

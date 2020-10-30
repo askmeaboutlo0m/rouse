@@ -30,6 +30,282 @@
 #include "util.h"
 
 
+static int r_al_listener_pos_staticindex_xl(lua_State *L)
+{
+#ifdef ROUSE_AL_ENABLED
+    R_V3 RETVAL;
+    RETVAL = R_al_listener_pos();
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+#else
+    R_LUA_DIE(L, "OpenAL not compiled in")
+#endif
+}
+
+static int r_al_listener_pos_x_staticindex_xl(lua_State *L)
+{
+#ifdef ROUSE_AL_ENABLED
+    float RETVAL;
+    RETVAL = R_al_listener_pos_x();
+    XL_pushfloat(L, RETVAL);
+    return 1;
+#else
+    R_LUA_DIE(L, "OpenAL not compiled in")
+#endif
+}
+
+static int r_al_listener_pos_y_staticindex_xl(lua_State *L)
+{
+#ifdef ROUSE_AL_ENABLED
+    float RETVAL;
+    RETVAL = R_al_listener_pos_y();
+    XL_pushfloat(L, RETVAL);
+    return 1;
+#else
+    R_LUA_DIE(L, "OpenAL not compiled in")
+#endif
+}
+
+static int r_al_listener_pos_z_staticindex_xl(lua_State *L)
+{
+#ifdef ROUSE_AL_ENABLED
+    float RETVAL;
+    RETVAL = R_al_listener_pos_z();
+    XL_pushfloat(L, RETVAL);
+    return 1;
+#else
+    R_LUA_DIE(L, "OpenAL not compiled in")
+#endif
+}
+
+static int r_al_listener_velocity_staticindex_xl(lua_State *L)
+{
+#ifdef ROUSE_AL_ENABLED
+    R_V3 RETVAL;
+    RETVAL = R_al_listener_velocity();
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+#else
+    R_LUA_DIE(L, "OpenAL not compiled in")
+#endif
+}
+
+static int r_al_listener_velocity_x_staticindex_xl(lua_State *L)
+{
+#ifdef ROUSE_AL_ENABLED
+    float RETVAL;
+    RETVAL = R_al_listener_velocity_x();
+    XL_pushfloat(L, RETVAL);
+    return 1;
+#else
+    R_LUA_DIE(L, "OpenAL not compiled in")
+#endif
+}
+
+static int r_al_listener_velocity_y_staticindex_xl(lua_State *L)
+{
+#ifdef ROUSE_AL_ENABLED
+    float RETVAL;
+    RETVAL = R_al_listener_velocity_y();
+    XL_pushfloat(L, RETVAL);
+    return 1;
+#else
+    R_LUA_DIE(L, "OpenAL not compiled in")
+#endif
+}
+
+static int r_al_listener_velocity_z_staticindex_xl(lua_State *L)
+{
+#ifdef ROUSE_AL_ENABLED
+    float RETVAL;
+    RETVAL = R_al_listener_velocity_z();
+    XL_pushfloat(L, RETVAL);
+    return 1;
+#else
+    R_LUA_DIE(L, "OpenAL not compiled in")
+#endif
+}
+
+static int r_al_listener_gain_staticindex_xl(lua_State *L)
+{
+#ifdef ROUSE_AL_ENABLED
+    float RETVAL;
+    RETVAL = R_al_listener_gain();
+    XL_pushfloat(L, RETVAL);
+    return 1;
+#else
+    R_LUA_DIE(L, "OpenAL not compiled in")
+#endif
+}
+
+static int r_al_listener_pos_staticnewindex_xl(lua_State *L)
+{
+#ifdef ROUSE_AL_ENABLED
+    R_V3 VALUE = *((R_V3 *)luaL_checkudata(L, 1, "R_V3"));
+    R_al_listener_pos_set(VALUE);
+    return 0;
+#else
+    R_LUA_DIE(L, "OpenAL not compiled in")
+#endif
+}
+
+static int r_al_listener_pos_x_staticnewindex_xl(lua_State *L)
+{
+#ifdef ROUSE_AL_ENABLED
+    float VALUE = XL_checkfloat(L, 1);
+    R_al_listener_pos_x_set(VALUE);
+    return 0;
+#else
+    R_LUA_DIE(L, "OpenAL not compiled in")
+#endif
+}
+
+static int r_al_listener_pos_y_staticnewindex_xl(lua_State *L)
+{
+#ifdef ROUSE_AL_ENABLED
+    float VALUE = XL_checkfloat(L, 1);
+    R_al_listener_pos_y_set(VALUE);
+    return 0;
+#else
+    R_LUA_DIE(L, "OpenAL not compiled in")
+#endif
+}
+
+static int r_al_listener_pos_z_staticnewindex_xl(lua_State *L)
+{
+#ifdef ROUSE_AL_ENABLED
+    float VALUE = XL_checkfloat(L, 1);
+    R_al_listener_pos_z_set(VALUE);
+    return 0;
+#else
+    R_LUA_DIE(L, "OpenAL not compiled in")
+#endif
+}
+
+static int r_al_listener_velocity_staticnewindex_xl(lua_State *L)
+{
+#ifdef ROUSE_AL_ENABLED
+    R_V3 VALUE = *((R_V3 *)luaL_checkudata(L, 1, "R_V3"));
+    R_al_listener_velocity_set(VALUE);
+    return 0;
+#else
+    R_LUA_DIE(L, "OpenAL not compiled in")
+#endif
+}
+
+static int r_al_listener_velocity_x_staticnewindex_xl(lua_State *L)
+{
+#ifdef ROUSE_AL_ENABLED
+    float VALUE = XL_checkfloat(L, 1);
+    R_al_listener_velocity_x_set(VALUE);
+    return 0;
+#else
+    R_LUA_DIE(L, "OpenAL not compiled in")
+#endif
+}
+
+static int r_al_listener_velocity_y_staticnewindex_xl(lua_State *L)
+{
+#ifdef ROUSE_AL_ENABLED
+    float VALUE = XL_checkfloat(L, 1);
+    R_al_listener_velocity_y_set(VALUE);
+    return 0;
+#else
+    R_LUA_DIE(L, "OpenAL not compiled in")
+#endif
+}
+
+static int r_al_listener_velocity_z_staticnewindex_xl(lua_State *L)
+{
+#ifdef ROUSE_AL_ENABLED
+    float VALUE = XL_checkfloat(L, 1);
+    R_al_listener_velocity_z_set(VALUE);
+    return 0;
+#else
+    R_LUA_DIE(L, "OpenAL not compiled in")
+#endif
+}
+
+static int r_al_listener_gain_staticnewindex_xl(lua_State *L)
+{
+#ifdef ROUSE_AL_ENABLED
+    float VALUE = XL_checkfloat(L, 1);
+    R_al_listener_gain_set(VALUE);
+    return 0;
+#else
+    R_LUA_DIE(L, "OpenAL not compiled in")
+#endif
+}
+
+static int r_al_listener_x_staticindex_xl(lua_State *L)
+{
+#ifdef ROUSE_AL_ENABLED
+    float RETVAL;
+    RETVAL = R_al_listener_pos_x();
+    XL_pushfloat(L, RETVAL);
+    return 1;
+#else
+    R_LUA_DIE(L, "OpenAL not compiled in")
+#endif
+}
+
+static int r_al_listener_x_staticnewindex_xl(lua_State *L)
+{
+#ifdef ROUSE_AL_ENABLED
+    float VALUE = XL_checkfloat(L, 1);
+    R_al_listener_pos_x_set(VALUE);
+    return 0;
+#else
+    R_LUA_DIE(L, "OpenAL not compiled in")
+#endif
+}
+
+static int r_al_listener_y_staticindex_xl(lua_State *L)
+{
+#ifdef ROUSE_AL_ENABLED
+    float RETVAL;
+    RETVAL = R_al_listener_pos_y();
+    XL_pushfloat(L, RETVAL);
+    return 1;
+#else
+    R_LUA_DIE(L, "OpenAL not compiled in")
+#endif
+}
+
+static int r_al_listener_y_staticnewindex_xl(lua_State *L)
+{
+#ifdef ROUSE_AL_ENABLED
+    float VALUE = XL_checkfloat(L, 1);
+    R_al_listener_pos_y_set(VALUE);
+    return 0;
+#else
+    R_LUA_DIE(L, "OpenAL not compiled in")
+#endif
+}
+
+static int r_al_listener_z_staticindex_xl(lua_State *L)
+{
+#ifdef ROUSE_AL_ENABLED
+    float RETVAL;
+    RETVAL = R_al_listener_pos_z();
+    XL_pushfloat(L, RETVAL);
+    return 1;
+#else
+    R_LUA_DIE(L, "OpenAL not compiled in")
+#endif
+}
+
+static int r_al_listener_z_staticnewindex_xl(lua_State *L)
+{
+#ifdef ROUSE_AL_ENABLED
+    float VALUE = XL_checkfloat(L, 1);
+    R_al_listener_pos_z_set(VALUE);
+    return 0;
+#else
+    R_LUA_DIE(L, "OpenAL not compiled in")
+#endif
+}
+
 static int r_al_buffer_from_sample_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
@@ -715,6 +991,18 @@ static int r_alsource_newindex_xl(lua_State *L)
     return XL_newindex(L, "R_AlSource", &r_alsource_newindex_dummy_xl, 1, 2, 3);
 }
 
+static int r_al_listener_staticindex_dummy_xl;
+static int r_al_listener_staticindex_xl(lua_State *L)
+{
+    return XL_staticindex(L, &r_al_listener_staticindex_dummy_xl, 2);
+}
+
+static int r_al_listener_staticnewindex_dummy_xl;
+static int r_al_listener_staticnewindex_xl(lua_State *L)
+{
+    return XL_staticnewindex(L, "R.Al.listener", &r_al_listener_staticnewindex_dummy_xl, 2, 3);
+}
+
 static luaL_Reg r_al_buffer_function_registry_xl[] = {
     {"from_file", r_al_buffer_from_file_xl},
     {"from_sample", r_al_buffer_from_sample_xl},
@@ -725,6 +1013,12 @@ static luaL_Reg r_al_source_function_registry_xl[] = {
     {"from_buffer", r_al_source_from_buffer_xl},
     {"from_file", r_al_source_from_file_xl},
     {"new", r_al_source_new_xl},
+    {NULL, NULL},
+};
+
+static luaL_Reg r_al_listener_function_registry_xl[] = {
+    {"__index", r_al_listener_staticindex_xl},
+    {"__newindex", r_al_listener_staticnewindex_xl},
     {NULL, NULL},
 };
 
@@ -797,6 +1091,38 @@ static luaL_Reg r_alsource_newindex_registry_xl[] = {
     {NULL, NULL},
 };
 
+static luaL_Reg r_al_listener_staticindex_registry_xl[] = {
+    {"gain", r_al_listener_gain_staticindex_xl},
+    {"pos", r_al_listener_pos_staticindex_xl},
+    {"pos_x", r_al_listener_pos_x_staticindex_xl},
+    {"pos_y", r_al_listener_pos_y_staticindex_xl},
+    {"pos_z", r_al_listener_pos_z_staticindex_xl},
+    {"velocity", r_al_listener_velocity_staticindex_xl},
+    {"velocity_x", r_al_listener_velocity_x_staticindex_xl},
+    {"velocity_y", r_al_listener_velocity_y_staticindex_xl},
+    {"velocity_z", r_al_listener_velocity_z_staticindex_xl},
+    {"x", r_al_listener_x_staticindex_xl},
+    {"y", r_al_listener_y_staticindex_xl},
+    {"z", r_al_listener_z_staticindex_xl},
+    {NULL, NULL},
+};
+
+static luaL_Reg r_al_listener_staticnewindex_registry_xl[] = {
+    {"gain", r_al_listener_gain_staticnewindex_xl},
+    {"pos", r_al_listener_pos_staticnewindex_xl},
+    {"pos_x", r_al_listener_pos_x_staticnewindex_xl},
+    {"pos_y", r_al_listener_pos_y_staticnewindex_xl},
+    {"pos_z", r_al_listener_pos_z_staticnewindex_xl},
+    {"velocity", r_al_listener_velocity_staticnewindex_xl},
+    {"velocity_x", r_al_listener_velocity_x_staticnewindex_xl},
+    {"velocity_y", r_al_listener_velocity_y_staticnewindex_xl},
+    {"velocity_z", r_al_listener_velocity_z_staticnewindex_xl},
+    {"x", r_al_listener_x_staticnewindex_xl},
+    {"y", r_al_listener_y_staticnewindex_xl},
+    {"z", r_al_listener_z_staticnewindex_xl},
+    {NULL, NULL},
+};
+
 int R_lua_al_init(lua_State *L)
 {
     XL_initmetatable(L, "R_AlBuffer", r_albuffer_method_registry_xl);
@@ -804,7 +1130,11 @@ int R_lua_al_init(lua_State *L)
     XL_initindextable(L, &r_albuffer_index_dummy_xl, r_albuffer_index_registry_xl);
     XL_initindextable(L, &r_alsource_index_dummy_xl, r_alsource_index_registry_xl);
     XL_initnewindextable(L, &r_alsource_newindex_dummy_xl, r_alsource_newindex_registry_xl);
+    XL_initindextable(L, &r_al_listener_staticindex_dummy_xl, r_al_listener_staticindex_registry_xl);
+    XL_initnewindextable(L, &r_al_listener_staticnewindex_dummy_xl, r_al_listener_staticnewindex_registry_xl);
+    XL_initstaticmetatable(L, "R", "Al", "listener", (const char *)NULL);
     XL_initfunctions(L, r_al_buffer_function_registry_xl, "R", "Al", "Buffer", (const char *)NULL);
     XL_initfunctions(L, r_al_source_function_registry_xl, "R", "Al", "Source", (const char *)NULL);
+    XL_initfunctions(L, r_al_listener_function_registry_xl, "R", "Al", "listener", (const char *)NULL);
     return 0;
 }

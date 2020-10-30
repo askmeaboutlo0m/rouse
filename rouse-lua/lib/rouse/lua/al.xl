@@ -40,6 +40,34 @@ AFTER
 END
 
 
+STATICINDEX R_V3  R.Al.listener.pos        = R_al_listener_pos
+STATICINDEX float R.Al.listener.pos_x      = R_al_listener_pos_x
+STATICINDEX float R.Al.listener.pos_y      = R_al_listener_pos_y
+STATICINDEX float R.Al.listener.pos_z      = R_al_listener_pos_z
+STATICINDEX R_V3  R.Al.listener.velocity   = R_al_listener_velocity
+STATICINDEX float R.Al.listener.velocity_x = R_al_listener_velocity_x
+STATICINDEX float R.Al.listener.velocity_y = R_al_listener_velocity_y
+STATICINDEX float R.Al.listener.velocity_z = R_al_listener_velocity_z
+STATICINDEX float R.Al.listener.gain       = R_al_listener_gain
+
+STATICNEWINDEX R_V3  R.Al.listener.pos        = R_al_listener_pos_set
+STATICNEWINDEX float R.Al.listener.pos_x      = R_al_listener_pos_x_set
+STATICNEWINDEX float R.Al.listener.pos_y      = R_al_listener_pos_y_set
+STATICNEWINDEX float R.Al.listener.pos_z      = R_al_listener_pos_z_set
+STATICNEWINDEX R_V3  R.Al.listener.velocity   = R_al_listener_velocity_set
+STATICNEWINDEX float R.Al.listener.velocity_x = R_al_listener_velocity_x_set
+STATICNEWINDEX float R.Al.listener.velocity_y = R_al_listener_velocity_y_set
+STATICNEWINDEX float R.Al.listener.velocity_z = R_al_listener_velocity_z_set
+STATICNEWINDEX float R.Al.listener.gain       = R_al_listener_gain_set
+
+STATICINDEX    float R.Al.listener.x = R_al_listener_pos_x
+STATICNEWINDEX float R.Al.listener.x = R_al_listener_pos_x_set
+STATICINDEX    float R.Al.listener.y = R_al_listener_pos_y
+STATICNEWINDEX float R.Al.listener.y = R_al_listener_pos_y_set
+STATICINDEX    float R.Al.listener.z = R_al_listener_pos_z
+STATICNEWINDEX float R.Al.listener.z = R_al_listener_pos_z_set
+
+
 PPTYPE R_AlBuffer R.Al.Buffer
 
 CONSTRUCTOR from_sample(R_Sample *sample) = R_al_buffer_from_sample

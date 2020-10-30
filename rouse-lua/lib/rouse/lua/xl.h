@@ -49,6 +49,11 @@ int XL_index(lua_State *L, const char *tname, void *reg,
 int XL_newindex(lua_State *L, const char *tname, void *reg,
                 int selfindex, int keyindex, int valueindex);
 
+int XL_staticindex(lua_State *L, void *reg, int keyindex);
+
+int XL_staticnewindex(lua_State *L, const char *tname, void *reg,
+                      int keyindex, int valueindex);
+
 void XL_initmetatable    (lua_State *L, const char *tname, luaL_Reg *methods);
 void XL_initindextable   (lua_State *L, void       *key,   luaL_Reg *methods);
 void XL_initnewindextable(lua_State *L, void       *key,   luaL_Reg *methods);
@@ -56,6 +61,8 @@ void XL_initnewindextable(lua_State *L, void       *key,   luaL_Reg *methods);
 void XL_initfunctions(lua_State *L, luaL_Reg *functions, ...);
 
 void XL_initenum(lua_State *L, XL_EnumEntry *entries, ...);
+
+void XL_initstaticmetatable(lua_State *L, ...);
 
 int XL_setfromtable(lua_State *L, const char *tname,
                     int selfindex, int tableindex);

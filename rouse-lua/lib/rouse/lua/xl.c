@@ -209,6 +209,41 @@ int XL_newindex(lua_State *L, const char *tname, void *reg,
 }
 
 
+int XL_staticindex(lua_State *L, void *reg, int keyindex)
+{
+    luaL_checktype(L, keyindex, LUA_TSTRING);
+    lua_rawgetp(L, LUA_REGISTRYINDEX, reg);
+    lua_pushvalue(L, keyindex);
+
+    if (lua_rawget(L, -2)) {
+        lua_call(L, 0, 1);
+        return 1;
+    }
+    else {
+        return 0;
+    }
+}
+
+int XL_staticnewindex(lua_State *L, const char *tname, void *reg,
+                      int keyindex, int valueindex)
+{
+    luaL_checktype(L, keyindex, LUA_TSTRING);
+    luaL_checkany(L, valueindex);
+    lua_rawgetp(L, LUA_REGISTRYINDEX, reg);
+    lua_pushvalue(L, keyindex);
+
+    if (lua_rawget(L, -2)) {
+        lua_pushvalue(L, valueindex);
+        lua_call(L, 1, 0);
+        return 0;
+    }
+    else {
+        const char *key = lua_tostring(L, keyindex);
+        return luaL_error(L, "%s has no field '%s'", tname, key);
+    }
+}
+
+
 void XL_initmetatable(lua_State *L, const char *tname, luaL_Reg *methods)
 {
     luaL_newmetatable(L, tname);
@@ -288,6 +323,18 @@ void XL_initenum(lua_State *L, XL_EnumEntry *entries, ...)
     getpackage(L, ap);
     va_end(ap);
     setenum(L, entries);
+    lua_pop(L, 1);
+}
+
+
+void XL_initstaticmetatable(lua_State *L, ...)
+{
+    va_list ap;
+    va_start(ap, L);
+    getpackage(L, ap);
+    va_end(ap);
+    lua_pushvalue(L, -1);
+    lua_setmetatable(L, -2);
     lua_pop(L, 1);
 }
 

@@ -438,6 +438,72 @@ sub parse_field_directive ($self, $in, $line) {
 }
 
 
+sub parse_staticindex_directive ($self, $in, $line) {
+    my ($prefix, $location, $rest);
+
+    if ($line =~ /\A($return_qr)\s*\b($package_qr)\b\s*(=\s*\w+)\s*\z/) {
+        ($prefix, $location, $rest) = ($1, $2, $3);
+    }
+    elsif ($line =~ /\A($return_qr)\s*\b($package_qr)\b\h*$/mp) {
+        ($prefix, $location, $rest) = ($1, $2, ${^POSTMATCH});
+    }
+    else {
+        die "Don't understand this staticindex declaration: $line\n";
+    }
+
+    my ($return, $has_retval) = decipher_return($prefix);
+
+    my ($package, $name) = $location =~ /\A(.*?)\.(\w+)\z/
+        or die "Can't parse staticindex location: $location\n";
+
+    my $body = $self->parse_body($in, $has_retval, [], $rest);
+
+    $self->add_block({
+        type       => 'staticindex',
+        return     => $return,
+        has_retval => $has_retval,
+        name       => $name,
+        package    => $package,
+        is_method  => JSON::PP::false,
+        args       => [],
+        body       => $body,
+        $self->ambles,
+    });
+}
+
+sub parse_staticnewindex_directive ($self, $in, $line) {
+    my ($prefix, $location, $rest);
+
+    if ($line =~ /\A($return_qr)\s*\b($package_qr)\b\s*(=\s*\w+)\s*\z/) {
+        ($prefix, $location, $rest) = ($1, $2, $3);
+    }
+    elsif ($line =~ /\A($return_qr)\s*\b($package_qr)\b\h*$/mp) {
+        ($prefix, $location, $rest) = ($1, $2, ${^POSTMATCH});
+    }
+    else {
+        die "Don't understand this staticnewindex declaration: $line\n";
+    }
+
+    my ($package, $name) = $location =~ /\A(.*?)\.(\w+)\z/
+        or die "Can't parse staticnewindex location: $location\n";
+
+    my ($args) = $self->parse_args(undef, "($prefix VALUE)");
+    my $body   = $self->parse_body($in, 0, $args, $rest);
+
+    $self->add_block({
+        type       => 'staticnewindex',
+        return     => 'void',
+        has_retval => 0,
+        name       => $name,
+        package    => $package,
+        is_method  => JSON::PP::false,
+        args       => $args,
+        body       => $body,
+        $self->ambles,
+    });
+}
+
+
 sub parse_enum_directive ($self, $in, $line) {
     my ($location, $subs) = $line =~ /\A($package_qr)(?:\s+(s.+))?\z/
         or die "Can't parse ENUM: '$line'\n";

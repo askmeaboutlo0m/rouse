@@ -120,10 +120,12 @@ sub new ($class, $out) {
         types            => {%default_typemap},
         types_by_package => {},
         registries       => {
-            function => {},
-            method   => {},
-            index    => {},
-            newindex => {},
+            function       => {},
+            method         => {},
+            index          => {},
+            newindex       => {},
+            staticindex    => {},
+            staticnewindex => {},
         },
     }, $class;
 }
@@ -319,6 +321,14 @@ sub generate_intnewindex_block ($self, $block) {
     $self->generate_function_block($block, '_intnewindex', 'intnewindex');
 }
 
+sub generate_staticindex_block ($self, $block) {
+    $self->generate_function_block($block, '_staticindex', 'staticindex');
+}
+
+sub generate_staticnewindex_block ($self, $block) {
+    $self->generate_function_block($block, '_staticnewindex', 'staticnewindex');
+}
+
 
 sub generate_blocks ($self, $blocks) {
     for my $block (@$blocks) {
@@ -439,11 +449,60 @@ sub generate_intnewindex_metamethods ($self, $blocks) {
     }
 }
 
+sub generate_staticindex_metamethod ($self, $package) {
+    my $dummy_name = c_name("$package.staticindex_dummy");
+    my $func_name  = c_name("$package.staticindex");
+
+    $self->println("static int $dummy_name;");
+    $self->println("static int $func_name(lua_State *L)");
+    $self->println('{');
+    $self->println("    return XL_staticindex(L, &$dummy_name, 2);");
+    $self->println('}');
+    $self->println();
+
+    $self->register('function', $package, '__index', $func_name);
+}
+
+sub generate_staticindex_metamethods ($self, $blocks) {
+    my %packages = map { $_->{package} => $_->{args}[0]{type} }
+                   grep { $_->{type} eq 'staticindex' }
+                   @$blocks;
+    for my $package (sort keys %packages) {
+        $self->generate_staticindex_metamethod($package);
+    }
+}
+
+sub generate_staticnewindex_metamethod ($self, $package) {
+    my $dummy_name = c_name("$package.staticnewindex_dummy");
+    my $func_name  = c_name("$package.staticnewindex");
+
+    $self->println("static int $dummy_name;");
+    $self->println("static int $func_name(lua_State *L)");
+    $self->println('{');
+
+    $self->println("    return XL_staticnewindex(L, \"$package\", &$dummy_name, 2, 3);");
+    $self->println('}');
+    $self->println();
+
+    $self->register('function', $package, '__newindex', $func_name);
+}
+
+sub generate_staticnewindex_metamethods ($self, $blocks) {
+    my %packages = map { $_->{package} => $_->{args}[0]{type} }
+                   grep { $_->{type} eq 'staticnewindex' }
+                   @$blocks;
+    for my $package (sort keys %packages) {
+        $self->generate_staticnewindex_metamethod($package);
+    }
+}
+
 sub generate_indexes ($self, $blocks) {
     $self->generate_index_metamethods($blocks);
     $self->generate_fallback_index_metamethods();
     $self->generate_newindex_metamethods($blocks);
     $self->generate_intnewindex_metamethods($blocks);
+    $self->generate_staticindex_metamethods($blocks);
+    $self->generate_staticnewindex_metamethods($blocks);
 }
 
 
@@ -515,6 +574,35 @@ sub generate_init_newindextables ($self) {
     }
 }
 
+sub generate_init_staticindextables ($self) {
+    my $staticindex_registry = $self->{registries}{staticindex};
+    for my $package (sort keys %$staticindex_registry) {
+        my $dummy_name    = c_name("${package}_staticindex_dummy");
+        my $registry_name = c_name("${package}_staticindex_registry");
+        $self->println("    XL_initindextable(L, &$dummy_name, $registry_name);");
+    }
+}
+
+sub generate_init_staticnewindextables ($self) {
+    my $staticnewindex_registry = $self->{registries}{staticnewindex};
+    for my $package (sort keys %$staticnewindex_registry) {
+        my $dummy_name    = c_name("${package}_staticnewindex_dummy");
+        my $registry_name = c_name("${package}_staticnewindex_registry");
+        $self->println("    XL_initnewindextable(L, &$dummy_name, $registry_name);");
+    }
+}
+
+sub generate_init_staticmetatables ($self) {
+    my %static_registry = (
+        %{$self->{registries}{staticindex}},
+        %{$self->{registries}{staticnewindex}},
+    );
+    for my $package (sort keys %static_registry) {
+        my $pieces = join ', ', map { qq("$_") } split /\s*\.\s*/, $package;
+        $self->println("    XL_initstaticmetatable(L, $pieces, (const char *)NULL);")
+    }
+}
+
 sub generate_init_functions ($self) {
     my $function_registry = $self->{registries}{function};
     for my $package (sort keys %$function_registry) {
@@ -543,6 +631,9 @@ sub generate_init ($self, $linkage, $name, $enums, $metatables) {
     $self->generate_init_metatables($metatables);
     $self->generate_init_indextables();
     $self->generate_init_newindextables();
+    $self->generate_init_staticindextables();
+    $self->generate_init_staticnewindextables();
+    $self->generate_init_staticmetatables();
     $self->generate_init_functions();
     $self->generate_init_enums($enums);
 

@@ -426,7 +426,7 @@ function ErrorScene:on_event(event)
     end
 end
 
-function SceneBase:next_scene(next_or_path)
+function SceneBase:next_scene(next_or_path, args)
     local next_scene_fn
     if type(next_or_path) == "string" then
         next_scene_fn = function (...)
@@ -435,6 +435,10 @@ function SceneBase:next_scene(next_or_path)
         end
     else
         next_scene_fn = next_or_path
+    end
+
+    if args and args.stop_sounds then
+        self:stop_all_sounds()
     end
 
     R.Scene.next(function (scene)

@@ -356,6 +356,19 @@ if SceneBase.have_sound then
         self:play_sound_from(source, sound_or_name, args)
         return source
     end
+
+    function SceneBase:stop_sound(source)
+        if source then
+            source:stop()
+        end
+        return source
+    end
+
+    function SceneBase:stop_all_sounds()
+        for i, source in ipairs(self.sources) do
+            source:stop()
+        end
+    end
 else
     function SceneBase:allocate_sound_sources(count)
         error("OpenAL is not enabled")
@@ -371,6 +384,14 @@ else
 
     function SceneBase:play_sound(sound_or_name, args)
         return nil
+    end
+
+    function SceneBase:stop_sound(source)
+        return nil
+    end
+
+    function SceneBase:stop_all_sounds()
+        -- nothing
     end
 end
 

@@ -898,4 +898,47 @@ ENUM SDL.Touch s/SDL_TOUCH_//
     SDL_TOUCH_MOUSEID
 END
 
+
+ENUM SDL.SystemCursor s/SDL_SYSTEM_CURSOR_//
+    SDL_SYSTEM_CURSOR_ARROW
+    SDL_SYSTEM_CURSOR_IBEAM
+    SDL_SYSTEM_CURSOR_WAIT
+    SDL_SYSTEM_CURSOR_CROSSHAIR
+    SDL_SYSTEM_CURSOR_WAITARROW
+    SDL_SYSTEM_CURSOR_SIZENWSE
+    SDL_SYSTEM_CURSOR_SIZENESW
+    SDL_SYSTEM_CURSOR_SIZEWE
+    SDL_SYSTEM_CURSOR_SIZENS
+    SDL_SYSTEM_CURSOR_SIZEALL
+    SDL_SYSTEM_CURSOR_NO
+    SDL_SYSTEM_CURSOR_HAND
+END
+
+@c
+static SDL_Cursor *get_system_cursor(lua_State *L, lua_Integer i)
+{
+    static SDL_Cursor *cursors[SDL_NUM_SYSTEM_CURSORS];
+    if (i >= 0 && i < SDL_NUM_SYSTEM_CURSORS) {
+        SDL_Cursor *cursor = cursors[i];
+        if (!cursor) {
+            cursor = cursors[i] = SDL_CreateSystemCursor((SDL_SystemCursor) i);
+        }
+        return cursor;
+    }
+    else {
+        R_LUA_DIE(L, "Bad system cursor index: %d", i);
+    }
+}
+@xl
+
+STATICNEWINDEX any SDL.cursor
+    SDL_Cursor *cursor = lua_isnil(L, VALUE)
+                       ? SDL_GetDefaultCursor()
+                       : get_system_cursor(L, luaL_checkinteger(L, VALUE));
+    if (cursor) {
+        SDL_SetCursor(cursor);
+    }
+END
+
+
 INIT extern R_lua_sdl_init

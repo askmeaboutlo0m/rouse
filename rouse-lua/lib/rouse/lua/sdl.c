@@ -636,6 +636,34 @@ static int sdl_event_button_index_xl(lua_State *L)
     return 1;
 }
 
+static SDL_Cursor *get_system_cursor(lua_State *L, lua_Integer i)
+{
+    static SDL_Cursor *cursors[SDL_NUM_SYSTEM_CURSORS];
+    if (i >= 0 && i < SDL_NUM_SYSTEM_CURSORS) {
+        SDL_Cursor *cursor = cursors[i];
+        if (!cursor) {
+            cursor = cursors[i] = SDL_CreateSystemCursor((SDL_SystemCursor) i);
+        }
+        return cursor;
+    }
+    else {
+        R_LUA_DIE(L, "Bad system cursor index: %d", i);
+    }
+}
+
+static int sdl_cursor_staticnewindex_xl(lua_State *L)
+{
+    luaL_checkany(L, 1);
+    int VALUE = 1;
+    SDL_Cursor *cursor = lua_isnil(L, VALUE)
+                       ? SDL_GetDefaultCursor()
+                       : get_system_cursor(L, luaL_checkinteger(L, VALUE));
+    if (cursor) {
+        SDL_SetCursor(cursor);
+    }
+    return 0;
+}
+
 static int sdl_event_index_dummy_xl;
 static int sdl_event_index_xl(lua_State *L)
 {
@@ -797,6 +825,7 @@ static luaL_Reg sdl_staticindex_registry_xl[] = {
 };
 
 static luaL_Reg sdl_staticnewindex_registry_xl[] = {
+    {"cursor", sdl_cursor_staticnewindex_xl},
     {"gl_swap_interval", sdl_gl_swap_interval_staticnewindex_xl},
     {NULL, NULL},
 };
@@ -1436,6 +1465,22 @@ static XL_EnumEntry sdl_touch_enum_xl[] = {
     {NULL, (lua_Integer) 0},
 };
 
+static XL_EnumEntry sdl_systemcursor_enum_xl[] = {
+    {"ARROW", (lua_Integer) SDL_SYSTEM_CURSOR_ARROW},
+    {"IBEAM", (lua_Integer) SDL_SYSTEM_CURSOR_IBEAM},
+    {"WAIT", (lua_Integer) SDL_SYSTEM_CURSOR_WAIT},
+    {"CROSSHAIR", (lua_Integer) SDL_SYSTEM_CURSOR_CROSSHAIR},
+    {"WAITARROW", (lua_Integer) SDL_SYSTEM_CURSOR_WAITARROW},
+    {"SIZENWSE", (lua_Integer) SDL_SYSTEM_CURSOR_SIZENWSE},
+    {"SIZENESW", (lua_Integer) SDL_SYSTEM_CURSOR_SIZENESW},
+    {"SIZEWE", (lua_Integer) SDL_SYSTEM_CURSOR_SIZEWE},
+    {"SIZENS", (lua_Integer) SDL_SYSTEM_CURSOR_SIZENS},
+    {"SIZEALL", (lua_Integer) SDL_SYSTEM_CURSOR_SIZEALL},
+    {"NO", (lua_Integer) SDL_SYSTEM_CURSOR_NO},
+    {"HAND", (lua_Integer) SDL_SYSTEM_CURSOR_HAND},
+    {NULL, (lua_Integer) 0},
+};
+
 int R_lua_sdl_init(lua_State *L)
 {
     XL_initmetatable(L, "SDL_Event", sdl_event_method_registry_xl);
@@ -1461,5 +1506,6 @@ int R_lua_sdl_init(lua_State *L)
     XL_initenum(L, sdl_keymod_enum_xl, "SDL", "Keymod", (const char *)NULL);
     XL_initenum(L, sdl_button_enum_xl, "SDL", "Button", (const char *)NULL);
     XL_initenum(L, sdl_touch_enum_xl, "SDL", "Touch", (const char *)NULL);
+    XL_initenum(L, sdl_systemcursor_enum_xl, "SDL", "SystemCursor", (const char *)NULL);
     return 0;
 }

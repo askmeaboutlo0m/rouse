@@ -272,6 +272,9 @@ void nvgLineJoin(NVGcontext* ctx, int join);
 // Already transparent paths will get proportionally more transparent as well.
 void nvgGlobalAlpha(NVGcontext* ctx, float alpha);
 
+// Patch 2020 by askmeaboutloom - get global alpha from context.
+float nvgGetGlobalAlpha(NVGcontext *ctx);
+
 //
 // Transforms
 //

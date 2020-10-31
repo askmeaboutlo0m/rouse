@@ -702,6 +702,13 @@ void nvgGlobalAlpha(NVGcontext* ctx, float alpha)
 	state->alpha = alpha;
 }
 
+// Patch 2020 by askmeaboutloom - get global alpha from context.
+float nvgGetGlobalAlpha(NVGcontext *ctx)
+{
+	NVGstate* state = nvg__getState(ctx);
+	return state->alpha;
+}
+
 void nvgTransform(NVGcontext* ctx, float a, float b, float c, float d, float e, float f)
 {
 	NVGstate* state = nvg__getState(ctx);

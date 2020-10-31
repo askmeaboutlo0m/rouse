@@ -650,7 +650,7 @@ static void draw_sprite(R_Sprite *sprite, R_Nvg *nvg,
     float      alpha = sprite->transform.alpha;
     if (alpha < 1.0f) {
         nvgSave(ctx);
-        nvgGlobalAlpha(ctx, R_CLAMP(alpha, 0.0f, 1.0f));
+        nvgGlobalAlpha(ctx, R_CLAMP(alpha * nvgGetGlobalAlpha(ctx), 0.0f, 1.0f));
     }
 
     draw_self(sprite, nvg, canvas_matrix);

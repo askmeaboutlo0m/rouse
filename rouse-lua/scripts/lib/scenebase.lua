@@ -342,9 +342,17 @@ if SceneBase.have_sound then
         return self:maybe_look_up(sound_or_name, self.sound_asset)
     end
 
+    SceneBase.source_defaults = {
+        gain     = 1.0,
+        pos      = R.V3.new(0.0, 0.0, 0.0),
+        velocity = R.V3.new(0.0, 0.0, 0.0),
+        looping  = false,
+    }
+
     function SceneBase:play_sound_from(source, sound_or_name, args)
         local sound   = self:maybe_look_up_sound(sound_or_name)
         source.buffer = sound
+        source:set(SceneBase.source_defaults)
         if args then
             source:set(args)
         end

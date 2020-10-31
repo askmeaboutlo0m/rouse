@@ -313,7 +313,7 @@ function SceneBase:kill_by_id(id)
 end
 
 
-SceneBase.have_sound = R.get_al_enabled()
+SceneBase.have_sound = R.al_enabled
 
 if SceneBase.have_sound then
     function SceneBase:allocate_sound_sources(count)

@@ -480,7 +480,7 @@ sub generate_staticnewindex_metamethod ($self, $package) {
     $self->println("static int $func_name(lua_State *L)");
     $self->println('{');
 
-    $self->println("    return XL_staticnewindex(L, \"$package\", &$dummy_name, 2, 3);");
+    $self->println("    return XL_staticnewindex(L, &$dummy_name, 1, 2, 3);");
     $self->println('}');
     $self->println();
 

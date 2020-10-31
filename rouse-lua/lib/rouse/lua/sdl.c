@@ -30,7 +30,7 @@
 #include "util.h"
 
 
-static int sdl_get_ticks_xl(lua_State *L)
+static int sdl_ticks_staticindex_xl(lua_State *L)
 {
     uint32_t RETVAL;
     RETVAL = SDL_GetTicks();
@@ -38,9 +38,27 @@ static int sdl_get_ticks_xl(lua_State *L)
     return 1;
 }
 
+static int sdl_get_ticks_xl(lua_State *L)
+{
+    uint32_t RETVAL;
+    R_LUA_WARN_ON_DEPRECATED_GETTER("SDL.ticks");
+    RETVAL = SDL_GetTicks();
+    XL_pushuint32(L, RETVAL);
+    return 1;
+}
+
+static int sdl_window_flags_staticindex_xl(lua_State *L)
+{
+    uint32_t RETVAL;
+    RETVAL = SDL_GetWindowFlags(R_window);
+    XL_pushuint32(L, RETVAL);
+    return 1;
+}
+
 static int sdl_get_window_flags_xl(lua_State *L)
 {
     uint32_t RETVAL;
+    R_LUA_WARN_ON_DEPRECATED_GETTER("SDL.window_flags");
     RETVAL = SDL_GetWindowFlags(R_window);
     XL_pushuint32(L, RETVAL);
     return 1;
@@ -90,7 +108,7 @@ static int sdl_toggle_fullscreen_desktop_xl(lua_State *L)
     return 0;
 }
 
-static int sdl_get_gl_swap_interval_xl(lua_State *L)
+static int sdl_gl_swap_interval_staticindex_xl(lua_State *L)
 {
     int RETVAL;
     RETVAL = SDL_GL_GetSwapInterval();
@@ -98,9 +116,29 @@ static int sdl_get_gl_swap_interval_xl(lua_State *L)
     return 1;
 }
 
+static int sdl_get_gl_swap_interval_xl(lua_State *L)
+{
+    int RETVAL;
+    R_LUA_WARN_ON_DEPRECATED_GETTER("SDL.gl_swap_interval");
+    RETVAL = SDL_GL_GetSwapInterval();
+    XL_pushint(L, RETVAL);
+    return 1;
+}
+
+static int sdl_gl_swap_interval_staticnewindex_xl(lua_State *L)
+{
+    int VALUE = XL_checkint(L, 1);
+    if (SDL_GL_SetSwapInterval(VALUE) != 0) {
+        R_LUA_DIE(L, "Can't set GL swap interval to %d: %s",
+                  VALUE, SDL_GetError());
+    }
+    return 0;
+}
+
 static int sdl_set_gl_swap_interval_xl(lua_State *L)
 {
     int interval = XL_checkint(L, 1);
+    R_LUA_WARN_ON_DEPRECATED_SETTER("SDL.gl_swap_interval");
     if (SDL_GL_SetSwapInterval(interval) != 0) {
         R_LUA_DIE(L, "Can't set GL swap interval to %d: %s",
                   interval, SDL_GetError());
@@ -628,7 +666,21 @@ static int sdl_windowevent_index_xl(lua_State *L)
     return XL_index(L, "SDL_WindowEvent", &sdl_windowevent_index_dummy_xl, 1, 2);
 }
 
+static int sdl_staticindex_dummy_xl;
+static int sdl_staticindex_xl(lua_State *L)
+{
+    return XL_staticindex(L, &sdl_staticindex_dummy_xl, 2);
+}
+
+static int sdl_staticnewindex_dummy_xl;
+static int sdl_staticnewindex_xl(lua_State *L)
+{
+    return XL_staticnewindex(L, &sdl_staticnewindex_dummy_xl, 1, 2, 3);
+}
+
 static luaL_Reg sdl_function_registry_xl[] = {
+    {"__index", sdl_staticindex_xl},
+    {"__newindex", sdl_staticnewindex_xl},
     {"get_gl_swap_interval", sdl_get_gl_swap_interval_xl},
     {"get_ticks", sdl_get_ticks_xl},
     {"get_window_flags", sdl_get_window_flags_xl},
@@ -734,6 +786,18 @@ static luaL_Reg sdl_mousemotionevent_method_registry_xl[] = {
 
 static luaL_Reg sdl_windowevent_method_registry_xl[] = {
     {"__index", sdl_windowevent_index_xl},
+    {NULL, NULL},
+};
+
+static luaL_Reg sdl_staticindex_registry_xl[] = {
+    {"gl_swap_interval", sdl_gl_swap_interval_staticindex_xl},
+    {"ticks", sdl_ticks_staticindex_xl},
+    {"window_flags", sdl_window_flags_staticindex_xl},
+    {NULL, NULL},
+};
+
+static luaL_Reg sdl_staticnewindex_registry_xl[] = {
+    {"gl_swap_interval", sdl_gl_swap_interval_staticnewindex_xl},
     {NULL, NULL},
 };
 
@@ -1384,6 +1448,9 @@ int R_lua_sdl_init(lua_State *L)
     XL_initindextable(L, &sdl_mousebuttonevent_index_dummy_xl, sdl_mousebuttonevent_index_registry_xl);
     XL_initindextable(L, &sdl_mousemotionevent_index_dummy_xl, sdl_mousemotionevent_index_registry_xl);
     XL_initindextable(L, &sdl_windowevent_index_dummy_xl, sdl_windowevent_index_registry_xl);
+    XL_initindextable(L, &sdl_staticindex_dummy_xl, sdl_staticindex_registry_xl);
+    XL_initnewindextable(L, &sdl_staticnewindex_dummy_xl, sdl_staticnewindex_registry_xl);
+    XL_initstaticmetatable(L, "SDL", (const char *)NULL);
     XL_initfunctions(L, sdl_function_registry_xl, "SDL", (const char *)NULL);
     XL_initenum(L, sdl_window_enum_xl, "SDL", "Window", (const char *)NULL);
     XL_initenum(L, sdl_eventtype_enum_xl, "SDL", "EventType", (const char *)NULL);

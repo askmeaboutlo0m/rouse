@@ -224,7 +224,7 @@ int XL_staticindex(lua_State *L, void *reg, int keyindex)
     }
 }
 
-int XL_staticnewindex(lua_State *L, const char *tname, void *reg,
+int XL_staticnewindex(lua_State *L, void *reg, int selfindex,
                       int keyindex, int valueindex)
 {
     luaL_checktype(L, keyindex, LUA_TSTRING);
@@ -235,12 +235,14 @@ int XL_staticnewindex(lua_State *L, const char *tname, void *reg,
     if (lua_rawget(L, -2)) {
         lua_pushvalue(L, valueindex);
         lua_call(L, 1, 0);
-        return 0;
     }
     else {
-        const char *key = lua_tostring(L, keyindex);
-        return luaL_error(L, "%s has no field '%s'", tname, key);
+        lua_pushvalue(L, keyindex);
+        lua_pushvalue(L, valueindex);
+        lua_rawset(L, selfindex);
     }
+
+    return 0;
 }
 
 

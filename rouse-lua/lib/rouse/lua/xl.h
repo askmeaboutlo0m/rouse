@@ -51,7 +51,7 @@ int XL_newindex(lua_State *L, const char *tname, void *reg,
 
 int XL_staticindex(lua_State *L, void *reg, int keyindex);
 
-int XL_staticnewindex(lua_State *L, const char *tname, void *reg,
+int XL_staticnewindex(lua_State *L, void *reg, int selfindex,
                       int keyindex, int valueindex);
 
 void XL_initmetatable    (lua_State *L, const char *tname, luaL_Reg *methods);

@@ -23,7 +23,7 @@ local FpsCounter = class()
 function FpsCounter:init(nvg, font_id, len)
     self.index  = 0
     self.len    = len or 100
-    self.last   = SDL.get_ticks()
+    self.last   = SDL.ticks
     self.sum    = 0
     self.frames = {}
     self.text_field = R.TextField.new {
@@ -38,7 +38,7 @@ end
 
 function FpsCounter:update()
     local index = self.index + 1
-    local now   = SDL.get_ticks()
+    local now   = SDL.ticks
     local delta = now - self.last
     self.last   = now
     self.sum    = self.sum + delta - (self.frames[index] or 0)

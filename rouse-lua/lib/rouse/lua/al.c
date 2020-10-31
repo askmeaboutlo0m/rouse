@@ -1000,7 +1000,7 @@ static int r_al_listener_staticindex_xl(lua_State *L)
 static int r_al_listener_staticnewindex_dummy_xl;
 static int r_al_listener_staticnewindex_xl(lua_State *L)
 {
-    return XL_staticnewindex(L, "R.Al.listener", &r_al_listener_staticnewindex_dummy_xl, 2, 3);
+    return XL_staticnewindex(L, &r_al_listener_staticnewindex_dummy_xl, 1, 2, 3);
 }
 
 static luaL_Reg r_al_buffer_function_registry_xl[] = {

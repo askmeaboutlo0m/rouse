@@ -33,7 +33,7 @@ function PreloadScene:init(args)
     self.resources, self.total_bytes = self:parse_resources(
             args.resources or error("No resources to load given"))
 
-    self.fetching = R.get_platform() == "emscripten"
+    self.fetching = R.platform == "emscripten"
     if self.fetching then
         self.fetched = 0
         local packfile = args.packfile
@@ -109,7 +109,7 @@ function PreloadScene:load_type_json(key, path)
 end
 
 function PreloadScene:load_type_ogg(key, path)
-    if R.get_al_enabled() then
+    if R.al_enabled then
         return "sound", R.Al.Buffer.from_file(path)
     else
         return false, "sound not enabled"
@@ -171,12 +171,12 @@ function PreloadScene:load_next_resource()
 end
 
 function PreloadScene:on_tick(rendered)
-    local limit = SDL.get_ticks() + self.ms
+    local limit = SDL.ticks + self.ms
     local done
 
     repeat
         done = self:load_next_resource()
-    until done or SDL.get_ticks() >= limit
+    until done or SDL.ticks >= limit
 
     if self.current > #self.resources then
         R.Scene.next(function (scene)

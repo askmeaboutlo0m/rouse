@@ -79,25 +79,57 @@ FUNCTION void R.die()
     log_message(L, R_die_fn);
 END
 
+STATICINDEX const char *R.platform
+    RETVAL = ROUSE_PLATFORM;
+END
 
 FUNCTION const char *R.get_platform()
+    R_LUA_WARN_ON_DEPRECATED_GETTER("R.platform");
     RETVAL = ROUSE_PLATFORM;
 END
 
 
-FUNCTION void R.set_framerate(float ticks_per_second) = R_framerate_set
+STATICINDEX float R.framerate = R_framerate_get
 
-FUNCTION float R.get_framerate() = R_framerate_get
+FUNCTION float R.get_framerate()
+    R_LUA_WARN_ON_DEPRECATED_GETTER("R.framerate");
+    RETVAL = R_framerate_get();
+END
 
-FUNCTION float R.get_tick_length()
+STATICNEWINDEX float R.framerate = R_framerate_set
+
+FUNCTION void R.set_framerate(float ticks_per_second)
+    R_LUA_WARN_ON_DEPRECATED_SETTER("R.framerate");
+    R_framerate_set(ticks_per_second);
+END
+
+
+STATICINDEX float R.tick_length
     RETVAL = R_tick_length;
 END
 
+FUNCTION float R.get_tick_length()
+    R_LUA_WARN_ON_DEPRECATED_GETTER("R.tick_length");
+    RETVAL = R_tick_length;
+END
+
+
+STATICNEWINDEX uint32_t R.max_ticks_before_render
+    R_max_ticks_before_render = VALUE;
+END
+
 FUNCTION void R.set_max_ticks_before_render(uint32_t max_ticks_before_render)
+    R_LUA_WARN_ON_DEPRECATED_SETTER("R.max_ticks_before_render");
     R_max_ticks_before_render = max_ticks_before_render;
 END
 
+
+STATICINDEX bool R.al_enabled
+    RETVAL = R_al_enabled;
+END
+
 FUNCTION bool R.get_al_enabled()
+    R_LUA_WARN_ON_DEPRECATED_GETTER("R.al_enabled");
     RETVAL = R_al_enabled;
 END
 

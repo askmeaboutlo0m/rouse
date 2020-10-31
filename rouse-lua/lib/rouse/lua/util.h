@@ -58,6 +58,29 @@
     } while (0)
 
 
+#define R_LUA_WARN_ON_DEPRECATED(ACTION, FIELD) do { \
+        const char *_source; \
+        int         _line; \
+        lua_Debug   _ld; \
+        if (lua_getstack(L, 1, &_ld) && lua_getinfo(L, "nSl", &_ld)) { \
+            _source = _ld.short_src; \
+            _line   = _ld.currentline; \
+        } \
+        else { \
+            _source = NULL; \
+            _line   = -1; \
+        } \
+        R_warn("Deprecated function called from %s line %d; " ACTION " " FIELD \
+               " instead", _source ? _source : "?", _line); \
+    } while (0)
+
+#define R_LUA_WARN_ON_DEPRECATED_GETTER(FIELD) \
+    R_LUA_WARN_ON_DEPRECATED("access", FIELD)
+
+#define R_LUA_WARN_ON_DEPRECATED_SETTER(FIELD) \
+    R_LUA_WARN_ON_DEPRECATED("assign to", FIELD)
+
+
 static inline int R_lua_pcall(lua_State *L, int nargs, int nresults)
 {
     int msgh = lua_gettop(L) - nargs;

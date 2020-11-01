@@ -150,6 +150,9 @@ function TweenBuilder:ease(ease)
     return self
 end
 
+TweenBuilder.e = TweenBuilder.ease
+
+
 function TweenBuilder:apply()
     self.apply_on_start = true
     return self

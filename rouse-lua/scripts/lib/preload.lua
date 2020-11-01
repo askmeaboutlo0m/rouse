@@ -45,7 +45,6 @@ function PreloadScene:init(args)
         end
     else
         self.fetched = #self.resources
-        self.bytes   = self.total_bytes
     end
 
     self.outer_color   = args.outer_color   or R.Nvg.rgbaf(0.0, 0.0, 0.0, 0.6)

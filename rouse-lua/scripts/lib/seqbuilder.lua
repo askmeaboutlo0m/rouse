@@ -78,23 +78,52 @@ function TweenBuilder:to_value(name, type, ...)
     end
 end
 
-for name, aliases in pairs {origin_x = {"ox"}, origin_y = {"oy"}, pos_x = {"x"},
-                            pos_y = {"y"}, scale_x = {"sx"}, scale_y = {"sy"},
-                            skew_x = {"kx"}, skew_y = {"ky"}, angle = {"n"},
-                            alpha = {"a"}, base_x = {"bx"}, base_y = {"by"},
-                            rotation = {"r"}, rel_x = {"rx"}, rel_y = {"ry"}} do
-    local tween_name = "sprite_" .. name
-    TweenBuilder[name] = function (self, ...)
-        local topic = self.topic
-        local value = self:to_value(name, R.TweenFloat, ...)
-        return self:add_attribute(function (tween)
-            tween[tween_name](tween, topic, value)
-        end)
-    end
-    for i = 1, #aliases do
-        TweenBuilder[aliases[i]] = TweenBuilder[name]
+local function make_tween_functions(prefix, specs)
+    for name, aliases in pairs(specs) do
+        local tween_name = prefix .. name
+        TweenBuilder[name] = function (self, ...)
+            local topic = self.topic
+            local value = self:to_value(name, R.TweenFloat, ...)
+            return self:add_attribute(function (tween)
+                tween[tween_name](tween, topic, value)
+            end)
+        end
+
+        for i = 1, #aliases do
+            TweenBuilder[aliases[i]] = TweenBuilder[name]
+        end
     end
 end
+
+make_tween_functions("sprite_", {
+    origin_x = {"ox"}, origin_y = {"oy"}, pos_x = {"x"},
+    pos_y = {"y"}, scale_x = {"sx"}, scale_y = {"sy"},
+    skew_x = {"kx"}, skew_y = {"ky"}, angle = {"n"},
+    alpha = {"a"}, base_x = {"bx"}, base_y = {"by"},
+    rotation = {"r"}, rel_x = {"rx"}, rel_y = {"ry"},
+})
+
+make_tween_functions("al_source_", {
+    gain               = {"source_gain"},
+    pitch              = {"source_pitch"},
+    pos_x              = {"source_pos_x", "source_x"},
+    pos_y              = {"source_pos_y", "source_y"},
+    pos_z              = {"source_pos_z", "source_z"},
+    velocity_x         = {"source_velocity_x"},
+    velocity_y         = {"source_velocity_y"},
+    velocity_z         = {"source_velocity_z"},
+    reference_distance = {"source_reference_distance"},
+})
+
+make_tween_functions("al_", {
+    listener_gain       = {},
+    listener_pos_x      = {"listener_x"},
+    listener_pos_y      = {"listener_y"},
+    listener_pos_z      = {"listener_z"},
+    listener_velocity_x = {},
+    listener_velocity_y = {},
+    listener_velocity_z = {},
+})
 
 function TweenBuilder:field(key, ...)
     local topic = self.topic

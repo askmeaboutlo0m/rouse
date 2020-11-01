@@ -210,6 +210,7 @@ END
 
 
 PPTYPE R_Sprite
+PPTYPE R_AlSource
 PPTYPE R_LuaTween R.LuaTween 1
 
 @@PERL
@@ -228,6 +229,41 @@ METHOD ... sprite_scale(R_Sprite *sprite, any value_fn)
     lua_settop(L, 1);
     return 1;
 END
+
+
+BEFORE
+#ifdef ROUSE_AL_ENABLED
+END
+
+AFTER
+#else
+    R_LUA_DIE(L, "OpenAL not compiled in")
+#endif
+END
+
+@@PERL
+for my $name (qw(pos_x pos_y pos_z velocity_x velocity_y velocity_z gain)) {
+    print "METHOD ... al_listener_$name(any topic, any value_fn)\n";
+    print "    XL_UNUSED(topic);\n";
+    print "    R_tween_al_listener_$name(self, tween_float_get(L, value_fn));\n";
+    print "    lua_settop(L, 1);\n";
+    print "    return 1;\n";
+    print "END\n\n";
+}
+
+for my $name (qw(pos_x pos_y pos_z velocity_x velocity_y velocity_z gain pitch
+                 reference_distance)) {
+    print "METHOD ... al_source_$name(R_AlSource *source, any value_fn)\n";
+    print "    R_tween_al_source_$name(self, source, tween_float_get(L, value_fn));\n";
+    print "    lua_settop(L, 1);\n";
+    print "    return 1;\n";
+    print "END\n\n";
+}
+@@END
+
+BEFORE =
+AFTER  =
+
 
 @c
 

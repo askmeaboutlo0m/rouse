@@ -390,6 +390,260 @@ static int r_luatween_method_sprite_scale_xl(lua_State *L)
     return 1;
 }
 
+static int r_luatween_method_al_listener_pos_x_xl(lua_State *L)
+{
+#ifdef ROUSE_AL_ENABLED
+    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
+    luaL_checkany(L, 2);
+    int topic = 2;
+    luaL_checkany(L, 3);
+    int value_fn = 3;
+    XL_UNUSED(topic);
+    R_tween_al_listener_pos_x(self, tween_float_get(L, value_fn));
+    lua_settop(L, 1);
+    return 1;
+#else
+    R_LUA_DIE(L, "OpenAL not compiled in")
+#endif
+}
+
+static int r_luatween_method_al_listener_pos_y_xl(lua_State *L)
+{
+#ifdef ROUSE_AL_ENABLED
+    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
+    luaL_checkany(L, 2);
+    int topic = 2;
+    luaL_checkany(L, 3);
+    int value_fn = 3;
+    XL_UNUSED(topic);
+    R_tween_al_listener_pos_y(self, tween_float_get(L, value_fn));
+    lua_settop(L, 1);
+    return 1;
+#else
+    R_LUA_DIE(L, "OpenAL not compiled in")
+#endif
+}
+
+static int r_luatween_method_al_listener_pos_z_xl(lua_State *L)
+{
+#ifdef ROUSE_AL_ENABLED
+    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
+    luaL_checkany(L, 2);
+    int topic = 2;
+    luaL_checkany(L, 3);
+    int value_fn = 3;
+    XL_UNUSED(topic);
+    R_tween_al_listener_pos_z(self, tween_float_get(L, value_fn));
+    lua_settop(L, 1);
+    return 1;
+#else
+    R_LUA_DIE(L, "OpenAL not compiled in")
+#endif
+}
+
+static int r_luatween_method_al_listener_velocity_x_xl(lua_State *L)
+{
+#ifdef ROUSE_AL_ENABLED
+    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
+    luaL_checkany(L, 2);
+    int topic = 2;
+    luaL_checkany(L, 3);
+    int value_fn = 3;
+    XL_UNUSED(topic);
+    R_tween_al_listener_velocity_x(self, tween_float_get(L, value_fn));
+    lua_settop(L, 1);
+    return 1;
+#else
+    R_LUA_DIE(L, "OpenAL not compiled in")
+#endif
+}
+
+static int r_luatween_method_al_listener_velocity_y_xl(lua_State *L)
+{
+#ifdef ROUSE_AL_ENABLED
+    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
+    luaL_checkany(L, 2);
+    int topic = 2;
+    luaL_checkany(L, 3);
+    int value_fn = 3;
+    XL_UNUSED(topic);
+    R_tween_al_listener_velocity_y(self, tween_float_get(L, value_fn));
+    lua_settop(L, 1);
+    return 1;
+#else
+    R_LUA_DIE(L, "OpenAL not compiled in")
+#endif
+}
+
+static int r_luatween_method_al_listener_velocity_z_xl(lua_State *L)
+{
+#ifdef ROUSE_AL_ENABLED
+    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
+    luaL_checkany(L, 2);
+    int topic = 2;
+    luaL_checkany(L, 3);
+    int value_fn = 3;
+    XL_UNUSED(topic);
+    R_tween_al_listener_velocity_z(self, tween_float_get(L, value_fn));
+    lua_settop(L, 1);
+    return 1;
+#else
+    R_LUA_DIE(L, "OpenAL not compiled in")
+#endif
+}
+
+static int r_luatween_method_al_listener_gain_xl(lua_State *L)
+{
+#ifdef ROUSE_AL_ENABLED
+    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
+    luaL_checkany(L, 2);
+    int topic = 2;
+    luaL_checkany(L, 3);
+    int value_fn = 3;
+    XL_UNUSED(topic);
+    R_tween_al_listener_gain(self, tween_float_get(L, value_fn));
+    lua_settop(L, 1);
+    return 1;
+#else
+    R_LUA_DIE(L, "OpenAL not compiled in")
+#endif
+}
+
+static int r_luatween_method_al_source_pos_x_xl(lua_State *L)
+{
+#ifdef ROUSE_AL_ENABLED
+    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
+    R_AlSource *source = XL_checkpptype(L, 2, "R_AlSource");
+    luaL_checkany(L, 3);
+    int value_fn = 3;
+    R_tween_al_source_pos_x(self, source, tween_float_get(L, value_fn));
+    lua_settop(L, 1);
+    return 1;
+#else
+    R_LUA_DIE(L, "OpenAL not compiled in")
+#endif
+}
+
+static int r_luatween_method_al_source_pos_y_xl(lua_State *L)
+{
+#ifdef ROUSE_AL_ENABLED
+    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
+    R_AlSource *source = XL_checkpptype(L, 2, "R_AlSource");
+    luaL_checkany(L, 3);
+    int value_fn = 3;
+    R_tween_al_source_pos_y(self, source, tween_float_get(L, value_fn));
+    lua_settop(L, 1);
+    return 1;
+#else
+    R_LUA_DIE(L, "OpenAL not compiled in")
+#endif
+}
+
+static int r_luatween_method_al_source_pos_z_xl(lua_State *L)
+{
+#ifdef ROUSE_AL_ENABLED
+    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
+    R_AlSource *source = XL_checkpptype(L, 2, "R_AlSource");
+    luaL_checkany(L, 3);
+    int value_fn = 3;
+    R_tween_al_source_pos_z(self, source, tween_float_get(L, value_fn));
+    lua_settop(L, 1);
+    return 1;
+#else
+    R_LUA_DIE(L, "OpenAL not compiled in")
+#endif
+}
+
+static int r_luatween_method_al_source_velocity_x_xl(lua_State *L)
+{
+#ifdef ROUSE_AL_ENABLED
+    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
+    R_AlSource *source = XL_checkpptype(L, 2, "R_AlSource");
+    luaL_checkany(L, 3);
+    int value_fn = 3;
+    R_tween_al_source_velocity_x(self, source, tween_float_get(L, value_fn));
+    lua_settop(L, 1);
+    return 1;
+#else
+    R_LUA_DIE(L, "OpenAL not compiled in")
+#endif
+}
+
+static int r_luatween_method_al_source_velocity_y_xl(lua_State *L)
+{
+#ifdef ROUSE_AL_ENABLED
+    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
+    R_AlSource *source = XL_checkpptype(L, 2, "R_AlSource");
+    luaL_checkany(L, 3);
+    int value_fn = 3;
+    R_tween_al_source_velocity_y(self, source, tween_float_get(L, value_fn));
+    lua_settop(L, 1);
+    return 1;
+#else
+    R_LUA_DIE(L, "OpenAL not compiled in")
+#endif
+}
+
+static int r_luatween_method_al_source_velocity_z_xl(lua_State *L)
+{
+#ifdef ROUSE_AL_ENABLED
+    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
+    R_AlSource *source = XL_checkpptype(L, 2, "R_AlSource");
+    luaL_checkany(L, 3);
+    int value_fn = 3;
+    R_tween_al_source_velocity_z(self, source, tween_float_get(L, value_fn));
+    lua_settop(L, 1);
+    return 1;
+#else
+    R_LUA_DIE(L, "OpenAL not compiled in")
+#endif
+}
+
+static int r_luatween_method_al_source_gain_xl(lua_State *L)
+{
+#ifdef ROUSE_AL_ENABLED
+    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
+    R_AlSource *source = XL_checkpptype(L, 2, "R_AlSource");
+    luaL_checkany(L, 3);
+    int value_fn = 3;
+    R_tween_al_source_gain(self, source, tween_float_get(L, value_fn));
+    lua_settop(L, 1);
+    return 1;
+#else
+    R_LUA_DIE(L, "OpenAL not compiled in")
+#endif
+}
+
+static int r_luatween_method_al_source_pitch_xl(lua_State *L)
+{
+#ifdef ROUSE_AL_ENABLED
+    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
+    R_AlSource *source = XL_checkpptype(L, 2, "R_AlSource");
+    luaL_checkany(L, 3);
+    int value_fn = 3;
+    R_tween_al_source_pitch(self, source, tween_float_get(L, value_fn));
+    lua_settop(L, 1);
+    return 1;
+#else
+    R_LUA_DIE(L, "OpenAL not compiled in")
+#endif
+}
+
+static int r_luatween_method_al_source_reference_distance_xl(lua_State *L)
+{
+#ifdef ROUSE_AL_ENABLED
+    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
+    R_AlSource *source = XL_checkpptype(L, 2, "R_AlSource");
+    luaL_checkany(L, 3);
+    int value_fn = 3;
+    R_tween_al_source_reference_distance(self, source, tween_float_get(L, value_fn));
+    lua_settop(L, 1);
+    return 1;
+#else
+    R_LUA_DIE(L, "OpenAL not compiled in")
+#endif
+}
+
 
 static int protected_get_float_field(lua_State *L)
 {
@@ -825,6 +1079,22 @@ static luaL_Reg r_tweenscale_function_registry_xl[] = {
 
 static luaL_Reg r_luatween_method_registry_xl[] = {
     {"__index", r_luatween_index_xl},
+    {"al_listener_gain", r_luatween_method_al_listener_gain_xl},
+    {"al_listener_pos_x", r_luatween_method_al_listener_pos_x_xl},
+    {"al_listener_pos_y", r_luatween_method_al_listener_pos_y_xl},
+    {"al_listener_pos_z", r_luatween_method_al_listener_pos_z_xl},
+    {"al_listener_velocity_x", r_luatween_method_al_listener_velocity_x_xl},
+    {"al_listener_velocity_y", r_luatween_method_al_listener_velocity_y_xl},
+    {"al_listener_velocity_z", r_luatween_method_al_listener_velocity_z_xl},
+    {"al_source_gain", r_luatween_method_al_source_gain_xl},
+    {"al_source_pitch", r_luatween_method_al_source_pitch_xl},
+    {"al_source_pos_x", r_luatween_method_al_source_pos_x_xl},
+    {"al_source_pos_y", r_luatween_method_al_source_pos_y_xl},
+    {"al_source_pos_z", r_luatween_method_al_source_pos_z_xl},
+    {"al_source_reference_distance", r_luatween_method_al_source_reference_distance_xl},
+    {"al_source_velocity_x", r_luatween_method_al_source_velocity_x_xl},
+    {"al_source_velocity_y", r_luatween_method_al_source_velocity_y_xl},
+    {"al_source_velocity_z", r_luatween_method_al_source_velocity_z_xl},
     {"build", r_luatween_method_build_xl},
     {"field", r_luatween_method_field_xl},
     {"sprite_alpha", r_luatween_method_sprite_alpha_xl},

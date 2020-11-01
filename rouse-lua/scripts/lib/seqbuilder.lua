@@ -78,7 +78,7 @@ function TweenBuilder:to_value(name, type, ...)
     end
 end
 
-local function make_tween_functions(prefix, specs)
+local function make_tween_functions(prefix, with_topic, specs)
     for name, aliases in pairs(specs) do
         local tween_name = prefix .. name
         TweenBuilder[name] = function (self, ...)
@@ -92,10 +92,23 @@ local function make_tween_functions(prefix, specs)
         for i = 1, #aliases do
             TweenBuilder[aliases[i]] = TweenBuilder[name]
         end
+
+        if with_topic then
+            local name_with = name .. "_with"
+            TweenBuilder[name_with] = function(self, topic, ...)
+                local value = self:to_value(name, R.TweenFloat, ...)
+                return self:add_attribute(function (tween)
+                    tween[tween_name](tween, topic, value)
+                end)
+            end
+            for i = 1, #aliases do
+                TweenBuilder[aliases[i] .. "_with"] = TweenBuilder[name_with]
+            end
+        end
     end
 end
 
-make_tween_functions("sprite_", {
+make_tween_functions("sprite_", true, {
     origin_x = {"ox"}, origin_y = {"oy"}, pos_x = {"x"},
     pos_y = {"y"}, scale_x = {"sx"}, scale_y = {"sy"},
     skew_x = {"kx"}, skew_y = {"ky"}, angle = {"n"},
@@ -103,7 +116,7 @@ make_tween_functions("sprite_", {
     rotation = {"r"}, rel_x = {"rx"}, rel_y = {"ry"},
 })
 
-make_tween_functions("al_source_", {
+make_tween_functions("al_source_", true, {
     gain               = {"source_gain"},
     pitch              = {"source_pitch"},
     pos_x              = {"source_pos_x", "source_x"},
@@ -115,7 +128,7 @@ make_tween_functions("al_source_", {
     reference_distance = {"source_reference_distance"},
 })
 
-make_tween_functions("al_", {
+make_tween_functions("al_", true, {
     listener_gain       = {},
     listener_pos_x      = {"listener_x"},
     listener_pos_y      = {"listener_y"},
@@ -127,6 +140,13 @@ make_tween_functions("al_", {
 
 function TweenBuilder:field(key, ...)
     local topic = self.topic
+    local value = self:to_value("field", R.TweenFloat, ...)
+    return self:add_attribute(function (tween)
+        tween:field(topic, key, value)
+    end)
+end
+
+function TweenBuilder:field_with(key, topic, ...)
     local value = self:to_value("field", R.TweenFloat, ...)
     return self:add_attribute(function (tween)
         tween:field(topic, key, value)

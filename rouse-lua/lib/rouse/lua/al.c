@@ -393,7 +393,7 @@ static int r_al_source_new_xl(lua_State *L)
     R_AlSource *RETVAL;
     int argc = lua_gettop(L);
     RETVAL   = R_al_source_new();
-    XL_pushnewpptypeuv(L, RETVAL, "R_AlSource", 0);
+    XL_pushnewpptypeuv(L, RETVAL, "R_AlSource", 1);
     maybe_set(L, argc, XL_REQUIRED_ARGC + 1);
     return 1;
 #else
@@ -410,7 +410,7 @@ static int r_al_source_from_buffer_xl(lua_State *L)
     R_AlSource *RETVAL;
     int argc = lua_gettop(L);
     RETVAL   = R_al_source_from_buffer(buffer);
-    XL_pushnewpptypeuv(L, RETVAL, "R_AlSource", 0);
+    XL_pushnewpptypeuv(L, RETVAL, "R_AlSource", 1);
     maybe_set(L, argc, XL_REQUIRED_ARGC + 1);
     return 1;
 #else
@@ -427,7 +427,7 @@ static int r_al_source_from_file_xl(lua_State *L)
     R_AlSource *RETVAL;
     int argc = lua_gettop(L);
     RETVAL = R_al_source_from_file(path);
-    XL_pushnewpptypeuv(L, RETVAL, "R_AlSource", 0);
+    XL_pushnewpptypeuv(L, RETVAL, "R_AlSource", 1);
     maybe_set(L, argc, XL_REQUIRED_ARGC + 1);
     return 1;
 #else
@@ -888,6 +888,35 @@ static int r_alsource_z_newindex_xl(lua_State *L)
 #endif
 }
 
+static int r_alsource_cross_scene_index_xl(lua_State *L)
+{
+#ifdef ROUSE_AL_ENABLED
+    R_AlSource *self = XL_checkpptype(L, 1, "R_AlSource");
+    bool RETVAL;
+    XL_UNUSED(self);
+    XL_getiuservalue(L, 1, 1);
+    RETVAL = lua_toboolean(L, -1);
+    lua_pushboolean(L, RETVAL);
+    return 1;
+#else
+    R_LUA_DIE(L, "OpenAL not compiled in")
+#endif
+}
+
+static int r_alsource_cross_scene_newindex_xl(lua_State *L)
+{
+#ifdef ROUSE_AL_ENABLED
+    R_AlSource *self = XL_checkpptype(L, 1, "R_AlSource");
+    bool VALUE = XL_checkbool(L, 2);
+    XL_UNUSED(self);
+    lua_pushboolean(L, VALUE);
+    XL_setiuservalue(L, 1, 1);
+    return 0;
+#else
+    R_LUA_DIE(L, "OpenAL not compiled in")
+#endif
+}
+
 static int r_alsource_method_set_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
@@ -1029,6 +1058,7 @@ static luaL_Reg r_albuffer_index_registry_xl[] = {
 
 static luaL_Reg r_alsource_index_registry_xl[] = {
     {"buffer", r_alsource_buffer_index_xl},
+    {"cross_scene", r_alsource_cross_scene_index_xl},
     {"gain", r_alsource_gain_index_xl},
     {"id", r_alsource_id_index_xl},
     {"looping", r_alsource_looping_index_xl},
@@ -1072,6 +1102,7 @@ static luaL_Reg r_alsource_method_registry_xl[] = {
 
 static luaL_Reg r_alsource_newindex_registry_xl[] = {
     {"buffer", r_alsource_buffer_newindex_xl},
+    {"cross_scene", r_alsource_cross_scene_newindex_xl},
     {"gain", r_alsource_gain_newindex_xl},
     {"looping", r_alsource_looping_newindex_xl},
     {"offset_in_seconds", r_alsource_offset_in_seconds_newindex_xl},

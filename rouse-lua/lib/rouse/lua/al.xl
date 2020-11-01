@@ -85,7 +85,7 @@ END
 INDEX unsigned int id = R_al_buffer_id
 
 
-PPTYPE R_AlSource R.Al.Source
+PPTYPE R_AlSource R.Al.Source 1
 
 @c
 
@@ -170,6 +170,18 @@ INDEX    float y = R_al_source_pos_y
 NEWINDEX float y = R_al_source_pos_y_set
 INDEX    float z = R_al_source_pos_z
 NEWINDEX float z = R_al_source_pos_z_set
+
+INDEX bool cross_scene
+    XL_UNUSED(self);
+    XL_getiuservalue(L, 1, 1);
+    RETVAL = lua_toboolean(L, -1);
+END
+
+NEWINDEX bool cross_scene
+    XL_UNUSED(self);
+    lua_pushboolean(L, VALUE);
+    XL_setiuservalue(L, 1, 1);
+END
 
 SETFROMTABLE set
 

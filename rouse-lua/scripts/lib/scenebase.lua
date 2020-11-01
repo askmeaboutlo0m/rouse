@@ -377,6 +377,14 @@ if SceneBase.have_sound then
             source:stop()
         end
     end
+
+    function SceneBase:stop_sounds_on_scene_switch()
+        for i, source in ipairs(self.sources) do
+            if not source.cross_scene then
+                source:stop()
+            end
+        end
+    end
 else
     function SceneBase:allocate_sound_sources(count)
         error("OpenAL is not enabled")
@@ -399,6 +407,10 @@ else
     end
 
     function SceneBase:stop_all_sounds()
+        -- nothing
+    end
+
+    function SceneBase:stop_sounds_on_scene_switch()
         -- nothing
     end
 end
@@ -434,7 +446,7 @@ function ErrorScene:on_event(event)
     end
 end
 
-function SceneBase:next_scene(next_or_path, args)
+function SceneBase:next_scene(next_or_path)
     local next_scene_fn
     if type(next_or_path) == "string" then
         next_scene_fn = function (...)
@@ -445,9 +457,7 @@ function SceneBase:next_scene(next_or_path, args)
         next_scene_fn = next_or_path
     end
 
-    if args and args.stop_sounds then
-        self:stop_all_sounds()
-    end
+    self:stop_sounds_on_scene_switch()
 
     R.Scene.next(function (scene)
         local success, result = pcall(function ()

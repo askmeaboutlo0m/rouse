@@ -117,6 +117,8 @@ static void tween_al_source_free(R_UserData user)
     }
 
 DEF_AL_SOURCE_TWEEN(gain)
+DEF_AL_SOURCE_TWEEN(pitch)
+DEF_AL_SOURCE_TWEEN(reference_distance)
 DEF_AL_SOURCE_TWEEN(pos_x)
 DEF_AL_SOURCE_TWEEN(pos_y)
 DEF_AL_SOURCE_TWEEN(pos_z)

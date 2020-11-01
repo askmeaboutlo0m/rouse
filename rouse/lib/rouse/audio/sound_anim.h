@@ -47,6 +47,12 @@ void R_tween_al_listener_velocity_z(R_Step *step, R_TweenFloat value);
 void R_tween_al_source_gain(R_Step *step, R_AlSource *source,
                             R_TweenFloat value);
 
+void R_tween_al_source_pitch(R_Step *step, R_AlSource *source,
+                             R_TweenFloat value);
+
+void R_tween_al_source_reference_distance(R_Step *step, R_AlSource *source,
+                                          R_TweenFloat value);
+
 void R_tween_al_source_pos_x(R_Step *step, R_AlSource *source,
                              R_TweenFloat value);
 

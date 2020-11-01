@@ -1,4 +1,4 @@
--- Copyright (c) 2019 askmeaboutloom
+-- Copyright (c) 2019, 2020 askmeaboutloom
 --
 -- Permission is hereby granted, free of charge, to any person obtaining a copy
 -- of this software and associated documentation files (the "Software"), to deal
@@ -22,25 +22,32 @@ local PreloadScene = class()
 
 
 function PreloadScene:init(args)
-    self.nvg        = args.nvg or R.Nvg.new(0)
-    self.ms         = args.ms or 10
-    self.on_done    = args.on_done or error("No on_done callback given")
-    self.loaded     = {font = {}, image = {}, json = {}, sound = {}}
-    self.current    = 1
-    self.bytes      = 0
-    self.temp_bytes = 0
+    self.nvg         = args.nvg or R.Nvg.new(0)
+    self.ms          = args.ms or 10
+    self.on_done     = args.on_done or error("No on_done callback given")
+    self.loaded      = {font = {}, image = {}, json = {}, sound = {}}
+    self.current     = 1
+    self.bytes       = 0
+    self.fetch_bytes = 0
+    self.temp_bytes  = 0
+
+    if args.packfile and not args.packfiles then
+        R.warn("The 'packfile' argument is deprecated, use 'packfiles' instead")
+        args.packfiles = {args.packfile}
+    end
 
     self.resources, self.total_bytes = self:parse_resources(
             args.resources or error("No resources to load given"))
 
     self.fetching = R.platform == "emscripten"
     if self.fetching then
-        self.fetched = 0
-        local packfile = args.packfile
-        if packfile then
-            self.total_bytes = packfile.bytes
-            self:fetch_pack(packfile.url)
+        self.fetched    = 0
+        local packfiles = self:get_packfiles(args.packfiles)
+        if packfiles then
+            self.fetch_total_bytes = self:get_total_packfile_bytes(packfiles)
+            self:fetch_next_pack(packfiles)
         else
+            self.fetch_total_bytes = self.total_bytes
             self:fetch_next_resource()
         end
     else
@@ -55,7 +62,14 @@ function PreloadScene:init(args)
     self.roundness     = args.roundness     or 10.0
 end
 
-function PreloadScene:parse_resources(lines)
+local function maybe_call(value_or_function)
+    return is_function(value_or_function)
+       and value_or_function()
+        or value_or_function
+end
+
+function PreloadScene:parse_resources(lines_or_function)
+    local lines       = maybe_call(lines_or_function)
     local resources   = {}
     local total_bytes = 0
     for i, line in ipairs(lines) do
@@ -72,15 +86,36 @@ function PreloadScene:parse_resources(lines)
     return resources, total_bytes
 end
 
+function PreloadScene:get_packfiles(packfiles_or_function)
+    return packfiles_or_function
+       and maybe_call(packfiles_or_function)
+        or packfiles_or_function
+end
 
-function PreloadScene:fetch_pack(url)
-    local on_progress = function (bytes)
-        self.bytes = bytes
+function PreloadScene:get_total_packfile_bytes(packfiles)
+    local total_bytes = 0
+    for i, packfile in ipairs(packfiles) do
+        total_bytes = total_bytes + packfile.bytes
     end
-    local on_done = function ()
+    return total_bytes
+end
+
+
+function PreloadScene:fetch_next_pack(packfiles)
+    if #packfiles > 0 then
+        local packfile    = table.remove(packfiles, 1)
+        local on_progress = function (bytes)
+            self.temp_bytes = bytes
+        end
+        local on_done = function ()
+            self.temp_bytes  = 0
+            self.fetch_bytes = self.fetch_bytes + packfile.bytes
+            self:fetch_next_pack(packfiles)
+        end
+        R.fetch_pack(packfile.url, on_progress, on_done)
+    else
         self.fetched = #self.resources
     end
-    R.fetch_pack(url, on_progress, on_done)
 end
 
 function PreloadScene:fetch_next_resource()
@@ -91,9 +126,9 @@ function PreloadScene:fetch_next_resource()
             self.temp_bytes = bytes
         end
         local on_done = function ()
-            self.temp_bytes = 0
-            self.bytes      = self.bytes + bytes
-            self.fetched    = next_to_fetch
+            self.temp_bytes  = 0
+            self.fetch_bytes = self.fetch_bytes + bytes
+            self.fetched     = next_to_fetch
             self:fetch_next_resource()
         end
         R.fetch(path, path, on_progress, on_done)
@@ -157,9 +192,7 @@ function PreloadScene:load_next_resource()
         if path then
             self.current = self.current + 1
             self:load_resource(string.trim(path))
-            if not self.fetching then
-                self.bytes = self.bytes + bytes
-            end
+            self.bytes = self.bytes + bytes
             return false
         else
             return true
@@ -185,6 +218,12 @@ function PreloadScene:on_tick(rendered)
 end
 
 
+local function calculate_ratio(bytes, total_bytes)
+    return total_bytes and total_bytes > 0
+       and math.min(bytes / math.max(total_bytes, 1), 1.0)
+        or 1.0
+end
+
 function PreloadScene:on_render()
     R.Viewport.reset()
     R.GL.clear(1.0, 1.0, 1.0, 1.0, 0.0, 0)
@@ -193,18 +232,20 @@ function PreloadScene:on_render()
     local vp  = R.Viewport.window()
     nvg:begin_frame(vp.w, vp.h, 1.0)
 
+    local fetch_ratio = calculate_ratio(self.fetch_bytes + self.temp_bytes,
+                                        self.fetch_total_bytes)
     local outer_w = vp.w * self.outer_ratio_x
+    local fetch_w = outer_w * fetch_ratio
     local outer_h = vp.h * self.outer_ratio_y
     local outer_x = (vp.w - outer_w) / 2.0
     local outer_y = (vp.h - outer_h) / 2.0
 
     nvg:fill_color(self.outer_color)
     nvg:begin_path()
-    nvg:rounded_rect(outer_x, outer_y, outer_w, outer_h, self.roundness)
+    nvg:rounded_rect(outer_x, outer_y, fetch_w, outer_h, self.roundness)
     nvg:fill()
 
-    local bytes   = self.bytes + self.temp_bytes
-    local ratio   = math.min(bytes / math.max(self.total_bytes, 1), 1.0)
+    local ratio   = calculate_ratio(self.bytes, self.total_bytes)
     local inner_h = outer_h * self.inner_ratio_y
     local delta   = outer_h - inner_h
     local inner_w = (outer_w - delta) * ratio

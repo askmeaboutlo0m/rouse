@@ -1,4 +1,4 @@
--- Copyright (c) 2019 askmeaboutloom
+-- Copyright (c) 2019, 2020 askmeaboutloom
 --
 -- Permission is hereby granted, free of charge, to any person obtaining a copy
 -- of this software and associated documentation files (the "Software"), to deal
@@ -107,6 +107,16 @@ function table.merge(...)
     for i, arg in ipairs {...} do
         for key, value in pairs(arg) do
             merged[key] = value
+        end
+    end
+    return merged
+end
+
+function table.imerge(...)
+    local merged = {}
+    for i, arg in ipairs {...} do
+        for i, value in ipairs(arg) do
+        table.insert(merged, value)
         end
     end
     return merged

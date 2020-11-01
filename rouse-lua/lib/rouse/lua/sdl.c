@@ -551,6 +551,107 @@ static int sdl_mousebuttonevent_x2_button_index_xl(lua_State *L)
     return 1;
 }
 
+static int sdl_mousewheelevent_type_index_xl(lua_State *L)
+{
+    SDL_MouseWheelEvent *self = XL_checkutype(L, 1, "SDL_MouseWheelEvent");
+    uint32_t RETVAL;
+    RETVAL = self->type;
+    XL_pushuint32(L, RETVAL);
+    return 1;
+}
+
+static int sdl_mousewheelevent_timestamp_index_xl(lua_State *L)
+{
+    SDL_MouseWheelEvent *self = XL_checkutype(L, 1, "SDL_MouseWheelEvent");
+    uint32_t RETVAL;
+    RETVAL = self->timestamp;
+    XL_pushuint32(L, RETVAL);
+    return 1;
+}
+
+static int sdl_mousewheelevent_window_id_index_xl(lua_State *L)
+{
+    SDL_MouseWheelEvent *self = XL_checkutype(L, 1, "SDL_MouseWheelEvent");
+    uint32_t RETVAL;
+    RETVAL = self->windowID;
+    XL_pushuint32(L, RETVAL);
+    return 1;
+}
+
+static int sdl_mousewheelevent_which_index_xl(lua_State *L)
+{
+    SDL_MouseWheelEvent *self = XL_checkutype(L, 1, "SDL_MouseWheelEvent");
+    uint32_t RETVAL;
+    RETVAL = self->which;
+    XL_pushuint32(L, RETVAL);
+    return 1;
+}
+
+static int sdl_mousewheelevent_x_index_xl(lua_State *L)
+{
+    SDL_MouseWheelEvent *self = XL_checkutype(L, 1, "SDL_MouseWheelEvent");
+    int32_t RETVAL;
+    RETVAL = self->x;
+    XL_pushint32(L, RETVAL);
+    return 1;
+}
+
+static int sdl_mousewheelevent_y_index_xl(lua_State *L)
+{
+    SDL_MouseWheelEvent *self = XL_checkutype(L, 1, "SDL_MouseWheelEvent");
+    int32_t RETVAL;
+    RETVAL = self->y;
+    XL_pushint32(L, RETVAL);
+    return 1;
+}
+
+static int sdl_mousewheelevent_direction_index_xl(lua_State *L)
+{
+    SDL_MouseWheelEvent *self = XL_checkutype(L, 1, "SDL_MouseWheelEvent");
+    uint32_t RETVAL;
+    RETVAL = self->direction;
+    XL_pushuint32(L, RETVAL);
+    return 1;
+}
+
+static int sdl_mousewheelevent_is_normal_index_xl(lua_State *L)
+{
+    SDL_MouseWheelEvent *self = XL_checkutype(L, 1, "SDL_MouseWheelEvent");
+    bool RETVAL;
+    RETVAL = self->direction == SDL_MOUSEWHEEL_NORMAL;
+    lua_pushboolean(L, RETVAL);
+    return 1;
+}
+
+static int sdl_mousewheelevent_is_flipped_index_xl(lua_State *L)
+{
+    SDL_MouseWheelEvent *self = XL_checkutype(L, 1, "SDL_MouseWheelEvent");
+    bool RETVAL;
+    RETVAL = self->direction == SDL_MOUSEWHEEL_FLIPPED;
+    lua_pushboolean(L, RETVAL);
+    return 1;
+}
+
+static int sdl_mousewheelevent_effective_x_index_xl(lua_State *L)
+{
+    SDL_MouseWheelEvent *self = XL_checkutype(L, 1, "SDL_MouseWheelEvent");
+    int32_t RETVAL;
+    int32_t x = self->x;
+    RETVAL    = self->direction == SDL_MOUSEWHEEL_FLIPPED ? -x : x;
+    XL_pushint32(L, RETVAL);
+    return 1;
+}
+
+static int sdl_mousewheelevent_effective_y_index_xl(lua_State *L)
+{
+    SDL_MouseWheelEvent *self = XL_checkutype(L, 1, "SDL_MouseWheelEvent");
+    int32_t RETVAL;
+    int32_t y = self->y;
+    RETVAL    = self->direction == SDL_MOUSEWHEEL_FLIPPED ? -y : y;
+    XL_pushint32(L, RETVAL);
+    return 1;
+}
+
 static int sdl_event_type_index_xl(lua_State *L)
 {
     SDL_Event *self = XL_checkutype(L, 1, "SDL_Event");
@@ -636,6 +737,15 @@ static int sdl_event_button_index_xl(lua_State *L)
     return 1;
 }
 
+static int sdl_event_wheel_index_xl(lua_State *L)
+{
+    SDL_Event *self = XL_checkutype(L, 1, "SDL_Event");
+    SDL_MouseWheelEvent RETVAL;
+    GET_IN_EVENT_UNION(wheel, SDL_MOUSEWHEEL);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(SDL_MouseWheelEvent), "SDL_MouseWheelEvent", 0);
+    return 1;
+}
+
 static SDL_Cursor *get_system_cursor(lua_State *L, lua_Integer i)
 {
     static SDL_Cursor *cursors[SDL_NUM_SYSTEM_CURSORS];
@@ -688,6 +798,12 @@ static int sdl_mousemotionevent_index_xl(lua_State *L)
     return XL_index(L, "SDL_MouseMotionEvent", &sdl_mousemotionevent_index_dummy_xl, 1, 2);
 }
 
+static int sdl_mousewheelevent_index_dummy_xl;
+static int sdl_mousewheelevent_index_xl(lua_State *L)
+{
+    return XL_index(L, "SDL_MouseWheelEvent", &sdl_mousewheelevent_index_dummy_xl, 1, 2);
+}
+
 static int sdl_windowevent_index_dummy_xl;
 static int sdl_windowevent_index_xl(lua_State *L)
 {
@@ -727,6 +843,7 @@ static luaL_Reg sdl_event_index_registry_xl[] = {
     {"motion", sdl_event_motion_index_xl},
     {"timestamp", sdl_event_timestamp_index_xl},
     {"type", sdl_event_type_index_xl},
+    {"wheel", sdl_event_wheel_index_xl},
     {"window", sdl_event_window_index_xl},
     {NULL, NULL},
 };
@@ -782,6 +899,21 @@ static luaL_Reg sdl_mousemotionevent_index_registry_xl[] = {
     {NULL, NULL},
 };
 
+static luaL_Reg sdl_mousewheelevent_index_registry_xl[] = {
+    {"direction", sdl_mousewheelevent_direction_index_xl},
+    {"effective_x", sdl_mousewheelevent_effective_x_index_xl},
+    {"effective_y", sdl_mousewheelevent_effective_y_index_xl},
+    {"is_flipped", sdl_mousewheelevent_is_flipped_index_xl},
+    {"is_normal", sdl_mousewheelevent_is_normal_index_xl},
+    {"timestamp", sdl_mousewheelevent_timestamp_index_xl},
+    {"type", sdl_mousewheelevent_type_index_xl},
+    {"which", sdl_mousewheelevent_which_index_xl},
+    {"window_id", sdl_mousewheelevent_window_id_index_xl},
+    {"x", sdl_mousewheelevent_x_index_xl},
+    {"y", sdl_mousewheelevent_y_index_xl},
+    {NULL, NULL},
+};
+
 static luaL_Reg sdl_windowevent_index_registry_xl[] = {
     {"data1", sdl_windowevent_data1_index_xl},
     {"data2", sdl_windowevent_data2_index_xl},
@@ -809,6 +941,11 @@ static luaL_Reg sdl_mousebuttonevent_method_registry_xl[] = {
 
 static luaL_Reg sdl_mousemotionevent_method_registry_xl[] = {
     {"__index", sdl_mousemotionevent_index_xl},
+    {NULL, NULL},
+};
+
+static luaL_Reg sdl_mousewheelevent_method_registry_xl[] = {
+    {"__index", sdl_mousewheelevent_index_xl},
     {NULL, NULL},
 };
 
@@ -1465,6 +1602,12 @@ static XL_EnumEntry sdl_touch_enum_xl[] = {
     {NULL, (lua_Integer) 0},
 };
 
+static XL_EnumEntry sdl_mousewheel_enum_xl[] = {
+    {"NORMAL", (lua_Integer) SDL_MOUSEWHEEL_NORMAL},
+    {"FLIPPED", (lua_Integer) SDL_MOUSEWHEEL_FLIPPED},
+    {NULL, (lua_Integer) 0},
+};
+
 static XL_EnumEntry sdl_systemcursor_enum_xl[] = {
     {"ARROW", (lua_Integer) SDL_SYSTEM_CURSOR_ARROW},
     {"IBEAM", (lua_Integer) SDL_SYSTEM_CURSOR_IBEAM},
@@ -1487,11 +1630,13 @@ int R_lua_sdl_init(lua_State *L)
     XL_initmetatable(L, "SDL_KeyboardEvent", sdl_keyboardevent_method_registry_xl);
     XL_initmetatable(L, "SDL_MouseButtonEvent", sdl_mousebuttonevent_method_registry_xl);
     XL_initmetatable(L, "SDL_MouseMotionEvent", sdl_mousemotionevent_method_registry_xl);
+    XL_initmetatable(L, "SDL_MouseWheelEvent", sdl_mousewheelevent_method_registry_xl);
     XL_initmetatable(L, "SDL_WindowEvent", sdl_windowevent_method_registry_xl);
     XL_initindextable(L, &sdl_event_index_dummy_xl, sdl_event_index_registry_xl);
     XL_initindextable(L, &sdl_keyboardevent_index_dummy_xl, sdl_keyboardevent_index_registry_xl);
     XL_initindextable(L, &sdl_mousebuttonevent_index_dummy_xl, sdl_mousebuttonevent_index_registry_xl);
     XL_initindextable(L, &sdl_mousemotionevent_index_dummy_xl, sdl_mousemotionevent_index_registry_xl);
+    XL_initindextable(L, &sdl_mousewheelevent_index_dummy_xl, sdl_mousewheelevent_index_registry_xl);
     XL_initindextable(L, &sdl_windowevent_index_dummy_xl, sdl_windowevent_index_registry_xl);
     XL_initindextable(L, &sdl_staticindex_dummy_xl, sdl_staticindex_registry_xl);
     XL_initnewindextable(L, &sdl_staticnewindex_dummy_xl, sdl_staticnewindex_registry_xl);
@@ -1506,6 +1651,7 @@ int R_lua_sdl_init(lua_State *L)
     XL_initenum(L, sdl_keymod_enum_xl, "SDL", "Keymod", (const char *)NULL);
     XL_initenum(L, sdl_button_enum_xl, "SDL", "Button", (const char *)NULL);
     XL_initenum(L, sdl_touch_enum_xl, "SDL", "Touch", (const char *)NULL);
+    XL_initenum(L, sdl_mousewheel_enum_xl, "SDL", "MouseWheel", (const char *)NULL);
     XL_initenum(L, sdl_systemcursor_enum_xl, "SDL", "SystemCursor", (const char *)NULL);
     return 0;
 }

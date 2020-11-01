@@ -218,6 +218,35 @@ INDEX bool x2_button
 END
 
 
+UTYPE SDL_MouseWheelEvent
+
+INDEXFIELD uint32_t type
+INDEXFIELD uint32_t timestamp
+INDEXFIELD uint32_t window_id = windowID
+INDEXFIELD uint32_t which
+INDEXFIELD int32_t  x
+INDEXFIELD int32_t  y
+INDEXFIELD uint32_t direction
+
+INDEX bool is_normal
+    RETVAL = self->direction == SDL_MOUSEWHEEL_NORMAL;
+END
+
+INDEX bool is_flipped
+    RETVAL = self->direction == SDL_MOUSEWHEEL_FLIPPED;
+END
+
+INDEX int32_t effective_x
+    int32_t x = self->x;
+    RETVAL    = self->direction == SDL_MOUSEWHEEL_FLIPPED ? -x : x;
+END
+
+INDEX int32_t effective_y
+    int32_t y = self->y;
+    RETVAL    = self->direction == SDL_MOUSEWHEEL_FLIPPED ? -y : y;
+END
+
+
 UTYPE SDL_Event SDL.Event
 
 INDEXFIELD uint32_t type
@@ -270,6 +299,10 @@ END
 
 INDEX <NEW>SDL_MouseButtonEvent *button
     GET_IN_EVENT_UNION(button, SDL_MOUSEBUTTONDOWN, SDL_MOUSEBUTTONUP);
+END
+
+INDEX <NEW>SDL_MouseWheelEvent *wheel
+    GET_IN_EVENT_UNION(wheel, SDL_MOUSEWHEEL);
 END
 
 ENUM SDL.Window s/^SDL_WINDOW_//
@@ -896,6 +929,11 @@ END
 
 ENUM SDL.Touch s/SDL_TOUCH_//
     SDL_TOUCH_MOUSEID
+END
+
+ENUM SDL.MouseWheel s/SDL_MOUSEWHEEL_//
+    SDL_MOUSEWHEEL_NORMAL
+    SDL_MOUSEWHEEL_FLIPPED
 END
 
 

@@ -203,10 +203,10 @@ static void parse_winding(R_Parse *parse, R_VectorCommandWinding *command)
     int parsed = R_parse_read_uchar(parse);
     int winding;
     if (parsed == 0) {
-        winding = NVG_CCW;
+        winding = NVG_CW;
     }
     else if (parsed == 1) {
-        winding = NVG_CW;
+        winding = NVG_CCW;
     }
     else {
         R_PARSE_DIE(parse, "unknown winding: %d", parsed);

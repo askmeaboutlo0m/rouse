@@ -40,3 +40,5 @@ int R_vector_image_height(R_VectorImage *vi);
 
 void R_vector_image_draw(R_VectorImage *vi, NVGcontext *ctx,
                          const float parent_matrix[static 6]);
+
+void R_vector_image_dump(R_VectorImage *vi, FILE *fp);

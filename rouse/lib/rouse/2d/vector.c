@@ -500,3 +500,108 @@ void R_vector_image_draw(R_VectorImage *vi, NVGcontext *ctx,
         }
     }
 }
+
+
+static void dump_begin(R_UNUSED_UNLESS_MAGIC R_VectorCommandBegin *command,
+                       FILE *fp)
+{
+    R_MAGIC_CHECK(R_VectorCommandBegin, command);
+    fputs("nvgBeginPath(ctx);\n", fp);
+}
+
+static void dump_transform(R_VectorCommandTransform *command, FILE *fp)
+{
+    R_MAGIC_CHECK(R_VectorCommandTransform, command);
+    float *matrix = command->matrix;
+    fprintf(fp, "R_nvg_transform_set_2(ctx, parent_matrix, (float[6]){"
+            "%ff, %ff, %ff, %ff, %ff, %ff});\n", matrix[0], matrix[1],
+            matrix[2], matrix[3], matrix[4], matrix[5]);
+}
+
+static void dump_color(R_VectorCommandColor *command, FILE *fp)
+{
+    R_MAGIC_CHECK(R_VectorCommandColor, command);
+    NVGcolor color = command->color;
+    fprintf(fp, "nvgFillColor(ctx, nvgRGBA(%d, %d, %d, %d));\n",
+            R_float2int(color.r * 255.0f), R_float2int(color.g * 255.0f),
+            R_float2int(color.b * 255.0f), R_float2int(color.a * 255.0f));
+}
+
+static void dump_move(R_VectorCommandMove *command, FILE *fp)
+{
+    R_MAGIC_CHECK(R_VectorCommandMove, command);
+    fprintf(fp, "nvgMoveTo(ctx, %ff, %ff);\n", command->x, command->y);
+}
+
+static void dump_line(R_VectorCommandLine *command, FILE *fp)
+{
+    R_MAGIC_CHECK(R_VectorCommandLine, command);
+    fprintf(fp, "nvgLineTo(ctx, %ff, %ff);\n", command->x, command->y);
+}
+
+static void dump_bezier(R_VectorCommandBezier *command, FILE *fp)
+{
+    R_MAGIC_CHECK(R_VectorCommandBezier, command);
+    fprintf(fp, "nvgBezierTo(ctx, %ff, %ff, %ff, %ff, %ff, %ff);\n",
+            command->c1x, command->c1y, command->c2x,
+            command->c2y, command->x,   command->y);
+}
+
+static void dump_winding(R_VectorCommandWinding *command, FILE *fp)
+{
+    R_MAGIC_CHECK(R_VectorCommandWinding, command);
+    int        winding = command->winding;
+    const char *name   = winding == NVG_CW  ? "NVG_CW"
+                       : winding == NVG_CCW ? "NVG_CCW"
+                       : "UNKNOWN_WINDING";
+    fprintf(fp, "nvgPathWinding(ctx, %s);\n", name);
+}
+
+static void dump_fill(R_UNUSED_UNLESS_MAGIC R_VectorCommandFill *command,
+                     FILE *fp)
+{
+    R_MAGIC_CHECK(R_VectorCommandFill, command);
+    fputs("nvgFill(ctx);\n", fp);
+}
+
+static void dump_vector_command(R_VectorCommand *command, FILE *fp)
+{
+    R_VectorCommandType type = command->any.type;
+    switch (type) {
+        case R_VECTOR_COMMAND_BEGIN:
+            dump_begin(&command->begin, fp);
+            break;
+        case R_VECTOR_COMMAND_TRANSFORM:
+            dump_transform(&command->transform, fp);
+            break;
+        case R_VECTOR_COMMAND_COLOR:
+            dump_color(&command->color, fp);
+            break;
+        case R_VECTOR_COMMAND_MOVE:
+            dump_move(&command->move, fp);
+            break;
+        case R_VECTOR_COMMAND_LINE:
+            dump_line(&command->line, fp);
+            break;
+        case R_VECTOR_COMMAND_BEZIER:
+            dump_bezier(&command->bezier, fp);
+            break;
+        case R_VECTOR_COMMAND_WINDING:
+            dump_winding(&command->winding, fp);
+            break;
+        case R_VECTOR_COMMAND_FILL:
+            dump_fill(&command->fill, fp);
+            break;
+        default:
+            fprintf(fp, "/* UNKNOWN COMMAND TYPE %d */\n", type);
+    }
+}
+
+void R_vector_image_dump(R_VectorImage *vi, FILE *fp)
+{
+    check_vector_image(vi);
+    int count = vi->count;
+    for (int i = 0; i < count; ++i) {
+        dump_vector_command(&vi->commands[i], fp);
+    }
+}

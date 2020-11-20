@@ -309,7 +309,9 @@ function SceneBase:kill_all()
 end
 
 function SceneBase:kill_by_id(id)
-    self.scene:kill_by_id(id)
+    if id then
+        self.scene:kill_by_id(id)
+    end
 end
 
 

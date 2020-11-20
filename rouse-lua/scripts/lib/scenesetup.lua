@@ -41,6 +41,11 @@ function SetupSpec:parent(name)
     return self
 end
 
+function SetupSpec:track(name)
+    self.spec.track = name
+    return self
+end
+
 
 function SetupSpec:before(name)
     local target_index = self.setup:find_index(name)

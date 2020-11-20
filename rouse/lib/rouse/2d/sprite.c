@@ -615,6 +615,19 @@ int R_sprite_child_index(R_Sprite *sprite, R_Sprite *child)
 }
 
 
+R_Sprite *R_sprite_child_first(R_Sprite *sprite)
+{
+    check_sprite(sprite);
+    return sprite->children;
+}
+
+R_Sprite *R_sprite_next(R_Sprite *sprite)
+{
+    check_sprite(sprite);
+    return sprite->next;
+}
+
+
 static void draw_self(R_Sprite *sprite, R_Nvg *nvg,
                       const float canvas_matrix[static 6])
 {

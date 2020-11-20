@@ -274,6 +274,11 @@ void R_sprite_child_remove(R_Sprite *sprite, R_Sprite *child);
 int R_sprite_child_index(R_Sprite *sprite, R_Sprite *child);
 
 
+R_Sprite *R_sprite_child_first(R_Sprite *sprite);
+
+R_Sprite *R_sprite_next(R_Sprite *sprite);
+
+
 void R_sprite_draw(R_Sprite *sprite, R_Nvg *nvg,
                    int logical_width, int logical_height,
                    int target_width, int target_height);

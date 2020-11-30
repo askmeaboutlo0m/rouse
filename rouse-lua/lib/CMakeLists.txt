@@ -1,6 +1,6 @@
 add_library(lua STATIC "${lua_sources}" "${lua_headers}")
 set_target_properties(lua PROPERTIES OUTPUT_NAME rouse_lua_5_3_5)
-set_c11_standard(lua)
+set_language_standards(lua)
 add_asan_if_available(lua)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -30,7 +30,7 @@ endforeach()
 
 add_library(rouse_lua STATIC "${rouse_lua_sources}" "${rouse_lua_gen_sources}"
                              "${rouse_lua_headers}")
-set_c11_standard(rouse_lua)
+set_language_standards(rouse_lua)
 target_compile_options(rouse_lua PRIVATE ${rouse_warnings})
 target_include_directories(rouse_lua INTERFACE "${CMAKE_CURRENT_LIST_DIR}")
 target_link_libraries(rouse_lua PUBLIC Rouse::rouse lua)

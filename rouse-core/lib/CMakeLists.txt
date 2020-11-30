@@ -4,13 +4,13 @@
 # Maybe it should be excluded in release mode even?
 add_library(parson STATIC "${parson_sources}" "${parson_headers}")
 set_target_properties(parson PROPERTIES OUTPUT_NAME rouse_parson)
-set_c11_standard(parson)
+set_language_standards(parson)
 add_asan_if_available(parson)
 
 # Same for NanoVG, needs to be a separate target to avoid warnings.
 add_library(nanovg STATIC "${nanovg_sources}" "${nanovg_headers}")
 set_target_properties(nanovg PROPERTIES OUTPUT_NAME rouse_nanovg)
-set_c11_standard(nanovg)
+set_language_standards(nanovg)
 add_asan_if_available(nanovg)
 
 set(rouse_all_sources "${rouse_sources}" "${rouse_headers}")
@@ -21,7 +21,7 @@ if(BUILD_WITH_OPENAL)
     set_target_properties(stb_vorbis PROPERTIES OUTPUT_NAME rouse_stb_vorbis)
     target_compile_definitions(stb_vorbis PUBLIC STB_VORBIS_NO_PUSHDATA_API
                                STB_VORBIS_NO_FAST_SCALED_FLOAT)
-    set_c11_standard(stb_vorbis)
+    set_language_standards(stb_vorbis)
     add_asan_if_available(stb_vorbis)
 
     set(rouse_openal_libs stb_vorbis Rouse::openal)
@@ -49,7 +49,7 @@ set_property(SOURCE "${rouse_geom_h}" PROPERTY GENERATED TRUE)
 
 
 add_library(rouse "${rouse_all_sources}")
-set_c11_standard(rouse)
+set_language_standards(rouse)
 target_include_directories(rouse INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}")
 target_include_directories(rouse PUBLIC "${CMAKE_BINARY_DIR}/config")
 target_compile_options(rouse PRIVATE ${rouse_warnings})

@@ -47,8 +47,8 @@ cmake_common_args()  {
 
 }
 
-cmake_rouse_args()  {
-    set_args cmake_rouse_args "$@"
+cmake_rouse_core_args()  {
+    set_args cmake_rouse_core_args "$@"
 }
 
 cmake_rouse_lua_args()  {
@@ -56,21 +56,21 @@ cmake_rouse_lua_args()  {
 }
 
 
-build_rouse() {
-    cd "$base/rouse"
-    eval "${cmake_configure_command:-cmake} -B \"\$builddir\" -G \"\${generator:-Ninja}\"$cmake_common_args$cmake_rouse_args"
+build_rouse_core() {
+    cd "$base/rouse-core"
+    eval "${cmake_configure_command:-cmake} -B \"\$builddir\" -G \"\${generator:-Ninja}\"$cmake_common_args$cmake_rouse_core_args"
     eval "${cmake_build_command:-cmake} --build \"\$builddir\""
 }
 
 build_rouse_lua() {
     cd "$base/rouse-lua"
-    eval "${cmake_configure_command:-cmake} -B \"\$builddir\" -G \"\${generator:-Ninja}\" -DROUSE_EXPORT_FILE=\"../rouse/$builddir/Rouse.cmake\"$cmake_common_args$cmake_rouse_lua_args"
+    eval "${cmake_configure_command:-cmake} -B \"\$builddir\" -G \"\${generator:-Ninja}\" -DROUSE_EXPORT_FILE=\"../rouse-core/$builddir/Rouse.cmake\"$cmake_common_args$cmake_rouse_lua_args"
     eval "${cmake_build_command:-cmake} --build \"\$builddir\""
 }
 
 build_all() {
     set -x
-    build_rouse
+    build_rouse_core
     build_rouse_lua
 }
 
@@ -89,8 +89,8 @@ build_release() {
                       '-DBUILD_WITH_MAGIC=OFF' \
                       '-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON'
 
-    cmake_rouse_args '-DBUILD_WITH_GL_CHECKS=OFF' \
-                     '-DBUILD_WITH_AL_CHECKS=OFF'
+    cmake_rouse_core_args '-DBUILD_WITH_GL_CHECKS=OFF' \
+                          '-DBUILD_WITH_AL_CHECKS=OFF'
 
     build_all
 }
@@ -113,19 +113,19 @@ build_emscripten() {
                       '-DCMAKE_C_COMPILER_RANLIB="$(which emranlib)"'
 
     sdl_image_flags="'-sUSE_SDL_IMAGE=2 -sSDL2_IMAGE_FORMATS=[\"png\"]'"
-    cmake_rouse_args '-DUSE_PKGCONFIG=OFF' \
-                     '-DBUILD_WITH_GL_CHECKS=OFF' \
-                     '-DBUILD_WITH_AL_CHECKS=OFF' \
-                     '-DBUILD_WITH_AL_DL=OFF' \
-                     '-DCGLM_CFLAGS="-isystem$EMPREFIX/include"' \
-                     '-DCGLM_LDFLAGS="-L$EMPREFIX/lib"' \
-                     '-DCGLM_LIBS="-lm libcglm.a"' \
-                     '-DSDL2_CFLAGS=-sUSE_SDL=2' \
-                     '-DSDL2_LDFLAGS=-sUSE_SDL=2' \
-                     "-DSDL2_IMAGE_CFLAGS=$sdl_image_flags" \
-                     "-DSDL2_IMAGE_LDFLAGS=$sdl_image_flags" \
-                     "-DOPENAL_CFLAGS=$(pkg-config --cflags openal)" \
-                     '-DOPENAL_LDFLAGS=-lopenal'
+    cmake_rouse_core_args '-DUSE_PKGCONFIG=OFF' \
+                          '-DBUILD_WITH_GL_CHECKS=OFF' \
+                          '-DBUILD_WITH_AL_CHECKS=OFF' \
+                          '-DBUILD_WITH_AL_DL=OFF' \
+                          '-DCGLM_CFLAGS="-isystem$EMPREFIX/include"' \
+                          '-DCGLM_LDFLAGS="-L$EMPREFIX/lib"' \
+                          '-DCGLM_LIBS="-lm libcglm.a"' \
+                          '-DSDL2_CFLAGS=-sUSE_SDL=2' \
+                          '-DSDL2_LDFLAGS=-sUSE_SDL=2' \
+                          "-DSDL2_IMAGE_CFLAGS=$sdl_image_flags" \
+                          "-DSDL2_IMAGE_LDFLAGS=$sdl_image_flags" \
+                          "-DOPENAL_CFLAGS=$(pkg-config --cflags openal)" \
+                          '-DOPENAL_LDFLAGS=-lopenal'
     build_all
 }
 

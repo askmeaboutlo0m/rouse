@@ -14,7 +14,7 @@ Check out a sample animation here: <https://askmeaboutlo0m.github.io/rouse-sampl
 
 There's a few sub-projects here:
 
-* [rouse](rouse) contains the main library.
+* [rouse-core](rouse-core) contains the main library.
 
 * [rouse-lua](rouse-lua) has the Lua bindings.
 

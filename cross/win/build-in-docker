@@ -17,7 +17,7 @@ fi
 image="winrouse:$tag"
 echo "Building with image '$image'..."
 sudo docker run --rm -v "$base:/rouse" -it "$image" /rouse/cross/win/entrypoint
-sudo chown -R "$(id -un):$(id -gn)" rouse/buildwin rouse-lua/buildwin
+sudo chown -R "$(id -un):$(id -gn)" rouse-core/buildwin rouse-lua/buildwin
 
 echo
 echo 'Building done. You probably still need the ANGLE and OpenAL .dll files:'

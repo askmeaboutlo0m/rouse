@@ -27,7 +27,7 @@ typedef struct R_VectorImage R_VectorImage;
 
 R_VectorImage *R_vector_image_new(const char *title, R_ParseReadFn read,
                                   R_UserData user, int bufsize,
-                                  unsigned char buffer[static bufsize]);
+                                  unsigned char buffer[R_STATIC(bufsize)]);
 
 R_VectorImage *R_vector_image_from_file(const char *path);
 
@@ -39,6 +39,6 @@ int R_vector_image_width (R_VectorImage *vi);
 int R_vector_image_height(R_VectorImage *vi);
 
 void R_vector_image_draw(R_VectorImage *vi, NVGcontext *ctx,
-                         const float parent_matrix[static 6]);
+                         const float parent_matrix[R_STATIC(6)]);
 
 void R_vector_image_dump(R_VectorImage *vi, FILE *fp);

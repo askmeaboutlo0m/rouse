@@ -49,4 +49,4 @@ int R_text_field_refs(R_TextField *field);
 R_V4 R_text_field_bounds(R_TextField *field, NVGcontext *ctx);
 
 void R_text_field_draw(R_TextField *field, NVGcontext *ctx,
-                       const float matrix[static 6]);
+                       const float matrix[R_STATIC(6)]);

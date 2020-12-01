@@ -33,7 +33,7 @@ typedef struct R_AffineTransform {
     R_V2  base;
 } R_AffineTransform;
 
-typedef void (*R_SpriteDrawFn)(R_Nvg *, const float[static 6], R_UserData);
+typedef void (*R_SpriteDrawFn)(R_Nvg *, const float[R_STATIC(6)], R_UserData);
 typedef void (*R_SpriteFreeFn)(R_UserData);
 
 typedef struct R_Sprite R_Sprite;

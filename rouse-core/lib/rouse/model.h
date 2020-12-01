@@ -97,7 +97,7 @@ typedef struct R_Model {
  * I'll describe the file format some day... for now, read the code I guess.
  */
 R_Model *R_model_new(const char *title, R_ParseReadFn read, R_UserData user,
-                     int bufsize, unsigned char buffer[static bufsize]);
+                     int bufsize, unsigned char buffer[R_STATIC(bufsize)]);
 
 R_Model *R_model_from_file(const char *path);
 

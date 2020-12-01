@@ -64,6 +64,13 @@
 #   define R_UNREACHABLE() /* nothing */
 #endif
 
+/* C++ doesn't support `static` in array arguments. */
+#ifdef __cplusplus
+#   define R_STATIC(X) /* nothing */
+#else
+#   define R_STATIC(X) static X
+#endif
+
 /* Sometimes parameters are only used in debug mode. */
 #ifdef ROUSE_DEBUG
 #    define R_UNUSED_UNLESS_DEBUG /* nothing */

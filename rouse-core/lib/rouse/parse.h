@@ -52,7 +52,7 @@ typedef struct R_Parse {
 
 
 R_Parse R_parse(const char *title, R_ParseReadFn read, R_UserData user,
-                int bufsize, unsigned char buffer[static bufsize]);
+                int bufsize, unsigned char buffer[R_STATIC(bufsize)]);
 
 int R_parse_from_file(int size, unsigned char *out, R_UserData user);
 
@@ -61,7 +61,8 @@ int R_parse_from_file(int size, unsigned char *out, R_UserData user);
  * the number of bytes read was not equal to what we wanted. Returns how many
  * bytes were read (which is always equal to `size`).
  */
-int R_parse_read_into(R_Parse *parse, int size, unsigned char buf[static size]);
+int R_parse_read_into(R_Parse *parse, int size,
+                      unsigned char buf[R_STATIC(size)]);
 
 /*
  * Read `nbytes` bytes using `parse->read` into `parse->buffer`. `R_die`s if the

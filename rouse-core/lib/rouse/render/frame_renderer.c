@@ -23,7 +23,6 @@
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include <stdnoreturn.h>
 #include <assert.h>
 #include <stdio.h>
 #include <cglm/struct.h>

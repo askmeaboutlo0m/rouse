@@ -51,7 +51,6 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <string.h>
-#include <stdnoreturn.h>
 #include <limits.h>
 #include <assert.h>
 #include <cglm/struct.h>

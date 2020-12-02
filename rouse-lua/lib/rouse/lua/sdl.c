@@ -682,8 +682,13 @@ static bool is_allowed_event_type(uint32_t type, int len,
     return false;
 }
 
-static noreturn void error_on_event_type(lua_State *L, const char *field,
-                                         uint32_t type)
+
+
+static void error_on_event_type(lua_State *L, const char *field,
+                                uint32_t type) R_NORETURN;
+
+static void error_on_event_type(lua_State *L, const char *field,
+                                uint32_t type)
 {
     luaL_error(L, "Can't access %s event data on event of type %d",
                field, (int) type);

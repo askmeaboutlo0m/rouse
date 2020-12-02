@@ -24,7 +24,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
-#include <stdnoreturn.h>
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>

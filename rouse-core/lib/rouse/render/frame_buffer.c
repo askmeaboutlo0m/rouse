@@ -23,7 +23,6 @@
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include <stdnoreturn.h>
 #include <assert.h>
 #include <cglm/struct.h>
 #include "../3rdparty/gles2_inc.h"

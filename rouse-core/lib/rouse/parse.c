@@ -24,7 +24,6 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
-#include <stdnoreturn.h>
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>

@@ -75,7 +75,7 @@ void R_al_deinit(void);
 
 int R_al_get_error(void);
 
-noreturn void R_al_die(int err, const char *where);
+void R_al_die(int err, const char *where) R_NORETURN;
 
 void R_al_warn(int err, const char *where);
 

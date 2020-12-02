@@ -23,7 +23,6 @@
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include <stdnoreturn.h>
 #include <stdio.h>
 #include <assert.h>
 #include "3rdparty/parson.h"

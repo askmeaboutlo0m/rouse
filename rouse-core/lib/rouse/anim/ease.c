@@ -49,7 +49,6 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
-#include <stdnoreturn.h>
 #include <string.h>
 #include <assert.h>
 #include <cglm/struct.h>

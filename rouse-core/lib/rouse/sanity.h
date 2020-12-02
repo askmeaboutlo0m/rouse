@@ -59,7 +59,7 @@ R_SANITY_TYPES(R_SANITY_CHECK_SIZEOF)
 #undef R_SANITY_CHECK_SIZEOF
 
 
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(__cplusplus)
 #define R_SANITY_CHECK_COMPATIBLE(A, B) \
     static_assert(__builtin_types_compatible_p(A, B), #A " is " #B);
 
@@ -109,15 +109,19 @@ R_SANITY_OFFSET_3(R_Qn, raw[1], y, imag.y)
 R_SANITY_OFFSET_3(R_Qn, raw[2], z, imag.z)
 R_SANITY_OFFSET_3(R_Qn, raw[3], w, real)
 
-R_SANITY_OFFSET(R_M3, raw[0][0], struct { float a[9]; }, a[0])
-R_SANITY_OFFSET(R_M3, raw[0][1], struct { float a[9]; }, a[1])
-R_SANITY_OFFSET(R_M3, raw[0][2], struct { float a[9]; }, a[2])
-R_SANITY_OFFSET(R_M3, raw[1][0], struct { float a[9]; }, a[3])
-R_SANITY_OFFSET(R_M3, raw[1][1], struct { float a[9]; }, a[4])
-R_SANITY_OFFSET(R_M3, raw[1][2], struct { float a[9]; }, a[5])
-R_SANITY_OFFSET(R_M3, raw[2][0], struct { float a[9]; }, a[6])
-R_SANITY_OFFSET(R_M3, raw[2][1], struct { float a[9]; }, a[7])
-R_SANITY_OFFSET(R_M3, raw[2][2], struct { float a[9]; }, a[8])
+struct R_SanityFloat9 {
+    float a[9];
+};
+
+R_SANITY_OFFSET(R_M3, raw[0][0], struct R_SanityFloat9, a[0])
+R_SANITY_OFFSET(R_M3, raw[0][1], struct R_SanityFloat9, a[1])
+R_SANITY_OFFSET(R_M3, raw[0][2], struct R_SanityFloat9, a[2])
+R_SANITY_OFFSET(R_M3, raw[1][0], struct R_SanityFloat9, a[3])
+R_SANITY_OFFSET(R_M3, raw[1][1], struct R_SanityFloat9, a[4])
+R_SANITY_OFFSET(R_M3, raw[1][2], struct R_SanityFloat9, a[5])
+R_SANITY_OFFSET(R_M3, raw[2][0], struct R_SanityFloat9, a[6])
+R_SANITY_OFFSET(R_M3, raw[2][1], struct R_SanityFloat9, a[7])
+R_SANITY_OFFSET(R_M3, raw[2][2], struct R_SanityFloat9, a[8])
 
 R_SANITY_OFFSET_3(R_M3, raw[0][0], m00, col[0].x)
 R_SANITY_OFFSET_3(R_M3, raw[0][1], m01, col[0].y)
@@ -129,22 +133,26 @@ R_SANITY_OFFSET_3(R_M3, raw[2][0], m20, col[2].x)
 R_SANITY_OFFSET_3(R_M3, raw[2][1], m21, col[2].y)
 R_SANITY_OFFSET_3(R_M3, raw[2][2], m22, col[2].z)
 
-R_SANITY_OFFSET(R_M4, raw[0][0], struct { float a[16]; }, a[ 0])
-R_SANITY_OFFSET(R_M4, raw[0][1], struct { float a[16]; }, a[ 1])
-R_SANITY_OFFSET(R_M4, raw[0][2], struct { float a[16]; }, a[ 2])
-R_SANITY_OFFSET(R_M4, raw[0][3], struct { float a[16]; }, a[ 3])
-R_SANITY_OFFSET(R_M4, raw[1][0], struct { float a[16]; }, a[ 4])
-R_SANITY_OFFSET(R_M4, raw[1][1], struct { float a[16]; }, a[ 5])
-R_SANITY_OFFSET(R_M4, raw[1][2], struct { float a[16]; }, a[ 6])
-R_SANITY_OFFSET(R_M4, raw[1][3], struct { float a[16]; }, a[ 7])
-R_SANITY_OFFSET(R_M4, raw[2][0], struct { float a[16]; }, a[ 8])
-R_SANITY_OFFSET(R_M4, raw[2][1], struct { float a[16]; }, a[ 9])
-R_SANITY_OFFSET(R_M4, raw[2][2], struct { float a[16]; }, a[10])
-R_SANITY_OFFSET(R_M4, raw[2][3], struct { float a[16]; }, a[11])
-R_SANITY_OFFSET(R_M4, raw[3][0], struct { float a[16]; }, a[12])
-R_SANITY_OFFSET(R_M4, raw[3][1], struct { float a[16]; }, a[13])
-R_SANITY_OFFSET(R_M4, raw[3][2], struct { float a[16]; }, a[14])
-R_SANITY_OFFSET(R_M4, raw[3][3], struct { float a[16]; }, a[15])
+struct R_SanityFloat16 {
+    float a[16];
+};
+
+R_SANITY_OFFSET(R_M4, raw[0][0], struct R_SanityFloat16, a[ 0])
+R_SANITY_OFFSET(R_M4, raw[0][1], struct R_SanityFloat16, a[ 1])
+R_SANITY_OFFSET(R_M4, raw[0][2], struct R_SanityFloat16, a[ 2])
+R_SANITY_OFFSET(R_M4, raw[0][3], struct R_SanityFloat16, a[ 3])
+R_SANITY_OFFSET(R_M4, raw[1][0], struct R_SanityFloat16, a[ 4])
+R_SANITY_OFFSET(R_M4, raw[1][1], struct R_SanityFloat16, a[ 5])
+R_SANITY_OFFSET(R_M4, raw[1][2], struct R_SanityFloat16, a[ 6])
+R_SANITY_OFFSET(R_M4, raw[1][3], struct R_SanityFloat16, a[ 7])
+R_SANITY_OFFSET(R_M4, raw[2][0], struct R_SanityFloat16, a[ 8])
+R_SANITY_OFFSET(R_M4, raw[2][1], struct R_SanityFloat16, a[ 9])
+R_SANITY_OFFSET(R_M4, raw[2][2], struct R_SanityFloat16, a[10])
+R_SANITY_OFFSET(R_M4, raw[2][3], struct R_SanityFloat16, a[11])
+R_SANITY_OFFSET(R_M4, raw[3][0], struct R_SanityFloat16, a[12])
+R_SANITY_OFFSET(R_M4, raw[3][1], struct R_SanityFloat16, a[13])
+R_SANITY_OFFSET(R_M4, raw[3][2], struct R_SanityFloat16, a[14])
+R_SANITY_OFFSET(R_M4, raw[3][3], struct R_SanityFloat16, a[15])
 
 R_SANITY_OFFSET_3(R_M4, raw[0][0], m00, col[0].x)
 R_SANITY_OFFSET_3(R_M4, raw[0][1], m01, col[0].y)

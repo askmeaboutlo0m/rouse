@@ -1,0 +1,539 @@
+/*
+ * Copyright (c) 2020 askmeaboutloom
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+#include <rouse.h>
+
+/* There's some signedness issues when compiling for Windows. */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wconversion"
+#include <box2d/box2d.h>
+#pragma GCC diagnostic pop
+
+extern "C" {
+
+#include "lua_inc.h"
+#include "intern.h"
+#include "util.h"
+
+static b2Vec2 from_v2(R_V2 v)
+{
+    return b2Vec2(v.x, v.y);
+}
+
+static R_V2 to_v2(b2Vec2 v)
+{
+    return R_v2(v.x, v.y);
+}
+
+@xl
+
+PPTYPE R_Nvg
+UTYPE R_LuaNvgTransform
+UTYPE R_V2
+
+
+@@PERL
+
+sub Rouse::create_b2_object {
+    my ($type, $deftype, $name, $create, $uindex, $opt_after_set) = @_;
+    my $after_set = $opt_after_set ? "\n$opt_after_set" : '';
+    print <<END_OF_XL;
+METHOD <NEW>$type *$name(table args)
+    $deftype def;
+    XL_pushnewpptypeuv(L, &def, "$deftype", 0);
+    XL_setfromtable(L, "$deftype", args + 1, args);
+$after_set
+    lua_pop(L, 1);
+    RETVAL = self->$create(&def);
+LEAVE
+    lua_pushvalue(L, 1);
+    XL_setiuservalue(L, -2, $uindex);
+END
+END_OF_XL
+}
+
+@@END
+
+
+PPTYPE b2Shape B2.Shape
+
+CONSTRUCTOR new_box(float hw, float hh)
+    b2PolygonShape *shape;
+    if (lua_gettop(L) <= 2) {
+        shape = new b2PolygonShape;
+        shape->SetAsBox(hw, hh);
+    }
+    else {
+        R_V2  *center = R_CPPCAST(R_V2 *, luaL_checkudata(L, 3, "R_V2"));
+        float angle   = XL_checkfloat(L, 4);
+        shape         = new b2PolygonShape;
+        shape->SetAsBox(hw, hh, from_v2(*center), angle);
+    }
+    RETVAL = shape;
+END
+
+@c
+
+static int b2vec2_array_from_table(lua_State *L)
+{
+    lua_len(L, 2);
+    int len = XL_checkint(L, -1);
+    if (len < 3) {
+        R_LUA_DIE(L, "Can't make a polygon from %d vertices", len);
+    }
+
+    b2Vec2 **pp    = R_CPPCAST(b2Vec2 **, lua_touserdata(L, 1));
+    b2Vec2 *points = new b2Vec2[len];
+    *pp            = points;
+
+    for (int i = 0; i < len; ++i) {
+        lua_geti(L, 2, R_lua_int2i(i + 1));
+        R_V2 *point = R_CPPCAST(R_V2 *, XL_checkutype(L, -1, "R_V2"));
+        points[i]   = from_v2(*point);
+        lua_pop(L, 1);
+    }
+
+    return 1;
+}
+
+@xl
+
+CONSTRUCTOR new_polygon(table points)
+    b2Vec2 *b2vec2s = NULL;
+    lua_pushcfunction(L, b2vec2_array_from_table);
+    lua_pushlightuserdata(L, &b2vec2s);
+    lua_pushvalue(L, points);
+    if (lua_pcall(L, 2, 1, 0)) {
+        delete[] b2vec2s;
+        lua_error(L);
+    }
+
+    b2PolygonShape *shape = new b2PolygonShape;
+    shape->Set(b2vec2s, XL_checkint(L, -1));
+    delete[] b2vec2s;
+
+    if (lua_toboolean(L, points + 1) && !shape->Validate()) {
+        delete shape;
+        R_LUA_DIE(L, "Polygon is not convex");
+    }
+
+    RETVAL = shape;
+END
+
+CONSTRUCTOR new_circle(R_V2 pos, float radius)
+    b2CircleShape *shape = new b2CircleShape;
+    shape->m_p.Set(pos.x, pos.y);
+    shape->m_radius = radius;
+    RETVAL = shape;
+END
+
+DESTRUCTOR = .delete
+
+
+PPTYPE b2Fixture 1
+
+INDEX <NULLABLE> bool destroyed
+    RETVAL = self;
+END
+
+
+PPTYPE b2FixtureDef
+
+NEWINDEXFIELD b2Shape *shape
+NEWINDEXFIELD float   friction
+NEWINDEXFIELD float   restitution
+NEWINDEXFIELD float   restitution_threshold = restitutionThreshold
+NEWINDEXFIELD float   density
+NEWINDEXFIELD bool    is_sensor             = isSensor
+
+NEWINDEX ushort category_bits
+    self->filter.categoryBits = VALUE;
+END
+
+NEWINDEX ushort mask_bits
+    self->filter.maskBits = VALUE;
+END
+
+NEWINDEX short group_index
+    self->filter.groupIndex = VALUE;
+END
+
+
+PPTYPE b2Body 1
+
+INDEX <NULLABLE> bool destroyed
+    RETVAL = self;
+END
+
+INDEX R_V2 position
+    RETVAL = to_v2(self->GetPosition());
+END
+
+INDEX R_V2 pos
+    RETVAL = to_v2(self->GetPosition());
+END
+
+INDEX float angle = .GetAngle
+
+INDEX float rotation
+    RETVAL = R_to_deg(self->GetAngle());
+END
+
+NEWINDEX R_V2 linear_velocity
+    self->SetLinearVelocity(from_v2(VALUE));
+END
+
+NEWINDEX float angular_velocity = .SetAngularVelocity
+
+METHOD void set_transform(R_V2 position, float angle)
+    self->SetTransform(from_v2(position), angle);
+END
+
+@@PERL
+Rouse::create_b2_object('b2Fixture', 'b2FixtureDef', 'create_fixture',
+                        'CreateFixture', 1);
+@@END
+
+
+PPTYPE b2BodyDef
+
+NEWINDEXFIELD float angle
+NEWINDEXFIELD float angular_velocity = angularVelocity
+NEWINDEXFIELD float linear_damping   = linearDamping
+NEWINDEXFIELD float angular_damping  = angularDamping
+NEWINDEXFIELD bool  allow_sleep      = allowSleep
+NEWINDEXFIELD bool  awake
+NEWINDEXFIELD bool  fixed_rotation   = fixedRotation
+NEWINDEXFIELD bool  bullet
+NEWINDEXFIELD bool  enabled
+NEWINDEXFIELD float gravity_scale    = gravityScale
+
+NEWINDEX const char *type
+    if (R_str_equal(VALUE, "static")) {
+        self->type = b2_staticBody;
+    }
+    else if (R_str_equal(VALUE, "kinematic")) {
+        self->type = b2_kinematicBody;
+    }
+    else if (R_str_equal(VALUE, "dynamic")) {
+        self->type = b2_dynamicBody;
+    }
+    else {
+        R_LUA_DIE(L, "Unknown body type '%s'", VALUE);
+    }
+END
+
+NEWINDEX R_V2 position
+    self->position = from_v2(VALUE);
+END
+
+NEWINDEX R_V2 linear_velocity
+    self->linearVelocity = from_v2(VALUE);
+END
+
+NEWINDEX float rotation
+    self->angle = R_to_rad(VALUE);
+END
+
+
+PPTYPE b2Joint 1
+
+INDEX <NULLABLE> bool destroyed
+    RETVAL = self;
+END
+
+
+@c
+
+struct R_LuaB2MotorJointDef : public b2MotorJointDef {
+    bool initialize_from_bodies;
+
+    void after_properties_set(lua_State *L)
+    {
+        if (initialize_from_bodies) {
+            if (bodyA && bodyB) {
+                Initialize(bodyA, bodyB);
+            }
+            else {
+                R_LUA_DIE(L, "Trying to initialize from bodies without "
+                             "defining both body_a and body_b");
+            }
+        }
+    }
+};
+
+@xl
+
+PPTYPE R_LuaB2MotorJointDef
+
+NEWINDEXFIELD b2Body *body_a           = bodyA
+NEWINDEXFIELD b2Body *body_b           = bodyB
+NEWINDEXFIELD bool   collide_connected = collideConnected
+NEWINDEXFIELD float  angular_offset    = angularOffset
+NEWINDEXFIELD float  max_force         = maxForce
+NEWINDEXFIELD float  max_torque        = maxTorque
+NEWINDEXFIELD float  correction_factor = correctionFactor
+NEWINDEXFIELD bool   initialize_from_bodies
+
+NEWINDEX R_V2 linear_offset
+    self->linearOffset = from_v2(VALUE);
+END
+
+
+@c
+
+struct R_LuaB2RevoluteJointDef : public b2RevoluteJointDef {
+    bool has_world_anchor;
+    R_V2 world_anchor;
+
+    void set_world_anchor(R_V2 value)
+    {
+        has_world_anchor = true;
+        world_anchor     = value;
+    }
+
+    void after_properties_set(lua_State *L)
+    {
+        if (has_world_anchor) {
+            if (bodyA && bodyB) {
+                Initialize(bodyA, bodyB, from_v2(world_anchor));
+            }
+            else {
+                R_LUA_DIE(L, "Trying to set world_anchor without "
+                             "defining both body_a and body_b");
+            }
+        }
+    }
+};
+
+@xl
+
+PPTYPE R_LuaB2RevoluteJointDef
+
+NEWINDEXFIELD b2Body *body_a           = bodyA
+NEWINDEXFIELD b2Body *body_b           = bodyB
+NEWINDEXFIELD bool   collide_connected = collideConnected
+NEWINDEXFIELD float  reference_angle   = referenceAngle
+NEWINDEXFIELD bool   enable_limit      = enableLimit
+NEWINDEXFIELD float  lower_angle       = lowerAngle
+NEWINDEXFIELD float  upper_angle       = upperAngle
+NEWINDEXFIELD bool   enable_motor      = enableMotor
+NEWINDEXFIELD float  motor_speed       = motorSpeed
+NEWINDEXFIELD float  max_motor_torque  = maxMotorTorque
+
+NEWINDEX float reference_rotation
+    self->referenceAngle = R_to_rad(VALUE);
+END
+
+NEWINDEX float lower_rotation
+    self->lowerAngle = R_to_rad(VALUE);
+END
+
+NEWINDEX float upper_rotation
+    self->upperAngle = R_to_rad(VALUE);
+END
+
+NEWINDEX R_V2 world_anchor = .set_world_anchor
+
+
+PPTYPE b2World B2.World
+
+CONSTRUCTOR new(R_V2 gravity)
+    RETVAL = new b2World(from_v2(gravity));
+END
+
+DESTRUCTOR = .delete
+
+@@PERL
+Rouse::create_b2_object('b2Body', 'b2BodyDef', 'create_body', 'CreateBody', 1);
+@@END
+
+METHOD void destroy_body(b2Body *body)
+    self->DestroyBody(body);
+    XL_clearpptypeuv(L, 2, 1);
+END
+
+@@PERL
+Rouse::create_b2_object('b2Joint', 'R_LuaB2MotorJointDef',
+                        'create_motor_joint', 'CreateJoint', 1,
+                        "    def.after_properties_set(L);\n");
+
+Rouse::create_b2_object('b2Joint', 'R_LuaB2RevoluteJointDef',
+                        'create_revolute_joint', 'CreateJoint', 1,
+                        "    def.after_properties_set(L);\n");
+@@END
+
+METHOD void destroy_joint(b2Joint *joint)
+    self->DestroyJoint(joint);
+    XL_clearpptypeuv(L, 2, 1);
+END
+
+METHOD void step(float time_step, int velocity_iterations,
+                 int position_iterations) = .Step
+
+
+@c
+
+static NVGcolor to_nvg_color(const b2Color &color)
+{
+    return nvgRGBAf(color.r, color.g, color.b, color.a);
+}
+
+static NVGcolor to_halved_alpha_nvg_color(const b2Color &color)
+{
+    return nvgRGBAf(color.r, color.g, color.b, color.a / 2.0f);
+}
+
+static void draw_polygon_with(R_Nvg *nvg, float stroke_width,
+                              const b2Vec2 *vertices, int vertex_count,
+                              const b2Color &color, bool fill)
+{
+    if (vertex_count >= 3) {
+        NVGcontext *ctx = R_nvg_context(nvg);
+
+        nvgBeginPath(ctx);
+        nvgMoveTo(ctx, vertices[0].x, vertices[0].y);
+        for (int32 i = 1; i < vertex_count; ++i) {
+            nvgLineTo(ctx, vertices[i].x, vertices[i].y);
+        }
+        nvgClosePath(ctx);
+
+        if (fill) {
+            nvgFillColor(ctx, to_halved_alpha_nvg_color(color));
+            nvgFill(ctx);
+        }
+
+        nvgStrokeColor(ctx, to_nvg_color(color));
+        nvgStrokeWidth(ctx, stroke_width);
+        nvgStroke(ctx);
+    }
+}
+
+struct R_B2DrawNvg : public b2Draw {
+    R_Nvg *m_nvg;
+    float m_stroke_width;
+
+    R_B2DrawNvg(R_Nvg *nvg, float stroke_width = 1.0f) :
+        m_nvg{nvg}, m_stroke_width{stroke_width} {}
+
+    R_B2DrawNvg           (const R_B2DrawNvg &) = delete;
+    R_B2DrawNvg &operator=(const R_B2DrawNvg &) = delete;
+
+    virtual void DrawPolygon(const b2Vec2 *vertices, int32 vertex_count,
+                             const b2Color &color) override
+    {
+        draw_polygon_with(m_nvg, m_stroke_width, vertices,
+                          vertex_count, color, false);
+    }
+
+    virtual void DrawSolidPolygon(const b2Vec2 *vertices, int32 vertex_count,
+                                  const b2Color &color)
+    {
+        draw_polygon_with(m_nvg, m_stroke_width, vertices,
+                          vertex_count, color, true);
+    }
+
+    virtual void DrawCircle(const b2Vec2 &center, float radius,
+                            const b2Color &color)
+    {
+        NVGcontext *ctx = R_nvg_context(m_nvg);
+        nvgBeginPath(ctx);
+        nvgCircle(ctx, center.x, center.y, radius);
+        nvgStrokeColor(ctx, to_nvg_color(color));
+        nvgStrokeWidth(ctx, m_stroke_width);
+        nvgStroke(ctx);
+    }
+
+    virtual void DrawSolidCircle(const b2Vec2& center, float radius,
+                                 const b2Vec2& axis, const b2Color& color)
+    {
+        NVGcontext *ctx = R_nvg_context(m_nvg);
+
+        nvgBeginPath(ctx);
+        nvgCircle(ctx, center.x, center.y, radius);
+        nvgStrokeColor(ctx, to_nvg_color(color));
+        nvgStrokeWidth(ctx, m_stroke_width);
+        nvgStroke(ctx);
+        nvgFillColor(ctx, to_halved_alpha_nvg_color(color));
+        nvgFill(ctx);
+
+        nvgBeginPath(ctx);
+        nvgMoveTo(ctx, center.x, center.y);
+        b2Vec2 outer = center + radius * axis;
+        nvgLineTo(ctx, outer.x, outer.y);
+        nvgStrokeWidth(ctx, m_stroke_width);
+        nvgStroke(ctx);
+    }
+
+    virtual void DrawSegment(const b2Vec2 &p1, const b2Vec2 &p2,
+                             const b2Color& color)
+    {
+        NVGcontext *ctx = R_nvg_context(m_nvg);
+        nvgBeginPath(ctx);
+        nvgMoveTo(ctx, p1.x, p1.y);
+        nvgLineTo(ctx, p2.x, p2.y);
+        nvgStrokeColor(ctx, to_nvg_color(color));
+        nvgStrokeWidth(ctx, m_stroke_width);
+        nvgStroke(ctx);
+    }
+
+    virtual void DrawTransform(const b2Transform &xf) override
+    {
+        NVGcontext *ctx = R_nvg_context(m_nvg);
+        float matrix[6] = {xf.q.c, xf.q.s, -xf.q.s, xf.q.c, xf.p.x,  xf.p.y};
+        R_nvg_transform(ctx, matrix);
+    }
+
+    virtual void DrawPoint(const b2Vec2 &p, float size, const b2Color& color)
+    {
+        NVGcontext *ctx = R_nvg_context(m_nvg);
+        nvgBeginPath(ctx);
+        nvgCircle(ctx, p.x, p.y, size * 0.5f);
+        nvgFillColor(ctx, to_nvg_color(color));
+    }
+};
+
+@xl
+
+METHOD void debug_draw(R_Nvg *nvg, R_LuaNvgTransform transform,
+                       float stroke_width, int flags)
+    R_nvg_transform_set(R_nvg_context(nvg), transform.matrix);
+    R_B2DrawNvg draw{nvg, stroke_width};
+    draw.SetFlags(flags);
+    self->SetDebugDraw(&draw);
+    self->DebugDraw();
+    self->SetDebugDraw(nullptr);
+END
+
+ENUM B2.Draw s/^.*e_(\w+)Bit$/\U$1\E/
+    b2Draw::e_shapeBit
+    b2Draw::e_jointBit
+    b2Draw::e_aabbBit
+    b2Draw::e_pairBit
+    b2Draw::e_centerOfMassBit
+END
+
+
+INIT extern R_lua_box2d_init
+
+@c
+
+}

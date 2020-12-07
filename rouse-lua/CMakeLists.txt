@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.14)
 project(librouse_lua
     VERSION 0.2.0
     DESCRIPTION "Lua extension for rouse"
-    LANGUAGES C)
+    LANGUAGES C CXX)
 
 
 set(ROUSE_EXPORT_FILE "" CACHE STRING
@@ -18,6 +18,7 @@ endif()
 
 include("${CMAKE_CURRENT_LIST_DIR}/../cmake/common.cmake")
 include("${ROUSE_EXPORT_FILE}")
+include("${CMAKE_CURRENT_LIST_DIR}/cmake/build_options.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/cmake/sources.cmake")
 
 
@@ -29,5 +30,11 @@ report_asan_targets()
 report_clang_tidy_targets()
 
 
-export(TARGETS lua rouse_lua lrouse
+set(rouse_lua_export_targets lua rouse_lua lrouse)
+
+if(BUILD_WITH_BOX2D)
+    list(APPEND rouse_lua_export_targets rouse_lua_box2d)
+endif()
+
+export(TARGETS ${rouse_lua_export_targets}
        NAMESPACE RouseLua:: FILE RouseLua.cmake)

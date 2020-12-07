@@ -6,6 +6,10 @@ add_asan_if_available(lrouse)
 add_clang_tidy_if_available(lrouse)
 set_target_properties(lrouse PROPERTIES OUTPUT_NAME "lrouse")
 
+if(BUILD_WITH_STATIC_CXXLIBS AND BUILD_WITH_BOX2D)
+    target_link_libraries(lrouse PRIVATE "-static-libgcc" "-static-libstdc++")
+endif()
+
 if(ROUSE_EMSCRIPTEN)
     target_compile_options(lrouse PRIVATE "-sFETCH=1")
     target_link_options(   lrouse PRIVATE "-sFETCH=1"

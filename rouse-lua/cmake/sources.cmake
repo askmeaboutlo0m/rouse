@@ -97,3 +97,10 @@ set(rouse_lua_xls
     "${CMAKE_SOURCE_DIR}/lib/rouse/lua/text.xl"
     "${CMAKE_SOURCE_DIR}/lib/rouse/lua/vector.xl"
     "${CMAKE_SOURCE_DIR}/lib/rouse/lua/viewport.xl")
+
+unset(rouse_lua_box2d_headers)
+
+unset(rouse_lua_box2d_sources)
+
+set(rouse_lua_box2d_xls
+    "${CMAKE_SOURCE_DIR}/lib/rouse/lua/box2d.xl")

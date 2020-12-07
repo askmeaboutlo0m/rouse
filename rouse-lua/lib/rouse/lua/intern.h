@@ -57,3 +57,7 @@ R_EaseFn R_lua_named_ease(lua_State *L, int name_index);
 #define R_LUA_INIT_DECL(NAME) int NAME(lua_State *L);
 
 R_LUA_INIT_LIST(R_LUA_INIT_DECL)
+
+#ifdef ROUSE_LUA_BOX2D_ENABLED
+int R_lua_box2d_init(lua_State *L);
+#endif

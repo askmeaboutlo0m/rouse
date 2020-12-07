@@ -77,6 +77,7 @@ build_all() {
 
 build_debug() {
     builddir='build'
+    cmake_rouse_lua_args '-DBOX2D_LIBS=-l:libbox2d.a'
     build_all
 }
 
@@ -91,6 +92,8 @@ build_release() {
 
     cmake_rouse_core_args '-DBUILD_WITH_GL_CHECKS=OFF' \
                           '-DBUILD_WITH_AL_CHECKS=OFF'
+
+    cmake_rouse_lua_args '-DBOX2D_LIBS=-l:libbox2d.a'
 
     build_all
 }

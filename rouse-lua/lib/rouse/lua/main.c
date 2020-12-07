@@ -15,7 +15,12 @@ typedef struct R_LuaMainArgs {
 
 static void init_modules(lua_State *L)
 {
-    static lua_CFunction init_funcs[] = {R_LUA_INIT_LIST(R_LUA_INIT_REF)};
+    static lua_CFunction init_funcs[] = {
+        R_LUA_INIT_LIST(R_LUA_INIT_REF)
+#ifdef ROUSE_LUA_BOX2D_ENABLED
+        R_lua_box2d_init,
+#endif
+    };
     for (size_t i = 0; i < R_LENGTH(init_funcs); ++i) {
         lua_pushcfunction(L, init_funcs[i]);
         lua_call(L, 0, 0);

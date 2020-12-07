@@ -8,25 +8,29 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif()
 
 
-set(xl2c "${PROJECT_SOURCE_DIR}/xlua/xl2c")
-set(rouse_lua_gen_sources)
+function(process_xls inputs_name suffix outputs_name)
+    unset(outputs)
+    foreach(input_xl IN LISTS "${inputs_name}")
+        string(REGEX REPLACE "\\.xl$" "${suffix}" output_c "${input_xl}")
+        add_custom_command(OUTPUT "${output_c}"
+            COMMAND "${PROJECT_SOURCE_DIR}/xlua/xl2c"
+            ARGS "${input_xl}" "${output_c}"
+            WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
+            DEPENDS "${input_xl}"
+                    "${PROJECT_SOURCE_DIR}/xlua/xl2c"
+                    "${PROJECT_SOURCE_DIR}/xlua/xlpp"
+                    "${PROJECT_SOURCE_DIR}/xlua/xlparse"
+                    "${PROJECT_SOURCE_DIR}/xlua/xlgen"
+                    "${PROJECT_SOURCE_DIR}/xlua/lib/XLua/Parser.pm"
+                    "${PROJECT_SOURCE_DIR}/xlua/lib/XLua/Generator.pm")
+        set_property(SOURCE "${output_c}" PROPERTY GENERATED TRUE)
+        list(APPEND outputs "${output_c}")
+    endforeach()
+    set("${outputs_name}" "${outputs}" PARENT_SCOPE)
+endfunction()
 
-foreach(input_xl IN LISTS rouse_lua_xls)
-    string(REGEX REPLACE "\\.xl$" ".c" output_c "${input_xl}")
-    add_custom_command(OUTPUT "${output_c}"
-        COMMAND "${xl2c}" ARGS "${input_xl}" "${output_c}"
-        WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
-        DEPENDS "${input_xl}"
-                "${PROJECT_SOURCE_DIR}/xlua/xl2c"
-                "${PROJECT_SOURCE_DIR}/xlua/xlpp"
-                "${PROJECT_SOURCE_DIR}/xlua/xlparse"
-                "${PROJECT_SOURCE_DIR}/xlua/xlgen"
-                "${PROJECT_SOURCE_DIR}/xlua/lib/XLua/Parser.pm"
-                "${PROJECT_SOURCE_DIR}/xlua/lib/XLua/Generator.pm")
-    set_property(SOURCE "${output_c}" PROPERTY GENERATED TRUE)
-    list(APPEND rouse_lua_gen_sources "${output_c}")
-endforeach()
 
+process_xls(rouse_lua_xls ".c" rouse_lua_gen_sources)
 
 add_library(rouse_lua STATIC "${rouse_lua_sources}" "${rouse_lua_gen_sources}"
                              "${rouse_lua_headers}")
@@ -36,3 +40,23 @@ target_include_directories(rouse_lua INTERFACE "${CMAKE_CURRENT_LIST_DIR}")
 target_link_libraries(rouse_lua PUBLIC Rouse::rouse lua)
 add_asan_if_available(rouse_lua)
 add_clang_tidy_if_available(rouse_lua)
+
+
+if(BUILD_WITH_BOX2D)
+    add_rouse_library_raw(box2d "${BOX2D_CFLAGS}" "${BOX2D_LDFLAGS}" "${BOX2D_LIBS}")
+
+    process_xls(rouse_lua_box2d_xls ".cpp" rouse_lua_box2d_gen_sources)
+
+    add_library(rouse_lua_box2d STATIC "${rouse_lua_box2d_sources}"
+                                       "${rouse_lua_box2d_gen_sources}"
+                                       "${rouse_lua_box2d_headers}")
+    set_language_standards(rouse_lua_box2d)
+    target_compile_options(rouse_lua_box2d PRIVATE ${rouse_cxxflags})
+    target_link_libraries(rouse_lua_box2d PUBLIC Rouse::rouse lua)
+    target_link_libraries(rouse_lua_box2d INTERFACE box2d)
+    add_asan_if_available(rouse_lua_box2d)
+    add_clang_tidy_if_available(rouse_lua_box2d)
+
+    target_compile_definitions(rouse_lua PUBLIC ROUSE_LUA_BOX2D_ENABLED)
+    target_link_libraries(rouse_lua PUBLIC rouse_lua_box2d)
+endif()

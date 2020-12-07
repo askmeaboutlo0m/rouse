@@ -64,11 +64,16 @@
 #   define R_UNREACHABLE() /* nothing */
 #endif
 
-/* C++ doesn't support `static` in array arguments. */
+/*
+ * C++ doesn't support `static` in array arguments
+ * and requires casts to void *.
+ */
 #ifdef __cplusplus
-#   define R_STATIC(X) /* nothing */
+#   define R_STATIC(X)           /* nothing */
+#   define R_CPPCAST(TYPE, EXPR) static_cast<TYPE>(EXPR)
 #else
-#   define R_STATIC(X) static X
+#   define R_STATIC(X)           static X
+#   define R_CPPCAST(TYPE, EXPR) (EXPR)
 #endif
 
 /* Sometimes parameters are only used in debug mode. */

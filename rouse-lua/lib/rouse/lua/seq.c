@@ -216,8 +216,8 @@ static int r_tweenscale_custom_xl(lua_State *L)
 
 static int r_luatween_method_sprite_origin_x_xl(lua_State *L)
 {
-    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
-    R_Sprite *sprite = XL_checkpptype(L, 2, "R_Sprite");
+    R_LuaTween *self = R_CPPCAST(R_LuaTween *, XL_checkpptype(L, 1, "R_LuaTween"));
+    R_Sprite *sprite = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 2, "R_Sprite"));
     luaL_checkany(L, 3);
     int value_fn = 3;
     R_tween_sprite_origin_x(self, sprite, tween_float_get(L, value_fn));
@@ -227,8 +227,8 @@ static int r_luatween_method_sprite_origin_x_xl(lua_State *L)
 
 static int r_luatween_method_sprite_origin_y_xl(lua_State *L)
 {
-    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
-    R_Sprite *sprite = XL_checkpptype(L, 2, "R_Sprite");
+    R_LuaTween *self = R_CPPCAST(R_LuaTween *, XL_checkpptype(L, 1, "R_LuaTween"));
+    R_Sprite *sprite = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 2, "R_Sprite"));
     luaL_checkany(L, 3);
     int value_fn = 3;
     R_tween_sprite_origin_y(self, sprite, tween_float_get(L, value_fn));
@@ -238,8 +238,8 @@ static int r_luatween_method_sprite_origin_y_xl(lua_State *L)
 
 static int r_luatween_method_sprite_pos_x_xl(lua_State *L)
 {
-    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
-    R_Sprite *sprite = XL_checkpptype(L, 2, "R_Sprite");
+    R_LuaTween *self = R_CPPCAST(R_LuaTween *, XL_checkpptype(L, 1, "R_LuaTween"));
+    R_Sprite *sprite = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 2, "R_Sprite"));
     luaL_checkany(L, 3);
     int value_fn = 3;
     R_tween_sprite_pos_x(self, sprite, tween_float_get(L, value_fn));
@@ -249,8 +249,8 @@ static int r_luatween_method_sprite_pos_x_xl(lua_State *L)
 
 static int r_luatween_method_sprite_pos_y_xl(lua_State *L)
 {
-    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
-    R_Sprite *sprite = XL_checkpptype(L, 2, "R_Sprite");
+    R_LuaTween *self = R_CPPCAST(R_LuaTween *, XL_checkpptype(L, 1, "R_LuaTween"));
+    R_Sprite *sprite = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 2, "R_Sprite"));
     luaL_checkany(L, 3);
     int value_fn = 3;
     R_tween_sprite_pos_y(self, sprite, tween_float_get(L, value_fn));
@@ -260,8 +260,8 @@ static int r_luatween_method_sprite_pos_y_xl(lua_State *L)
 
 static int r_luatween_method_sprite_scale_x_xl(lua_State *L)
 {
-    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
-    R_Sprite *sprite = XL_checkpptype(L, 2, "R_Sprite");
+    R_LuaTween *self = R_CPPCAST(R_LuaTween *, XL_checkpptype(L, 1, "R_LuaTween"));
+    R_Sprite *sprite = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 2, "R_Sprite"));
     luaL_checkany(L, 3);
     int value_fn = 3;
     R_tween_sprite_scale_x(self, sprite, tween_float_get(L, value_fn));
@@ -271,8 +271,8 @@ static int r_luatween_method_sprite_scale_x_xl(lua_State *L)
 
 static int r_luatween_method_sprite_scale_y_xl(lua_State *L)
 {
-    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
-    R_Sprite *sprite = XL_checkpptype(L, 2, "R_Sprite");
+    R_LuaTween *self = R_CPPCAST(R_LuaTween *, XL_checkpptype(L, 1, "R_LuaTween"));
+    R_Sprite *sprite = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 2, "R_Sprite"));
     luaL_checkany(L, 3);
     int value_fn = 3;
     R_tween_sprite_scale_y(self, sprite, tween_float_get(L, value_fn));
@@ -282,8 +282,8 @@ static int r_luatween_method_sprite_scale_y_xl(lua_State *L)
 
 static int r_luatween_method_sprite_skew_x_xl(lua_State *L)
 {
-    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
-    R_Sprite *sprite = XL_checkpptype(L, 2, "R_Sprite");
+    R_LuaTween *self = R_CPPCAST(R_LuaTween *, XL_checkpptype(L, 1, "R_LuaTween"));
+    R_Sprite *sprite = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 2, "R_Sprite"));
     luaL_checkany(L, 3);
     int value_fn = 3;
     R_tween_sprite_skew_x(self, sprite, tween_float_get(L, value_fn));
@@ -293,8 +293,8 @@ static int r_luatween_method_sprite_skew_x_xl(lua_State *L)
 
 static int r_luatween_method_sprite_skew_y_xl(lua_State *L)
 {
-    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
-    R_Sprite *sprite = XL_checkpptype(L, 2, "R_Sprite");
+    R_LuaTween *self = R_CPPCAST(R_LuaTween *, XL_checkpptype(L, 1, "R_LuaTween"));
+    R_Sprite *sprite = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 2, "R_Sprite"));
     luaL_checkany(L, 3);
     int value_fn = 3;
     R_tween_sprite_skew_y(self, sprite, tween_float_get(L, value_fn));
@@ -304,8 +304,8 @@ static int r_luatween_method_sprite_skew_y_xl(lua_State *L)
 
 static int r_luatween_method_sprite_angle_xl(lua_State *L)
 {
-    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
-    R_Sprite *sprite = XL_checkpptype(L, 2, "R_Sprite");
+    R_LuaTween *self = R_CPPCAST(R_LuaTween *, XL_checkpptype(L, 1, "R_LuaTween"));
+    R_Sprite *sprite = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 2, "R_Sprite"));
     luaL_checkany(L, 3);
     int value_fn = 3;
     R_tween_sprite_angle(self, sprite, tween_float_get(L, value_fn));
@@ -315,8 +315,8 @@ static int r_luatween_method_sprite_angle_xl(lua_State *L)
 
 static int r_luatween_method_sprite_alpha_xl(lua_State *L)
 {
-    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
-    R_Sprite *sprite = XL_checkpptype(L, 2, "R_Sprite");
+    R_LuaTween *self = R_CPPCAST(R_LuaTween *, XL_checkpptype(L, 1, "R_LuaTween"));
+    R_Sprite *sprite = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 2, "R_Sprite"));
     luaL_checkany(L, 3);
     int value_fn = 3;
     R_tween_sprite_alpha(self, sprite, tween_float_get(L, value_fn));
@@ -326,8 +326,8 @@ static int r_luatween_method_sprite_alpha_xl(lua_State *L)
 
 static int r_luatween_method_sprite_base_x_xl(lua_State *L)
 {
-    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
-    R_Sprite *sprite = XL_checkpptype(L, 2, "R_Sprite");
+    R_LuaTween *self = R_CPPCAST(R_LuaTween *, XL_checkpptype(L, 1, "R_LuaTween"));
+    R_Sprite *sprite = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 2, "R_Sprite"));
     luaL_checkany(L, 3);
     int value_fn = 3;
     R_tween_sprite_base_x(self, sprite, tween_float_get(L, value_fn));
@@ -337,8 +337,8 @@ static int r_luatween_method_sprite_base_x_xl(lua_State *L)
 
 static int r_luatween_method_sprite_base_y_xl(lua_State *L)
 {
-    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
-    R_Sprite *sprite = XL_checkpptype(L, 2, "R_Sprite");
+    R_LuaTween *self = R_CPPCAST(R_LuaTween *, XL_checkpptype(L, 1, "R_LuaTween"));
+    R_Sprite *sprite = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 2, "R_Sprite"));
     luaL_checkany(L, 3);
     int value_fn = 3;
     R_tween_sprite_base_y(self, sprite, tween_float_get(L, value_fn));
@@ -348,8 +348,8 @@ static int r_luatween_method_sprite_base_y_xl(lua_State *L)
 
 static int r_luatween_method_sprite_rotation_xl(lua_State *L)
 {
-    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
-    R_Sprite *sprite = XL_checkpptype(L, 2, "R_Sprite");
+    R_LuaTween *self = R_CPPCAST(R_LuaTween *, XL_checkpptype(L, 1, "R_LuaTween"));
+    R_Sprite *sprite = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 2, "R_Sprite"));
     luaL_checkany(L, 3);
     int value_fn = 3;
     R_tween_sprite_rotation(self, sprite, tween_float_get(L, value_fn));
@@ -359,8 +359,8 @@ static int r_luatween_method_sprite_rotation_xl(lua_State *L)
 
 static int r_luatween_method_sprite_rel_x_xl(lua_State *L)
 {
-    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
-    R_Sprite *sprite = XL_checkpptype(L, 2, "R_Sprite");
+    R_LuaTween *self = R_CPPCAST(R_LuaTween *, XL_checkpptype(L, 1, "R_LuaTween"));
+    R_Sprite *sprite = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 2, "R_Sprite"));
     luaL_checkany(L, 3);
     int value_fn = 3;
     R_tween_sprite_rel_x(self, sprite, tween_float_get(L, value_fn));
@@ -370,8 +370,8 @@ static int r_luatween_method_sprite_rel_x_xl(lua_State *L)
 
 static int r_luatween_method_sprite_rel_y_xl(lua_State *L)
 {
-    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
-    R_Sprite *sprite = XL_checkpptype(L, 2, "R_Sprite");
+    R_LuaTween *self = R_CPPCAST(R_LuaTween *, XL_checkpptype(L, 1, "R_LuaTween"));
+    R_Sprite *sprite = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 2, "R_Sprite"));
     luaL_checkany(L, 3);
     int value_fn = 3;
     R_tween_sprite_rel_y(self, sprite, tween_float_get(L, value_fn));
@@ -381,8 +381,8 @@ static int r_luatween_method_sprite_rel_y_xl(lua_State *L)
 
 static int r_luatween_method_sprite_scale_xl(lua_State *L)
 {
-    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
-    R_Sprite *sprite = XL_checkpptype(L, 2, "R_Sprite");
+    R_LuaTween *self = R_CPPCAST(R_LuaTween *, XL_checkpptype(L, 1, "R_LuaTween"));
+    R_Sprite *sprite = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 2, "R_Sprite"));
     luaL_checkany(L, 3);
     int value_fn = 3;
     R_tween_sprite_scale(self, sprite, tween_scale_get(L, value_fn));
@@ -393,7 +393,7 @@ static int r_luatween_method_sprite_scale_xl(lua_State *L)
 static int r_luatween_method_al_listener_pos_x_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
+    R_LuaTween *self = R_CPPCAST(R_LuaTween *, XL_checkpptype(L, 1, "R_LuaTween"));
     luaL_checkany(L, 2);
     int topic = 2;
     luaL_checkany(L, 3);
@@ -410,7 +410,7 @@ static int r_luatween_method_al_listener_pos_x_xl(lua_State *L)
 static int r_luatween_method_al_listener_pos_y_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
+    R_LuaTween *self = R_CPPCAST(R_LuaTween *, XL_checkpptype(L, 1, "R_LuaTween"));
     luaL_checkany(L, 2);
     int topic = 2;
     luaL_checkany(L, 3);
@@ -427,7 +427,7 @@ static int r_luatween_method_al_listener_pos_y_xl(lua_State *L)
 static int r_luatween_method_al_listener_pos_z_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
+    R_LuaTween *self = R_CPPCAST(R_LuaTween *, XL_checkpptype(L, 1, "R_LuaTween"));
     luaL_checkany(L, 2);
     int topic = 2;
     luaL_checkany(L, 3);
@@ -444,7 +444,7 @@ static int r_luatween_method_al_listener_pos_z_xl(lua_State *L)
 static int r_luatween_method_al_listener_velocity_x_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
+    R_LuaTween *self = R_CPPCAST(R_LuaTween *, XL_checkpptype(L, 1, "R_LuaTween"));
     luaL_checkany(L, 2);
     int topic = 2;
     luaL_checkany(L, 3);
@@ -461,7 +461,7 @@ static int r_luatween_method_al_listener_velocity_x_xl(lua_State *L)
 static int r_luatween_method_al_listener_velocity_y_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
+    R_LuaTween *self = R_CPPCAST(R_LuaTween *, XL_checkpptype(L, 1, "R_LuaTween"));
     luaL_checkany(L, 2);
     int topic = 2;
     luaL_checkany(L, 3);
@@ -478,7 +478,7 @@ static int r_luatween_method_al_listener_velocity_y_xl(lua_State *L)
 static int r_luatween_method_al_listener_velocity_z_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
+    R_LuaTween *self = R_CPPCAST(R_LuaTween *, XL_checkpptype(L, 1, "R_LuaTween"));
     luaL_checkany(L, 2);
     int topic = 2;
     luaL_checkany(L, 3);
@@ -495,7 +495,7 @@ static int r_luatween_method_al_listener_velocity_z_xl(lua_State *L)
 static int r_luatween_method_al_listener_gain_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
+    R_LuaTween *self = R_CPPCAST(R_LuaTween *, XL_checkpptype(L, 1, "R_LuaTween"));
     luaL_checkany(L, 2);
     int topic = 2;
     luaL_checkany(L, 3);
@@ -512,8 +512,8 @@ static int r_luatween_method_al_listener_gain_xl(lua_State *L)
 static int r_luatween_method_al_source_pos_x_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
-    R_AlSource *source = XL_checkpptype(L, 2, "R_AlSource");
+    R_LuaTween *self = R_CPPCAST(R_LuaTween *, XL_checkpptype(L, 1, "R_LuaTween"));
+    R_AlSource *source = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 2, "R_AlSource"));
     luaL_checkany(L, 3);
     int value_fn = 3;
     R_tween_al_source_pos_x(self, source, tween_float_get(L, value_fn));
@@ -527,8 +527,8 @@ static int r_luatween_method_al_source_pos_x_xl(lua_State *L)
 static int r_luatween_method_al_source_pos_y_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
-    R_AlSource *source = XL_checkpptype(L, 2, "R_AlSource");
+    R_LuaTween *self = R_CPPCAST(R_LuaTween *, XL_checkpptype(L, 1, "R_LuaTween"));
+    R_AlSource *source = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 2, "R_AlSource"));
     luaL_checkany(L, 3);
     int value_fn = 3;
     R_tween_al_source_pos_y(self, source, tween_float_get(L, value_fn));
@@ -542,8 +542,8 @@ static int r_luatween_method_al_source_pos_y_xl(lua_State *L)
 static int r_luatween_method_al_source_pos_z_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
-    R_AlSource *source = XL_checkpptype(L, 2, "R_AlSource");
+    R_LuaTween *self = R_CPPCAST(R_LuaTween *, XL_checkpptype(L, 1, "R_LuaTween"));
+    R_AlSource *source = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 2, "R_AlSource"));
     luaL_checkany(L, 3);
     int value_fn = 3;
     R_tween_al_source_pos_z(self, source, tween_float_get(L, value_fn));
@@ -557,8 +557,8 @@ static int r_luatween_method_al_source_pos_z_xl(lua_State *L)
 static int r_luatween_method_al_source_velocity_x_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
-    R_AlSource *source = XL_checkpptype(L, 2, "R_AlSource");
+    R_LuaTween *self = R_CPPCAST(R_LuaTween *, XL_checkpptype(L, 1, "R_LuaTween"));
+    R_AlSource *source = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 2, "R_AlSource"));
     luaL_checkany(L, 3);
     int value_fn = 3;
     R_tween_al_source_velocity_x(self, source, tween_float_get(L, value_fn));
@@ -572,8 +572,8 @@ static int r_luatween_method_al_source_velocity_x_xl(lua_State *L)
 static int r_luatween_method_al_source_velocity_y_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
-    R_AlSource *source = XL_checkpptype(L, 2, "R_AlSource");
+    R_LuaTween *self = R_CPPCAST(R_LuaTween *, XL_checkpptype(L, 1, "R_LuaTween"));
+    R_AlSource *source = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 2, "R_AlSource"));
     luaL_checkany(L, 3);
     int value_fn = 3;
     R_tween_al_source_velocity_y(self, source, tween_float_get(L, value_fn));
@@ -587,8 +587,8 @@ static int r_luatween_method_al_source_velocity_y_xl(lua_State *L)
 static int r_luatween_method_al_source_velocity_z_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
-    R_AlSource *source = XL_checkpptype(L, 2, "R_AlSource");
+    R_LuaTween *self = R_CPPCAST(R_LuaTween *, XL_checkpptype(L, 1, "R_LuaTween"));
+    R_AlSource *source = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 2, "R_AlSource"));
     luaL_checkany(L, 3);
     int value_fn = 3;
     R_tween_al_source_velocity_z(self, source, tween_float_get(L, value_fn));
@@ -602,8 +602,8 @@ static int r_luatween_method_al_source_velocity_z_xl(lua_State *L)
 static int r_luatween_method_al_source_gain_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
-    R_AlSource *source = XL_checkpptype(L, 2, "R_AlSource");
+    R_LuaTween *self = R_CPPCAST(R_LuaTween *, XL_checkpptype(L, 1, "R_LuaTween"));
+    R_AlSource *source = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 2, "R_AlSource"));
     luaL_checkany(L, 3);
     int value_fn = 3;
     R_tween_al_source_gain(self, source, tween_float_get(L, value_fn));
@@ -617,8 +617,8 @@ static int r_luatween_method_al_source_gain_xl(lua_State *L)
 static int r_luatween_method_al_source_pitch_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
-    R_AlSource *source = XL_checkpptype(L, 2, "R_AlSource");
+    R_LuaTween *self = R_CPPCAST(R_LuaTween *, XL_checkpptype(L, 1, "R_LuaTween"));
+    R_AlSource *source = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 2, "R_AlSource"));
     luaL_checkany(L, 3);
     int value_fn = 3;
     R_tween_al_source_pitch(self, source, tween_float_get(L, value_fn));
@@ -632,8 +632,8 @@ static int r_luatween_method_al_source_pitch_xl(lua_State *L)
 static int r_luatween_method_al_source_reference_distance_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
-    R_AlSource *source = XL_checkpptype(L, 2, "R_AlSource");
+    R_LuaTween *self = R_CPPCAST(R_LuaTween *, XL_checkpptype(L, 1, "R_LuaTween"));
+    R_AlSource *source = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 2, "R_AlSource"));
     luaL_checkany(L, 3);
     int value_fn = 3;
     R_tween_al_source_reference_distance(self, source, tween_float_get(L, value_fn));
@@ -706,7 +706,7 @@ static void free_float_field(R_UserData user)
 
 static int r_luatween_method_field_xl(lua_State *L)
 {
-    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
+    R_LuaTween *self = R_CPPCAST(R_LuaTween *, XL_checkpptype(L, 1, "R_LuaTween"));
     luaL_checkany(L, 2);
     int subject = 2;
     luaL_checkany(L, 3);
@@ -730,7 +730,7 @@ static int r_luatween_method_field_xl(lua_State *L)
 
 static int r_luatween_method_build_xl(lua_State *L)
 {
-    R_LuaTween *self = XL_checkpptype(L, 1, "R_LuaTween");
+    R_LuaTween *self = R_CPPCAST(R_LuaTween *, XL_checkpptype(L, 1, "R_LuaTween"));
     XL_UNUSED(self);
     XL_getiuservalue(L, 1, 1);
     return 1;
@@ -746,7 +746,7 @@ static int r_sequence_new_xl(lua_State *L)
 
 static int r_sequence_method_gc_xl(lua_State *L)
 {
-    R_Sequence *self = XL_checkpptype_nullable(L, 1, "R_Sequence");
+    R_Sequence *self = R_CPPCAST(R_Sequence *, XL_checkpptype_nullable(L, 1, "R_Sequence"));
     R_sequence_free(self);
     return 0;
 }
@@ -798,14 +798,14 @@ static void delay_free(R_UserData user)
 
 static int r_sequence_method_delay_fixed_xl(lua_State *L)
 {
-    R_Sequence *self = XL_checkpptype(L, 1, "R_Sequence");
+    R_Sequence *self = R_CPPCAST(R_Sequence *, XL_checkpptype(L, 1, "R_Sequence"));
     float seconds = XL_checkfloat(L, 2);
     return add_step(L, self, R_delay_new_fixed(seconds));
 }
 
 static int r_sequence_method_delay_between_xl(lua_State *L)
 {
-    R_Sequence *self = XL_checkpptype(L, 1, "R_Sequence");
+    R_Sequence *self = R_CPPCAST(R_Sequence *, XL_checkpptype(L, 1, "R_Sequence"));
     float a = XL_checkfloat(L, 2);
     float b = XL_checkfloat(L, 3);
     return add_step(L, self, R_delay_new_between(a, b));
@@ -813,7 +813,7 @@ static int r_sequence_method_delay_between_xl(lua_State *L)
 
 static int r_sequence_method_delay_custom_xl(lua_State *L)
 {
-    R_Sequence *self = XL_checkpptype(L, 1, "R_Sequence");
+    R_Sequence *self = R_CPPCAST(R_Sequence *, XL_checkpptype(L, 1, "R_Sequence"));
     luaL_checkany(L, 2);
     int fn = 2;
     return add_step(L, self, R_delay_new(delay_step, delay_free, NULL,
@@ -838,7 +838,7 @@ static void call_free(R_UserData user)
 
 static int r_sequence_method_call_xl(lua_State *L)
 {
-    R_Sequence *self = XL_checkpptype(L, 1, "R_Sequence");
+    R_Sequence *self = R_CPPCAST(R_Sequence *, XL_checkpptype(L, 1, "R_Sequence"));
     luaL_checkany(L, 2);
     int fn = 2;
     return add_step(L, self, R_call_new(call_step, call_free, NULL,
@@ -957,7 +957,7 @@ static void tween_free(R_UserData user)
 
 static int r_sequence_method_tween_fixed_xl(lua_State *L)
 {
-    R_Sequence *self = XL_checkpptype(L, 1, "R_Sequence");
+    R_Sequence *self = R_CPPCAST(R_Sequence *, XL_checkpptype(L, 1, "R_Sequence"));
     float seconds = XL_checkfloat(L, 2);
     R_LuaTween *RETVAL;
     R_LuaEase ease = to_ease(L, 3);
@@ -971,7 +971,7 @@ static int r_sequence_method_tween_fixed_xl(lua_State *L)
 
 static int r_sequence_method_tween_between_xl(lua_State *L)
 {
-    R_Sequence *self = XL_checkpptype(L, 1, "R_Sequence");
+    R_Sequence *self = R_CPPCAST(R_Sequence *, XL_checkpptype(L, 1, "R_Sequence"));
     float a = XL_checkfloat(L, 2);
     float b = XL_checkfloat(L, 3);
     R_LuaTween *RETVAL;
@@ -986,7 +986,7 @@ static int r_sequence_method_tween_between_xl(lua_State *L)
 
 static int r_sequence_method_tween_custom_xl(lua_State *L)
 {
-    R_Sequence *self = XL_checkpptype(L, 1, "R_Sequence");
+    R_Sequence *self = R_CPPCAST(R_Sequence *, XL_checkpptype(L, 1, "R_Sequence"));
     luaL_checkany(L, 2);
     int fn = 2;
     R_LuaTween *RETVAL;

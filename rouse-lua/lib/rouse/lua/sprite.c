@@ -32,7 +32,7 @@
 
 static int r_affinetransform_origin_index_xl(lua_State *L)
 {
-    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    R_AffineTransform *self = R_CPPCAST(R_AffineTransform *, XL_checkutype(L, 1, "R_AffineTransform"));
     R_V2 RETVAL;
     RETVAL = self->origin;
     XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
@@ -41,7 +41,7 @@ static int r_affinetransform_origin_index_xl(lua_State *L)
 
 static int r_affinetransform_origin_newindex_xl(lua_State *L)
 {
-    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    R_AffineTransform *self = R_CPPCAST(R_AffineTransform *, XL_checkutype(L, 1, "R_AffineTransform"));
     R_V2 VALUE = *((R_V2 *)luaL_checkudata(L, 2, "R_V2"));
     self->origin = VALUE;
     return 0;
@@ -49,7 +49,7 @@ static int r_affinetransform_origin_newindex_xl(lua_State *L)
 
 static int r_affinetransform_origin_x_index_xl(lua_State *L)
 {
-    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    R_AffineTransform *self = R_CPPCAST(R_AffineTransform *, XL_checkutype(L, 1, "R_AffineTransform"));
     float RETVAL;
     RETVAL = self->origin.x;
     XL_pushfloat(L, RETVAL);
@@ -58,7 +58,7 @@ static int r_affinetransform_origin_x_index_xl(lua_State *L)
 
 static int r_affinetransform_origin_x_newindex_xl(lua_State *L)
 {
-    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    R_AffineTransform *self = R_CPPCAST(R_AffineTransform *, XL_checkutype(L, 1, "R_AffineTransform"));
     float VALUE = XL_checkfloat(L, 2);
     self->origin.x = VALUE;
     return 0;
@@ -66,7 +66,7 @@ static int r_affinetransform_origin_x_newindex_xl(lua_State *L)
 
 static int r_affinetransform_origin_y_index_xl(lua_State *L)
 {
-    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    R_AffineTransform *self = R_CPPCAST(R_AffineTransform *, XL_checkutype(L, 1, "R_AffineTransform"));
     float RETVAL;
     RETVAL = self->origin.x;
     XL_pushfloat(L, RETVAL);
@@ -75,7 +75,7 @@ static int r_affinetransform_origin_y_index_xl(lua_State *L)
 
 static int r_affinetransform_origin_y_newindex_xl(lua_State *L)
 {
-    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    R_AffineTransform *self = R_CPPCAST(R_AffineTransform *, XL_checkutype(L, 1, "R_AffineTransform"));
     float VALUE = XL_checkfloat(L, 2);
     self->origin.x = VALUE;
     return 0;
@@ -83,7 +83,7 @@ static int r_affinetransform_origin_y_newindex_xl(lua_State *L)
 
 static int r_affinetransform_pos_index_xl(lua_State *L)
 {
-    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    R_AffineTransform *self = R_CPPCAST(R_AffineTransform *, XL_checkutype(L, 1, "R_AffineTransform"));
     R_V2 RETVAL;
     RETVAL = self->pos;
     XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
@@ -92,7 +92,7 @@ static int r_affinetransform_pos_index_xl(lua_State *L)
 
 static int r_affinetransform_pos_newindex_xl(lua_State *L)
 {
-    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    R_AffineTransform *self = R_CPPCAST(R_AffineTransform *, XL_checkutype(L, 1, "R_AffineTransform"));
     R_V2 VALUE = *((R_V2 *)luaL_checkudata(L, 2, "R_V2"));
     self->pos = VALUE;
     return 0;
@@ -100,7 +100,7 @@ static int r_affinetransform_pos_newindex_xl(lua_State *L)
 
 static int r_affinetransform_pos_x_index_xl(lua_State *L)
 {
-    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    R_AffineTransform *self = R_CPPCAST(R_AffineTransform *, XL_checkutype(L, 1, "R_AffineTransform"));
     float RETVAL;
     RETVAL = self->pos.x;
     XL_pushfloat(L, RETVAL);
@@ -109,7 +109,7 @@ static int r_affinetransform_pos_x_index_xl(lua_State *L)
 
 static int r_affinetransform_pos_x_newindex_xl(lua_State *L)
 {
-    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    R_AffineTransform *self = R_CPPCAST(R_AffineTransform *, XL_checkutype(L, 1, "R_AffineTransform"));
     float VALUE = XL_checkfloat(L, 2);
     self->pos.x = VALUE;
     return 0;
@@ -117,7 +117,7 @@ static int r_affinetransform_pos_x_newindex_xl(lua_State *L)
 
 static int r_affinetransform_pos_y_index_xl(lua_State *L)
 {
-    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    R_AffineTransform *self = R_CPPCAST(R_AffineTransform *, XL_checkutype(L, 1, "R_AffineTransform"));
     float RETVAL;
     RETVAL = self->pos.y;
     XL_pushfloat(L, RETVAL);
@@ -126,7 +126,7 @@ static int r_affinetransform_pos_y_index_xl(lua_State *L)
 
 static int r_affinetransform_pos_y_newindex_xl(lua_State *L)
 {
-    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    R_AffineTransform *self = R_CPPCAST(R_AffineTransform *, XL_checkutype(L, 1, "R_AffineTransform"));
     float VALUE = XL_checkfloat(L, 2);
     self->pos.y = VALUE;
     return 0;
@@ -134,7 +134,7 @@ static int r_affinetransform_pos_y_newindex_xl(lua_State *L)
 
 static int r_affinetransform_scale_index_xl(lua_State *L)
 {
-    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    R_AffineTransform *self = R_CPPCAST(R_AffineTransform *, XL_checkutype(L, 1, "R_AffineTransform"));
     R_V2 RETVAL;
     RETVAL = self->scale;
     XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
@@ -143,7 +143,7 @@ static int r_affinetransform_scale_index_xl(lua_State *L)
 
 static int r_affinetransform_scale_newindex_xl(lua_State *L)
 {
-    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    R_AffineTransform *self = R_CPPCAST(R_AffineTransform *, XL_checkutype(L, 1, "R_AffineTransform"));
     R_V2 VALUE = *((R_V2 *)luaL_checkudata(L, 2, "R_V2"));
     self->scale = VALUE;
     return 0;
@@ -151,7 +151,7 @@ static int r_affinetransform_scale_newindex_xl(lua_State *L)
 
 static int r_affinetransform_scale_x_index_xl(lua_State *L)
 {
-    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    R_AffineTransform *self = R_CPPCAST(R_AffineTransform *, XL_checkutype(L, 1, "R_AffineTransform"));
     float RETVAL;
     RETVAL = self->scale.x;
     XL_pushfloat(L, RETVAL);
@@ -160,7 +160,7 @@ static int r_affinetransform_scale_x_index_xl(lua_State *L)
 
 static int r_affinetransform_scale_x_newindex_xl(lua_State *L)
 {
-    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    R_AffineTransform *self = R_CPPCAST(R_AffineTransform *, XL_checkutype(L, 1, "R_AffineTransform"));
     float VALUE = XL_checkfloat(L, 2);
     self->scale.x = VALUE;
     return 0;
@@ -168,7 +168,7 @@ static int r_affinetransform_scale_x_newindex_xl(lua_State *L)
 
 static int r_affinetransform_scale_y_index_xl(lua_State *L)
 {
-    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    R_AffineTransform *self = R_CPPCAST(R_AffineTransform *, XL_checkutype(L, 1, "R_AffineTransform"));
     float RETVAL;
     RETVAL = self->scale.y;
     XL_pushfloat(L, RETVAL);
@@ -177,7 +177,7 @@ static int r_affinetransform_scale_y_index_xl(lua_State *L)
 
 static int r_affinetransform_scale_y_newindex_xl(lua_State *L)
 {
-    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    R_AffineTransform *self = R_CPPCAST(R_AffineTransform *, XL_checkutype(L, 1, "R_AffineTransform"));
     float VALUE = XL_checkfloat(L, 2);
     self->scale.y = VALUE;
     return 0;
@@ -185,7 +185,7 @@ static int r_affinetransform_scale_y_newindex_xl(lua_State *L)
 
 static int r_affinetransform_skew_index_xl(lua_State *L)
 {
-    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    R_AffineTransform *self = R_CPPCAST(R_AffineTransform *, XL_checkutype(L, 1, "R_AffineTransform"));
     R_V2 RETVAL;
     RETVAL = self->skew;
     XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
@@ -194,7 +194,7 @@ static int r_affinetransform_skew_index_xl(lua_State *L)
 
 static int r_affinetransform_skew_newindex_xl(lua_State *L)
 {
-    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    R_AffineTransform *self = R_CPPCAST(R_AffineTransform *, XL_checkutype(L, 1, "R_AffineTransform"));
     R_V2 VALUE = *((R_V2 *)luaL_checkudata(L, 2, "R_V2"));
     self->skew = VALUE;
     return 0;
@@ -202,7 +202,7 @@ static int r_affinetransform_skew_newindex_xl(lua_State *L)
 
 static int r_affinetransform_skew_x_index_xl(lua_State *L)
 {
-    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    R_AffineTransform *self = R_CPPCAST(R_AffineTransform *, XL_checkutype(L, 1, "R_AffineTransform"));
     float RETVAL;
     RETVAL = self->skew.x;
     XL_pushfloat(L, RETVAL);
@@ -211,7 +211,7 @@ static int r_affinetransform_skew_x_index_xl(lua_State *L)
 
 static int r_affinetransform_skew_x_newindex_xl(lua_State *L)
 {
-    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    R_AffineTransform *self = R_CPPCAST(R_AffineTransform *, XL_checkutype(L, 1, "R_AffineTransform"));
     float VALUE = XL_checkfloat(L, 2);
     self->skew.x = VALUE;
     return 0;
@@ -219,7 +219,7 @@ static int r_affinetransform_skew_x_newindex_xl(lua_State *L)
 
 static int r_affinetransform_skew_y_index_xl(lua_State *L)
 {
-    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    R_AffineTransform *self = R_CPPCAST(R_AffineTransform *, XL_checkutype(L, 1, "R_AffineTransform"));
     float RETVAL;
     RETVAL = self->skew.y;
     XL_pushfloat(L, RETVAL);
@@ -228,7 +228,7 @@ static int r_affinetransform_skew_y_index_xl(lua_State *L)
 
 static int r_affinetransform_skew_y_newindex_xl(lua_State *L)
 {
-    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    R_AffineTransform *self = R_CPPCAST(R_AffineTransform *, XL_checkutype(L, 1, "R_AffineTransform"));
     float VALUE = XL_checkfloat(L, 2);
     self->skew.y = VALUE;
     return 0;
@@ -236,7 +236,7 @@ static int r_affinetransform_skew_y_newindex_xl(lua_State *L)
 
 static int r_affinetransform_angle_index_xl(lua_State *L)
 {
-    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    R_AffineTransform *self = R_CPPCAST(R_AffineTransform *, XL_checkutype(L, 1, "R_AffineTransform"));
     float RETVAL;
     RETVAL = self->angle;
     XL_pushfloat(L, RETVAL);
@@ -245,7 +245,7 @@ static int r_affinetransform_angle_index_xl(lua_State *L)
 
 static int r_affinetransform_angle_newindex_xl(lua_State *L)
 {
-    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    R_AffineTransform *self = R_CPPCAST(R_AffineTransform *, XL_checkutype(L, 1, "R_AffineTransform"));
     float VALUE = XL_checkfloat(L, 2);
     self->angle = VALUE;
     return 0;
@@ -253,7 +253,7 @@ static int r_affinetransform_angle_newindex_xl(lua_State *L)
 
 static int r_affinetransform_alpha_index_xl(lua_State *L)
 {
-    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    R_AffineTransform *self = R_CPPCAST(R_AffineTransform *, XL_checkutype(L, 1, "R_AffineTransform"));
     float RETVAL;
     RETVAL = self->alpha;
     XL_pushfloat(L, RETVAL);
@@ -262,7 +262,7 @@ static int r_affinetransform_alpha_index_xl(lua_State *L)
 
 static int r_affinetransform_alpha_newindex_xl(lua_State *L)
 {
-    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    R_AffineTransform *self = R_CPPCAST(R_AffineTransform *, XL_checkutype(L, 1, "R_AffineTransform"));
     float VALUE = XL_checkfloat(L, 2);
     self->alpha = VALUE;
     return 0;
@@ -270,7 +270,7 @@ static int r_affinetransform_alpha_newindex_xl(lua_State *L)
 
 static int r_affinetransform_base_index_xl(lua_State *L)
 {
-    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    R_AffineTransform *self = R_CPPCAST(R_AffineTransform *, XL_checkutype(L, 1, "R_AffineTransform"));
     R_V2 RETVAL;
     RETVAL = self->base;
     XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
@@ -279,7 +279,7 @@ static int r_affinetransform_base_index_xl(lua_State *L)
 
 static int r_affinetransform_base_newindex_xl(lua_State *L)
 {
-    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    R_AffineTransform *self = R_CPPCAST(R_AffineTransform *, XL_checkutype(L, 1, "R_AffineTransform"));
     R_V2 VALUE = *((R_V2 *)luaL_checkudata(L, 2, "R_V2"));
     self->base = VALUE;
     return 0;
@@ -287,7 +287,7 @@ static int r_affinetransform_base_newindex_xl(lua_State *L)
 
 static int r_affinetransform_base_x_index_xl(lua_State *L)
 {
-    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    R_AffineTransform *self = R_CPPCAST(R_AffineTransform *, XL_checkutype(L, 1, "R_AffineTransform"));
     float RETVAL;
     RETVAL = self->base.x;
     XL_pushfloat(L, RETVAL);
@@ -296,7 +296,7 @@ static int r_affinetransform_base_x_index_xl(lua_State *L)
 
 static int r_affinetransform_base_x_newindex_xl(lua_State *L)
 {
-    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    R_AffineTransform *self = R_CPPCAST(R_AffineTransform *, XL_checkutype(L, 1, "R_AffineTransform"));
     float VALUE = XL_checkfloat(L, 2);
     self->base.x = VALUE;
     return 0;
@@ -304,7 +304,7 @@ static int r_affinetransform_base_x_newindex_xl(lua_State *L)
 
 static int r_affinetransform_base_y_index_xl(lua_State *L)
 {
-    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    R_AffineTransform *self = R_CPPCAST(R_AffineTransform *, XL_checkutype(L, 1, "R_AffineTransform"));
     float RETVAL;
     RETVAL = self->base.y;
     XL_pushfloat(L, RETVAL);
@@ -313,7 +313,7 @@ static int r_affinetransform_base_y_index_xl(lua_State *L)
 
 static int r_affinetransform_base_y_newindex_xl(lua_State *L)
 {
-    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    R_AffineTransform *self = R_CPPCAST(R_AffineTransform *, XL_checkutype(L, 1, "R_AffineTransform"));
     float VALUE = XL_checkfloat(L, 2);
     self->base.y = VALUE;
     return 0;
@@ -321,7 +321,7 @@ static int r_affinetransform_base_y_newindex_xl(lua_State *L)
 
 static int r_affinetransform_rotation_index_xl(lua_State *L)
 {
-    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    R_AffineTransform *self = R_CPPCAST(R_AffineTransform *, XL_checkutype(L, 1, "R_AffineTransform"));
     float RETVAL;
     RETVAL = R_affine_transform_rotation(self);
     XL_pushfloat(L, RETVAL);
@@ -330,7 +330,7 @@ static int r_affinetransform_rotation_index_xl(lua_State *L)
 
 static int r_affinetransform_rotation_newindex_xl(lua_State *L)
 {
-    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    R_AffineTransform *self = R_CPPCAST(R_AffineTransform *, XL_checkutype(L, 1, "R_AffineTransform"));
     float VALUE = XL_checkfloat(L, 2);
     R_affine_transform_rotation_set(self, VALUE);
     return 0;
@@ -338,7 +338,7 @@ static int r_affinetransform_rotation_newindex_xl(lua_State *L)
 
 static int r_affinetransform_rel_index_xl(lua_State *L)
 {
-    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    R_AffineTransform *self = R_CPPCAST(R_AffineTransform *, XL_checkutype(L, 1, "R_AffineTransform"));
     R_V2 RETVAL;
     RETVAL = R_affine_transform_rel(self);
     XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
@@ -347,7 +347,7 @@ static int r_affinetransform_rel_index_xl(lua_State *L)
 
 static int r_affinetransform_rel_newindex_xl(lua_State *L)
 {
-    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    R_AffineTransform *self = R_CPPCAST(R_AffineTransform *, XL_checkutype(L, 1, "R_AffineTransform"));
     R_V2 VALUE = *((R_V2 *)luaL_checkudata(L, 2, "R_V2"));
     R_affine_transform_rel_set(self, VALUE);
     return 0;
@@ -355,7 +355,7 @@ static int r_affinetransform_rel_newindex_xl(lua_State *L)
 
 static int r_affinetransform_rel_x_index_xl(lua_State *L)
 {
-    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    R_AffineTransform *self = R_CPPCAST(R_AffineTransform *, XL_checkutype(L, 1, "R_AffineTransform"));
     float RETVAL;
     RETVAL = R_affine_transform_rel_x(self);
     XL_pushfloat(L, RETVAL);
@@ -364,7 +364,7 @@ static int r_affinetransform_rel_x_index_xl(lua_State *L)
 
 static int r_affinetransform_rel_x_newindex_xl(lua_State *L)
 {
-    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    R_AffineTransform *self = R_CPPCAST(R_AffineTransform *, XL_checkutype(L, 1, "R_AffineTransform"));
     float VALUE = XL_checkfloat(L, 2);
     R_affine_transform_rel_x_set(self, VALUE);
     return 0;
@@ -372,7 +372,7 @@ static int r_affinetransform_rel_x_newindex_xl(lua_State *L)
 
 static int r_affinetransform_rel_y_index_xl(lua_State *L)
 {
-    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    R_AffineTransform *self = R_CPPCAST(R_AffineTransform *, XL_checkutype(L, 1, "R_AffineTransform"));
     float RETVAL;
     RETVAL = R_affine_transform_rel_y(self);
     XL_pushfloat(L, RETVAL);
@@ -381,7 +381,7 @@ static int r_affinetransform_rel_y_index_xl(lua_State *L)
 
 static int r_affinetransform_rel_y_newindex_xl(lua_State *L)
 {
-    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    R_AffineTransform *self = R_CPPCAST(R_AffineTransform *, XL_checkutype(L, 1, "R_AffineTransform"));
     float VALUE = XL_checkfloat(L, 2);
     R_affine_transform_rel_y_set(self, VALUE);
     return 0;
@@ -389,7 +389,7 @@ static int r_affinetransform_rel_y_newindex_xl(lua_State *L)
 
 static int r_affinetransform_x_index_xl(lua_State *L)
 {
-    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    R_AffineTransform *self = R_CPPCAST(R_AffineTransform *, XL_checkutype(L, 1, "R_AffineTransform"));
     float RETVAL;
     RETVAL = self->pos.x;
     XL_pushfloat(L, RETVAL);
@@ -398,7 +398,7 @@ static int r_affinetransform_x_index_xl(lua_State *L)
 
 static int r_affinetransform_x_newindex_xl(lua_State *L)
 {
-    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    R_AffineTransform *self = R_CPPCAST(R_AffineTransform *, XL_checkutype(L, 1, "R_AffineTransform"));
     float VALUE = XL_checkfloat(L, 2);
     self->pos.x = VALUE;
     return 0;
@@ -406,7 +406,7 @@ static int r_affinetransform_x_newindex_xl(lua_State *L)
 
 static int r_affinetransform_y_index_xl(lua_State *L)
 {
-    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    R_AffineTransform *self = R_CPPCAST(R_AffineTransform *, XL_checkutype(L, 1, "R_AffineTransform"));
     float RETVAL;
     RETVAL = self->pos.y;
     XL_pushfloat(L, RETVAL);
@@ -415,7 +415,7 @@ static int r_affinetransform_y_index_xl(lua_State *L)
 
 static int r_affinetransform_y_newindex_xl(lua_State *L)
 {
-    R_AffineTransform *self = XL_checkutype(L, 1, "R_AffineTransform");
+    R_AffineTransform *self = R_CPPCAST(R_AffineTransform *, XL_checkutype(L, 1, "R_AffineTransform"));
     float VALUE = XL_checkfloat(L, 2);
     self->pos.y = VALUE;
     return 0;
@@ -477,7 +477,7 @@ static int r_sprite_new_xl(lua_State *L)
 
 static int r_sprite_method_gc_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype_nullable(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype_nullable(L, 1, "R_Sprite"));
     R_sprite_decref(self);
     return 0;
 }
@@ -498,7 +498,7 @@ static int r_sprite_method_eq_xl(lua_State *L)
 
 static int r_sprite_name_index_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     const char *RETVAL;
     RETVAL = R_sprite_name(self);
     lua_pushstring(L, RETVAL);
@@ -507,7 +507,7 @@ static int r_sprite_name_index_xl(lua_State *L)
 
 static int r_sprite_name_newindex_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     luaL_checkany(L, 2);
     int VALUE = 2;
     if (lua_isnil(L, VALUE)) {
@@ -522,7 +522,7 @@ static int r_sprite_name_newindex_xl(lua_State *L)
 
 static int r_sprite_user_newindex_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     luaL_checkany(L, 2);
     int VALUE = 2;
     R_LuaSpriteData *data = R_sprite_user(self).data;
@@ -534,7 +534,7 @@ static int r_sprite_user_newindex_xl(lua_State *L)
 
 static int r_sprite_user_index_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     R_LuaSpriteData *data = R_sprite_user(self).data;
     R_MAGIC_CHECK(R_LuaSpriteData, data);
     R_lua_getreg(L, data->user_reg);
@@ -543,7 +543,7 @@ static int r_sprite_user_index_xl(lua_State *L)
 
 static int r_sprite_parent_index_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     R_Sprite *RETVAL;
     RETVAL = R_sprite_parent(self);
     if (RETVAL) {
@@ -577,7 +577,7 @@ static void free_lua_value(R_UserData user)
 
 static int r_sprite_content_newindex_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     luaL_checkany(L, 2);
     int VALUE = 2;
     void **pp;
@@ -619,7 +619,7 @@ static int r_sprite_content_newindex_xl(lua_State *L)
 
 static int r_sprite_content_index_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     R_LuaSpriteData *data = R_sprite_user(self).data;
     R_MAGIC_CHECK(R_LuaSpriteData, data);
     R_lua_getreg(L, data->draw_reg);
@@ -633,7 +633,7 @@ static int r_sprite_method_set_xl(lua_State *L)
 
 static int r_sprite_transform_index_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     R_AffineTransform RETVAL;
     RETVAL = R_sprite_transform(self);
     XL_pushnewutypeuv(L, &RETVAL, sizeof(R_AffineTransform), "R_AffineTransform", 0);
@@ -642,7 +642,7 @@ static int r_sprite_transform_index_xl(lua_State *L)
 
 static int r_sprite_origin_index_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     R_V2 RETVAL;
     RETVAL = R_sprite_origin(self);
     XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
@@ -651,7 +651,7 @@ static int r_sprite_origin_index_xl(lua_State *L)
 
 static int r_sprite_origin_x_index_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     float RETVAL;
     RETVAL = R_sprite_origin_x(self);
     XL_pushfloat(L, RETVAL);
@@ -660,7 +660,7 @@ static int r_sprite_origin_x_index_xl(lua_State *L)
 
 static int r_sprite_origin_y_index_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     float RETVAL;
     RETVAL = R_sprite_origin_y(self);
     XL_pushfloat(L, RETVAL);
@@ -669,7 +669,7 @@ static int r_sprite_origin_y_index_xl(lua_State *L)
 
 static int r_sprite_pos_index_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     R_V2 RETVAL;
     RETVAL = R_sprite_pos(self);
     XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
@@ -678,7 +678,7 @@ static int r_sprite_pos_index_xl(lua_State *L)
 
 static int r_sprite_pos_x_index_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     float RETVAL;
     RETVAL = R_sprite_pos_x(self);
     XL_pushfloat(L, RETVAL);
@@ -687,7 +687,7 @@ static int r_sprite_pos_x_index_xl(lua_State *L)
 
 static int r_sprite_pos_y_index_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     float RETVAL;
     RETVAL = R_sprite_pos_y(self);
     XL_pushfloat(L, RETVAL);
@@ -696,7 +696,7 @@ static int r_sprite_pos_y_index_xl(lua_State *L)
 
 static int r_sprite_scale_index_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     R_V2 RETVAL;
     RETVAL = R_sprite_scale(self);
     XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
@@ -705,7 +705,7 @@ static int r_sprite_scale_index_xl(lua_State *L)
 
 static int r_sprite_scale_x_index_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     float RETVAL;
     RETVAL = R_sprite_scale_x(self);
     XL_pushfloat(L, RETVAL);
@@ -714,7 +714,7 @@ static int r_sprite_scale_x_index_xl(lua_State *L)
 
 static int r_sprite_scale_y_index_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     float RETVAL;
     RETVAL = R_sprite_scale_y(self);
     XL_pushfloat(L, RETVAL);
@@ -723,7 +723,7 @@ static int r_sprite_scale_y_index_xl(lua_State *L)
 
 static int r_sprite_skew_index_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     R_V2 RETVAL;
     RETVAL = R_sprite_skew(self);
     XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
@@ -732,7 +732,7 @@ static int r_sprite_skew_index_xl(lua_State *L)
 
 static int r_sprite_skew_x_index_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     float RETVAL;
     RETVAL = R_sprite_skew_x(self);
     XL_pushfloat(L, RETVAL);
@@ -741,7 +741,7 @@ static int r_sprite_skew_x_index_xl(lua_State *L)
 
 static int r_sprite_skew_y_index_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     float RETVAL;
     RETVAL = R_sprite_skew_y(self);
     XL_pushfloat(L, RETVAL);
@@ -750,7 +750,7 @@ static int r_sprite_skew_y_index_xl(lua_State *L)
 
 static int r_sprite_angle_index_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     float RETVAL;
     RETVAL = R_sprite_angle(self);
     XL_pushfloat(L, RETVAL);
@@ -759,7 +759,7 @@ static int r_sprite_angle_index_xl(lua_State *L)
 
 static int r_sprite_alpha_index_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     float RETVAL;
     RETVAL = R_sprite_alpha(self);
     XL_pushfloat(L, RETVAL);
@@ -768,7 +768,7 @@ static int r_sprite_alpha_index_xl(lua_State *L)
 
 static int r_sprite_base_index_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     R_V2 RETVAL;
     RETVAL = R_sprite_base(self);
     XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
@@ -777,7 +777,7 @@ static int r_sprite_base_index_xl(lua_State *L)
 
 static int r_sprite_base_x_index_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     float RETVAL;
     RETVAL = R_sprite_base_x(self);
     XL_pushfloat(L, RETVAL);
@@ -786,7 +786,7 @@ static int r_sprite_base_x_index_xl(lua_State *L)
 
 static int r_sprite_base_y_index_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     float RETVAL;
     RETVAL = R_sprite_base_y(self);
     XL_pushfloat(L, RETVAL);
@@ -795,7 +795,7 @@ static int r_sprite_base_y_index_xl(lua_State *L)
 
 static int r_sprite_rotation_index_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     float RETVAL;
     RETVAL = R_sprite_rotation(self);
     XL_pushfloat(L, RETVAL);
@@ -804,7 +804,7 @@ static int r_sprite_rotation_index_xl(lua_State *L)
 
 static int r_sprite_rel_index_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     R_V2 RETVAL;
     RETVAL = R_sprite_rel(self);
     XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
@@ -813,7 +813,7 @@ static int r_sprite_rel_index_xl(lua_State *L)
 
 static int r_sprite_rel_x_index_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     float RETVAL;
     RETVAL = R_sprite_rel_x(self);
     XL_pushfloat(L, RETVAL);
@@ -822,7 +822,7 @@ static int r_sprite_rel_x_index_xl(lua_State *L)
 
 static int r_sprite_rel_y_index_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     float RETVAL;
     RETVAL = R_sprite_rel_y(self);
     XL_pushfloat(L, RETVAL);
@@ -831,7 +831,7 @@ static int r_sprite_rel_y_index_xl(lua_State *L)
 
 static int r_sprite_set_transform_newindex_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     R_AffineTransform VALUE = *((R_AffineTransform *)luaL_checkudata(L, 2, "R_AffineTransform"));
     R_sprite_transform_set(self, VALUE);
     return 0;
@@ -839,7 +839,7 @@ static int r_sprite_set_transform_newindex_xl(lua_State *L)
 
 static int r_sprite_origin_newindex_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     R_V2 VALUE = *((R_V2 *)luaL_checkudata(L, 2, "R_V2"));
     R_sprite_origin_set(self, VALUE);
     return 0;
@@ -847,7 +847,7 @@ static int r_sprite_origin_newindex_xl(lua_State *L)
 
 static int r_sprite_origin_x_newindex_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     float VALUE = XL_checkfloat(L, 2);
     R_sprite_origin_x_set(self, VALUE);
     return 0;
@@ -855,7 +855,7 @@ static int r_sprite_origin_x_newindex_xl(lua_State *L)
 
 static int r_sprite_origin_y_newindex_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     float VALUE = XL_checkfloat(L, 2);
     R_sprite_origin_y_set(self, VALUE);
     return 0;
@@ -863,7 +863,7 @@ static int r_sprite_origin_y_newindex_xl(lua_State *L)
 
 static int r_sprite_pos_newindex_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     R_V2 VALUE = *((R_V2 *)luaL_checkudata(L, 2, "R_V2"));
     R_sprite_pos_set(self, VALUE);
     return 0;
@@ -871,7 +871,7 @@ static int r_sprite_pos_newindex_xl(lua_State *L)
 
 static int r_sprite_pos_x_newindex_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     float VALUE = XL_checkfloat(L, 2);
     R_sprite_pos_x_set(self, VALUE);
     return 0;
@@ -879,7 +879,7 @@ static int r_sprite_pos_x_newindex_xl(lua_State *L)
 
 static int r_sprite_pos_y_newindex_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     float VALUE = XL_checkfloat(L, 2);
     R_sprite_pos_y_set(self, VALUE);
     return 0;
@@ -887,7 +887,7 @@ static int r_sprite_pos_y_newindex_xl(lua_State *L)
 
 static int r_sprite_scale_newindex_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     R_V2 VALUE = *((R_V2 *)luaL_checkudata(L, 2, "R_V2"));
     R_sprite_scale_set(self, VALUE);
     return 0;
@@ -895,7 +895,7 @@ static int r_sprite_scale_newindex_xl(lua_State *L)
 
 static int r_sprite_scale_x_newindex_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     float VALUE = XL_checkfloat(L, 2);
     R_sprite_scale_x_set(self, VALUE);
     return 0;
@@ -903,7 +903,7 @@ static int r_sprite_scale_x_newindex_xl(lua_State *L)
 
 static int r_sprite_scale_y_newindex_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     float VALUE = XL_checkfloat(L, 2);
     R_sprite_scale_y_set(self, VALUE);
     return 0;
@@ -911,7 +911,7 @@ static int r_sprite_scale_y_newindex_xl(lua_State *L)
 
 static int r_sprite_skew_newindex_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     R_V2 VALUE = *((R_V2 *)luaL_checkudata(L, 2, "R_V2"));
     R_sprite_skew_set(self, VALUE);
     return 0;
@@ -919,7 +919,7 @@ static int r_sprite_skew_newindex_xl(lua_State *L)
 
 static int r_sprite_skew_x_newindex_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     float VALUE = XL_checkfloat(L, 2);
     R_sprite_skew_x_set(self, VALUE);
     return 0;
@@ -927,7 +927,7 @@ static int r_sprite_skew_x_newindex_xl(lua_State *L)
 
 static int r_sprite_skew_y_newindex_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     float VALUE = XL_checkfloat(L, 2);
     R_sprite_skew_y_set(self, VALUE);
     return 0;
@@ -935,7 +935,7 @@ static int r_sprite_skew_y_newindex_xl(lua_State *L)
 
 static int r_sprite_angle_newindex_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     float VALUE = XL_checkfloat(L, 2);
     R_sprite_angle_set(self, VALUE);
     return 0;
@@ -943,7 +943,7 @@ static int r_sprite_angle_newindex_xl(lua_State *L)
 
 static int r_sprite_alpha_newindex_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     float VALUE = XL_checkfloat(L, 2);
     R_sprite_alpha_set(self, VALUE);
     return 0;
@@ -951,7 +951,7 @@ static int r_sprite_alpha_newindex_xl(lua_State *L)
 
 static int r_sprite_base_newindex_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     R_V2 VALUE = *((R_V2 *)luaL_checkudata(L, 2, "R_V2"));
     R_sprite_base_set(self, VALUE);
     return 0;
@@ -959,7 +959,7 @@ static int r_sprite_base_newindex_xl(lua_State *L)
 
 static int r_sprite_base_x_newindex_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     float VALUE = XL_checkfloat(L, 2);
     R_sprite_base_x_set(self, VALUE);
     return 0;
@@ -967,7 +967,7 @@ static int r_sprite_base_x_newindex_xl(lua_State *L)
 
 static int r_sprite_base_y_newindex_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     float VALUE = XL_checkfloat(L, 2);
     R_sprite_base_y_set(self, VALUE);
     return 0;
@@ -975,7 +975,7 @@ static int r_sprite_base_y_newindex_xl(lua_State *L)
 
 static int r_sprite_rotation_newindex_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     float VALUE = XL_checkfloat(L, 2);
     R_sprite_rotation_set(self, VALUE);
     return 0;
@@ -983,7 +983,7 @@ static int r_sprite_rotation_newindex_xl(lua_State *L)
 
 static int r_sprite_rel_newindex_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     R_V2 VALUE = *((R_V2 *)luaL_checkudata(L, 2, "R_V2"));
     R_sprite_rel_set(self, VALUE);
     return 0;
@@ -991,7 +991,7 @@ static int r_sprite_rel_newindex_xl(lua_State *L)
 
 static int r_sprite_rel_x_newindex_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     float VALUE = XL_checkfloat(L, 2);
     R_sprite_rel_x_set(self, VALUE);
     return 0;
@@ -999,7 +999,7 @@ static int r_sprite_rel_x_newindex_xl(lua_State *L)
 
 static int r_sprite_rel_y_newindex_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     float VALUE = XL_checkfloat(L, 2);
     R_sprite_rel_y_set(self, VALUE);
     return 0;
@@ -1007,7 +1007,7 @@ static int r_sprite_rel_y_newindex_xl(lua_State *L)
 
 static int r_sprite_x_index_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     float RETVAL;
     RETVAL = R_sprite_pos_x(self);
     XL_pushfloat(L, RETVAL);
@@ -1016,7 +1016,7 @@ static int r_sprite_x_index_xl(lua_State *L)
 
 static int r_sprite_x_newindex_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     float VALUE = XL_checkfloat(L, 2);
     R_sprite_pos_x_set(self, VALUE);
     return 0;
@@ -1024,7 +1024,7 @@ static int r_sprite_x_newindex_xl(lua_State *L)
 
 static int r_sprite_y_index_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     float RETVAL;
     RETVAL = R_sprite_pos_y(self);
     XL_pushfloat(L, RETVAL);
@@ -1033,7 +1033,7 @@ static int r_sprite_y_index_xl(lua_State *L)
 
 static int r_sprite_y_newindex_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     float VALUE = XL_checkfloat(L, 2);
     R_sprite_pos_y_set(self, VALUE);
     return 0;
@@ -1041,7 +1041,7 @@ static int r_sprite_y_newindex_xl(lua_State *L)
 
 static int r_sprite_scales_index_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     float RETVAL;
     R_V2 scale = R_sprite_scale(self);
     RETVAL = (scale.x * 0.5f) + (scale.y * 0.5f);
@@ -1051,7 +1051,7 @@ static int r_sprite_scales_index_xl(lua_State *L)
 
 static int r_sprite_scales_newindex_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     float VALUE = XL_checkfloat(L, 2);
     R_sprite_scale_set(self, R_v2(VALUE, VALUE));
     return 0;
@@ -1059,7 +1059,7 @@ static int r_sprite_scales_newindex_xl(lua_State *L)
 
 static int r_sprite_world_pos_index_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     R_V2 RETVAL;
     RETVAL = R_sprite_world_pos(self);
     XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
@@ -1068,7 +1068,7 @@ static int r_sprite_world_pos_index_xl(lua_State *L)
 
 static int r_sprite_world_pos_x_index_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     float RETVAL;
     RETVAL = R_sprite_world_pos_x(self);
     XL_pushfloat(L, RETVAL);
@@ -1077,7 +1077,7 @@ static int r_sprite_world_pos_x_index_xl(lua_State *L)
 
 static int r_sprite_world_pos_y_index_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     float RETVAL;
     RETVAL = R_sprite_world_pos_y(self);
     XL_pushfloat(L, RETVAL);
@@ -1086,7 +1086,7 @@ static int r_sprite_world_pos_y_index_xl(lua_State *L)
 
 static int r_sprite_world_origin_index_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     R_V2 RETVAL;
     RETVAL = R_sprite_world_origin(self);
     XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
@@ -1095,7 +1095,7 @@ static int r_sprite_world_origin_index_xl(lua_State *L)
 
 static int r_sprite_world_origin_x_index_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     float RETVAL;
     RETVAL = R_sprite_world_origin_x(self);
     XL_pushfloat(L, RETVAL);
@@ -1104,7 +1104,7 @@ static int r_sprite_world_origin_x_index_xl(lua_State *L)
 
 static int r_sprite_world_origin_y_index_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     float RETVAL;
     RETVAL = R_sprite_world_origin_y(self);
     XL_pushfloat(L, RETVAL);
@@ -1113,7 +1113,7 @@ static int r_sprite_world_origin_y_index_xl(lua_State *L)
 
 static int r_sprite_method_to_local_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     R_V2 point = *((R_V2 *)luaL_checkudata(L, 2, "R_V2"));
     R_V2 RETVAL;
     RETVAL = R_sprite_to_local(self, point);
@@ -1123,7 +1123,7 @@ static int r_sprite_method_to_local_xl(lua_State *L)
 
 static int r_sprite_method_to_world_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     R_V2 point = *((R_V2 *)luaL_checkudata(L, 2, "R_V2"));
     R_V2 RETVAL;
     RETVAL = R_sprite_to_world(self, point);
@@ -1133,14 +1133,14 @@ static int r_sprite_method_to_world_xl(lua_State *L)
 
 static int r_sprite_method_reset_base_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     R_sprite_base_set(self, R_sprite_pos(self));
     return 0;
 }
 
 static int r_sprite_method_track_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     luaL_checkany(L, 2);
     int arg = 2;
     R_Sprite *tracking;
@@ -1156,15 +1156,15 @@ static int r_sprite_method_track_xl(lua_State *L)
 
 static int r_sprite_method_orphan_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     R_sprite_orphan(self);
     return 0;
 }
 
 static int r_sprite_method_add_child_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
-    R_Sprite *child = XL_checkpptype(L, 2, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
+    R_Sprite *child = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 2, "R_Sprite"));
     int RETVAL;
     RETVAL = R_sprite_child_add(self, child);
     XL_pushint(L, RETVAL);
@@ -1173,8 +1173,8 @@ static int r_sprite_method_add_child_xl(lua_State *L)
 
 static int r_sprite_method_add_child_at_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
-    R_Sprite *child = XL_checkpptype(L, 2, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
+    R_Sprite *child = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 2, "R_Sprite"));
     int index = XL_checkint(L, 3);
     int RETVAL;
     RETVAL = R_sprite_child_add_at(self, child, index);
@@ -1184,16 +1184,16 @@ static int r_sprite_method_add_child_at_xl(lua_State *L)
 
 static int r_sprite_method_remove_child_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
-    R_Sprite *child = XL_checkpptype(L, 2, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
+    R_Sprite *child = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 2, "R_Sprite"));
     R_sprite_child_remove(self, child);
     return 0;
 }
 
 static int r_sprite_method_child_index_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
-    R_Sprite *child = XL_checkpptype(L, 2, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
+    R_Sprite *child = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 2, "R_Sprite"));
     int RETVAL;
     RETVAL = R_sprite_child_index(self, child);
     XL_pushint(L, RETVAL);
@@ -1202,7 +1202,7 @@ static int r_sprite_method_child_index_xl(lua_State *L)
 
 static int r_sprite_index_index_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     R_Sprite *parent = R_sprite_parent(self);
     if (parent) {
         XL_pushint(L, R_sprite_child_index(parent, self));
@@ -1215,8 +1215,8 @@ static int r_sprite_index_index_xl(lua_State *L)
 
 static int r_sprite_method_draw_xl(lua_State *L)
 {
-    R_Sprite *self = XL_checkpptype(L, 1, "R_Sprite");
-    R_Nvg *nvg = XL_checkpptype(L, 2, "R_Nvg");
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
+    R_Nvg *nvg = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 2, "R_Nvg"));
     int logical_width = XL_checkint(L, 3);
     int logical_height = XL_checkint(L, 4);
     int target_width = XL_checkint(L, 5);

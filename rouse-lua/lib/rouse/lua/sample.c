@@ -46,7 +46,7 @@ static int r_sample_from_file_xl(lua_State *L)
 static int r_sample_method_gc_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_Sample *self = XL_checkpptype_nullable(L, 1, "R_Sample");
+    R_Sample *self = R_CPPCAST(R_Sample *, XL_checkpptype_nullable(L, 1, "R_Sample"));
     R_sample_free(self);
     return 0;
 #else
@@ -57,7 +57,7 @@ static int r_sample_method_gc_xl(lua_State *L)
 static int r_sample_len_index_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_Sample *self = XL_checkpptype(L, 1, "R_Sample");
+    R_Sample *self = R_CPPCAST(R_Sample *, XL_checkpptype(L, 1, "R_Sample"));
     int RETVAL;
     RETVAL = self->len;
     XL_pushint(L, RETVAL);
@@ -70,7 +70,7 @@ static int r_sample_len_index_xl(lua_State *L)
 static int r_sample_channels_index_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_Sample *self = XL_checkpptype(L, 1, "R_Sample");
+    R_Sample *self = R_CPPCAST(R_Sample *, XL_checkpptype(L, 1, "R_Sample"));
     int RETVAL;
     RETVAL = self->channels;
     XL_pushint(L, RETVAL);
@@ -83,7 +83,7 @@ static int r_sample_channels_index_xl(lua_State *L)
 static int r_sample_rate_index_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_Sample *self = XL_checkpptype(L, 1, "R_Sample");
+    R_Sample *self = R_CPPCAST(R_Sample *, XL_checkpptype(L, 1, "R_Sample"));
     int RETVAL;
     RETVAL = self->rate;
     XL_pushint(L, RETVAL);
@@ -96,7 +96,7 @@ static int r_sample_rate_index_xl(lua_State *L)
 static int r_sample_al_format_index_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_Sample *self = XL_checkpptype(L, 1, "R_Sample");
+    R_Sample *self = R_CPPCAST(R_Sample *, XL_checkpptype(L, 1, "R_Sample"));
     int RETVAL;
     RETVAL = R_sample_al_format(self);
     XL_pushint(L, RETVAL);
@@ -109,7 +109,7 @@ static int r_sample_al_format_index_xl(lua_State *L)
 static int r_sample_al_buffer_size_index_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_Sample *self = XL_checkpptype(L, 1, "R_Sample");
+    R_Sample *self = R_CPPCAST(R_Sample *, XL_checkpptype(L, 1, "R_Sample"));
     int RETVAL;
     RETVAL = R_sample_al_buffer_size(self);
     XL_pushint(L, RETVAL);

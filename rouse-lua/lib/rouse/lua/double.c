@@ -148,7 +148,7 @@ static int double_method_le_xl(lua_State *L)
 
 static int double_method_to_integer_xl(lua_State *L)
 {
-    double *self = XL_checkutype(L, 1, "double");
+    double *self = R_CPPCAST(double *, XL_checkutype(L, 1, "double"));
     lua_Integer RETVAL;
     RETVAL = (lua_Integer) *self;
     lua_pushinteger(L, RETVAL);
@@ -157,7 +157,7 @@ static int double_method_to_integer_xl(lua_State *L)
 
 static int double_method_sep_rounded_xl(lua_State *L)
 {
-    double *self = XL_checkutype(L, 1, "double");
+    double *self = R_CPPCAST(double *, XL_checkutype(L, 1, "double"));
     char *s = R_format("%.0f", round(*self));
     size_t len = strlen(s);
 

@@ -148,7 +148,7 @@ static int sdl_set_gl_swap_interval_xl(lua_State *L)
 
 static int sdl_windowevent_type_index_xl(lua_State *L)
 {
-    SDL_WindowEvent *self = XL_checkutype(L, 1, "SDL_WindowEvent");
+    SDL_WindowEvent *self = R_CPPCAST(SDL_WindowEvent *, XL_checkutype(L, 1, "SDL_WindowEvent"));
     uint32_t RETVAL;
     RETVAL = self->type;
     XL_pushuint32(L, RETVAL);
@@ -157,7 +157,7 @@ static int sdl_windowevent_type_index_xl(lua_State *L)
 
 static int sdl_windowevent_timestamp_index_xl(lua_State *L)
 {
-    SDL_WindowEvent *self = XL_checkutype(L, 1, "SDL_WindowEvent");
+    SDL_WindowEvent *self = R_CPPCAST(SDL_WindowEvent *, XL_checkutype(L, 1, "SDL_WindowEvent"));
     uint32_t RETVAL;
     RETVAL = self->timestamp;
     XL_pushuint32(L, RETVAL);
@@ -166,7 +166,7 @@ static int sdl_windowevent_timestamp_index_xl(lua_State *L)
 
 static int sdl_windowevent_window_id_index_xl(lua_State *L)
 {
-    SDL_WindowEvent *self = XL_checkutype(L, 1, "SDL_WindowEvent");
+    SDL_WindowEvent *self = R_CPPCAST(SDL_WindowEvent *, XL_checkutype(L, 1, "SDL_WindowEvent"));
     uint32_t RETVAL;
     RETVAL = self->windowID;
     XL_pushuint32(L, RETVAL);
@@ -175,7 +175,7 @@ static int sdl_windowevent_window_id_index_xl(lua_State *L)
 
 static int sdl_windowevent_event_index_xl(lua_State *L)
 {
-    SDL_WindowEvent *self = XL_checkutype(L, 1, "SDL_WindowEvent");
+    SDL_WindowEvent *self = R_CPPCAST(SDL_WindowEvent *, XL_checkutype(L, 1, "SDL_WindowEvent"));
     uint8_t RETVAL;
     RETVAL = self->event;
     XL_pushuint8(L, RETVAL);
@@ -184,7 +184,7 @@ static int sdl_windowevent_event_index_xl(lua_State *L)
 
 static int sdl_windowevent_data1_index_xl(lua_State *L)
 {
-    SDL_WindowEvent *self = XL_checkutype(L, 1, "SDL_WindowEvent");
+    SDL_WindowEvent *self = R_CPPCAST(SDL_WindowEvent *, XL_checkutype(L, 1, "SDL_WindowEvent"));
     int32_t RETVAL;
     RETVAL = self->data1;
     XL_pushint32(L, RETVAL);
@@ -193,7 +193,7 @@ static int sdl_windowevent_data1_index_xl(lua_State *L)
 
 static int sdl_windowevent_data2_index_xl(lua_State *L)
 {
-    SDL_WindowEvent *self = XL_checkutype(L, 1, "SDL_WindowEvent");
+    SDL_WindowEvent *self = R_CPPCAST(SDL_WindowEvent *, XL_checkutype(L, 1, "SDL_WindowEvent"));
     int32_t RETVAL;
     RETVAL = self->data2;
     XL_pushint32(L, RETVAL);
@@ -202,7 +202,7 @@ static int sdl_windowevent_data2_index_xl(lua_State *L)
 
 static int sdl_keyboardevent_type_index_xl(lua_State *L)
 {
-    SDL_KeyboardEvent *self = XL_checkutype(L, 1, "SDL_KeyboardEvent");
+    SDL_KeyboardEvent *self = R_CPPCAST(SDL_KeyboardEvent *, XL_checkutype(L, 1, "SDL_KeyboardEvent"));
     uint32_t RETVAL;
     RETVAL = self->type;
     XL_pushuint32(L, RETVAL);
@@ -211,7 +211,7 @@ static int sdl_keyboardevent_type_index_xl(lua_State *L)
 
 static int sdl_keyboardevent_timestamp_index_xl(lua_State *L)
 {
-    SDL_KeyboardEvent *self = XL_checkutype(L, 1, "SDL_KeyboardEvent");
+    SDL_KeyboardEvent *self = R_CPPCAST(SDL_KeyboardEvent *, XL_checkutype(L, 1, "SDL_KeyboardEvent"));
     uint32_t RETVAL;
     RETVAL = self->timestamp;
     XL_pushuint32(L, RETVAL);
@@ -220,7 +220,7 @@ static int sdl_keyboardevent_timestamp_index_xl(lua_State *L)
 
 static int sdl_keyboardevent_window_id_index_xl(lua_State *L)
 {
-    SDL_KeyboardEvent *self = XL_checkutype(L, 1, "SDL_KeyboardEvent");
+    SDL_KeyboardEvent *self = R_CPPCAST(SDL_KeyboardEvent *, XL_checkutype(L, 1, "SDL_KeyboardEvent"));
     uint32_t RETVAL;
     RETVAL = self->windowID;
     XL_pushuint32(L, RETVAL);
@@ -229,7 +229,7 @@ static int sdl_keyboardevent_window_id_index_xl(lua_State *L)
 
 static int sdl_keyboardevent_state_index_xl(lua_State *L)
 {
-    SDL_KeyboardEvent *self = XL_checkutype(L, 1, "SDL_KeyboardEvent");
+    SDL_KeyboardEvent *self = R_CPPCAST(SDL_KeyboardEvent *, XL_checkutype(L, 1, "SDL_KeyboardEvent"));
     uint8_t RETVAL;
     RETVAL = self->state;
     XL_pushuint8(L, RETVAL);
@@ -238,7 +238,7 @@ static int sdl_keyboardevent_state_index_xl(lua_State *L)
 
 static int sdl_keyboardevent_repeat_index_xl(lua_State *L)
 {
-    SDL_KeyboardEvent *self = XL_checkutype(L, 1, "SDL_KeyboardEvent");
+    SDL_KeyboardEvent *self = R_CPPCAST(SDL_KeyboardEvent *, XL_checkutype(L, 1, "SDL_KeyboardEvent"));
     uint8_t RETVAL;
     RETVAL = self->repeat;
     XL_pushuint8(L, RETVAL);
@@ -247,7 +247,7 @@ static int sdl_keyboardevent_repeat_index_xl(lua_State *L)
 
 static int sdl_keyboardevent_scancode_index_xl(lua_State *L)
 {
-    SDL_KeyboardEvent *self = XL_checkutype(L, 1, "SDL_KeyboardEvent");
+    SDL_KeyboardEvent *self = R_CPPCAST(SDL_KeyboardEvent *, XL_checkutype(L, 1, "SDL_KeyboardEvent"));
     lua_Integer RETVAL;
     RETVAL = (lua_Integer) self->keysym.scancode;
     lua_pushinteger(L, RETVAL);
@@ -256,7 +256,7 @@ static int sdl_keyboardevent_scancode_index_xl(lua_State *L)
 
 static int sdl_keyboardevent_sym_index_xl(lua_State *L)
 {
-    SDL_KeyboardEvent *self = XL_checkutype(L, 1, "SDL_KeyboardEvent");
+    SDL_KeyboardEvent *self = R_CPPCAST(SDL_KeyboardEvent *, XL_checkutype(L, 1, "SDL_KeyboardEvent"));
     lua_Integer RETVAL;
     RETVAL = (lua_Integer) self->keysym.sym;
     lua_pushinteger(L, RETVAL);
@@ -265,7 +265,7 @@ static int sdl_keyboardevent_sym_index_xl(lua_State *L)
 
 static int sdl_keyboardevent_mod_index_xl(lua_State *L)
 {
-    SDL_KeyboardEvent *self = XL_checkutype(L, 1, "SDL_KeyboardEvent");
+    SDL_KeyboardEvent *self = R_CPPCAST(SDL_KeyboardEvent *, XL_checkutype(L, 1, "SDL_KeyboardEvent"));
     lua_Integer RETVAL;
     RETVAL = (lua_Integer) self->keysym.mod;
     lua_pushinteger(L, RETVAL);
@@ -274,7 +274,7 @@ static int sdl_keyboardevent_mod_index_xl(lua_State *L)
 
 static int sdl_keyboardevent_pressed_index_xl(lua_State *L)
 {
-    SDL_KeyboardEvent *self = XL_checkutype(L, 1, "SDL_KeyboardEvent");
+    SDL_KeyboardEvent *self = R_CPPCAST(SDL_KeyboardEvent *, XL_checkutype(L, 1, "SDL_KeyboardEvent"));
     bool RETVAL;
     RETVAL = self->state == SDL_PRESSED;
     lua_pushboolean(L, RETVAL);
@@ -283,7 +283,7 @@ static int sdl_keyboardevent_pressed_index_xl(lua_State *L)
 
 static int sdl_keyboardevent_released_index_xl(lua_State *L)
 {
-    SDL_KeyboardEvent *self = XL_checkutype(L, 1, "SDL_KeyboardEvent");
+    SDL_KeyboardEvent *self = R_CPPCAST(SDL_KeyboardEvent *, XL_checkutype(L, 1, "SDL_KeyboardEvent"));
     bool RETVAL;
     RETVAL = self->state == SDL_RELEASED;
     lua_pushboolean(L, RETVAL);
@@ -292,7 +292,7 @@ static int sdl_keyboardevent_released_index_xl(lua_State *L)
 
 static int sdl_mousemotionevent_type_index_xl(lua_State *L)
 {
-    SDL_MouseMotionEvent *self = XL_checkutype(L, 1, "SDL_MouseMotionEvent");
+    SDL_MouseMotionEvent *self = R_CPPCAST(SDL_MouseMotionEvent *, XL_checkutype(L, 1, "SDL_MouseMotionEvent"));
     uint32_t RETVAL;
     RETVAL = self->type;
     XL_pushuint32(L, RETVAL);
@@ -301,7 +301,7 @@ static int sdl_mousemotionevent_type_index_xl(lua_State *L)
 
 static int sdl_mousemotionevent_timestamp_index_xl(lua_State *L)
 {
-    SDL_MouseMotionEvent *self = XL_checkutype(L, 1, "SDL_MouseMotionEvent");
+    SDL_MouseMotionEvent *self = R_CPPCAST(SDL_MouseMotionEvent *, XL_checkutype(L, 1, "SDL_MouseMotionEvent"));
     uint32_t RETVAL;
     RETVAL = self->timestamp;
     XL_pushuint32(L, RETVAL);
@@ -310,7 +310,7 @@ static int sdl_mousemotionevent_timestamp_index_xl(lua_State *L)
 
 static int sdl_mousemotionevent_window_id_index_xl(lua_State *L)
 {
-    SDL_MouseMotionEvent *self = XL_checkutype(L, 1, "SDL_MouseMotionEvent");
+    SDL_MouseMotionEvent *self = R_CPPCAST(SDL_MouseMotionEvent *, XL_checkutype(L, 1, "SDL_MouseMotionEvent"));
     uint32_t RETVAL;
     RETVAL = self->windowID;
     XL_pushuint32(L, RETVAL);
@@ -319,7 +319,7 @@ static int sdl_mousemotionevent_window_id_index_xl(lua_State *L)
 
 static int sdl_mousemotionevent_which_index_xl(lua_State *L)
 {
-    SDL_MouseMotionEvent *self = XL_checkutype(L, 1, "SDL_MouseMotionEvent");
+    SDL_MouseMotionEvent *self = R_CPPCAST(SDL_MouseMotionEvent *, XL_checkutype(L, 1, "SDL_MouseMotionEvent"));
     uint32_t RETVAL;
     RETVAL = self->which;
     XL_pushuint32(L, RETVAL);
@@ -328,7 +328,7 @@ static int sdl_mousemotionevent_which_index_xl(lua_State *L)
 
 static int sdl_mousemotionevent_state_index_xl(lua_State *L)
 {
-    SDL_MouseMotionEvent *self = XL_checkutype(L, 1, "SDL_MouseMotionEvent");
+    SDL_MouseMotionEvent *self = R_CPPCAST(SDL_MouseMotionEvent *, XL_checkutype(L, 1, "SDL_MouseMotionEvent"));
     uint32_t RETVAL;
     RETVAL = self->state;
     XL_pushuint32(L, RETVAL);
@@ -337,7 +337,7 @@ static int sdl_mousemotionevent_state_index_xl(lua_State *L)
 
 static int sdl_mousemotionevent_x_index_xl(lua_State *L)
 {
-    SDL_MouseMotionEvent *self = XL_checkutype(L, 1, "SDL_MouseMotionEvent");
+    SDL_MouseMotionEvent *self = R_CPPCAST(SDL_MouseMotionEvent *, XL_checkutype(L, 1, "SDL_MouseMotionEvent"));
     int32_t RETVAL;
     RETVAL = self->x;
     XL_pushint32(L, RETVAL);
@@ -346,7 +346,7 @@ static int sdl_mousemotionevent_x_index_xl(lua_State *L)
 
 static int sdl_mousemotionevent_y_index_xl(lua_State *L)
 {
-    SDL_MouseMotionEvent *self = XL_checkutype(L, 1, "SDL_MouseMotionEvent");
+    SDL_MouseMotionEvent *self = R_CPPCAST(SDL_MouseMotionEvent *, XL_checkutype(L, 1, "SDL_MouseMotionEvent"));
     int32_t RETVAL;
     RETVAL = self->y;
     XL_pushint32(L, RETVAL);
@@ -355,7 +355,7 @@ static int sdl_mousemotionevent_y_index_xl(lua_State *L)
 
 static int sdl_mousemotionevent_xrel_index_xl(lua_State *L)
 {
-    SDL_MouseMotionEvent *self = XL_checkutype(L, 1, "SDL_MouseMotionEvent");
+    SDL_MouseMotionEvent *self = R_CPPCAST(SDL_MouseMotionEvent *, XL_checkutype(L, 1, "SDL_MouseMotionEvent"));
     int32_t RETVAL;
     RETVAL = self->xrel;
     XL_pushint32(L, RETVAL);
@@ -364,7 +364,7 @@ static int sdl_mousemotionevent_xrel_index_xl(lua_State *L)
 
 static int sdl_mousemotionevent_yrel_index_xl(lua_State *L)
 {
-    SDL_MouseMotionEvent *self = XL_checkutype(L, 1, "SDL_MouseMotionEvent");
+    SDL_MouseMotionEvent *self = R_CPPCAST(SDL_MouseMotionEvent *, XL_checkutype(L, 1, "SDL_MouseMotionEvent"));
     int32_t RETVAL;
     RETVAL = self->yrel;
     XL_pushint32(L, RETVAL);
@@ -373,7 +373,7 @@ static int sdl_mousemotionevent_yrel_index_xl(lua_State *L)
 
 static int sdl_mousemotionevent_left_button_index_xl(lua_State *L)
 {
-    SDL_MouseMotionEvent *self = XL_checkutype(L, 1, "SDL_MouseMotionEvent");
+    SDL_MouseMotionEvent *self = R_CPPCAST(SDL_MouseMotionEvent *, XL_checkutype(L, 1, "SDL_MouseMotionEvent"));
     bool RETVAL;
     RETVAL = self->state | SDL_BUTTON_LMASK;
     lua_pushboolean(L, RETVAL);
@@ -382,7 +382,7 @@ static int sdl_mousemotionevent_left_button_index_xl(lua_State *L)
 
 static int sdl_mousemotionevent_middle_button_index_xl(lua_State *L)
 {
-    SDL_MouseMotionEvent *self = XL_checkutype(L, 1, "SDL_MouseMotionEvent");
+    SDL_MouseMotionEvent *self = R_CPPCAST(SDL_MouseMotionEvent *, XL_checkutype(L, 1, "SDL_MouseMotionEvent"));
     bool RETVAL;
     RETVAL = self->state | SDL_BUTTON_MMASK;
     lua_pushboolean(L, RETVAL);
@@ -391,7 +391,7 @@ static int sdl_mousemotionevent_middle_button_index_xl(lua_State *L)
 
 static int sdl_mousemotionevent_right_button_index_xl(lua_State *L)
 {
-    SDL_MouseMotionEvent *self = XL_checkutype(L, 1, "SDL_MouseMotionEvent");
+    SDL_MouseMotionEvent *self = R_CPPCAST(SDL_MouseMotionEvent *, XL_checkutype(L, 1, "SDL_MouseMotionEvent"));
     bool RETVAL;
     RETVAL = self->state | SDL_BUTTON_RMASK;
     lua_pushboolean(L, RETVAL);
@@ -400,7 +400,7 @@ static int sdl_mousemotionevent_right_button_index_xl(lua_State *L)
 
 static int sdl_mousemotionevent_x1_button_index_xl(lua_State *L)
 {
-    SDL_MouseMotionEvent *self = XL_checkutype(L, 1, "SDL_MouseMotionEvent");
+    SDL_MouseMotionEvent *self = R_CPPCAST(SDL_MouseMotionEvent *, XL_checkutype(L, 1, "SDL_MouseMotionEvent"));
     bool RETVAL;
     RETVAL = self->state | SDL_BUTTON_X1MASK;
     lua_pushboolean(L, RETVAL);
@@ -409,7 +409,7 @@ static int sdl_mousemotionevent_x1_button_index_xl(lua_State *L)
 
 static int sdl_mousemotionevent_x2_button_index_xl(lua_State *L)
 {
-    SDL_MouseMotionEvent *self = XL_checkutype(L, 1, "SDL_MouseMotionEvent");
+    SDL_MouseMotionEvent *self = R_CPPCAST(SDL_MouseMotionEvent *, XL_checkutype(L, 1, "SDL_MouseMotionEvent"));
     bool RETVAL;
     RETVAL = self->state | SDL_BUTTON_X2MASK;
     lua_pushboolean(L, RETVAL);
@@ -418,7 +418,7 @@ static int sdl_mousemotionevent_x2_button_index_xl(lua_State *L)
 
 static int sdl_mousebuttonevent_type_index_xl(lua_State *L)
 {
-    SDL_MouseButtonEvent *self = XL_checkutype(L, 1, "SDL_MouseButtonEvent");
+    SDL_MouseButtonEvent *self = R_CPPCAST(SDL_MouseButtonEvent *, XL_checkutype(L, 1, "SDL_MouseButtonEvent"));
     uint32_t RETVAL;
     RETVAL = self->type;
     XL_pushuint32(L, RETVAL);
@@ -427,7 +427,7 @@ static int sdl_mousebuttonevent_type_index_xl(lua_State *L)
 
 static int sdl_mousebuttonevent_timestamp_index_xl(lua_State *L)
 {
-    SDL_MouseButtonEvent *self = XL_checkutype(L, 1, "SDL_MouseButtonEvent");
+    SDL_MouseButtonEvent *self = R_CPPCAST(SDL_MouseButtonEvent *, XL_checkutype(L, 1, "SDL_MouseButtonEvent"));
     uint32_t RETVAL;
     RETVAL = self->timestamp;
     XL_pushuint32(L, RETVAL);
@@ -436,7 +436,7 @@ static int sdl_mousebuttonevent_timestamp_index_xl(lua_State *L)
 
 static int sdl_mousebuttonevent_window_id_index_xl(lua_State *L)
 {
-    SDL_MouseButtonEvent *self = XL_checkutype(L, 1, "SDL_MouseButtonEvent");
+    SDL_MouseButtonEvent *self = R_CPPCAST(SDL_MouseButtonEvent *, XL_checkutype(L, 1, "SDL_MouseButtonEvent"));
     uint32_t RETVAL;
     RETVAL = self->windowID;
     XL_pushuint32(L, RETVAL);
@@ -445,7 +445,7 @@ static int sdl_mousebuttonevent_window_id_index_xl(lua_State *L)
 
 static int sdl_mousebuttonevent_which_index_xl(lua_State *L)
 {
-    SDL_MouseButtonEvent *self = XL_checkutype(L, 1, "SDL_MouseButtonEvent");
+    SDL_MouseButtonEvent *self = R_CPPCAST(SDL_MouseButtonEvent *, XL_checkutype(L, 1, "SDL_MouseButtonEvent"));
     uint32_t RETVAL;
     RETVAL = self->which;
     XL_pushuint32(L, RETVAL);
@@ -454,7 +454,7 @@ static int sdl_mousebuttonevent_which_index_xl(lua_State *L)
 
 static int sdl_mousebuttonevent_button_index_xl(lua_State *L)
 {
-    SDL_MouseButtonEvent *self = XL_checkutype(L, 1, "SDL_MouseButtonEvent");
+    SDL_MouseButtonEvent *self = R_CPPCAST(SDL_MouseButtonEvent *, XL_checkutype(L, 1, "SDL_MouseButtonEvent"));
     uint8_t RETVAL;
     RETVAL = self->button;
     XL_pushuint8(L, RETVAL);
@@ -463,7 +463,7 @@ static int sdl_mousebuttonevent_button_index_xl(lua_State *L)
 
 static int sdl_mousebuttonevent_state_index_xl(lua_State *L)
 {
-    SDL_MouseButtonEvent *self = XL_checkutype(L, 1, "SDL_MouseButtonEvent");
+    SDL_MouseButtonEvent *self = R_CPPCAST(SDL_MouseButtonEvent *, XL_checkutype(L, 1, "SDL_MouseButtonEvent"));
     uint8_t RETVAL;
     RETVAL = self->state;
     XL_pushuint8(L, RETVAL);
@@ -472,7 +472,7 @@ static int sdl_mousebuttonevent_state_index_xl(lua_State *L)
 
 static int sdl_mousebuttonevent_x_index_xl(lua_State *L)
 {
-    SDL_MouseButtonEvent *self = XL_checkutype(L, 1, "SDL_MouseButtonEvent");
+    SDL_MouseButtonEvent *self = R_CPPCAST(SDL_MouseButtonEvent *, XL_checkutype(L, 1, "SDL_MouseButtonEvent"));
     int32_t RETVAL;
     RETVAL = self->x;
     XL_pushint32(L, RETVAL);
@@ -481,7 +481,7 @@ static int sdl_mousebuttonevent_x_index_xl(lua_State *L)
 
 static int sdl_mousebuttonevent_y_index_xl(lua_State *L)
 {
-    SDL_MouseButtonEvent *self = XL_checkutype(L, 1, "SDL_MouseButtonEvent");
+    SDL_MouseButtonEvent *self = R_CPPCAST(SDL_MouseButtonEvent *, XL_checkutype(L, 1, "SDL_MouseButtonEvent"));
     int32_t RETVAL;
     RETVAL = self->y;
     XL_pushint32(L, RETVAL);
@@ -490,7 +490,7 @@ static int sdl_mousebuttonevent_y_index_xl(lua_State *L)
 
 static int sdl_mousebuttonevent_pressed_index_xl(lua_State *L)
 {
-    SDL_MouseButtonEvent *self = XL_checkutype(L, 1, "SDL_MouseButtonEvent");
+    SDL_MouseButtonEvent *self = R_CPPCAST(SDL_MouseButtonEvent *, XL_checkutype(L, 1, "SDL_MouseButtonEvent"));
     bool RETVAL;
     RETVAL = self->state == SDL_PRESSED;
     lua_pushboolean(L, RETVAL);
@@ -499,7 +499,7 @@ static int sdl_mousebuttonevent_pressed_index_xl(lua_State *L)
 
 static int sdl_mousebuttonevent_released_index_xl(lua_State *L)
 {
-    SDL_MouseButtonEvent *self = XL_checkutype(L, 1, "SDL_MouseButtonEvent");
+    SDL_MouseButtonEvent *self = R_CPPCAST(SDL_MouseButtonEvent *, XL_checkutype(L, 1, "SDL_MouseButtonEvent"));
     bool RETVAL;
     RETVAL = self->state == SDL_RELEASED;
     lua_pushboolean(L, RETVAL);
@@ -508,7 +508,7 @@ static int sdl_mousebuttonevent_released_index_xl(lua_State *L)
 
 static int sdl_mousebuttonevent_left_button_index_xl(lua_State *L)
 {
-    SDL_MouseButtonEvent *self = XL_checkutype(L, 1, "SDL_MouseButtonEvent");
+    SDL_MouseButtonEvent *self = R_CPPCAST(SDL_MouseButtonEvent *, XL_checkutype(L, 1, "SDL_MouseButtonEvent"));
     bool RETVAL;
     RETVAL = self->button == SDL_BUTTON_LEFT;
     lua_pushboolean(L, RETVAL);
@@ -517,7 +517,7 @@ static int sdl_mousebuttonevent_left_button_index_xl(lua_State *L)
 
 static int sdl_mousebuttonevent_middle_button_index_xl(lua_State *L)
 {
-    SDL_MouseButtonEvent *self = XL_checkutype(L, 1, "SDL_MouseButtonEvent");
+    SDL_MouseButtonEvent *self = R_CPPCAST(SDL_MouseButtonEvent *, XL_checkutype(L, 1, "SDL_MouseButtonEvent"));
     bool RETVAL;
     RETVAL = self->button == SDL_BUTTON_MIDDLE;
     lua_pushboolean(L, RETVAL);
@@ -526,7 +526,7 @@ static int sdl_mousebuttonevent_middle_button_index_xl(lua_State *L)
 
 static int sdl_mousebuttonevent_right_button_index_xl(lua_State *L)
 {
-    SDL_MouseButtonEvent *self = XL_checkutype(L, 1, "SDL_MouseButtonEvent");
+    SDL_MouseButtonEvent *self = R_CPPCAST(SDL_MouseButtonEvent *, XL_checkutype(L, 1, "SDL_MouseButtonEvent"));
     bool RETVAL;
     RETVAL = self->button == SDL_BUTTON_RIGHT;
     lua_pushboolean(L, RETVAL);
@@ -535,7 +535,7 @@ static int sdl_mousebuttonevent_right_button_index_xl(lua_State *L)
 
 static int sdl_mousebuttonevent_x1_button_index_xl(lua_State *L)
 {
-    SDL_MouseButtonEvent *self = XL_checkutype(L, 1, "SDL_MouseButtonEvent");
+    SDL_MouseButtonEvent *self = R_CPPCAST(SDL_MouseButtonEvent *, XL_checkutype(L, 1, "SDL_MouseButtonEvent"));
     bool RETVAL;
     RETVAL = self->button == SDL_BUTTON_X1;
     lua_pushboolean(L, RETVAL);
@@ -544,7 +544,7 @@ static int sdl_mousebuttonevent_x1_button_index_xl(lua_State *L)
 
 static int sdl_mousebuttonevent_x2_button_index_xl(lua_State *L)
 {
-    SDL_MouseButtonEvent *self = XL_checkutype(L, 1, "SDL_MouseButtonEvent");
+    SDL_MouseButtonEvent *self = R_CPPCAST(SDL_MouseButtonEvent *, XL_checkutype(L, 1, "SDL_MouseButtonEvent"));
     bool RETVAL;
     RETVAL = self->button == SDL_BUTTON_X2;
     lua_pushboolean(L, RETVAL);
@@ -553,7 +553,7 @@ static int sdl_mousebuttonevent_x2_button_index_xl(lua_State *L)
 
 static int sdl_mousewheelevent_type_index_xl(lua_State *L)
 {
-    SDL_MouseWheelEvent *self = XL_checkutype(L, 1, "SDL_MouseWheelEvent");
+    SDL_MouseWheelEvent *self = R_CPPCAST(SDL_MouseWheelEvent *, XL_checkutype(L, 1, "SDL_MouseWheelEvent"));
     uint32_t RETVAL;
     RETVAL = self->type;
     XL_pushuint32(L, RETVAL);
@@ -562,7 +562,7 @@ static int sdl_mousewheelevent_type_index_xl(lua_State *L)
 
 static int sdl_mousewheelevent_timestamp_index_xl(lua_State *L)
 {
-    SDL_MouseWheelEvent *self = XL_checkutype(L, 1, "SDL_MouseWheelEvent");
+    SDL_MouseWheelEvent *self = R_CPPCAST(SDL_MouseWheelEvent *, XL_checkutype(L, 1, "SDL_MouseWheelEvent"));
     uint32_t RETVAL;
     RETVAL = self->timestamp;
     XL_pushuint32(L, RETVAL);
@@ -571,7 +571,7 @@ static int sdl_mousewheelevent_timestamp_index_xl(lua_State *L)
 
 static int sdl_mousewheelevent_window_id_index_xl(lua_State *L)
 {
-    SDL_MouseWheelEvent *self = XL_checkutype(L, 1, "SDL_MouseWheelEvent");
+    SDL_MouseWheelEvent *self = R_CPPCAST(SDL_MouseWheelEvent *, XL_checkutype(L, 1, "SDL_MouseWheelEvent"));
     uint32_t RETVAL;
     RETVAL = self->windowID;
     XL_pushuint32(L, RETVAL);
@@ -580,7 +580,7 @@ static int sdl_mousewheelevent_window_id_index_xl(lua_State *L)
 
 static int sdl_mousewheelevent_which_index_xl(lua_State *L)
 {
-    SDL_MouseWheelEvent *self = XL_checkutype(L, 1, "SDL_MouseWheelEvent");
+    SDL_MouseWheelEvent *self = R_CPPCAST(SDL_MouseWheelEvent *, XL_checkutype(L, 1, "SDL_MouseWheelEvent"));
     uint32_t RETVAL;
     RETVAL = self->which;
     XL_pushuint32(L, RETVAL);
@@ -589,7 +589,7 @@ static int sdl_mousewheelevent_which_index_xl(lua_State *L)
 
 static int sdl_mousewheelevent_x_index_xl(lua_State *L)
 {
-    SDL_MouseWheelEvent *self = XL_checkutype(L, 1, "SDL_MouseWheelEvent");
+    SDL_MouseWheelEvent *self = R_CPPCAST(SDL_MouseWheelEvent *, XL_checkutype(L, 1, "SDL_MouseWheelEvent"));
     int32_t RETVAL;
     RETVAL = self->x;
     XL_pushint32(L, RETVAL);
@@ -598,7 +598,7 @@ static int sdl_mousewheelevent_x_index_xl(lua_State *L)
 
 static int sdl_mousewheelevent_y_index_xl(lua_State *L)
 {
-    SDL_MouseWheelEvent *self = XL_checkutype(L, 1, "SDL_MouseWheelEvent");
+    SDL_MouseWheelEvent *self = R_CPPCAST(SDL_MouseWheelEvent *, XL_checkutype(L, 1, "SDL_MouseWheelEvent"));
     int32_t RETVAL;
     RETVAL = self->y;
     XL_pushint32(L, RETVAL);
@@ -607,7 +607,7 @@ static int sdl_mousewheelevent_y_index_xl(lua_State *L)
 
 static int sdl_mousewheelevent_direction_index_xl(lua_State *L)
 {
-    SDL_MouseWheelEvent *self = XL_checkutype(L, 1, "SDL_MouseWheelEvent");
+    SDL_MouseWheelEvent *self = R_CPPCAST(SDL_MouseWheelEvent *, XL_checkutype(L, 1, "SDL_MouseWheelEvent"));
     uint32_t RETVAL;
     RETVAL = self->direction;
     XL_pushuint32(L, RETVAL);
@@ -616,7 +616,7 @@ static int sdl_mousewheelevent_direction_index_xl(lua_State *L)
 
 static int sdl_mousewheelevent_is_normal_index_xl(lua_State *L)
 {
-    SDL_MouseWheelEvent *self = XL_checkutype(L, 1, "SDL_MouseWheelEvent");
+    SDL_MouseWheelEvent *self = R_CPPCAST(SDL_MouseWheelEvent *, XL_checkutype(L, 1, "SDL_MouseWheelEvent"));
     bool RETVAL;
     RETVAL = self->direction == SDL_MOUSEWHEEL_NORMAL;
     lua_pushboolean(L, RETVAL);
@@ -625,7 +625,7 @@ static int sdl_mousewheelevent_is_normal_index_xl(lua_State *L)
 
 static int sdl_mousewheelevent_is_flipped_index_xl(lua_State *L)
 {
-    SDL_MouseWheelEvent *self = XL_checkutype(L, 1, "SDL_MouseWheelEvent");
+    SDL_MouseWheelEvent *self = R_CPPCAST(SDL_MouseWheelEvent *, XL_checkutype(L, 1, "SDL_MouseWheelEvent"));
     bool RETVAL;
     RETVAL = self->direction == SDL_MOUSEWHEEL_FLIPPED;
     lua_pushboolean(L, RETVAL);
@@ -634,7 +634,7 @@ static int sdl_mousewheelevent_is_flipped_index_xl(lua_State *L)
 
 static int sdl_mousewheelevent_effective_x_index_xl(lua_State *L)
 {
-    SDL_MouseWheelEvent *self = XL_checkutype(L, 1, "SDL_MouseWheelEvent");
+    SDL_MouseWheelEvent *self = R_CPPCAST(SDL_MouseWheelEvent *, XL_checkutype(L, 1, "SDL_MouseWheelEvent"));
     int32_t RETVAL;
     int32_t x = self->x;
     RETVAL    = self->direction == SDL_MOUSEWHEEL_FLIPPED ? -x : x;
@@ -644,7 +644,7 @@ static int sdl_mousewheelevent_effective_x_index_xl(lua_State *L)
 
 static int sdl_mousewheelevent_effective_y_index_xl(lua_State *L)
 {
-    SDL_MouseWheelEvent *self = XL_checkutype(L, 1, "SDL_MouseWheelEvent");
+    SDL_MouseWheelEvent *self = R_CPPCAST(SDL_MouseWheelEvent *, XL_checkutype(L, 1, "SDL_MouseWheelEvent"));
     int32_t RETVAL;
     int32_t y = self->y;
     RETVAL    = self->direction == SDL_MOUSEWHEEL_FLIPPED ? -y : y;
@@ -654,7 +654,7 @@ static int sdl_mousewheelevent_effective_y_index_xl(lua_State *L)
 
 static int sdl_event_type_index_xl(lua_State *L)
 {
-    SDL_Event *self = XL_checkutype(L, 1, "SDL_Event");
+    SDL_Event *self = R_CPPCAST(SDL_Event *, XL_checkutype(L, 1, "SDL_Event"));
     uint32_t RETVAL;
     RETVAL = self->type;
     XL_pushuint32(L, RETVAL);
@@ -663,7 +663,7 @@ static int sdl_event_type_index_xl(lua_State *L)
 
 static int sdl_event_timestamp_index_xl(lua_State *L)
 {
-    SDL_Event *self = XL_checkutype(L, 1, "SDL_Event");
+    SDL_Event *self = R_CPPCAST(SDL_Event *, XL_checkutype(L, 1, "SDL_Event"));
     uint32_t RETVAL;
     RETVAL = self->common.timestamp;
     XL_pushuint32(L, RETVAL);
@@ -708,7 +708,7 @@ static void error_on_event_type(lua_State *L, const char *field,
 
 static int sdl_event_window_index_xl(lua_State *L)
 {
-    SDL_Event *self = XL_checkutype(L, 1, "SDL_Event");
+    SDL_Event *self = R_CPPCAST(SDL_Event *, XL_checkutype(L, 1, "SDL_Event"));
     SDL_WindowEvent RETVAL;
     GET_IN_EVENT_UNION(window, SDL_WINDOWEVENT);
     XL_pushnewutypeuv(L, &RETVAL, sizeof(SDL_WindowEvent), "SDL_WindowEvent", 0);
@@ -717,7 +717,7 @@ static int sdl_event_window_index_xl(lua_State *L)
 
 static int sdl_event_key_index_xl(lua_State *L)
 {
-    SDL_Event *self = XL_checkutype(L, 1, "SDL_Event");
+    SDL_Event *self = R_CPPCAST(SDL_Event *, XL_checkutype(L, 1, "SDL_Event"));
     SDL_KeyboardEvent RETVAL;
     GET_IN_EVENT_UNION(key, SDL_KEYDOWN, SDL_KEYUP);
     XL_pushnewutypeuv(L, &RETVAL, sizeof(SDL_KeyboardEvent), "SDL_KeyboardEvent", 0);
@@ -726,7 +726,7 @@ static int sdl_event_key_index_xl(lua_State *L)
 
 static int sdl_event_motion_index_xl(lua_State *L)
 {
-    SDL_Event *self = XL_checkutype(L, 1, "SDL_Event");
+    SDL_Event *self = R_CPPCAST(SDL_Event *, XL_checkutype(L, 1, "SDL_Event"));
     SDL_MouseMotionEvent RETVAL;
     GET_IN_EVENT_UNION(motion, SDL_MOUSEMOTION);
     XL_pushnewutypeuv(L, &RETVAL, sizeof(SDL_MouseMotionEvent), "SDL_MouseMotionEvent", 0);
@@ -735,7 +735,7 @@ static int sdl_event_motion_index_xl(lua_State *L)
 
 static int sdl_event_button_index_xl(lua_State *L)
 {
-    SDL_Event *self = XL_checkutype(L, 1, "SDL_Event");
+    SDL_Event *self = R_CPPCAST(SDL_Event *, XL_checkutype(L, 1, "SDL_Event"));
     SDL_MouseButtonEvent RETVAL;
     GET_IN_EVENT_UNION(button, SDL_MOUSEBUTTONDOWN, SDL_MOUSEBUTTONUP);
     XL_pushnewutypeuv(L, &RETVAL, sizeof(SDL_MouseButtonEvent), "SDL_MouseButtonEvent", 0);
@@ -744,7 +744,7 @@ static int sdl_event_button_index_xl(lua_State *L)
 
 static int sdl_event_wheel_index_xl(lua_State *L)
 {
-    SDL_Event *self = XL_checkutype(L, 1, "SDL_Event");
+    SDL_Event *self = R_CPPCAST(SDL_Event *, XL_checkutype(L, 1, "SDL_Event"));
     SDL_MouseWheelEvent RETVAL;
     GET_IN_EVENT_UNION(wheel, SDL_MOUSEWHEEL);
     XL_pushnewutypeuv(L, &RETVAL, sizeof(SDL_MouseWheelEvent), "SDL_MouseWheelEvent", 0);

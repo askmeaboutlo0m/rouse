@@ -41,15 +41,15 @@ static int r_framerenderer_new_xl(lua_State *L)
 
 static int r_framerenderer_method_gc_xl(lua_State *L)
 {
-    R_FrameRenderer *self = XL_checkpptype_nullable(L, 1, "R_FrameRenderer");
+    R_FrameRenderer *self = R_CPPCAST(R_FrameRenderer *, XL_checkpptype_nullable(L, 1, "R_FrameRenderer"));
     R_frame_renderer_free(self);
     return 0;
 }
 
 static int r_framerenderer_method_draw_xl(lua_State *L)
 {
-    R_FrameRenderer *self = XL_checkpptype(L, 1, "R_FrameRenderer");
-    R_FrameBuffer *fb = XL_checkpptype(L, 2, "R_FrameBuffer");
+    R_FrameRenderer *self = R_CPPCAST(R_FrameRenderer *, XL_checkpptype(L, 1, "R_FrameRenderer"));
+    R_FrameBuffer *fb = R_CPPCAST(R_FrameBuffer *, XL_checkpptype(L, 2, "R_FrameBuffer"));
     R_frame_renderer_draw(self, fb);
     return 0;
 }

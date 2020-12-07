@@ -32,7 +32,7 @@
 
 static int r_bitmapimage_from_file_xl(lua_State *L)
 {
-    R_Nvg *nvg = XL_checkpptype(L, 1, "R_Nvg");
+    R_Nvg *nvg = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
     const char *path = luaL_checkstring(L, 2);
     int flags = XL_checkint(L, 3);
     R_BitmapImage *RETVAL;
@@ -43,14 +43,14 @@ static int r_bitmapimage_from_file_xl(lua_State *L)
 
 static int r_bitmapimage_method_gc_xl(lua_State *L)
 {
-    R_BitmapImage *self = XL_checkpptype_nullable(L, 1, "R_BitmapImage");
+    R_BitmapImage *self = R_CPPCAST(R_BitmapImage *, XL_checkpptype_nullable(L, 1, "R_BitmapImage"));
     R_bitmap_image_decref(self);
     return 0;
 }
 
 static int r_bitmapimage_refs_index_xl(lua_State *L)
 {
-    R_BitmapImage *self = XL_checkpptype(L, 1, "R_BitmapImage");
+    R_BitmapImage *self = R_CPPCAST(R_BitmapImage *, XL_checkpptype(L, 1, "R_BitmapImage"));
     int RETVAL;
     RETVAL = R_bitmap_image_refs(self);
     XL_pushint(L, RETVAL);
@@ -59,7 +59,7 @@ static int r_bitmapimage_refs_index_xl(lua_State *L)
 
 static int r_bitmapimage_width_index_xl(lua_State *L)
 {
-    R_BitmapImage *self = XL_checkpptype(L, 1, "R_BitmapImage");
+    R_BitmapImage *self = R_CPPCAST(R_BitmapImage *, XL_checkpptype(L, 1, "R_BitmapImage"));
     int RETVAL;
     RETVAL = R_bitmap_image_width(self);
     XL_pushint(L, RETVAL);
@@ -68,7 +68,7 @@ static int r_bitmapimage_width_index_xl(lua_State *L)
 
 static int r_bitmapimage_height_index_xl(lua_State *L)
 {
-    R_BitmapImage *self = XL_checkpptype(L, 1, "R_BitmapImage");
+    R_BitmapImage *self = R_CPPCAST(R_BitmapImage *, XL_checkpptype(L, 1, "R_BitmapImage"));
     int RETVAL;
     RETVAL = R_bitmap_image_height(self);
     XL_pushint(L, RETVAL);
@@ -77,9 +77,9 @@ static int r_bitmapimage_height_index_xl(lua_State *L)
 
 static int r_bitmapimage_method_draw_xl(lua_State *L)
 {
-    R_BitmapImage *self = XL_checkpptype(L, 1, "R_BitmapImage");
-    R_Nvg *nvg = XL_checkpptype(L, 2, "R_Nvg");
-    R_LuaNvgTransform *m = XL_checkutype(L, 3, "R_LuaNvgTransform");
+    R_BitmapImage *self = R_CPPCAST(R_BitmapImage *, XL_checkpptype(L, 1, "R_BitmapImage"));
+    R_Nvg *nvg = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 2, "R_Nvg"));
+    R_LuaNvgTransform *m = R_CPPCAST(R_LuaNvgTransform *, XL_checkutype(L, 3, "R_LuaNvgTransform"));
     R_bitmap_image_draw(self, R_nvg_context(nvg), m->matrix);
     return 0;
 }

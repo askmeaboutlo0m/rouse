@@ -47,14 +47,14 @@ static int r_textfield_new_xl(lua_State *L)
 
 static int r_textfield_method_gc_xl(lua_State *L)
 {
-    R_TextField *self = XL_checkpptype_nullable(L, 1, "R_TextField");
+    R_TextField *self = R_CPPCAST(R_TextField *, XL_checkpptype_nullable(L, 1, "R_TextField"));
     R_text_field_decref(self);
     return 0;
 }
 
 static int r_textfield_string_index_xl(lua_State *L)
 {
-    R_TextField *self = XL_checkpptype(L, 1, "R_TextField");
+    R_TextField *self = R_CPPCAST(R_TextField *, XL_checkpptype(L, 1, "R_TextField"));
     R_String *RETVAL;
     R_MAGIC_CHECK(R_TextField, self);
     RETVAL = self->string;
@@ -64,7 +64,7 @@ static int r_textfield_string_index_xl(lua_State *L)
 
 static int r_textfield_string_newindex_xl(lua_State *L)
 {
-    R_TextField *self = XL_checkpptype(L, 1, "R_TextField");
+    R_TextField *self = R_CPPCAST(R_TextField *, XL_checkpptype(L, 1, "R_TextField"));
     size_t VALUE_len;
     const char *VALUE = luaL_checklstring(L, 2, &VALUE_len);
     R_MAGIC_CHECK(R_TextField, self);
@@ -81,7 +81,7 @@ static int r_textfield_string_newindex_xl(lua_State *L)
 
 static int r_textfield_refs_index_xl(lua_State *L)
 {
-    R_TextField *self = XL_checkpptype(L, 1, "R_TextField");
+    R_TextField *self = R_CPPCAST(R_TextField *, XL_checkpptype(L, 1, "R_TextField"));
     int RETVAL;
     RETVAL = self->refs;
     XL_pushint(L, RETVAL);
@@ -90,7 +90,7 @@ static int r_textfield_refs_index_xl(lua_State *L)
 
 static int r_textfield_font_index_xl(lua_State *L)
 {
-    R_TextField *self = XL_checkpptype(L, 1, "R_TextField");
+    R_TextField *self = R_CPPCAST(R_TextField *, XL_checkpptype(L, 1, "R_TextField"));
     int RETVAL;
     RETVAL = self->font;
     XL_pushint(L, RETVAL);
@@ -99,7 +99,7 @@ static int r_textfield_font_index_xl(lua_State *L)
 
 static int r_textfield_font_newindex_xl(lua_State *L)
 {
-    R_TextField *self = XL_checkpptype(L, 1, "R_TextField");
+    R_TextField *self = R_CPPCAST(R_TextField *, XL_checkpptype(L, 1, "R_TextField"));
     int VALUE = XL_checkint(L, 2);
     self->font = VALUE;
     return 0;
@@ -107,7 +107,7 @@ static int r_textfield_font_newindex_xl(lua_State *L)
 
 static int r_textfield_color_index_xl(lua_State *L)
 {
-    R_TextField *self = XL_checkpptype(L, 1, "R_TextField");
+    R_TextField *self = R_CPPCAST(R_TextField *, XL_checkpptype(L, 1, "R_TextField"));
     NVGcolor RETVAL;
     RETVAL = self->color;
     XL_pushnewutypeuv(L, &RETVAL, sizeof(NVGcolor), "NVGcolor", 0);
@@ -116,7 +116,7 @@ static int r_textfield_color_index_xl(lua_State *L)
 
 static int r_textfield_color_newindex_xl(lua_State *L)
 {
-    R_TextField *self = XL_checkpptype(L, 1, "R_TextField");
+    R_TextField *self = R_CPPCAST(R_TextField *, XL_checkpptype(L, 1, "R_TextField"));
     NVGcolor VALUE = *((NVGcolor *)luaL_checkudata(L, 2, "NVGcolor"));
     self->color = VALUE;
     return 0;
@@ -124,7 +124,7 @@ static int r_textfield_color_newindex_xl(lua_State *L)
 
 static int r_textfield_size_index_xl(lua_State *L)
 {
-    R_TextField *self = XL_checkpptype(L, 1, "R_TextField");
+    R_TextField *self = R_CPPCAST(R_TextField *, XL_checkpptype(L, 1, "R_TextField"));
     float RETVAL;
     RETVAL = self->size;
     XL_pushfloat(L, RETVAL);
@@ -133,7 +133,7 @@ static int r_textfield_size_index_xl(lua_State *L)
 
 static int r_textfield_size_newindex_xl(lua_State *L)
 {
-    R_TextField *self = XL_checkpptype(L, 1, "R_TextField");
+    R_TextField *self = R_CPPCAST(R_TextField *, XL_checkpptype(L, 1, "R_TextField"));
     float VALUE = XL_checkfloat(L, 2);
     self->size = VALUE;
     return 0;
@@ -141,7 +141,7 @@ static int r_textfield_size_newindex_xl(lua_State *L)
 
 static int r_textfield_blur_index_xl(lua_State *L)
 {
-    R_TextField *self = XL_checkpptype(L, 1, "R_TextField");
+    R_TextField *self = R_CPPCAST(R_TextField *, XL_checkpptype(L, 1, "R_TextField"));
     float RETVAL;
     RETVAL = self->blur;
     XL_pushfloat(L, RETVAL);
@@ -150,7 +150,7 @@ static int r_textfield_blur_index_xl(lua_State *L)
 
 static int r_textfield_blur_newindex_xl(lua_State *L)
 {
-    R_TextField *self = XL_checkpptype(L, 1, "R_TextField");
+    R_TextField *self = R_CPPCAST(R_TextField *, XL_checkpptype(L, 1, "R_TextField"));
     float VALUE = XL_checkfloat(L, 2);
     self->blur = VALUE;
     return 0;
@@ -158,7 +158,7 @@ static int r_textfield_blur_newindex_xl(lua_State *L)
 
 static int r_textfield_spacing_index_xl(lua_State *L)
 {
-    R_TextField *self = XL_checkpptype(L, 1, "R_TextField");
+    R_TextField *self = R_CPPCAST(R_TextField *, XL_checkpptype(L, 1, "R_TextField"));
     float RETVAL;
     RETVAL = self->spacing;
     XL_pushfloat(L, RETVAL);
@@ -167,7 +167,7 @@ static int r_textfield_spacing_index_xl(lua_State *L)
 
 static int r_textfield_spacing_newindex_xl(lua_State *L)
 {
-    R_TextField *self = XL_checkpptype(L, 1, "R_TextField");
+    R_TextField *self = R_CPPCAST(R_TextField *, XL_checkpptype(L, 1, "R_TextField"));
     float VALUE = XL_checkfloat(L, 2);
     self->spacing = VALUE;
     return 0;
@@ -175,7 +175,7 @@ static int r_textfield_spacing_newindex_xl(lua_State *L)
 
 static int r_textfield_line_height_index_xl(lua_State *L)
 {
-    R_TextField *self = XL_checkpptype(L, 1, "R_TextField");
+    R_TextField *self = R_CPPCAST(R_TextField *, XL_checkpptype(L, 1, "R_TextField"));
     float RETVAL;
     RETVAL = self->line_height;
     XL_pushfloat(L, RETVAL);
@@ -184,7 +184,7 @@ static int r_textfield_line_height_index_xl(lua_State *L)
 
 static int r_textfield_line_height_newindex_xl(lua_State *L)
 {
-    R_TextField *self = XL_checkpptype(L, 1, "R_TextField");
+    R_TextField *self = R_CPPCAST(R_TextField *, XL_checkpptype(L, 1, "R_TextField"));
     float VALUE = XL_checkfloat(L, 2);
     self->line_height = VALUE;
     return 0;
@@ -192,7 +192,7 @@ static int r_textfield_line_height_newindex_xl(lua_State *L)
 
 static int r_textfield_align_index_xl(lua_State *L)
 {
-    R_TextField *self = XL_checkpptype(L, 1, "R_TextField");
+    R_TextField *self = R_CPPCAST(R_TextField *, XL_checkpptype(L, 1, "R_TextField"));
     int RETVAL;
     RETVAL = self->align;
     XL_pushint(L, RETVAL);
@@ -201,7 +201,7 @@ static int r_textfield_align_index_xl(lua_State *L)
 
 static int r_textfield_align_newindex_xl(lua_State *L)
 {
-    R_TextField *self = XL_checkpptype(L, 1, "R_TextField");
+    R_TextField *self = R_CPPCAST(R_TextField *, XL_checkpptype(L, 1, "R_TextField"));
     int VALUE = XL_checkint(L, 2);
     self->align = VALUE;
     return 0;
@@ -209,7 +209,7 @@ static int r_textfield_align_newindex_xl(lua_State *L)
 
 static int r_textfield_x_index_xl(lua_State *L)
 {
-    R_TextField *self = XL_checkpptype(L, 1, "R_TextField");
+    R_TextField *self = R_CPPCAST(R_TextField *, XL_checkpptype(L, 1, "R_TextField"));
     float RETVAL;
     RETVAL = self->x;
     XL_pushfloat(L, RETVAL);
@@ -218,7 +218,7 @@ static int r_textfield_x_index_xl(lua_State *L)
 
 static int r_textfield_x_newindex_xl(lua_State *L)
 {
-    R_TextField *self = XL_checkpptype(L, 1, "R_TextField");
+    R_TextField *self = R_CPPCAST(R_TextField *, XL_checkpptype(L, 1, "R_TextField"));
     float VALUE = XL_checkfloat(L, 2);
     self->x = VALUE;
     return 0;
@@ -226,7 +226,7 @@ static int r_textfield_x_newindex_xl(lua_State *L)
 
 static int r_textfield_y_index_xl(lua_State *L)
 {
-    R_TextField *self = XL_checkpptype(L, 1, "R_TextField");
+    R_TextField *self = R_CPPCAST(R_TextField *, XL_checkpptype(L, 1, "R_TextField"));
     float RETVAL;
     RETVAL = self->y;
     XL_pushfloat(L, RETVAL);
@@ -235,7 +235,7 @@ static int r_textfield_y_index_xl(lua_State *L)
 
 static int r_textfield_y_newindex_xl(lua_State *L)
 {
-    R_TextField *self = XL_checkpptype(L, 1, "R_TextField");
+    R_TextField *self = R_CPPCAST(R_TextField *, XL_checkpptype(L, 1, "R_TextField"));
     float VALUE = XL_checkfloat(L, 2);
     self->y = VALUE;
     return 0;
@@ -243,7 +243,7 @@ static int r_textfield_y_newindex_xl(lua_State *L)
 
 static int r_textfield_width_index_xl(lua_State *L)
 {
-    R_TextField *self = XL_checkpptype(L, 1, "R_TextField");
+    R_TextField *self = R_CPPCAST(R_TextField *, XL_checkpptype(L, 1, "R_TextField"));
     float RETVAL;
     RETVAL = self->width;
     XL_pushfloat(L, RETVAL);
@@ -252,7 +252,7 @@ static int r_textfield_width_index_xl(lua_State *L)
 
 static int r_textfield_width_newindex_xl(lua_State *L)
 {
-    R_TextField *self = XL_checkpptype(L, 1, "R_TextField");
+    R_TextField *self = R_CPPCAST(R_TextField *, XL_checkpptype(L, 1, "R_TextField"));
     float VALUE = XL_checkfloat(L, 2);
     self->width = VALUE;
     return 0;
@@ -265,8 +265,8 @@ static int r_textfield_method_set_xl(lua_State *L)
 
 static int r_textfield_method_bounds_xl(lua_State *L)
 {
-    R_TextField *self = XL_checkpptype(L, 1, "R_TextField");
-    R_Nvg *nvg = XL_checkpptype(L, 2, "R_Nvg");
+    R_TextField *self = R_CPPCAST(R_TextField *, XL_checkpptype(L, 1, "R_TextField"));
+    R_Nvg *nvg = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 2, "R_Nvg"));
     R_V4 bounds = R_text_field_bounds(self, R_nvg_context(nvg));
     XL_pushfloat(L, bounds.x);
     XL_pushfloat(L, bounds.y);
@@ -277,9 +277,9 @@ static int r_textfield_method_bounds_xl(lua_State *L)
 
 static int r_textfield_method_draw_xl(lua_State *L)
 {
-    R_TextField *self = XL_checkpptype(L, 1, "R_TextField");
-    R_Nvg *nvg = XL_checkpptype(L, 2, "R_Nvg");
-    R_LuaNvgTransform *transform = XL_checkutype(L, 3, "R_LuaNvgTransform");
+    R_TextField *self = R_CPPCAST(R_TextField *, XL_checkpptype(L, 1, "R_TextField"));
+    R_Nvg *nvg = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 2, "R_Nvg"));
+    R_LuaNvgTransform *transform = R_CPPCAST(R_LuaNvgTransform *, XL_checkutype(L, 3, "R_LuaNvgTransform"));
     R_text_field_draw(self, R_nvg_context(nvg), transform->matrix);
     return 0;
 }

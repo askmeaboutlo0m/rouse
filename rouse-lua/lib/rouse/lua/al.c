@@ -309,7 +309,7 @@ static int r_al_listener_z_staticnewindex_xl(lua_State *L)
 static int r_al_buffer_from_sample_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_Sample *sample = XL_checkpptype(L, 1, "R_Sample");
+    R_Sample *sample = R_CPPCAST(R_Sample *, XL_checkpptype(L, 1, "R_Sample"));
     R_AlBuffer *RETVAL;
     RETVAL = R_al_buffer_from_sample(sample);
     XL_pushnewpptypeuv(L, RETVAL, "R_AlBuffer", 0);
@@ -335,7 +335,7 @@ static int r_al_buffer_from_file_xl(lua_State *L)
 static int r_albuffer_method_gc_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_AlBuffer *self = XL_checkpptype_nullable(L, 1, "R_AlBuffer");
+    R_AlBuffer *self = R_CPPCAST(R_AlBuffer *, XL_checkpptype_nullable(L, 1, "R_AlBuffer"));
     R_al_buffer_decref(self);
     return 0;
 #else
@@ -364,7 +364,7 @@ static int r_albuffer_method_eq_xl(lua_State *L)
 static int r_albuffer_id_index_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_AlBuffer *self = XL_checkpptype(L, 1, "R_AlBuffer");
+    R_AlBuffer *self = R_CPPCAST(R_AlBuffer *, XL_checkpptype(L, 1, "R_AlBuffer"));
     unsigned int RETVAL;
     RETVAL = R_al_buffer_id(self);
     XL_pushuint(L, RETVAL);
@@ -406,7 +406,7 @@ static int r_al_source_new_xl(lua_State *L)
 static int r_al_source_from_buffer_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_AlBuffer *buffer = XL_checkpptype(L, 1, "R_AlBuffer");
+    R_AlBuffer *buffer = R_CPPCAST(R_AlBuffer *, XL_checkpptype(L, 1, "R_AlBuffer"));
     R_AlSource *RETVAL;
     int argc = lua_gettop(L);
     RETVAL   = R_al_source_from_buffer(buffer);
@@ -439,7 +439,7 @@ static int r_al_source_from_file_xl(lua_State *L)
 static int r_alsource_method_gc_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_AlSource *self = XL_checkpptype_nullable(L, 1, "R_AlSource");
+    R_AlSource *self = R_CPPCAST(R_AlSource *, XL_checkpptype_nullable(L, 1, "R_AlSource"));
     R_al_source_decref(self);
     return 0;
 #else
@@ -450,7 +450,7 @@ static int r_alsource_method_gc_xl(lua_State *L)
 static int r_alsource_id_index_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_AlSource *self = XL_checkpptype(L, 1, "R_AlSource");
+    R_AlSource *self = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 1, "R_AlSource"));
     unsigned int RETVAL;
     RETVAL = R_al_source_id(self);
     XL_pushuint(L, RETVAL);
@@ -463,7 +463,7 @@ static int r_alsource_id_index_xl(lua_State *L)
 static int r_alsource_buffer_index_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_AlSource *self = XL_checkpptype(L, 1, "R_AlSource");
+    R_AlSource *self = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 1, "R_AlSource"));
     R_AlBuffer *RETVAL;
     RETVAL = R_al_source_buffer(self);
     if (RETVAL) {
@@ -479,8 +479,8 @@ static int r_alsource_buffer_index_xl(lua_State *L)
 static int r_alsource_buffer_newindex_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_AlSource *self = XL_checkpptype(L, 1, "R_AlSource");
-    R_AlBuffer *VALUE = XL_checkpptype(L, 2, "R_AlBuffer");
+    R_AlSource *self = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 1, "R_AlSource"));
+    R_AlBuffer *VALUE = R_CPPCAST(R_AlBuffer *, XL_checkpptype(L, 2, "R_AlBuffer"));
     R_al_source_buffer_set(self, VALUE);
     return 0;
 #else
@@ -491,7 +491,7 @@ static int r_alsource_buffer_newindex_xl(lua_State *L)
 static int r_alsource_pos_index_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_AlSource *self = XL_checkpptype(L, 1, "R_AlSource");
+    R_AlSource *self = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 1, "R_AlSource"));
     R_V3 RETVAL;
     RETVAL = R_al_source_pos(self);
     XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
@@ -504,7 +504,7 @@ static int r_alsource_pos_index_xl(lua_State *L)
 static int r_alsource_pos_x_index_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_AlSource *self = XL_checkpptype(L, 1, "R_AlSource");
+    R_AlSource *self = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 1, "R_AlSource"));
     float RETVAL;
     RETVAL = R_al_source_pos_x(self);
     XL_pushfloat(L, RETVAL);
@@ -517,7 +517,7 @@ static int r_alsource_pos_x_index_xl(lua_State *L)
 static int r_alsource_pos_y_index_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_AlSource *self = XL_checkpptype(L, 1, "R_AlSource");
+    R_AlSource *self = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 1, "R_AlSource"));
     float RETVAL;
     RETVAL = R_al_source_pos_y(self);
     XL_pushfloat(L, RETVAL);
@@ -530,7 +530,7 @@ static int r_alsource_pos_y_index_xl(lua_State *L)
 static int r_alsource_pos_z_index_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_AlSource *self = XL_checkpptype(L, 1, "R_AlSource");
+    R_AlSource *self = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 1, "R_AlSource"));
     float RETVAL;
     RETVAL = R_al_source_pos_z(self);
     XL_pushfloat(L, RETVAL);
@@ -543,7 +543,7 @@ static int r_alsource_pos_z_index_xl(lua_State *L)
 static int r_alsource_velocity_index_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_AlSource *self = XL_checkpptype(L, 1, "R_AlSource");
+    R_AlSource *self = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 1, "R_AlSource"));
     R_V3 RETVAL;
     RETVAL = R_al_source_velocity(self);
     XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
@@ -556,7 +556,7 @@ static int r_alsource_velocity_index_xl(lua_State *L)
 static int r_alsource_velocity_x_index_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_AlSource *self = XL_checkpptype(L, 1, "R_AlSource");
+    R_AlSource *self = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 1, "R_AlSource"));
     float RETVAL;
     RETVAL = R_al_source_velocity_x(self);
     XL_pushfloat(L, RETVAL);
@@ -569,7 +569,7 @@ static int r_alsource_velocity_x_index_xl(lua_State *L)
 static int r_alsource_velocity_y_index_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_AlSource *self = XL_checkpptype(L, 1, "R_AlSource");
+    R_AlSource *self = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 1, "R_AlSource"));
     float RETVAL;
     RETVAL = R_al_source_velocity_y(self);
     XL_pushfloat(L, RETVAL);
@@ -582,7 +582,7 @@ static int r_alsource_velocity_y_index_xl(lua_State *L)
 static int r_alsource_velocity_z_index_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_AlSource *self = XL_checkpptype(L, 1, "R_AlSource");
+    R_AlSource *self = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 1, "R_AlSource"));
     float RETVAL;
     RETVAL = R_al_source_velocity_z(self);
     XL_pushfloat(L, RETVAL);
@@ -595,7 +595,7 @@ static int r_alsource_velocity_z_index_xl(lua_State *L)
 static int r_alsource_gain_index_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_AlSource *self = XL_checkpptype(L, 1, "R_AlSource");
+    R_AlSource *self = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 1, "R_AlSource"));
     float RETVAL;
     RETVAL = R_al_source_gain(self);
     XL_pushfloat(L, RETVAL);
@@ -608,7 +608,7 @@ static int r_alsource_gain_index_xl(lua_State *L)
 static int r_alsource_pitch_index_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_AlSource *self = XL_checkpptype(L, 1, "R_AlSource");
+    R_AlSource *self = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 1, "R_AlSource"));
     float RETVAL;
     RETVAL = R_al_source_pitch(self);
     XL_pushfloat(L, RETVAL);
@@ -621,7 +621,7 @@ static int r_alsource_pitch_index_xl(lua_State *L)
 static int r_alsource_reference_distance_index_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_AlSource *self = XL_checkpptype(L, 1, "R_AlSource");
+    R_AlSource *self = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 1, "R_AlSource"));
     float RETVAL;
     RETVAL = R_al_source_reference_distance(self);
     XL_pushfloat(L, RETVAL);
@@ -634,7 +634,7 @@ static int r_alsource_reference_distance_index_xl(lua_State *L)
 static int r_alsource_offset_in_seconds_index_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_AlSource *self = XL_checkpptype(L, 1, "R_AlSource");
+    R_AlSource *self = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 1, "R_AlSource"));
     float RETVAL;
     RETVAL = R_al_source_offset_in_seconds(self);
     XL_pushfloat(L, RETVAL);
@@ -647,7 +647,7 @@ static int r_alsource_offset_in_seconds_index_xl(lua_State *L)
 static int r_alsource_looping_index_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_AlSource *self = XL_checkpptype(L, 1, "R_AlSource");
+    R_AlSource *self = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 1, "R_AlSource"));
     bool RETVAL;
     RETVAL = R_al_source_looping(self);
     lua_pushboolean(L, RETVAL);
@@ -660,7 +660,7 @@ static int r_alsource_looping_index_xl(lua_State *L)
 static int r_alsource_pos_newindex_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_AlSource *self = XL_checkpptype(L, 1, "R_AlSource");
+    R_AlSource *self = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 1, "R_AlSource"));
     R_V3 VALUE = *((R_V3 *)luaL_checkudata(L, 2, "R_V3"));
     R_al_source_pos_set(self, VALUE);
     return 0;
@@ -672,7 +672,7 @@ static int r_alsource_pos_newindex_xl(lua_State *L)
 static int r_alsource_pos_x_newindex_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_AlSource *self = XL_checkpptype(L, 1, "R_AlSource");
+    R_AlSource *self = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 1, "R_AlSource"));
     float VALUE = XL_checkfloat(L, 2);
     R_al_source_pos_x_set(self, VALUE);
     return 0;
@@ -684,7 +684,7 @@ static int r_alsource_pos_x_newindex_xl(lua_State *L)
 static int r_alsource_pos_y_newindex_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_AlSource *self = XL_checkpptype(L, 1, "R_AlSource");
+    R_AlSource *self = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 1, "R_AlSource"));
     float VALUE = XL_checkfloat(L, 2);
     R_al_source_pos_y_set(self, VALUE);
     return 0;
@@ -696,7 +696,7 @@ static int r_alsource_pos_y_newindex_xl(lua_State *L)
 static int r_alsource_pos_z_newindex_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_AlSource *self = XL_checkpptype(L, 1, "R_AlSource");
+    R_AlSource *self = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 1, "R_AlSource"));
     float VALUE = XL_checkfloat(L, 2);
     R_al_source_pos_z_set(self, VALUE);
     return 0;
@@ -708,7 +708,7 @@ static int r_alsource_pos_z_newindex_xl(lua_State *L)
 static int r_alsource_velocity_newindex_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_AlSource *self = XL_checkpptype(L, 1, "R_AlSource");
+    R_AlSource *self = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 1, "R_AlSource"));
     R_V3 VALUE = *((R_V3 *)luaL_checkudata(L, 2, "R_V3"));
     R_al_source_velocity_set(self, VALUE);
     return 0;
@@ -720,7 +720,7 @@ static int r_alsource_velocity_newindex_xl(lua_State *L)
 static int r_alsource_velocity_x_newindex_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_AlSource *self = XL_checkpptype(L, 1, "R_AlSource");
+    R_AlSource *self = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 1, "R_AlSource"));
     float VALUE = XL_checkfloat(L, 2);
     R_al_source_velocity_x_set(self, VALUE);
     return 0;
@@ -732,7 +732,7 @@ static int r_alsource_velocity_x_newindex_xl(lua_State *L)
 static int r_alsource_velocity_y_newindex_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_AlSource *self = XL_checkpptype(L, 1, "R_AlSource");
+    R_AlSource *self = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 1, "R_AlSource"));
     float VALUE = XL_checkfloat(L, 2);
     R_al_source_velocity_y_set(self, VALUE);
     return 0;
@@ -744,7 +744,7 @@ static int r_alsource_velocity_y_newindex_xl(lua_State *L)
 static int r_alsource_velocity_z_newindex_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_AlSource *self = XL_checkpptype(L, 1, "R_AlSource");
+    R_AlSource *self = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 1, "R_AlSource"));
     float VALUE = XL_checkfloat(L, 2);
     R_al_source_velocity_z_set(self, VALUE);
     return 0;
@@ -756,7 +756,7 @@ static int r_alsource_velocity_z_newindex_xl(lua_State *L)
 static int r_alsource_gain_newindex_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_AlSource *self = XL_checkpptype(L, 1, "R_AlSource");
+    R_AlSource *self = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 1, "R_AlSource"));
     float VALUE = XL_checkfloat(L, 2);
     R_al_source_gain_set(self, VALUE);
     return 0;
@@ -768,7 +768,7 @@ static int r_alsource_gain_newindex_xl(lua_State *L)
 static int r_alsource_pitch_newindex_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_AlSource *self = XL_checkpptype(L, 1, "R_AlSource");
+    R_AlSource *self = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 1, "R_AlSource"));
     float VALUE = XL_checkfloat(L, 2);
     R_al_source_pitch_set(self, VALUE);
     return 0;
@@ -780,7 +780,7 @@ static int r_alsource_pitch_newindex_xl(lua_State *L)
 static int r_alsource_reference_distance_newindex_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_AlSource *self = XL_checkpptype(L, 1, "R_AlSource");
+    R_AlSource *self = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 1, "R_AlSource"));
     float VALUE = XL_checkfloat(L, 2);
     R_al_source_reference_distance_set(self, VALUE);
     return 0;
@@ -792,7 +792,7 @@ static int r_alsource_reference_distance_newindex_xl(lua_State *L)
 static int r_alsource_offset_in_seconds_newindex_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_AlSource *self = XL_checkpptype(L, 1, "R_AlSource");
+    R_AlSource *self = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 1, "R_AlSource"));
     float VALUE = XL_checkfloat(L, 2);
     R_al_source_offset_in_seconds_set(self, VALUE);
     return 0;
@@ -804,7 +804,7 @@ static int r_alsource_offset_in_seconds_newindex_xl(lua_State *L)
 static int r_alsource_looping_newindex_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_AlSource *self = XL_checkpptype(L, 1, "R_AlSource");
+    R_AlSource *self = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 1, "R_AlSource"));
     bool VALUE = XL_checkbool(L, 2);
     R_al_source_looping_set(self, VALUE);
     return 0;
@@ -816,7 +816,7 @@ static int r_alsource_looping_newindex_xl(lua_State *L)
 static int r_alsource_x_index_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_AlSource *self = XL_checkpptype(L, 1, "R_AlSource");
+    R_AlSource *self = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 1, "R_AlSource"));
     float RETVAL;
     RETVAL = R_al_source_pos_x(self);
     XL_pushfloat(L, RETVAL);
@@ -829,7 +829,7 @@ static int r_alsource_x_index_xl(lua_State *L)
 static int r_alsource_x_newindex_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_AlSource *self = XL_checkpptype(L, 1, "R_AlSource");
+    R_AlSource *self = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 1, "R_AlSource"));
     float VALUE = XL_checkfloat(L, 2);
     R_al_source_pos_x_set(self, VALUE);
     return 0;
@@ -841,7 +841,7 @@ static int r_alsource_x_newindex_xl(lua_State *L)
 static int r_alsource_y_index_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_AlSource *self = XL_checkpptype(L, 1, "R_AlSource");
+    R_AlSource *self = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 1, "R_AlSource"));
     float RETVAL;
     RETVAL = R_al_source_pos_y(self);
     XL_pushfloat(L, RETVAL);
@@ -854,7 +854,7 @@ static int r_alsource_y_index_xl(lua_State *L)
 static int r_alsource_y_newindex_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_AlSource *self = XL_checkpptype(L, 1, "R_AlSource");
+    R_AlSource *self = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 1, "R_AlSource"));
     float VALUE = XL_checkfloat(L, 2);
     R_al_source_pos_y_set(self, VALUE);
     return 0;
@@ -866,7 +866,7 @@ static int r_alsource_y_newindex_xl(lua_State *L)
 static int r_alsource_z_index_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_AlSource *self = XL_checkpptype(L, 1, "R_AlSource");
+    R_AlSource *self = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 1, "R_AlSource"));
     float RETVAL;
     RETVAL = R_al_source_pos_z(self);
     XL_pushfloat(L, RETVAL);
@@ -879,7 +879,7 @@ static int r_alsource_z_index_xl(lua_State *L)
 static int r_alsource_z_newindex_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_AlSource *self = XL_checkpptype(L, 1, "R_AlSource");
+    R_AlSource *self = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 1, "R_AlSource"));
     float VALUE = XL_checkfloat(L, 2);
     R_al_source_pos_z_set(self, VALUE);
     return 0;
@@ -891,7 +891,7 @@ static int r_alsource_z_newindex_xl(lua_State *L)
 static int r_alsource_cross_scene_index_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_AlSource *self = XL_checkpptype(L, 1, "R_AlSource");
+    R_AlSource *self = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 1, "R_AlSource"));
     bool RETVAL;
     XL_UNUSED(self);
     XL_getiuservalue(L, 1, 1);
@@ -906,7 +906,7 @@ static int r_alsource_cross_scene_index_xl(lua_State *L)
 static int r_alsource_cross_scene_newindex_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_AlSource *self = XL_checkpptype(L, 1, "R_AlSource");
+    R_AlSource *self = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 1, "R_AlSource"));
     bool VALUE = XL_checkbool(L, 2);
     XL_UNUSED(self);
     lua_pushboolean(L, VALUE);
@@ -929,7 +929,7 @@ static int r_alsource_method_set_xl(lua_State *L)
 static int r_alsource_method_play_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_AlSource *self = XL_checkpptype(L, 1, "R_AlSource");
+    R_AlSource *self = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 1, "R_AlSource"));
     R_al_source_play(self);
     return 0;
 #else
@@ -940,7 +940,7 @@ static int r_alsource_method_play_xl(lua_State *L)
 static int r_alsource_method_stop_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_AlSource *self = XL_checkpptype(L, 1, "R_AlSource");
+    R_AlSource *self = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 1, "R_AlSource"));
     R_al_source_stop(self);
     return 0;
 #else
@@ -951,7 +951,7 @@ static int r_alsource_method_stop_xl(lua_State *L)
 static int r_alsource_method_rewind_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_AlSource *self = XL_checkpptype(L, 1, "R_AlSource");
+    R_AlSource *self = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 1, "R_AlSource"));
     R_al_source_rewind(self);
     return 0;
 #else
@@ -962,7 +962,7 @@ static int r_alsource_method_rewind_xl(lua_State *L)
 static int r_alsource_method_pause_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_AlSource *self = XL_checkpptype(L, 1, "R_AlSource");
+    R_AlSource *self = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 1, "R_AlSource"));
     R_al_source_pause(self);
     return 0;
 #else
@@ -973,7 +973,7 @@ static int r_alsource_method_pause_xl(lua_State *L)
 static int r_alsource_state_index_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_AlSource *self = XL_checkpptype(L, 1, "R_AlSource");
+    R_AlSource *self = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 1, "R_AlSource"));
     const char *RETVAL;
     switch (R_al_source_state(self)) {
         case AL_INITIAL: RETVAL = "initial"; break;
@@ -992,7 +992,7 @@ static int r_alsource_state_index_xl(lua_State *L)
 static int r_alsource_playing_index_xl(lua_State *L)
 {
 #ifdef ROUSE_AL_ENABLED
-    R_AlSource *self = XL_checkpptype(L, 1, "R_AlSource");
+    R_AlSource *self = R_CPPCAST(R_AlSource *, XL_checkpptype(L, 1, "R_AlSource"));
     bool RETVAL;
     RETVAL = R_al_source_playing(self);
     lua_pushboolean(L, RETVAL);

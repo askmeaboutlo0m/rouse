@@ -50,14 +50,14 @@ static int r_framebuffer_new_2d_xl(lua_State *L)
 
 static int r_framebuffer_method_gc_xl(lua_State *L)
 {
-    R_FrameBuffer *self = XL_checkpptype_nullable(L, 1, "R_FrameBuffer");
+    R_FrameBuffer *self = R_CPPCAST(R_FrameBuffer *, XL_checkpptype_nullable(L, 1, "R_FrameBuffer"));
     R_frame_buffer_free(self);
     return 0;
 }
 
 static int r_framebuffer_width_index_xl(lua_State *L)
 {
-    R_FrameBuffer *self = XL_checkpptype(L, 1, "R_FrameBuffer");
+    R_FrameBuffer *self = R_CPPCAST(R_FrameBuffer *, XL_checkpptype(L, 1, "R_FrameBuffer"));
     int RETVAL;
     R_MAGIC_CHECK(R_FrameBuffer, self);
     RETVAL = self->width;
@@ -67,7 +67,7 @@ static int r_framebuffer_width_index_xl(lua_State *L)
 
 static int r_framebuffer_height_index_xl(lua_State *L)
 {
-    R_FrameBuffer *self = XL_checkpptype(L, 1, "R_FrameBuffer");
+    R_FrameBuffer *self = R_CPPCAST(R_FrameBuffer *, XL_checkpptype(L, 1, "R_FrameBuffer"));
     int RETVAL;
     R_MAGIC_CHECK(R_FrameBuffer, self);
     RETVAL = self->height;
@@ -77,7 +77,7 @@ static int r_framebuffer_height_index_xl(lua_State *L)
 
 static int r_framebuffer_real_width_index_xl(lua_State *L)
 {
-    R_FrameBuffer *self = XL_checkpptype(L, 1, "R_FrameBuffer");
+    R_FrameBuffer *self = R_CPPCAST(R_FrameBuffer *, XL_checkpptype(L, 1, "R_FrameBuffer"));
     int RETVAL;
     R_MAGIC_CHECK(R_FrameBuffer, self);
     RETVAL = self->real_width;
@@ -87,7 +87,7 @@ static int r_framebuffer_real_width_index_xl(lua_State *L)
 
 static int r_framebuffer_real_height_index_xl(lua_State *L)
 {
-    R_FrameBuffer *self = XL_checkpptype(L, 1, "R_FrameBuffer");
+    R_FrameBuffer *self = R_CPPCAST(R_FrameBuffer *, XL_checkpptype(L, 1, "R_FrameBuffer"));
     int RETVAL;
     R_MAGIC_CHECK(R_FrameBuffer, self);
     RETVAL = self->real_height;
@@ -97,7 +97,7 @@ static int r_framebuffer_real_height_index_xl(lua_State *L)
 
 static int r_framebuffer_handle_index_xl(lua_State *L)
 {
-    R_FrameBuffer *self = XL_checkpptype(L, 1, "R_FrameBuffer");
+    R_FrameBuffer *self = R_CPPCAST(R_FrameBuffer *, XL_checkpptype(L, 1, "R_FrameBuffer"));
     unsigned int RETVAL;
     R_MAGIC_CHECK(R_FrameBuffer, self);
     RETVAL = self->handle;
@@ -107,7 +107,7 @@ static int r_framebuffer_handle_index_xl(lua_State *L)
 
 static int r_framebuffer_color_index_xl(lua_State *L)
 {
-    R_FrameBuffer *self = XL_checkpptype(L, 1, "R_FrameBuffer");
+    R_FrameBuffer *self = R_CPPCAST(R_FrameBuffer *, XL_checkpptype(L, 1, "R_FrameBuffer"));
     unsigned int RETVAL;
     R_MAGIC_CHECK(R_FrameBuffer, self);
     RETVAL = self->color;
@@ -117,7 +117,7 @@ static int r_framebuffer_color_index_xl(lua_State *L)
 
 static int r_framebuffer_depth_index_xl(lua_State *L)
 {
-    R_FrameBuffer *self = XL_checkpptype(L, 1, "R_FrameBuffer");
+    R_FrameBuffer *self = R_CPPCAST(R_FrameBuffer *, XL_checkpptype(L, 1, "R_FrameBuffer"));
     unsigned int RETVAL;
     R_MAGIC_CHECK(R_FrameBuffer, self);
     RETVAL = self->depth;
@@ -127,7 +127,7 @@ static int r_framebuffer_depth_index_xl(lua_State *L)
 
 static int r_framebuffer_stencil_index_xl(lua_State *L)
 {
-    R_FrameBuffer *self = XL_checkpptype(L, 1, "R_FrameBuffer");
+    R_FrameBuffer *self = R_CPPCAST(R_FrameBuffer *, XL_checkpptype(L, 1, "R_FrameBuffer"));
     unsigned int RETVAL;
     R_MAGIC_CHECK(R_FrameBuffer, self);
     RETVAL = self->stencil;
@@ -137,14 +137,14 @@ static int r_framebuffer_stencil_index_xl(lua_State *L)
 
 static int r_framebuffer_method_bind_xl(lua_State *L)
 {
-    R_FrameBuffer *self = XL_checkpptype(L, 1, "R_FrameBuffer");
+    R_FrameBuffer *self = R_CPPCAST(R_FrameBuffer *, XL_checkpptype(L, 1, "R_FrameBuffer"));
     R_frame_buffer_bind(self);
     return 0;
 }
 
 static int r_framebuffer_method_unbind_xl(lua_State *L)
 {
-    R_FrameBuffer *self = XL_checkpptype(L, 1, "R_FrameBuffer");
+    R_FrameBuffer *self = R_CPPCAST(R_FrameBuffer *, XL_checkpptype(L, 1, "R_FrameBuffer"));
     XL_UNUSED(self);
     R_frame_buffer_unbind();
     return 0;
@@ -159,7 +159,7 @@ static int r_framebuffer_unbind_xl(lua_State *L)
 
 static int r_framebuffer_method_write_to_stdout_xl(lua_State *L)
 {
-    R_FrameBuffer *self = XL_checkpptype(L, 1, "R_FrameBuffer");
+    R_FrameBuffer *self = R_CPPCAST(R_FrameBuffer *, XL_checkpptype(L, 1, "R_FrameBuffer"));
 #ifdef __EMSCRIPTEN__
     /* You're not gonna record video in Emscripten, so this isn't allowed. */
     XL_UNUSED(self);

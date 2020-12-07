@@ -41,14 +41,14 @@ static int r_vectorimage_from_file_xl(lua_State *L)
 
 static int r_vectorimage_method_gc_xl(lua_State *L)
 {
-    R_VectorImage *self = XL_checkpptype_nullable(L, 1, "R_VectorImage");
+    R_VectorImage *self = R_CPPCAST(R_VectorImage *, XL_checkpptype_nullable(L, 1, "R_VectorImage"));
     R_vector_image_decref(self);
     return 0;
 }
 
 static int r_vectorimage_refs_index_xl(lua_State *L)
 {
-    R_VectorImage *self = XL_checkpptype(L, 1, "R_VectorImage");
+    R_VectorImage *self = R_CPPCAST(R_VectorImage *, XL_checkpptype(L, 1, "R_VectorImage"));
     int RETVAL;
     RETVAL = R_vector_image_refs(self);
     XL_pushint(L, RETVAL);
@@ -57,7 +57,7 @@ static int r_vectorimage_refs_index_xl(lua_State *L)
 
 static int r_vectorimage_width_index_xl(lua_State *L)
 {
-    R_VectorImage *self = XL_checkpptype(L, 1, "R_VectorImage");
+    R_VectorImage *self = R_CPPCAST(R_VectorImage *, XL_checkpptype(L, 1, "R_VectorImage"));
     int RETVAL;
     RETVAL = R_vector_image_width(self);
     XL_pushint(L, RETVAL);
@@ -66,7 +66,7 @@ static int r_vectorimage_width_index_xl(lua_State *L)
 
 static int r_vectorimage_height_index_xl(lua_State *L)
 {
-    R_VectorImage *self = XL_checkpptype(L, 1, "R_VectorImage");
+    R_VectorImage *self = R_CPPCAST(R_VectorImage *, XL_checkpptype(L, 1, "R_VectorImage"));
     int RETVAL;
     RETVAL = R_vector_image_height(self);
     XL_pushint(L, RETVAL);
@@ -75,9 +75,9 @@ static int r_vectorimage_height_index_xl(lua_State *L)
 
 static int r_vectorimage_method_draw_xl(lua_State *L)
 {
-    R_VectorImage *self = XL_checkpptype(L, 1, "R_VectorImage");
-    R_Nvg *nvg = XL_checkpptype(L, 2, "R_Nvg");
-    R_LuaNvgTransform *m = XL_checkutype(L, 3, "R_LuaNvgTransform");
+    R_VectorImage *self = R_CPPCAST(R_VectorImage *, XL_checkpptype(L, 1, "R_VectorImage"));
+    R_Nvg *nvg = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 2, "R_Nvg"));
+    R_LuaNvgTransform *m = R_CPPCAST(R_LuaNvgTransform *, XL_checkutype(L, 3, "R_LuaNvgTransform"));
     R_vector_image_draw(self, R_nvg_context(nvg), m->matrix);
     return 0;
 }

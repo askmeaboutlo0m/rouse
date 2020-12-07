@@ -166,8 +166,8 @@ sub c_name ($name) {
 
 sub generate_pptype ($self, $name, $packages, $nuvalue) {
     my $decl   = sprintf '%s *$var', $name;
-    my $check  = sprintf '$decl = XL_checkpptype(L, $index, \"%s\")', $name;
-    my $ncheck = sprintf '$decl = XL_checkpptype_nullable(L, $index, \"%s\")', $name;
+    my $check  = sprintf '$decl = R_CPPCAST(%1$s *, XL_checkpptype(L, $index, \"%1$s\"))', $name;
+    my $ncheck = sprintf '$decl = R_CPPCAST(%1$s *, XL_checkpptype_nullable(L, $index, \"%1$s\"))', $name;
     my $new    = sprintf 'XL_pushnewpptypeuv(L, $var, \"%s\", %d)', $name, $nuvalue;
     my $new_n  = sprintf 'XL_pushnewpptypeuv_nullable(L, $var, \"%s\", %d)', $name, $nuvalue;
     my $die    = sprintf '" . die("A plain %s* can\'t be pushed\n") . "', $name;
@@ -186,7 +186,7 @@ sub generate_pptype ($self, $name, $packages, $nuvalue) {
 sub generate_utype ($self, $name, $packages, $nuvalue) {
     my $decl  = sprintf '%s *$var', $name;
     my $ndecl = sprintf '%s $var', $name;
-    my $check = sprintf '$decl = XL_checkutype(L, $index, \"%s\")', $name;
+    my $check = sprintf '$decl = R_CPPCAST(%1$s *, XL_checkutype(L, $index, \"%1$s\"))', $name;
     my $new   = sprintf 'XL_pushnewutypeuv(L, $var, sizeof(%1$s), \"%1$s\", %2$d)', $name, $nuvalue;
     my $nnew  = sprintf 'XL_pushnewutypeuv(L, &$var, sizeof(%1$s), \"%1$s\", %2$d)', $name, $nuvalue;
     my $die   = sprintf '" . die("A plain %s* can\'t be pushed\n") . "', $name;

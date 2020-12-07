@@ -270,14 +270,15 @@ static inline void *R_lua_newuserdata(lua_State *L, size_t size,
 static inline void **R_lua_newuserdata_pp(lua_State *L, void *ptr,
                                           const char *tname)
 {
-    void **pp = R_lua_newuserdata(L, sizeof(*pp), tname);
+    void **pp =
+        R_CPPCAST(void **, R_lua_newuserdata(L, sizeof(*pp), tname));
     *pp = ptr;
     return pp;
 }
 
 static inline void *R_lua_check_pp(lua_State *L, int index, const char *tname)
 {
-    void **pp = luaL_checkudata(L, index, tname);
+    void **pp = R_CPPCAST(void **, luaL_checkudata(L, index, tname));
     return pp ? *pp : NULL;
 }
 

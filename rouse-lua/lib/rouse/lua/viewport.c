@@ -44,7 +44,7 @@ static int r_viewport_new_xl(lua_State *L)
 
 static int r_viewport_x_index_xl(lua_State *L)
 {
-    R_Viewport *self = XL_checkutype(L, 1, "R_Viewport");
+    R_Viewport *self = R_CPPCAST(R_Viewport *, XL_checkutype(L, 1, "R_Viewport"));
     int RETVAL;
     RETVAL = self->x;
     XL_pushint(L, RETVAL);
@@ -53,7 +53,7 @@ static int r_viewport_x_index_xl(lua_State *L)
 
 static int r_viewport_x_newindex_xl(lua_State *L)
 {
-    R_Viewport *self = XL_checkutype(L, 1, "R_Viewport");
+    R_Viewport *self = R_CPPCAST(R_Viewport *, XL_checkutype(L, 1, "R_Viewport"));
     int VALUE = XL_checkint(L, 2);
     self->x = VALUE;
     return 0;
@@ -61,7 +61,7 @@ static int r_viewport_x_newindex_xl(lua_State *L)
 
 static int r_viewport_y_index_xl(lua_State *L)
 {
-    R_Viewport *self = XL_checkutype(L, 1, "R_Viewport");
+    R_Viewport *self = R_CPPCAST(R_Viewport *, XL_checkutype(L, 1, "R_Viewport"));
     int RETVAL;
     RETVAL = self->y;
     XL_pushint(L, RETVAL);
@@ -70,7 +70,7 @@ static int r_viewport_y_index_xl(lua_State *L)
 
 static int r_viewport_y_newindex_xl(lua_State *L)
 {
-    R_Viewport *self = XL_checkutype(L, 1, "R_Viewport");
+    R_Viewport *self = R_CPPCAST(R_Viewport *, XL_checkutype(L, 1, "R_Viewport"));
     int VALUE = XL_checkint(L, 2);
     self->y = VALUE;
     return 0;
@@ -78,7 +78,7 @@ static int r_viewport_y_newindex_xl(lua_State *L)
 
 static int r_viewport_w_index_xl(lua_State *L)
 {
-    R_Viewport *self = XL_checkutype(L, 1, "R_Viewport");
+    R_Viewport *self = R_CPPCAST(R_Viewport *, XL_checkutype(L, 1, "R_Viewport"));
     int RETVAL;
     RETVAL = self->w;
     XL_pushint(L, RETVAL);
@@ -87,7 +87,7 @@ static int r_viewport_w_index_xl(lua_State *L)
 
 static int r_viewport_w_newindex_xl(lua_State *L)
 {
-    R_Viewport *self = XL_checkutype(L, 1, "R_Viewport");
+    R_Viewport *self = R_CPPCAST(R_Viewport *, XL_checkutype(L, 1, "R_Viewport"));
     int VALUE = XL_checkint(L, 2);
     self->w = VALUE;
     return 0;
@@ -95,7 +95,7 @@ static int r_viewport_w_newindex_xl(lua_State *L)
 
 static int r_viewport_h_index_xl(lua_State *L)
 {
-    R_Viewport *self = XL_checkutype(L, 1, "R_Viewport");
+    R_Viewport *self = R_CPPCAST(R_Viewport *, XL_checkutype(L, 1, "R_Viewport"));
     int RETVAL;
     RETVAL = self->h;
     XL_pushint(L, RETVAL);
@@ -104,7 +104,7 @@ static int r_viewport_h_index_xl(lua_State *L)
 
 static int r_viewport_h_newindex_xl(lua_State *L)
 {
-    R_Viewport *self = XL_checkutype(L, 1, "R_Viewport");
+    R_Viewport *self = R_CPPCAST(R_Viewport *, XL_checkutype(L, 1, "R_Viewport"));
     int VALUE = XL_checkint(L, 2);
     self->h = VALUE;
     return 0;
@@ -112,7 +112,7 @@ static int r_viewport_h_newindex_xl(lua_State *L)
 
 static int r_viewport_width_index_xl(lua_State *L)
 {
-    R_Viewport *self = XL_checkutype(L, 1, "R_Viewport");
+    R_Viewport *self = R_CPPCAST(R_Viewport *, XL_checkutype(L, 1, "R_Viewport"));
     int RETVAL;
     RETVAL = self->w;
     XL_pushint(L, RETVAL);
@@ -121,7 +121,7 @@ static int r_viewport_width_index_xl(lua_State *L)
 
 static int r_viewport_width_newindex_xl(lua_State *L)
 {
-    R_Viewport *self = XL_checkutype(L, 1, "R_Viewport");
+    R_Viewport *self = R_CPPCAST(R_Viewport *, XL_checkutype(L, 1, "R_Viewport"));
     int VALUE = XL_checkint(L, 2);
     self->w = VALUE;
     return 0;
@@ -129,7 +129,7 @@ static int r_viewport_width_newindex_xl(lua_State *L)
 
 static int r_viewport_height_index_xl(lua_State *L)
 {
-    R_Viewport *self = XL_checkutype(L, 1, "R_Viewport");
+    R_Viewport *self = R_CPPCAST(R_Viewport *, XL_checkutype(L, 1, "R_Viewport"));
     int RETVAL;
     RETVAL = self->h;
     XL_pushint(L, RETVAL);
@@ -138,7 +138,7 @@ static int r_viewport_height_index_xl(lua_State *L)
 
 static int r_viewport_height_newindex_xl(lua_State *L)
 {
-    R_Viewport *self = XL_checkutype(L, 1, "R_Viewport");
+    R_Viewport *self = R_CPPCAST(R_Viewport *, XL_checkutype(L, 1, "R_Viewport"));
     int VALUE = XL_checkint(L, 2);
     self->h = VALUE;
     return 0;
@@ -151,7 +151,7 @@ static int r_viewport_method_set_xl(lua_State *L)
 
 static int r_viewport_set_xl(lua_State *L)
 {
-    R_Viewport *vp = XL_checkutype(L, 1, "R_Viewport");
+    R_Viewport *vp = R_CPPCAST(R_Viewport *, XL_checkutype(L, 1, "R_Viewport"));
     XL_UNUSED(L);
     R_viewport_set(*vp);
     return 0;

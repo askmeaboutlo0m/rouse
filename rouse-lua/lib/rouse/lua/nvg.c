@@ -39,7 +39,7 @@ static void check_matrix_index(lua_State *L, lua_Integer i, int arg)
 
 static int r_luanvgtransform_intindex_xl(lua_State *L)
 {
-    R_LuaNvgTransform *self = XL_checkutype(L, 1, "R_LuaNvgTransform");
+    R_LuaNvgTransform *self = R_CPPCAST(R_LuaNvgTransform *, XL_checkutype(L, 1, "R_LuaNvgTransform"));
     lua_Integer INDEX = luaL_checkinteger(L, 2);
     float RETVAL;
     check_matrix_index(L, INDEX, 2);
@@ -50,7 +50,7 @@ static int r_luanvgtransform_intindex_xl(lua_State *L)
 
 static int r_luanvgtransform_intnewindex_xl(lua_State *L)
 {
-    R_LuaNvgTransform *self = XL_checkutype(L, 1, "R_LuaNvgTransform");
+    R_LuaNvgTransform *self = R_CPPCAST(R_LuaNvgTransform *, XL_checkutype(L, 1, "R_LuaNvgTransform"));
     lua_Integer INDEX = luaL_checkinteger(L, 2);
     float VALUE = XL_checkfloat(L, 3);
     check_matrix_index(L, INDEX, 2);
@@ -60,7 +60,7 @@ static int r_luanvgtransform_intnewindex_xl(lua_State *L)
 
 static int r_luanvgtransform_method_len_xl(lua_State *L)
 {
-    R_LuaNvgTransform *self = XL_checkutype(L, 1, "R_LuaNvgTransform");
+    R_LuaNvgTransform *self = R_CPPCAST(R_LuaNvgTransform *, XL_checkutype(L, 1, "R_LuaNvgTransform"));
     lua_Integer RETVAL;
     XL_UNUSED(self);
     RETVAL = 6;
@@ -70,7 +70,7 @@ static int r_luanvgtransform_method_len_xl(lua_State *L)
 
 static int r_luanvgtransform_method_tostring_xl(lua_State *L)
 {
-    R_LuaNvgTransform *self = XL_checkutype(L, 1, "R_LuaNvgTransform");
+    R_LuaNvgTransform *self = R_CPPCAST(R_LuaNvgTransform *, XL_checkutype(L, 1, "R_LuaNvgTransform"));
     lua_pushfstring(L, "[a = %f, b = %f, c = %f, d = %f, e = %f, f = %f]",
                        self->matrix[0], self->matrix[1], self->matrix[2],
                        self->matrix[3], self->matrix[4], self->matrix[5]);
@@ -134,7 +134,7 @@ static int r_nvg_rgbaf_xl(lua_State *L)
 
 static int nvgcolor_r_index_xl(lua_State *L)
 {
-    NVGcolor *self = XL_checkutype(L, 1, "NVGcolor");
+    NVGcolor *self = R_CPPCAST(NVGcolor *, XL_checkutype(L, 1, "NVGcolor"));
     float RETVAL;
     RETVAL = self->r;
     XL_pushfloat(L, RETVAL);
@@ -143,7 +143,7 @@ static int nvgcolor_r_index_xl(lua_State *L)
 
 static int nvgcolor_r_newindex_xl(lua_State *L)
 {
-    NVGcolor *self = XL_checkutype(L, 1, "NVGcolor");
+    NVGcolor *self = R_CPPCAST(NVGcolor *, XL_checkutype(L, 1, "NVGcolor"));
     float VALUE = XL_checkfloat(L, 2);
     self->r = VALUE;
     return 0;
@@ -151,7 +151,7 @@ static int nvgcolor_r_newindex_xl(lua_State *L)
 
 static int nvgcolor_g_index_xl(lua_State *L)
 {
-    NVGcolor *self = XL_checkutype(L, 1, "NVGcolor");
+    NVGcolor *self = R_CPPCAST(NVGcolor *, XL_checkutype(L, 1, "NVGcolor"));
     float RETVAL;
     RETVAL = self->g;
     XL_pushfloat(L, RETVAL);
@@ -160,7 +160,7 @@ static int nvgcolor_g_index_xl(lua_State *L)
 
 static int nvgcolor_g_newindex_xl(lua_State *L)
 {
-    NVGcolor *self = XL_checkutype(L, 1, "NVGcolor");
+    NVGcolor *self = R_CPPCAST(NVGcolor *, XL_checkutype(L, 1, "NVGcolor"));
     float VALUE = XL_checkfloat(L, 2);
     self->g = VALUE;
     return 0;
@@ -168,7 +168,7 @@ static int nvgcolor_g_newindex_xl(lua_State *L)
 
 static int nvgcolor_b_index_xl(lua_State *L)
 {
-    NVGcolor *self = XL_checkutype(L, 1, "NVGcolor");
+    NVGcolor *self = R_CPPCAST(NVGcolor *, XL_checkutype(L, 1, "NVGcolor"));
     float RETVAL;
     RETVAL = self->b;
     XL_pushfloat(L, RETVAL);
@@ -177,7 +177,7 @@ static int nvgcolor_b_index_xl(lua_State *L)
 
 static int nvgcolor_b_newindex_xl(lua_State *L)
 {
-    NVGcolor *self = XL_checkutype(L, 1, "NVGcolor");
+    NVGcolor *self = R_CPPCAST(NVGcolor *, XL_checkutype(L, 1, "NVGcolor"));
     float VALUE = XL_checkfloat(L, 2);
     self->b = VALUE;
     return 0;
@@ -185,7 +185,7 @@ static int nvgcolor_b_newindex_xl(lua_State *L)
 
 static int nvgcolor_a_index_xl(lua_State *L)
 {
-    NVGcolor *self = XL_checkutype(L, 1, "NVGcolor");
+    NVGcolor *self = R_CPPCAST(NVGcolor *, XL_checkutype(L, 1, "NVGcolor"));
     float RETVAL;
     RETVAL = self->a;
     XL_pushfloat(L, RETVAL);
@@ -194,7 +194,7 @@ static int nvgcolor_a_index_xl(lua_State *L)
 
 static int nvgcolor_a_newindex_xl(lua_State *L)
 {
-    NVGcolor *self = XL_checkutype(L, 1, "NVGcolor");
+    NVGcolor *self = R_CPPCAST(NVGcolor *, XL_checkutype(L, 1, "NVGcolor"));
     float VALUE = XL_checkfloat(L, 2);
     self->a = VALUE;
     return 0;
@@ -202,7 +202,7 @@ static int nvgcolor_a_newindex_xl(lua_State *L)
 
 static int nvgcolor_intindex_xl(lua_State *L)
 {
-    NVGcolor *self = XL_checkutype(L, 1, "NVGcolor");
+    NVGcolor *self = R_CPPCAST(NVGcolor *, XL_checkutype(L, 1, "NVGcolor"));
     lua_Integer INDEX = luaL_checkinteger(L, 2);
     float RETVAL;
     check_color_index(L, INDEX, 2);
@@ -213,7 +213,7 @@ static int nvgcolor_intindex_xl(lua_State *L)
 
 static int nvgcolor_intnewindex_xl(lua_State *L)
 {
-    NVGcolor *self = XL_checkutype(L, 1, "NVGcolor");
+    NVGcolor *self = R_CPPCAST(NVGcolor *, XL_checkutype(L, 1, "NVGcolor"));
     lua_Integer INDEX = luaL_checkinteger(L, 2);
     float VALUE = XL_checkfloat(L, 3);
     check_color_index(L, INDEX, 2);
@@ -223,7 +223,7 @@ static int nvgcolor_intnewindex_xl(lua_State *L)
 
 static int nvgcolor_method_unpack_xl(lua_State *L)
 {
-    NVGcolor *self = XL_checkutype(L, 1, "NVGcolor");
+    NVGcolor *self = R_CPPCAST(NVGcolor *, XL_checkutype(L, 1, "NVGcolor"));
     XL_pushfloat(L, self->r);
     XL_pushfloat(L, self->g);
     XL_pushfloat(L, self->b);
@@ -233,7 +233,7 @@ static int nvgcolor_method_unpack_xl(lua_State *L)
 
 static int nvgcolor_method_len_xl(lua_State *L)
 {
-    NVGcolor *self = XL_checkutype(L, 1, "NVGcolor");
+    NVGcolor *self = R_CPPCAST(NVGcolor *, XL_checkutype(L, 1, "NVGcolor"));
     lua_Integer RETVAL;
     XL_UNUSED(self);
     RETVAL = 4;
@@ -243,7 +243,7 @@ static int nvgcolor_method_len_xl(lua_State *L)
 
 static int nvgcolor_method_tostring_xl(lua_State *L)
 {
-    NVGcolor *self = XL_checkutype(L, 1, "NVGcolor");
+    NVGcolor *self = R_CPPCAST(NVGcolor *, XL_checkutype(L, 1, "NVGcolor"));
     lua_pushfstring(L, "[r = %f, g = %f, b = %f, a = %f]",
                        self->r, self->g, self->b, self->a);
     return 1;
@@ -260,14 +260,14 @@ static int r_nvg_new_xl(lua_State *L)
 
 static int r_nvg_method_gc_xl(lua_State *L)
 {
-    R_Nvg *self = XL_checkpptype_nullable(L, 1, "R_Nvg");
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype_nullable(L, 1, "R_Nvg"));
     R_nvg_decref(self);
     return 0;
 }
 
 static int r_nvg_method_create_font_xl(lua_State *L)
 {
-    R_Nvg *self = XL_checkpptype(L, 1, "R_Nvg");
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
     const char *name = luaL_checkstring(L, 2);
     const char *path = luaL_checkstring(L, 3);
     NVGcontext *ctx = R_nvg_context(self);
@@ -284,7 +284,7 @@ static int r_nvg_method_create_font_xl(lua_State *L)
 
 static int r_nvg_method_begin_frame_xl(lua_State *L)
 {
-    R_Nvg *self = XL_checkpptype(L, 1, "R_Nvg");
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
     float window_width = XL_checkfloat(L, 2);
     float window_height = XL_checkfloat(L, 3);
     float device_pixel_ratio = XL_checkfloat(L, 4);
@@ -297,7 +297,7 @@ static int r_nvg_method_begin_frame_xl(lua_State *L)
 
 static int r_nvg_method_cancel_frame_xl(lua_State *L)
 {
-    R_Nvg *self = XL_checkpptype(L, 1, "R_Nvg");
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
     NVGcontext *ctx = R_nvg_context(self);
 #   define self ctx
     nvgCancelFrame(self);
@@ -307,7 +307,7 @@ static int r_nvg_method_cancel_frame_xl(lua_State *L)
 
 static int r_nvg_method_end_frame_xl(lua_State *L)
 {
-    R_Nvg *self = XL_checkpptype(L, 1, "R_Nvg");
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
     NVGcontext *ctx = R_nvg_context(self);
 #   define self ctx
     nvgEndFrame(self);
@@ -317,7 +317,7 @@ static int r_nvg_method_end_frame_xl(lua_State *L)
 
 static int r_nvg_method_save_xl(lua_State *L)
 {
-    R_Nvg *self = XL_checkpptype(L, 1, "R_Nvg");
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
     NVGcontext *ctx = R_nvg_context(self);
 #   define self ctx
     nvgSave(self);
@@ -327,7 +327,7 @@ static int r_nvg_method_save_xl(lua_State *L)
 
 static int r_nvg_method_restore_xl(lua_State *L)
 {
-    R_Nvg *self = XL_checkpptype(L, 1, "R_Nvg");
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
     NVGcontext *ctx = R_nvg_context(self);
 #   define self ctx
     nvgRestore(self);
@@ -337,7 +337,7 @@ static int r_nvg_method_restore_xl(lua_State *L)
 
 static int r_nvg_method_reset_xl(lua_State *L)
 {
-    R_Nvg *self = XL_checkpptype(L, 1, "R_Nvg");
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
     NVGcontext *ctx = R_nvg_context(self);
 #   define self ctx
     nvgReset(self);
@@ -347,7 +347,7 @@ static int r_nvg_method_reset_xl(lua_State *L)
 
 static int r_nvg_method_shape_anti_alias_xl(lua_State *L)
 {
-    R_Nvg *self = XL_checkpptype(L, 1, "R_Nvg");
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
     bool enabled = XL_checkbool(L, 2);
     NVGcontext *ctx = R_nvg_context(self);
 #   define self ctx
@@ -358,7 +358,7 @@ static int r_nvg_method_shape_anti_alias_xl(lua_State *L)
 
 static int r_nvg_method_stroke_color_xl(lua_State *L)
 {
-    R_Nvg *self = XL_checkpptype(L, 1, "R_Nvg");
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
     NVGcolor color = *((NVGcolor *)luaL_checkudata(L, 2, "NVGcolor"));
     NVGcontext *ctx = R_nvg_context(self);
 #   define self ctx
@@ -371,7 +371,7 @@ static int r_nvg_method_stroke_color_xl(lua_State *L)
 
 static int r_nvg_method_fill_color_xl(lua_State *L)
 {
-    R_Nvg *self = XL_checkpptype(L, 1, "R_Nvg");
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
     NVGcolor color = *((NVGcolor *)luaL_checkudata(L, 2, "NVGcolor"));
     NVGcontext *ctx = R_nvg_context(self);
 #   define self ctx
@@ -384,7 +384,7 @@ static int r_nvg_method_fill_color_xl(lua_State *L)
 
 static int r_nvg_method_miter_limit_xl(lua_State *L)
 {
-    R_Nvg *self = XL_checkpptype(L, 1, "R_Nvg");
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
     float limit = XL_checkfloat(L, 2);
     NVGcontext *ctx = R_nvg_context(self);
 #   define self ctx
@@ -395,7 +395,7 @@ static int r_nvg_method_miter_limit_xl(lua_State *L)
 
 static int r_nvg_method_stroke_width_xl(lua_State *L)
 {
-    R_Nvg *self = XL_checkpptype(L, 1, "R_Nvg");
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
     float size = XL_checkfloat(L, 2);
     NVGcontext *ctx = R_nvg_context(self);
 #   define self ctx
@@ -406,7 +406,7 @@ static int r_nvg_method_stroke_width_xl(lua_State *L)
 
 static int r_nvg_method_line_cap_xl(lua_State *L)
 {
-    R_Nvg *self = XL_checkpptype(L, 1, "R_Nvg");
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
     int cap = XL_checkint(L, 2);
     NVGcontext *ctx = R_nvg_context(self);
 #   define self ctx
@@ -417,7 +417,7 @@ static int r_nvg_method_line_cap_xl(lua_State *L)
 
 static int r_nvg_method_line_join_xl(lua_State *L)
 {
-    R_Nvg *self = XL_checkpptype(L, 1, "R_Nvg");
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
     int join = XL_checkint(L, 2);
     NVGcontext *ctx = R_nvg_context(self);
 #   define self ctx
@@ -428,7 +428,7 @@ static int r_nvg_method_line_join_xl(lua_State *L)
 
 static int r_nvg_method_global_alpha_xl(lua_State *L)
 {
-    R_Nvg *self = XL_checkpptype(L, 1, "R_Nvg");
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
     float alpha = XL_checkfloat(L, 2);
     NVGcontext *ctx = R_nvg_context(self);
 #   define self ctx
@@ -439,7 +439,7 @@ static int r_nvg_method_global_alpha_xl(lua_State *L)
 
 static int r_nvg_method_reset_transform_xl(lua_State *L)
 {
-    R_Nvg *self = XL_checkpptype(L, 1, "R_Nvg");
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
     NVGcontext *ctx = R_nvg_context(self);
 #   define self ctx
     nvgResetTransform(self);
@@ -449,7 +449,7 @@ static int r_nvg_method_reset_transform_xl(lua_State *L)
 
 static int r_nvg_method_transform_xl(lua_State *L)
 {
-    R_Nvg *self = XL_checkpptype(L, 1, "R_Nvg");
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
     float a = XL_checkfloat(L, 2);
     float b = XL_checkfloat(L, 3);
     float c = XL_checkfloat(L, 4);
@@ -465,7 +465,7 @@ static int r_nvg_method_transform_xl(lua_State *L)
 
 static int r_nvg_method_translate_xl(lua_State *L)
 {
-    R_Nvg *self = XL_checkpptype(L, 1, "R_Nvg");
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
     float x = XL_checkfloat(L, 2);
     float y = XL_checkfloat(L, 3);
     NVGcontext *ctx = R_nvg_context(self);
@@ -477,7 +477,7 @@ static int r_nvg_method_translate_xl(lua_State *L)
 
 static int r_nvg_method_rotate_xl(lua_State *L)
 {
-    R_Nvg *self = XL_checkpptype(L, 1, "R_Nvg");
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
     float angle = XL_checkfloat(L, 2);
     NVGcontext *ctx = R_nvg_context(self);
 #   define self ctx
@@ -488,7 +488,7 @@ static int r_nvg_method_rotate_xl(lua_State *L)
 
 static int r_nvg_method_skew_x_xl(lua_State *L)
 {
-    R_Nvg *self = XL_checkpptype(L, 1, "R_Nvg");
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
     float angle = XL_checkfloat(L, 2);
     NVGcontext *ctx = R_nvg_context(self);
 #   define self ctx
@@ -499,7 +499,7 @@ static int r_nvg_method_skew_x_xl(lua_State *L)
 
 static int r_nvg_method_skew_y_xl(lua_State *L)
 {
-    R_Nvg *self = XL_checkpptype(L, 1, "R_Nvg");
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
     float angle = XL_checkfloat(L, 2);
     NVGcontext *ctx = R_nvg_context(self);
 #   define self ctx
@@ -510,7 +510,7 @@ static int r_nvg_method_skew_y_xl(lua_State *L)
 
 static int r_nvg_method_scale_xl(lua_State *L)
 {
-    R_Nvg *self = XL_checkpptype(L, 1, "R_Nvg");
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
     float x = XL_checkfloat(L, 2);
     float y = XL_checkfloat(L, 3);
     NVGcontext *ctx = R_nvg_context(self);
@@ -522,8 +522,8 @@ static int r_nvg_method_scale_xl(lua_State *L)
 
 static int r_nvg_method_set_transform_xl(lua_State *L)
 {
-    R_Nvg *self = XL_checkpptype(L, 1, "R_Nvg");
-    R_LuaNvgTransform *transform = XL_checkutype(L, 2, "R_LuaNvgTransform");
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
+    R_LuaNvgTransform *transform = R_CPPCAST(R_LuaNvgTransform *, XL_checkutype(L, 2, "R_LuaNvgTransform"));
     NVGcontext *ctx = R_nvg_context(self);
 #   define self ctx
     R_nvg_transform_set(self, transform->matrix);
@@ -533,8 +533,8 @@ static int r_nvg_method_set_transform_xl(lua_State *L)
 
 static int r_nvg_method_transform_by_xl(lua_State *L)
 {
-    R_Nvg *self = XL_checkpptype(L, 1, "R_Nvg");
-    R_LuaNvgTransform *transform = XL_checkutype(L, 2, "R_LuaNvgTransform");
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
+    R_LuaNvgTransform *transform = R_CPPCAST(R_LuaNvgTransform *, XL_checkutype(L, 2, "R_LuaNvgTransform"));
     NVGcontext *ctx = R_nvg_context(self);
 #   define self ctx
     R_nvg_transform(self, transform->matrix);
@@ -544,7 +544,7 @@ static int r_nvg_method_transform_by_xl(lua_State *L)
 
 static int r_nvg_method_scissor_xl(lua_State *L)
 {
-    R_Nvg *self = XL_checkpptype(L, 1, "R_Nvg");
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
     float x = XL_checkfloat(L, 2);
     float y = XL_checkfloat(L, 3);
     float w = XL_checkfloat(L, 4);
@@ -558,7 +558,7 @@ static int r_nvg_method_scissor_xl(lua_State *L)
 
 static int r_nvg_method_intersect_scissor_xl(lua_State *L)
 {
-    R_Nvg *self = XL_checkpptype(L, 1, "R_Nvg");
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
     float x = XL_checkfloat(L, 2);
     float y = XL_checkfloat(L, 3);
     float w = XL_checkfloat(L, 4);
@@ -572,7 +572,7 @@ static int r_nvg_method_intersect_scissor_xl(lua_State *L)
 
 static int r_nvg_method_reset_scissor_xl(lua_State *L)
 {
-    R_Nvg *self = XL_checkpptype(L, 1, "R_Nvg");
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
     NVGcontext *ctx = R_nvg_context(self);
 #   define self ctx
     nvgResetScissor(self);
@@ -582,7 +582,7 @@ static int r_nvg_method_reset_scissor_xl(lua_State *L)
 
 static int r_nvg_method_begin_path_xl(lua_State *L)
 {
-    R_Nvg *self = XL_checkpptype(L, 1, "R_Nvg");
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
     NVGcontext *ctx = R_nvg_context(self);
 #   define self ctx
     nvgBeginPath(self);
@@ -592,7 +592,7 @@ static int r_nvg_method_begin_path_xl(lua_State *L)
 
 static int r_nvg_method_move_to_xl(lua_State *L)
 {
-    R_Nvg *self = XL_checkpptype(L, 1, "R_Nvg");
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
     float x = XL_checkfloat(L, 2);
     float y = XL_checkfloat(L, 3);
     NVGcontext *ctx = R_nvg_context(self);
@@ -604,7 +604,7 @@ static int r_nvg_method_move_to_xl(lua_State *L)
 
 static int r_nvg_method_line_to_xl(lua_State *L)
 {
-    R_Nvg *self = XL_checkpptype(L, 1, "R_Nvg");
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
     float x = XL_checkfloat(L, 2);
     float y = XL_checkfloat(L, 3);
     NVGcontext *ctx = R_nvg_context(self);
@@ -616,7 +616,7 @@ static int r_nvg_method_line_to_xl(lua_State *L)
 
 static int r_nvg_method_bezier_to_xl(lua_State *L)
 {
-    R_Nvg *self = XL_checkpptype(L, 1, "R_Nvg");
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
     float c1x = XL_checkfloat(L, 2);
     float c1y = XL_checkfloat(L, 3);
     float c2x = XL_checkfloat(L, 4);
@@ -632,7 +632,7 @@ static int r_nvg_method_bezier_to_xl(lua_State *L)
 
 static int r_nvg_method_quad_to_xl(lua_State *L)
 {
-    R_Nvg *self = XL_checkpptype(L, 1, "R_Nvg");
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
     float cx = XL_checkfloat(L, 2);
     float cy = XL_checkfloat(L, 3);
     float x = XL_checkfloat(L, 4);
@@ -646,7 +646,7 @@ static int r_nvg_method_quad_to_xl(lua_State *L)
 
 static int r_nvg_method_arc_to_xl(lua_State *L)
 {
-    R_Nvg *self = XL_checkpptype(L, 1, "R_Nvg");
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
     float x1 = XL_checkfloat(L, 2);
     float y1 = XL_checkfloat(L, 3);
     float x2 = XL_checkfloat(L, 4);
@@ -661,7 +661,7 @@ static int r_nvg_method_arc_to_xl(lua_State *L)
 
 static int r_nvg_method_close_path_xl(lua_State *L)
 {
-    R_Nvg *self = XL_checkpptype(L, 1, "R_Nvg");
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
     NVGcontext *ctx = R_nvg_context(self);
 #   define self ctx
     nvgClosePath(self);
@@ -671,7 +671,7 @@ static int r_nvg_method_close_path_xl(lua_State *L)
 
 static int r_nvg_method_path_winding_xl(lua_State *L)
 {
-    R_Nvg *self = XL_checkpptype(L, 1, "R_Nvg");
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
     int dir = XL_checkint(L, 2);
     NVGcontext *ctx = R_nvg_context(self);
 #   define self ctx
@@ -682,7 +682,7 @@ static int r_nvg_method_path_winding_xl(lua_State *L)
 
 static int r_nvg_method_arc_xl(lua_State *L)
 {
-    R_Nvg *self = XL_checkpptype(L, 1, "R_Nvg");
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
     float cx = XL_checkfloat(L, 2);
     float cy = XL_checkfloat(L, 3);
     float r = XL_checkfloat(L, 4);
@@ -698,7 +698,7 @@ static int r_nvg_method_arc_xl(lua_State *L)
 
 static int r_nvg_method_rect_xl(lua_State *L)
 {
-    R_Nvg *self = XL_checkpptype(L, 1, "R_Nvg");
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
     float x = XL_checkfloat(L, 2);
     float y = XL_checkfloat(L, 3);
     float w = XL_checkfloat(L, 4);
@@ -712,7 +712,7 @@ static int r_nvg_method_rect_xl(lua_State *L)
 
 static int r_nvg_method_rounded_rect_xl(lua_State *L)
 {
-    R_Nvg *self = XL_checkpptype(L, 1, "R_Nvg");
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
     float x = XL_checkfloat(L, 2);
     float y = XL_checkfloat(L, 3);
     float w = XL_checkfloat(L, 4);
@@ -727,7 +727,7 @@ static int r_nvg_method_rounded_rect_xl(lua_State *L)
 
 static int r_nvg_method_rounded_rect_varying_xl(lua_State *L)
 {
-    R_Nvg *self = XL_checkpptype(L, 1, "R_Nvg");
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
     float x = XL_checkfloat(L, 2);
     float y = XL_checkfloat(L, 3);
     float w = XL_checkfloat(L, 4);
@@ -745,7 +745,7 @@ static int r_nvg_method_rounded_rect_varying_xl(lua_State *L)
 
 static int r_nvg_method_ellipse_xl(lua_State *L)
 {
-    R_Nvg *self = XL_checkpptype(L, 1, "R_Nvg");
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
     float cx = XL_checkfloat(L, 2);
     float cy = XL_checkfloat(L, 3);
     float rx = XL_checkfloat(L, 4);
@@ -759,7 +759,7 @@ static int r_nvg_method_ellipse_xl(lua_State *L)
 
 static int r_nvg_method_circle_xl(lua_State *L)
 {
-    R_Nvg *self = XL_checkpptype(L, 1, "R_Nvg");
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
     float cx = XL_checkfloat(L, 2);
     float cy = XL_checkfloat(L, 3);
     float r = XL_checkfloat(L, 4);
@@ -772,7 +772,7 @@ static int r_nvg_method_circle_xl(lua_State *L)
 
 static int r_nvg_method_fill_xl(lua_State *L)
 {
-    R_Nvg *self = XL_checkpptype(L, 1, "R_Nvg");
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
     NVGcontext *ctx = R_nvg_context(self);
 #   define self ctx
     nvgFill(self);
@@ -782,7 +782,7 @@ static int r_nvg_method_fill_xl(lua_State *L)
 
 static int r_nvg_method_stroke_xl(lua_State *L)
 {
-    R_Nvg *self = XL_checkpptype(L, 1, "R_Nvg");
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
     NVGcontext *ctx = R_nvg_context(self);
 #   define self ctx
     nvgStroke(self);

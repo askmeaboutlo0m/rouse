@@ -52,7 +52,7 @@ static int r_v2_polar_xl(lua_State *L)
 
 static int r_v2_x_index_xl(lua_State *L)
 {
-    R_V2 *self = XL_checkutype(L, 1, "R_V2");
+    R_V2 *self = R_CPPCAST(R_V2 *, XL_checkutype(L, 1, "R_V2"));
     float RETVAL;
     RETVAL = self->x;
     XL_pushfloat(L, RETVAL);
@@ -61,7 +61,7 @@ static int r_v2_x_index_xl(lua_State *L)
 
 static int r_v2_x_newindex_xl(lua_State *L)
 {
-    R_V2 *self = XL_checkutype(L, 1, "R_V2");
+    R_V2 *self = R_CPPCAST(R_V2 *, XL_checkutype(L, 1, "R_V2"));
     float VALUE = XL_checkfloat(L, 2);
     self->x = VALUE;
     return 0;
@@ -69,7 +69,7 @@ static int r_v2_x_newindex_xl(lua_State *L)
 
 static int r_v2_y_index_xl(lua_State *L)
 {
-    R_V2 *self = XL_checkutype(L, 1, "R_V2");
+    R_V2 *self = R_CPPCAST(R_V2 *, XL_checkutype(L, 1, "R_V2"));
     float RETVAL;
     RETVAL = self->y;
     XL_pushfloat(L, RETVAL);
@@ -78,7 +78,7 @@ static int r_v2_y_index_xl(lua_State *L)
 
 static int r_v2_y_newindex_xl(lua_State *L)
 {
-    R_V2 *self = XL_checkutype(L, 1, "R_V2");
+    R_V2 *self = R_CPPCAST(R_V2 *, XL_checkutype(L, 1, "R_V2"));
     float VALUE = XL_checkfloat(L, 2);
     self->y = VALUE;
     return 0;
@@ -86,7 +86,7 @@ static int r_v2_y_newindex_xl(lua_State *L)
 
 static int r_v2_length_index_xl(lua_State *L)
 {
-    R_V2 *self = XL_checkutype(L, 1, "R_V2");
+    R_V2 *self = R_CPPCAST(R_V2 *, XL_checkutype(L, 1, "R_V2"));
     float RETVAL;
     float x = self->x;
     float y = self->y;
@@ -97,7 +97,7 @@ static int r_v2_length_index_xl(lua_State *L)
 
 static int r_v2_angle_index_xl(lua_State *L)
 {
-    R_V2 *self = XL_checkutype(L, 1, "R_V2");
+    R_V2 *self = R_CPPCAST(R_V2 *, XL_checkutype(L, 1, "R_V2"));
     int RETVAL;
     float x = self->x;
     float y = self->y;
@@ -114,7 +114,7 @@ static int r_v2_angle_index_xl(lua_State *L)
 
 static int r_v2_method_tostring_xl(lua_State *L)
 {
-    R_V2 *self = XL_checkutype(L, 1, "R_V2");
+    R_V2 *self = R_CPPCAST(R_V2 *, XL_checkutype(L, 1, "R_V2"));
     lua_pushfstring(L, "R_V2(%f, %f)", R_lua_float2n(self->x),
                                        R_lua_float2n(self->y));
     return 1;
@@ -122,7 +122,7 @@ static int r_v2_method_tostring_xl(lua_State *L)
 
 static int r_v2_method_unpack_xl(lua_State *L)
 {
-    R_V2 *self = XL_checkutype(L, 1, "R_V2");
+    R_V2 *self = R_CPPCAST(R_V2 *, XL_checkutype(L, 1, "R_V2"));
     XL_pushfloat(L, self->x);
     XL_pushfloat(L, self->y);
     return 2;
@@ -239,8 +239,8 @@ static int r_v2_method_mul_xl(lua_State *L)
 
 static int r_v2_method_distance2_xl(lua_State *L)
 {
-    R_V2 *self = XL_checkutype(L, 1, "R_V2");
-    R_V2 *b = XL_checkutype(L, 2, "R_V2");
+    R_V2 *self = R_CPPCAST(R_V2 *, XL_checkutype(L, 1, "R_V2"));
+    R_V2 *b = R_CPPCAST(R_V2 *, XL_checkutype(L, 2, "R_V2"));
     float RETVAL;
     RETVAL = R_v2_distance2(*self, *b);
     XL_pushfloat(L, RETVAL);
@@ -249,8 +249,8 @@ static int r_v2_method_distance2_xl(lua_State *L)
 
 static int r_v2_method_distance_xl(lua_State *L)
 {
-    R_V2 *self = XL_checkutype(L, 1, "R_V2");
-    R_V2 *b = XL_checkutype(L, 2, "R_V2");
+    R_V2 *self = R_CPPCAST(R_V2 *, XL_checkutype(L, 1, "R_V2"));
+    R_V2 *b = R_CPPCAST(R_V2 *, XL_checkutype(L, 2, "R_V2"));
     float RETVAL;
     RETVAL = R_v2_distance(*self, *b);
     XL_pushfloat(L, RETVAL);
@@ -275,7 +275,7 @@ static int r_v3_new_xl(lua_State *L)
 
 static int r_v3_x_index_xl(lua_State *L)
 {
-    R_V3 *self = XL_checkutype(L, 1, "R_V3");
+    R_V3 *self = R_CPPCAST(R_V3 *, XL_checkutype(L, 1, "R_V3"));
     float RETVAL;
     RETVAL = self->x;
     XL_pushfloat(L, RETVAL);
@@ -284,7 +284,7 @@ static int r_v3_x_index_xl(lua_State *L)
 
 static int r_v3_x_newindex_xl(lua_State *L)
 {
-    R_V3 *self = XL_checkutype(L, 1, "R_V3");
+    R_V3 *self = R_CPPCAST(R_V3 *, XL_checkutype(L, 1, "R_V3"));
     float VALUE = XL_checkfloat(L, 2);
     self->x = VALUE;
     return 0;
@@ -292,7 +292,7 @@ static int r_v3_x_newindex_xl(lua_State *L)
 
 static int r_v3_y_index_xl(lua_State *L)
 {
-    R_V3 *self = XL_checkutype(L, 1, "R_V3");
+    R_V3 *self = R_CPPCAST(R_V3 *, XL_checkutype(L, 1, "R_V3"));
     float RETVAL;
     RETVAL = self->y;
     XL_pushfloat(L, RETVAL);
@@ -301,7 +301,7 @@ static int r_v3_y_index_xl(lua_State *L)
 
 static int r_v3_y_newindex_xl(lua_State *L)
 {
-    R_V3 *self = XL_checkutype(L, 1, "R_V3");
+    R_V3 *self = R_CPPCAST(R_V3 *, XL_checkutype(L, 1, "R_V3"));
     float VALUE = XL_checkfloat(L, 2);
     self->y = VALUE;
     return 0;
@@ -309,7 +309,7 @@ static int r_v3_y_newindex_xl(lua_State *L)
 
 static int r_v3_z_index_xl(lua_State *L)
 {
-    R_V3 *self = XL_checkutype(L, 1, "R_V3");
+    R_V3 *self = R_CPPCAST(R_V3 *, XL_checkutype(L, 1, "R_V3"));
     float RETVAL;
     RETVAL = self->z;
     XL_pushfloat(L, RETVAL);
@@ -318,7 +318,7 @@ static int r_v3_z_index_xl(lua_State *L)
 
 static int r_v3_z_newindex_xl(lua_State *L)
 {
-    R_V3 *self = XL_checkutype(L, 1, "R_V3");
+    R_V3 *self = R_CPPCAST(R_V3 *, XL_checkutype(L, 1, "R_V3"));
     float VALUE = XL_checkfloat(L, 2);
     self->z = VALUE;
     return 0;
@@ -326,7 +326,7 @@ static int r_v3_z_newindex_xl(lua_State *L)
 
 static int r_v3_length_index_xl(lua_State *L)
 {
-    R_V3 *self = XL_checkutype(L, 1, "R_V3");
+    R_V3 *self = R_CPPCAST(R_V3 *, XL_checkutype(L, 1, "R_V3"));
     float RETVAL;
     float x = self->x;
     float y = self->y;
@@ -338,7 +338,7 @@ static int r_v3_length_index_xl(lua_State *L)
 
 static int r_v3_method_tostring_xl(lua_State *L)
 {
-    R_V3 *self = XL_checkutype(L, 1, "R_V3");
+    R_V3 *self = R_CPPCAST(R_V3 *, XL_checkutype(L, 1, "R_V3"));
     lua_pushfstring(L, "R_V3(%f, %f, %f)", R_lua_float2n(self->x),
                                            R_lua_float2n(self->y),
                                            R_lua_float2n(self->z));
@@ -347,7 +347,7 @@ static int r_v3_method_tostring_xl(lua_State *L)
 
 static int r_v3_method_unpack_xl(lua_State *L)
 {
-    R_V3 *self = XL_checkutype(L, 1, "R_V3");
+    R_V3 *self = R_CPPCAST(R_V3 *, XL_checkutype(L, 1, "R_V3"));
     XL_pushfloat(L, self->x);
     XL_pushfloat(L, self->y);
     XL_pushfloat(L, self->z);

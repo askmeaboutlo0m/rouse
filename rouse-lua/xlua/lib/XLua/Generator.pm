@@ -651,11 +651,23 @@ sub generate ($class, $out, $parse) {
     $self->println("/*************************************************/");
     $self->generate_types($parse->{types});
     $self->generate_blocks($parse->{blocks});
+
+    $self->println('#ifdef __cplusplus');
+    $self->println('extern "C" {');
+    $self->println('#endif');
+    $self->println();
+
     $self->generate_indexes($parse->{blocks});
     $self->generate_registries();
     $self->generate_enums($parse->{enums});
     $self->generate_init(@{$parse->{init}}{'linkage', 'name'},
                          $parse->{enums}, $parse->{metatables});
+
+    $self->println();
+    $self->println('#ifdef __cplusplus');
+    $self->println('}');
+    $self->println('#endif');
+
     return $self;
 }
 

@@ -1048,6 +1048,10 @@ static int r_sequence_method_run_xl(lua_State *L)
     return 1;
 }
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static int r_luatween_index_xl(lua_State *L)
 {
     return XL_index_fallback(L, "R_LuaTween", 1, 2);
@@ -1141,3 +1145,7 @@ int R_lua_seq_init(lua_State *L)
     XL_initfunctions(L, r_tweenscale_function_registry_xl, "R", "TweenScale", (const char *)NULL);
     return 0;
 }
+
+#ifdef __cplusplus
+}
+#endif

@@ -54,6 +54,10 @@ static int r_framerenderer_method_draw_xl(lua_State *L)
     return 0;
 }
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static int r_framerenderer_index_xl(lua_State *L)
 {
     return XL_index_fallback(L, "R_FrameRenderer", 1, 2);
@@ -77,3 +81,7 @@ int R_lua_frame_renderer_init(lua_State *L)
     XL_initfunctions(L, r_framerenderer_function_registry_xl, "R", "FrameRenderer", (const char *)NULL);
     return 0;
 }
+
+#ifdef __cplusplus
+}
+#endif

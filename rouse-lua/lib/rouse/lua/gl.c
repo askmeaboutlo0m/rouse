@@ -42,6 +42,10 @@ static int r_gl_clear_xl(lua_State *L)
     return 0;
 }
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static luaL_Reg r_gl_function_registry_xl[] = {
     {"clear", r_gl_clear_xl},
     {NULL, NULL},
@@ -52,3 +56,7 @@ int R_lua_gl_init(lua_State *L)
     XL_initfunctions(L, r_gl_function_registry_xl, "R", "GL", (const char *)NULL);
     return 0;
 }
+
+#ifdef __cplusplus
+}
+#endif

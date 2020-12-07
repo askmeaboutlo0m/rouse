@@ -1225,6 +1225,10 @@ static int r_sprite_method_draw_xl(lua_State *L)
     return 0;
 }
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static int r_affinetransform_index_dummy_xl;
 static int r_affinetransform_index_xl(lua_State *L)
 {
@@ -1417,3 +1421,7 @@ int R_lua_sprite_init(lua_State *L)
     XL_initfunctions(L, r_sprite_function_registry_xl, "R", "Sprite", (const char *)NULL);
     return 0;
 }
+
+#ifdef __cplusplus
+}
+#endif

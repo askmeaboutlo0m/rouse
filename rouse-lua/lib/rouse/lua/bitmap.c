@@ -84,6 +84,10 @@ static int r_bitmapimage_method_draw_xl(lua_State *L)
     return 0;
 }
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static int r_bitmapimage_index_dummy_xl;
 static int r_bitmapimage_index_xl(lua_State *L)
 {
@@ -116,3 +120,7 @@ int R_lua_bitmap_image_init(lua_State *L)
     XL_initfunctions(L, r_bitmapimage_function_registry_xl, "R", "BitmapImage", (const char *)NULL);
     return 0;
 }
+
+#ifdef __cplusplus
+}
+#endif

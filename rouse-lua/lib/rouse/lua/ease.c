@@ -364,6 +364,10 @@ int R_lua_ease_init(lua_State *L)
     return 0;
 }
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static luaL_Reg r_ease_function_registry_xl[] = {
     {"back_in", r_ease_back_in_xl},
     {"back_in_out", r_ease_back_in_out_xl},
@@ -402,3 +406,7 @@ static int init(lua_State *L)
     XL_initfunctions(L, r_ease_function_registry_xl, "R", "Ease", (const char *)NULL);
     return 0;
 }
+
+#ifdef __cplusplus
+}
+#endif

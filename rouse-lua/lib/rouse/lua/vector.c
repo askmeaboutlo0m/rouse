@@ -82,6 +82,10 @@ static int r_vectorimage_method_draw_xl(lua_State *L)
     return 0;
 }
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static int r_vectorimage_index_dummy_xl;
 static int r_vectorimage_index_xl(lua_State *L)
 {
@@ -114,3 +118,7 @@ int R_lua_vector_image_init(lua_State *L)
     XL_initfunctions(L, r_vectorimage_function_registry_xl, "R", "VectorImage", (const char *)NULL);
     return 0;
 }
+
+#ifdef __cplusplus
+}
+#endif

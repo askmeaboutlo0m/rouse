@@ -265,6 +265,10 @@ static int r_timestamp_as_double_xl(lua_State *L)
     return 1;
 }
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static int r_staticindex_dummy_xl;
 static int r_staticindex_xl(lua_State *L)
 {
@@ -335,3 +339,7 @@ int R_lua_misc_init(lua_State *L)
     XL_initenum(L, r_logbit_enum_xl, "R", "Logbit", (const char *)NULL);
     return 0;
 }
+
+#ifdef __cplusplus
+}
+#endif

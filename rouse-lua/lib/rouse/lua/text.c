@@ -284,6 +284,10 @@ static int r_textfield_method_draw_xl(lua_State *L)
     return 0;
 }
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static int r_textfield_index_dummy_xl;
 static int r_textfield_index_xl(lua_State *L)
 {
@@ -350,3 +354,7 @@ int R_lua_text_field_init(lua_State *L)
     XL_initfunctions(L, r_textfield_function_registry_xl, "R", "TextField", (const char *)NULL);
     return 0;
 }
+
+#ifdef __cplusplus
+}
+#endif

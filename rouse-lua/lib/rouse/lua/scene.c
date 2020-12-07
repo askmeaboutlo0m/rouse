@@ -162,6 +162,10 @@ static int r_scene_method_kill_by_id_xl(lua_State *L)
     return 0;
 }
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static int r_scene_index_xl(lua_State *L)
 {
     return XL_index_fallback(L, "R_Scene", 1, 2);
@@ -186,3 +190,7 @@ int R_lua_scene_init(lua_State *L)
     XL_initfunctions(L, r_scene_function_registry_xl, "R", "Scene", (const char *)NULL);
     return 0;
 }
+
+#ifdef __cplusplus
+}
+#endif

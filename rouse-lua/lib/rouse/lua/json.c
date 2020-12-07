@@ -127,6 +127,10 @@ static int r_json_parse_file_xl(lua_State *L)
     return push_table_from_json(L, value);
 }
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static luaL_Reg r_json_function_registry_xl[] = {
     {"parse_file", r_json_parse_file_xl},
     {"parse_string", r_json_parse_string_xl},
@@ -138,3 +142,7 @@ int R_lua_json_init(lua_State *L)
     XL_initfunctions(L, r_json_function_registry_xl, "R", "Json", (const char *)NULL);
     return 0;
 }
+
+#ifdef __cplusplus
+}
+#endif

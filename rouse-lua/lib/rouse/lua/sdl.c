@@ -779,6 +779,10 @@ static int sdl_cursor_staticnewindex_xl(lua_State *L)
     return 0;
 }
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static int sdl_event_index_dummy_xl;
 static int sdl_event_index_xl(lua_State *L)
 {
@@ -1660,3 +1664,7 @@ int R_lua_sdl_init(lua_State *L)
     XL_initenum(L, sdl_systemcursor_enum_xl, "SDL", "SystemCursor", (const char *)NULL);
     return 0;
 }
+
+#ifdef __cplusplus
+}
+#endif

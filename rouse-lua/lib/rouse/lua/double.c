@@ -181,6 +181,10 @@ static int double_method_sep_rounded_xl(lua_State *L)
     return 1;
 }
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static int double_index_xl(lua_State *L)
 {
     return XL_index_fallback(L, "double", 1, 2);
@@ -214,3 +218,7 @@ int R_lua_double_init(lua_State *L)
     XL_initfunctions(L, r_double_function_registry_xl, "R", "Double", (const char *)NULL);
     return 0;
 }
+
+#ifdef __cplusplus
+}
+#endif

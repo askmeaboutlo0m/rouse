@@ -119,6 +119,10 @@ static int r_sample_al_buffer_size_index_xl(lua_State *L)
 #endif
 }
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static int r_sample_index_dummy_xl;
 static int r_sample_index_xl(lua_State *L)
 {
@@ -152,3 +156,7 @@ int R_lua_sample_init(lua_State *L)
     XL_initfunctions(L, r_sample_function_registry_xl, "R", "Sample", (const char *)NULL);
     return 0;
 }
+
+#ifdef __cplusplus
+}
+#endif

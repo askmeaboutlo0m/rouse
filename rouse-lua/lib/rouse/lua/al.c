@@ -1002,6 +1002,10 @@ static int r_alsource_playing_index_xl(lua_State *L)
 #endif
 }
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static int r_albuffer_index_dummy_xl;
 static int r_albuffer_index_xl(lua_State *L)
 {
@@ -1169,3 +1173,7 @@ int R_lua_al_init(lua_State *L)
     XL_initfunctions(L, r_al_listener_function_registry_xl, "R", "Al", "listener", (const char *)NULL);
     return 0;
 }
+
+#ifdef __cplusplus
+}
+#endif

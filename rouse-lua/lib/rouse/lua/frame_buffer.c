@@ -170,6 +170,10 @@ static int r_framebuffer_method_write_to_stdout_xl(lua_State *L)
     return 0;
 }
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static int r_framebuffer_index_dummy_xl;
 static int r_framebuffer_index_xl(lua_State *L)
 {
@@ -211,3 +215,7 @@ int R_lua_frame_buffer_init(lua_State *L)
     XL_initfunctions(L, r_framebuffer_function_registry_xl, "R", "FrameBuffer", (const char *)NULL);
     return 0;
 }
+
+#ifdef __cplusplus
+}
+#endif

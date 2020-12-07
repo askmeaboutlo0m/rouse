@@ -198,6 +198,10 @@ static int r_viewport_from_window_coords_xl(lua_State *L)
     return 2;
 }
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static int r_viewport_index_dummy_xl;
 static int r_viewport_index_xl(lua_State *L)
 {
@@ -256,3 +260,7 @@ int R_lua_viewport_init(lua_State *L)
     XL_initfunctions(L, r_viewport_function_registry_xl, "R", "Viewport", (const char *)NULL);
     return 0;
 }
+
+#ifdef __cplusplus
+}
+#endif

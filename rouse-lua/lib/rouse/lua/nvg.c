@@ -790,6 +790,10 @@ static int r_nvg_method_stroke_xl(lua_State *L)
     return 0;
 }
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static int nvgcolor_index_dummy_xl;
 static int nvgcolor_index_xl(lua_State *L)
 {
@@ -992,3 +996,7 @@ int R_lua_nvg_init(lua_State *L)
     XL_initenum(L, r_nvg_compositeoperation_enum_xl, "R", "Nvg", "CompositeOperation", (const char *)NULL);
     return 0;
 }
+
+#ifdef __cplusplus
+}
+#endif

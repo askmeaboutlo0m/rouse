@@ -379,6 +379,10 @@ static int r_v3_method_set_xl(lua_State *L)
     return XL_setfromtable(L, "R_V3", 1, 2);
 }
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static int r_v2_index_dummy_xl;
 static int r_v2_index_xl(lua_State *L)
 {
@@ -479,3 +483,7 @@ int R_lua_geom_init(lua_State *L)
     XL_initfunctions(L, r_v3_function_registry_xl, "R", "V3", (const char *)NULL);
     return 0;
 }
+
+#ifdef __cplusplus
+}
+#endif

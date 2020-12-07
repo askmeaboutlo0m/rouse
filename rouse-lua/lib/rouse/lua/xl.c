@@ -156,6 +156,21 @@ void *XL_pushnewutypeuv(lua_State *L, const void *value,
 }
 
 
+void XL_clearpptypeuv(lua_State *L, int index, int nuvalue)
+{
+    void **pp = lua_touserdata(L, index);
+    if (pp) {
+        *pp = NULL;
+
+        int absindex = lua_absindex(L, index);
+        for (int i = 1; i <= nuvalue; ++i) {
+            lua_pushnil(L);
+            XL_setiuservalue(L, absindex, i);
+        }
+    }
+}
+
+
 void XL_getiuservalue(lua_State *L, int index, int n)
 {
     if (lua_getiuservalue(L, index, n) == LUA_TNONE) {

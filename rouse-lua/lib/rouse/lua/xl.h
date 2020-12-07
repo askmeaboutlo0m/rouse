@@ -41,6 +41,8 @@ void *XL_pushnewutypeuv(lua_State *L, const void *value,
                         size_t size, const char *tname,
                         int nuvalue);
 
+void XL_clearpptypeuv(lua_State *L, int index, int nuvalue);
+
 void XL_getiuservalue(lua_State *L, int index, int n);
 void XL_setiuservalue(lua_State *L, int index, int n);
 

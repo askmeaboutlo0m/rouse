@@ -184,8 +184,24 @@ sub parse_until_end ($self, $in) {
 }
 
 sub parse_body ($self, $in, $has_retval, $args, $after_args) {
+    my $arg_names = join ', ', map { $_->{name} } @$args;
     if ($after_args =~ /\A\s*=\s*(\w+)\s*\z/) {
-        my $call = sprintf '%s(%s)', $1, join ', ', map { $_->{name} } @$args;
+        my $call = sprintf '%s(%s)', $1, $arg_names;
+        return $has_retval ? "    RETVAL = $call;" : "    $call;";
+    }
+    elsif ($after_args =~ /\A\s*=\s*\.new\s*\z/) {
+        my $call = sprintf 'new %s(%s)', $self->last_type, $arg_names;
+        return $has_retval ? "    RETVAL = $call;" : "    $call;";
+    }
+    elsif ($after_args =~ /\A\s*=\s*\.delete\s*\z/) {
+        die "wrong number of arguments to .delete: $arg_names" if @$args != 1;
+        die "can't have a RETVAL in .delete" if $has_retval;
+        return "    delete $arg_names;";
+    }
+    elsif ($after_args =~ /\A\s*=\s*\.\s*(\w+)\s*\z/) {
+        my $self_arg  = $args->[0]{name};
+        my $more_args = join ', ', map { $_->{name} } @{$args}[1 .. $#$args];
+        my $call      = "$self_arg->$1($more_args)";
         return $has_retval ? "    RETVAL = $call;" : "    $call;";
     }
     elsif ($after_args =~ /\A\h*\S/)  {
@@ -286,7 +302,7 @@ sub parse_index_directive ($self, $in, $line) {
 sub parse_newindex_directive ($self, $in, $line) {
     my ($prefix, $name, $rest);
 
-    if ($line =~ /\A($return_qr)\s*\b(\w+)\b\s*(=\s*\w+)\s*\z/) {
+    if ($line =~ /\A($return_qr)\s*\b(\w+)\b\s*(=\s*\.?\s*\w+)\s*\z/) {
         ($prefix, $name, $rest) = ($1, $2, $3);
     }
     elsif ($line =~ /\A($return_qr)\s*\b(\w+)\b\h*$/mp) {
@@ -516,7 +532,7 @@ sub parse_enum_directive ($self, $in, $line) {
         next unless /\S/;
         chomp;
 
-        if (/\A\s*(\w+)\s*=\s*(.+?)\s*\z/) {
+        if (/\A\s*([\w:]+)\s*=\s*(.+?)\s*\z/) {
             push @entries, {key => "$1", value => "$2"};
         }
         elsif (/\A\s*END\s*\z/) {
@@ -528,7 +544,7 @@ sub parse_enum_directive ($self, $in, $line) {
             };
             return;
         }
-        elsif (/\A\s*(\w+)\s*\z/) {
+        elsif (/\A\s*([\w:]+)\s*\z/) {
             my $value = "$1";
             my $key   = $value;
             eval "\$key =~ $subs";

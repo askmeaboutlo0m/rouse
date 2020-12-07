@@ -10,6 +10,11 @@ int XL_checkbool(lua_State *L, int index)
     return lua_toboolean(L, index);
 }
 
+short XL_checkshort(lua_State *L, int index)
+{
+    return (short) luaL_checkinteger(L, index);
+}
+
 int XL_checkint(lua_State *L, int index)
 {
     return (int) luaL_checkinteger(L, index);
@@ -28,6 +33,11 @@ unsigned int XL_checkuint(lua_State *L, int index)
 unsigned char XL_checkuchar(lua_State *L, int index)
 {
     return (unsigned char) luaL_checkinteger(L, index);
+}
+
+unsigned short XL_checkushort(lua_State *L, int index)
+{
+    return (unsigned short) luaL_checkinteger(L, index);
 }
 
 uint8_t XL_checkuint8(lua_State *L, int index)
@@ -70,6 +80,11 @@ void *XL_checkutype(lua_State *L, int index, const char *tname)
 }
 
 
+void XL_pushshort(lua_State *L, short value)
+{
+    lua_pushinteger(L, (lua_Integer) value);
+}
+
 void XL_pushint(lua_State *L, int value)
 {
     lua_pushinteger(L, (lua_Integer) value);
@@ -86,6 +101,11 @@ void XL_pushuint(lua_State *L, unsigned int value)
 }
 
 void XL_pushuchar(lua_State *L, unsigned char value)
+{
+    lua_pushinteger(L, (lua_Integer) value);
+}
+
+void XL_pushushort(lua_State *L, unsigned short value)
 {
     lua_pushinteger(L, (lua_Integer) value);
 }

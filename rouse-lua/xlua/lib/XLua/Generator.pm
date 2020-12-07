@@ -51,6 +51,11 @@ my %default_typemap = (
         check => '$decl = XL_checkbool(L, $index)',
         push  => 'lua_pushboolean(L, $var)',
     },
+    short => {
+        decl  => 'short $var',
+        check => '$decl = XL_checkshort(L, $index)',
+        push  => 'XL_pushshort(L, $var)',
+    },
     int => {
         decl  => 'int $var',
         check => '$decl = XL_checkint(L, $index)',
@@ -70,6 +75,11 @@ my %default_typemap = (
         decl  => 'unsigned char $var',
         check => '$decl = XL_checkuchar(L, $index)',
         push  => 'XL_pushuchar(L, $var)',
+    },
+    ushort => {
+        decl  => 'unsigned short $var',
+        check => '$decl = XL_checkushort(L, $index)',
+        push  => 'XL_pushushort(L, $var)',
     },
     uint8_t => {
         decl  => 'uint8_t $var',

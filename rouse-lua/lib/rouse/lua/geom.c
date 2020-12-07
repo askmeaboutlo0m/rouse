@@ -237,6 +237,26 @@ static int r_v2_method_mul_xl(lua_State *L)
     return 1;
 }
 
+static int r_v2_method_div_xl(lua_State *L)
+{
+    luaL_checkany(L, 1);
+    int a = 1;
+    luaL_checkany(L, 2);
+    int b = 2;
+    R_V2 RETVAL;
+    DECONSTRUCT_V2_TYPES(L, a, b);
+    (void) f1;
+    switch (types) {
+        case TYPES_V2_FLOAT:
+            RETVAL = R_v2_scale(*v1, 1.0f / f2);
+            break;
+        default:
+            DIE_WITH_BAD_V2_TYPES(L, "*", a, b);
+    }
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
+    return 1;
+}
+
 static int r_v2_method_distance2_xl(lua_State *L)
 {
     R_V2 *self = R_CPPCAST(R_V2 *, XL_checkutype(L, 1, "R_V2"));
@@ -412,6 +432,7 @@ static luaL_Reg r_v3_index_registry_xl[] = {
 
 static luaL_Reg r_v2_method_registry_xl[] = {
     {"__add", r_v2_method_add_xl},
+    {"__div", r_v2_method_div_xl},
     {"__index", r_v2_index_xl},
     {"__mul", r_v2_method_mul_xl},
     {"__newindex", r_v2_newindex_xl},

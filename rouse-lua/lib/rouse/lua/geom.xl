@@ -152,6 +152,18 @@ FUNCTION R_V2 R_V2:__mul(any a, any b)
     }
 END
 
+FUNCTION R_V2 R_V2:__div(any a, any b)
+    DECONSTRUCT_V2_TYPES(L, a, b);
+    (void) f1;
+    switch (types) {
+        case TYPES_V2_FLOAT:
+            RETVAL = R_v2_scale(*v1, 1.0f / f2);
+            break;
+        default:
+            DIE_WITH_BAD_V2_TYPES(L, "*", a, b);
+    }
+END
+
 METHOD float distance2(R_V2 *b)
     RETVAL = R_v2_distance2(*self, *b);
 END

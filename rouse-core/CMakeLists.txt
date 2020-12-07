@@ -22,7 +22,7 @@ function(add_rouse_linked_executable target)
     add_asan_if_available("${target}")
     add_clang_tidy_if_available("${target}")
     set_language_standards("${target}")
-    target_compile_options("${target}" PRIVATE ${rouse_warnings})
+    target_compile_options("${target}" PRIVATE ${rouse_cflags})
     target_link_libraries("${target}" PUBLIC rouse)
 endfunction()
 

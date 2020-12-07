@@ -1,6 +1,6 @@
 add_executable(lrouse "${CMAKE_CURRENT_LIST_DIR}/lrouse.c")
 set_language_standards(lrouse)
-target_compile_options(lrouse PRIVATE ${rouse_warnings})
+target_compile_options(lrouse PRIVATE ${rouse_cflags})
 target_link_libraries(lrouse PUBLIC rouse_lua)
 add_asan_if_available(lrouse)
 add_clang_tidy_if_available(lrouse)

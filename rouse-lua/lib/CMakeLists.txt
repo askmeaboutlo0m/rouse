@@ -31,7 +31,7 @@ endforeach()
 add_library(rouse_lua STATIC "${rouse_lua_sources}" "${rouse_lua_gen_sources}"
                              "${rouse_lua_headers}")
 set_language_standards(rouse_lua)
-target_compile_options(rouse_lua PRIVATE ${rouse_warnings})
+target_compile_options(rouse_lua PRIVATE ${rouse_cflags})
 target_include_directories(rouse_lua INTERFACE "${CMAKE_CURRENT_LIST_DIR}")
 target_link_libraries(rouse_lua PUBLIC Rouse::rouse lua)
 add_asan_if_available(rouse_lua)

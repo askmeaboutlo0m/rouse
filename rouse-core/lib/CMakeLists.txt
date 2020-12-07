@@ -53,6 +53,7 @@ set_language_standards(rouse)
 target_include_directories(rouse INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}")
 target_include_directories(rouse PUBLIC "${CMAKE_BINARY_DIR}/config")
 target_compile_options(rouse PRIVATE ${rouse_cflags})
+target_compile_definitions(rouse PUBLIC CGLM_USE_ANONYMOUS_STRUCT=1)
 add_clang_tidy_if_available(rouse)
 add_asan_if_available(rouse)
 target_link_libraries(rouse PUBLIC nanovg parson ${rouse_openal_libs}

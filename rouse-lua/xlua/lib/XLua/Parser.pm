@@ -251,13 +251,13 @@ sub parse_destructor_directive ($self, $in, $line) {
 
 
 sub parse_index_directive ($self, $in, $line) {
-    my ($prefix, $name, $rest);
+    my ($nullable, $prefix, $name, $rest);
 
-    if ($line =~ /\A($return_qr)\s*\b(\w+)\b\s*(=\s*\w+)\s*\z/) {
-        ($prefix, $name, $rest) = ($1, $2, $3);
+    if ($line =~ /\A(<NULLABLE>)?\s*($return_qr)\s*\b(\w+)\b\s*(=\s*\.?\s*\w+)\s*\z/) {
+        ($nullable, $prefix, $name, $rest) = ($1, $2, $3, $4);
     }
-    elsif ($line =~ /\A($return_qr)\s*\b(\w+)\b\h*$/mp) {
-        ($prefix, $name, $rest) = ($1, $2, ${^POSTMATCH});
+    elsif ($line =~ /\A(<NULLABLE>)?\s*($return_qr)\s*\b(\w+)\b\h*$/mp) {
+        ($nullable, $prefix, $name, $rest) = ($1, $2, $3, ${^POSTMATCH});
     }
     else {
         die "Don't understand this index declaration: $line\n";
@@ -265,16 +265,17 @@ sub parse_index_directive ($self, $in, $line) {
 
     my ($return, $has_retval) = decipher_return($prefix);
 
-    my $callee = $self->last_type;
-    my ($args) = $self->parse_args(undef, "($callee *self)");
-    my $body   = $self->parse_body($in, $has_retval, $args, $rest);
+    my $package = $self->last_type;
+    my $callee  = ($nullable ? '<NULLABLE>' : '') . $package;
+    my ($args)  = $self->parse_args(undef, "($callee *self)");
+    my $body    = $self->parse_body($in, $has_retval, $args, $rest);
 
     $self->add_block({
         type       => 'index',
         return     => $return,
         has_retval => $has_retval,
         name       => $name,
-        package    => $callee,
+        package    => $package,
         is_method  => JSON::PP::true,
         args       => $args,
         body       => $body,

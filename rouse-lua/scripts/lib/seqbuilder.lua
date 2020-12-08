@@ -32,6 +32,21 @@ local function arg_types_error(name, ...)
 end
 
 
+local ApplyFloat = {}
+
+function ApplyFloat.fixed(value)
+    return value
+end
+
+function ApplyFloat.between(a, b)
+    return R.rand_between(a, b)
+end
+
+function ApplyFloat.custom(fn)
+    return fn()
+end
+
+
 local SeqBuilder   = class()
 local TweenBuilder = class()
 
@@ -44,7 +59,10 @@ end
 
 function TweenBuilder:add_attribute(attribute)
     table.insert(self.attributes, attribute)
-    return self
+end
+
+function TweenBuilder:add_application(application)
+    table.insert(self.applications, application)
 end
 
 
@@ -84,9 +102,16 @@ local function make_tween_functions(prefix, with_topic, specs)
         TweenBuilder[name] = function (self, ...)
             local topic = self.topic
             local value = self:to_value(name, R.TweenFloat, ...)
-            return self:add_attribute(function (tween)
+            self:add_attribute(function (tween)
                 tween[tween_name](tween, topic, value)
             end)
+            if self.applications then
+                local applied_value = self:to_value(name, ApplyFloat, ...)
+                self:add_application(function ()
+                    topic[name] = applied_value
+                end)
+            end
+            return self
         end
 
         for i = 1, #aliases do
@@ -97,9 +122,16 @@ local function make_tween_functions(prefix, with_topic, specs)
             local name_with = name .. "_with"
             TweenBuilder[name_with] = function(self, topic, ...)
                 local value = self:to_value(name, R.TweenFloat, ...)
-                return self:add_attribute(function (tween)
+                self:add_attribute(function (tween)
                     tween[tween_name](tween, topic, value)
                 end)
+                if self.applications then
+                    local applied_value = self:to_value(name, ApplyFloat, ...)
+                    self:add_application(function ()
+                        topic[name] = applied_value
+                    end)
+                end
+                return self
             end
             for i = 1, #aliases do
                 TweenBuilder[aliases[i] .. "_with"] = TweenBuilder[name_with]
@@ -128,6 +160,7 @@ make_tween_functions("al_source_", true, {
     reference_distance = {"source_reference_distance"},
 })
 
+-- FIXME: apply doesn't work for these, since they're not fields on the topic.
 make_tween_functions("al_", true, {
     listener_gain       = {},
     listener_pos_x      = {"listener_x"},
@@ -141,25 +174,46 @@ make_tween_functions("al_", true, {
 function TweenBuilder:field(key, ...)
     local topic = self.topic
     local value = self:to_value("field", R.TweenFloat, ...)
-    return self:add_attribute(function (tween)
+    self:add_attribute(function (tween)
         tween:field(topic, key, value)
     end)
+    if self.applications then
+        local applied_value = self:to_value("field", ApplyFloat, ...)
+        self:add_application(function ()
+            topic[key] = applied_value
+        end)
+    end
+    return self
 end
 
 function TweenBuilder:field_with(key, topic, ...)
     local value = self:to_value("field", R.TweenFloat, ...)
-    return self:add_attribute(function (tween)
+    self:add_attribute(function (tween)
         tween:field(topic, key, value)
     end)
+    if self.applications then
+        local applied_value = self:to_value("field", ApplyFloat, ...)
+        self:add_application(function ()
+            topic[key] = applied_value
+        end)
+    end
+    return self
 end
 
 
 function TweenBuilder:scale(...)
     local topic = self.topic
     local value = self:to_value("scale", R.TweenScale, ...)
-    return self:add_attribute(function (tween)
+    self:add_attribute(function (tween)
         tween:sprite_scale(topic, value)
     end)
+    if self.applications then
+        local applied_value = self:to_value("scale", ApplyFloat, ...)
+        self:add_application(function ()
+            topic.scales = applied_value
+        end)
+    end
+    return self
 end
 
 TweenBuilder.s = TweenBuilder.scale
@@ -174,29 +228,32 @@ TweenBuilder.e = TweenBuilder.ease
 
 
 function TweenBuilder:apply()
-    self.apply_on_start = true
+    self.applications = {}
     return self
 end
 
 
-function TweenBuilder:apply_attributes(attributes)
-    local apply_seq = SeqBuilder.new(self.parent.scene)
-    apply_seq:add_step(function (sequence)
-        local tween = sequence:tween_fixed(0.0, nil)
-        for i, attribute in ipairs(attributes) do
-            attribute(tween)
-        end
-        return tween:build()
-    end)
-    apply_seq:start()
+function TweenBuilder:apply_attributes()
+    for i, application in ipairs(self.applications) do
+        application()
+    end
+--    local apply_seq = SeqBuilder.new(self.parent.scene)
+--    apply_seq:add_step(function (sequence)
+--        local tween = sequence:tween_fixed(0.0, nil)
+--        for i, attribute in ipairs(attributes) do
+--            attribute(tween)
+--        end
+--        return tween:build()
+--    end)
+--    apply_seq:start()
 end
 
 function TweenBuilder:add_to_sequence(make_tween)
     local ease       = self._ease
     local attributes = self.attributes
 
-    if self.apply_on_start then
-        self:apply_attributes(attributes)
+    if self.applications then
+        self:apply_attributes()
     end
 
     return self.parent:add_step(function (sequence)

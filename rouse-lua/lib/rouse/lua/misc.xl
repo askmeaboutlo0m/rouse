@@ -84,16 +84,45 @@ STATICINDEX const char *R.platform
 END
 
 
-STATICINDEX float R.framerate = R_framerate_get
-
+STATICINDEX    float R.tickrate = R_tickrate_get
+STATICNEWINDEX float R.tickrate = R_tickrate_set
 
 STATICINDEX float R.tick_length
     RETVAL = R_tick_length;
 END
 
+STATICNEWINDEX float R.tick_length
+    R_tick_length = VALUE;
+END
 
-STATICNEWINDEX uint32_t R.max_ticks_before_render
-    R_max_ticks_before_render = VALUE;
+
+STATICINDEX    float R.framerate = R_framerate_get
+STATICNEWINDEX float R.framerate = R_framerate_set
+
+STATICINDEX float R.frame_length
+    RETVAL = R_frame_length;
+END
+
+STATICNEWINDEX float R.frame_length
+    R_frame_length = VALUE;
+END
+
+
+STATICINDEX float R.max_delta_ms
+    RETVAL = R_max_delta_ms;
+END
+
+STATICNEWINDEX float R.max_delta_ms
+    R_max_delta_ms = VALUE;
+END
+
+
+STATICINDEX bool R.skip_frames
+    RETVAL = R_skip_frames;
+END
+
+STATICNEWINDEX bool R.skip_frames
+    R_skip_frames = VALUE;
 END
 
 

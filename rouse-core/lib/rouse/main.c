@@ -59,26 +59,37 @@
 SDL_Window    *R_window;
 SDL_GLContext R_glcontext;
 
-float    R_tick_length             = R_TICK_LENGTH_DEFAULT;
-uint32_t R_max_ticks_before_render = R_MAX_TICKS_BEFORE_RENDER_DEFAULT;
-float    R_width                   = R_WIDTH_DEFAULT;
-float    R_height                  = R_HEIGHT_DEFAULT;
-bool     R_al_enabled              = false;
+float R_tick_length  = R_TICK_LENGTH_DEFAULT;
+float R_frame_length = R_FRAME_LENGTH_DEFAULT;
+float R_max_delta_ms = R_MAX_DELTA_MS_DEFAULT;
+bool  R_skip_frames  = true;
+float R_width        = R_WIDTH_DEFAULT;
+float R_height       = R_HEIGHT_DEFAULT;
+bool  R_al_enabled   = false;
 
 static R_Scene   *current_scene  = NULL;
 static R_SceneFn next_scene_fn   = NULL;
 static void      *next_scene_arg = NULL;
 
 
-
-float R_framerate_get(void)
+float R_tickrate_get(void)
 {
     return 1000.0f / R_tick_length;
 }
 
-void R_framerate_set(float ticks_per_second)
+void R_tickrate_set(float ticks_per_second)
 {
     R_tick_length = 1000.0f / ticks_per_second;
+}
+
+float R_framerate_get(void)
+{
+    return 1000.0f / R_frame_length;
+}
+
+void R_framerate_set(float frames_per_second)
+{
+    R_frame_length = 1000.0f / frames_per_second;
 }
 
 
@@ -414,9 +425,89 @@ static R_Scene *swap_scene(float seconds)
     return current_scene;
 }
 
+
+static void clamp_max_delta_ms(float *next_tick, float *next_frame,
+                               float delta_ms, float max_delta_ms)
+{
+    if (delta_ms > max_delta_ms) {
+        float correction = delta_ms - max_delta_ms;
+        *next_tick      += correction;
+        *next_frame     += correction;
+    }
+}
+
+static void skip_frames(float *next_frame, bool should_skip, float ms_f,
+                        float frame_length)
+{
+    if (should_skip) {
+        float frames_in_interval = (ms_f - *next_frame) / frame_length;
+        if (frames_in_interval >= 2.0f) {
+            float skipped = floorf(frames_in_interval);
+            *next_frame  += skipped * frame_length;
+        }
+    }
+}
+
+
+#define STEP_NONE  0x0
+#define STEP_TICK  0x1
+#define STEP_FRAME 0x2
+#define STEP_BOTH  (STEP_TICK | STEP_FRAME)
+
+static int check_step(float next_tick, float next_frame, float ms_f)
+{
+    if (next_frame < next_tick) {
+        return ms_f >= next_frame ? STEP_FRAME : STEP_NONE;
+    }
+    else if (ms_f >= next_tick) {
+        return next_frame == next_tick ? STEP_BOTH : STEP_TICK;
+    }
+    else {
+        return STEP_NONE;
+    }
+}
+
+static float step_tick(float next_tick, float tick_length, float seconds,
+                       float next_frame)
+{
+    float   subsequent_tick = next_tick + tick_length;
+    R_Scene *scene          = swap_scene(0.0f);
+    if (scene) {
+        tick_scene(scene, seconds, subsequent_tick > next_frame);
+    }
+    return subsequent_tick;
+}
+
+static bool step_ticks(float *last_ms, float *next_tick, float next_frame,
+                       float ms_f, float tick_length, float seconds)
+{
+    int step;
+    while ((step = check_step(*next_tick, next_frame, ms_f)) & STEP_TICK) {
+        *last_ms = *next_tick = step_tick(*next_tick, tick_length,
+                                          seconds, next_frame);
+    }
+    return step & STEP_FRAME;
+}
+
+
+static void render_frame(float *last_ms, float *next_frame,
+                         float frame_length, float seconds)
+{
+    R_Scene *scene = swap_scene(seconds);
+    if (scene && scene->on_render) {
+        R_GL_CLEAR_ERROR();
+        scene->on_render(scene);
+        SDL_GL_SwapWindow(R_window);
+    }
+    *last_ms = *next_frame += frame_length;
+}
+
+
 struct MainLoop {
-    uint32_t last_ms;
-    bool     running;
+    float last_ms;
+    float next_tick;
+    float next_frame;
+    bool  running;
 };
 
 static bool step_main_loop(struct MainLoop *ml)
@@ -425,26 +516,44 @@ static bool step_main_loop(struct MainLoop *ml)
         ml->running = false;
     }
     else {
-        uint32_t ms    = SDL_GetTicks();
-        uint32_t delta = ms - ml->last_ms;
-        uint32_t ticks = R_float2uint32(R_uint322float(delta) / R_tick_length);
-        uint32_t max   = R_MIN(R_max_ticks_before_render, ticks);
-        ml->last_ms   += R_float2uint32(R_uint322float(ticks) * R_tick_length);
+        float    tick_length  = R_tick_length;
+        float    frame_length = R_frame_length;
+        float    seconds      = tick_length / 1000.0f;
+        uint32_t ms           = SDL_GetTicks();
+        float    ms_f         = R_uint322float(ms);
+        float    delta_ms     = ms_f - ml->last_ms;
 
-        R_Scene *scene;
-        float   seconds = R_tick_length / 1000.0f;
+        /*
+         * If more than `max_delta_ms` has passed since the last step, skip time
+         * forward to reduce the delta to that amount. This avoids craziness in
+         * case the application is suspended for a long time or something.
+         */
+        clamp_max_delta_ms(&ml->next_tick, &ml->next_frame,
+                           delta_ms, R_max_delta_ms);
 
-        for (uint32_t i = 0; i < max; ++i) {
-            scene = swap_scene(0.0f);
-            if (scene) {
-                tick_scene(scene, seconds, i == max - 1);
-            }
-        }
+        /*
+         * It's usually pointless to render anything more than the latest frame.
+         * If more than one frame would be rendered in this step, skip all but
+         * the last one. The exception is when recording: for that you want
+         * every frame to actually get rendered so that the video plays with a
+         * perfect frame rate. For that, set `R_skip_frames` to `false`.
+         */
+        skip_frames(&ml->next_frame, R_skip_frames, ms_f, frame_length);
 
-        if (max > 0 && (scene = swap_scene(seconds)) && scene->on_render) {
-            R_GL_CLEAR_ERROR();
-            scene->on_render(scene);
-            SDL_GL_SwapWindow(R_window);
+        /*
+         * Tick the logic forward until the next frame to be rendered or until
+         * we're out of time for this step, whichever comes first.
+         */
+        bool want_frame = step_ticks(&ml->last_ms, &ml->next_tick,
+                                     ml->next_frame, ms_f, tick_length,
+                                     seconds);
+
+        /*
+         * Render a frame if need be. If the framerate is different from the
+         * tickrate, then there may be cases where only logic is run.
+         */
+        if (want_frame) {
+            render_frame(&ml->last_ms, &ml->next_frame, frame_length, seconds);
         }
     }
 
@@ -467,11 +576,9 @@ static void main_loop(void)
 {
     struct MainLoop ml;
     {
-        uint32_t ms  = SDL_GetTicks();
-        ml.last_ms = R_uint322float(ms) > R_tick_length
-                   ? R_float2uint32(R_uint322float(ms) - R_tick_length)
-                   : 0;
-        ml.running = true;
+        uint32_t ms   = SDL_GetTicks();
+        ml.next_frame = ml.next_tick = ml.last_ms = R_uint322float(ms);
+        ml.running    = true;
     }
 
 #ifdef __EMSCRIPTEN__
@@ -486,8 +593,7 @@ static void main_loop(void)
          * frames, it'd be better to track oversleep, sleep conservatively and
          * spend the rest of the delay busy-waiting. */
         uint32_t ms      = SDL_GetTicks();
-        uint32_t next_ms = R_float2uint32(
-                R_uint322float(ml.last_ms) + R_tick_length);
+        uint32_t next_ms = R_float2uint32(R_MIN(ml.next_tick, ml.next_frame));
         if (next_ms > ms) {
             SDL_Delay(next_ms - ms);
         }

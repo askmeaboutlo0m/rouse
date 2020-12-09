@@ -103,12 +103,19 @@ static int r_platform_staticindex_xl(lua_State *L)
     return 1;
 }
 
-static int r_framerate_staticindex_xl(lua_State *L)
+static int r_tickrate_staticindex_xl(lua_State *L)
 {
     float RETVAL;
-    RETVAL = R_framerate_get();
+    RETVAL = R_tickrate_get();
     XL_pushfloat(L, RETVAL);
     return 1;
+}
+
+static int r_tickrate_staticnewindex_xl(lua_State *L)
+{
+    float VALUE = XL_checkfloat(L, 1);
+    R_tickrate_set(VALUE);
+    return 0;
 }
 
 static int r_tick_length_staticindex_xl(lua_State *L)
@@ -119,10 +126,70 @@ static int r_tick_length_staticindex_xl(lua_State *L)
     return 1;
 }
 
-static int r_max_ticks_before_render_staticnewindex_xl(lua_State *L)
+static int r_tick_length_staticnewindex_xl(lua_State *L)
 {
-    uint32_t VALUE = XL_checkuint32(L, 1);
-    R_max_ticks_before_render = VALUE;
+    float VALUE = XL_checkfloat(L, 1);
+    R_tick_length = VALUE;
+    return 0;
+}
+
+static int r_framerate_staticindex_xl(lua_State *L)
+{
+    float RETVAL;
+    RETVAL = R_framerate_get();
+    XL_pushfloat(L, RETVAL);
+    return 1;
+}
+
+static int r_framerate_staticnewindex_xl(lua_State *L)
+{
+    float VALUE = XL_checkfloat(L, 1);
+    R_framerate_set(VALUE);
+    return 0;
+}
+
+static int r_frame_length_staticindex_xl(lua_State *L)
+{
+    float RETVAL;
+    RETVAL = R_frame_length;
+    XL_pushfloat(L, RETVAL);
+    return 1;
+}
+
+static int r_frame_length_staticnewindex_xl(lua_State *L)
+{
+    float VALUE = XL_checkfloat(L, 1);
+    R_frame_length = VALUE;
+    return 0;
+}
+
+static int r_max_delta_ms_staticindex_xl(lua_State *L)
+{
+    float RETVAL;
+    RETVAL = R_max_delta_ms;
+    XL_pushfloat(L, RETVAL);
+    return 1;
+}
+
+static int r_max_delta_ms_staticnewindex_xl(lua_State *L)
+{
+    float VALUE = XL_checkfloat(L, 1);
+    R_max_delta_ms = VALUE;
+    return 0;
+}
+
+static int r_skip_frames_staticindex_xl(lua_State *L)
+{
+    bool RETVAL;
+    RETVAL = R_skip_frames;
+    lua_pushboolean(L, RETVAL);
+    return 1;
+}
+
+static int r_skip_frames_staticnewindex_xl(lua_State *L)
+{
+    bool VALUE = XL_checkbool(L, 1);
+    R_skip_frames = VALUE;
     return 0;
 }
 
@@ -244,14 +311,23 @@ static luaL_Reg r_log_function_registry_xl[] = {
 
 static luaL_Reg r_staticindex_registry_xl[] = {
     {"al_enabled", r_al_enabled_staticindex_xl},
+    {"frame_length", r_frame_length_staticindex_xl},
     {"framerate", r_framerate_staticindex_xl},
+    {"max_delta_ms", r_max_delta_ms_staticindex_xl},
     {"platform", r_platform_staticindex_xl},
+    {"skip_frames", r_skip_frames_staticindex_xl},
     {"tick_length", r_tick_length_staticindex_xl},
+    {"tickrate", r_tickrate_staticindex_xl},
     {NULL, NULL},
 };
 
 static luaL_Reg r_staticnewindex_registry_xl[] = {
-    {"max_ticks_before_render", r_max_ticks_before_render_staticnewindex_xl},
+    {"frame_length", r_frame_length_staticnewindex_xl},
+    {"framerate", r_framerate_staticnewindex_xl},
+    {"max_delta_ms", r_max_delta_ms_staticnewindex_xl},
+    {"skip_frames", r_skip_frames_staticnewindex_xl},
+    {"tick_length", r_tick_length_staticnewindex_xl},
+    {"tickrate", r_tickrate_staticnewindex_xl},
     {NULL, NULL},
 };
 

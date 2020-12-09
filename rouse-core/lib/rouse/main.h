@@ -38,9 +38,9 @@
 #define R_WINDOW_HEIGHT_DEFAULT  720
 #define R_WINDOW_FLAGS_DEFAULT   (SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE)
 
-/* Default tick length and frame skip, for 100 ticks per second. */
-#define R_TICK_LENGTH_DEFAULT             10
-#define R_MAX_TICKS_BEFORE_RENDER_DEFAULT 10
+#define R_TICK_LENGTH_DEFAULT  (1000.0f / 100.0f)
+#define R_FRAME_LENGTH_DEFAULT (1000.0f /  60.0f)
+#define R_MAX_DELTA_MS_DEFAULT 1000.0f
 
 /* Default resolution is full HD. */
 #define R_WIDTH_DEFAULT  1920
@@ -170,20 +170,15 @@ extern SDL_Window *R_window;
  * manually create new ones via SDL if you feel the urge.
  */
 extern SDL_GLContext R_glcontext;
-/*
- * How long a tick (a logical frame) is in milliseconds. You can get the tick
- * rate per second via `float ticks_per_second = 1000.0f / R_tick_length`. A
- * smaller number gets you more fine-grained animation timing, at the expense
- * of eating more CPU.
- */
+
 extern float R_tick_length;
-/*
- * Maximum number of frames to skip rendering. The logical ticks will still be
- * run normally, but drawing them is skipped to catch up. A 1 here means every
- * frame is rendered, which is probably what you want for video recording, but
- * it's unsuitable for real-time usage since it'll probably cause annoying lag.
- */
-extern uint32_t R_max_ticks_before_render;
+
+extern float R_frame_length;
+
+extern float R_max_delta_ms;
+
+extern bool R_skip_frames;
+
 /*
  * The "real" resolution of your application. This is used to set the window
  * viewport sensibly. The default is 1920 by 1080.
@@ -196,11 +191,12 @@ extern float R_height;
  */
 extern bool R_al_enabled;
 
-/*
- * Get and set `R_tick_length` with the human-friendly unit of ticks per second.
- */
+float R_tickrate_get(void);
+void  R_tickrate_set(float ticks_per_second);
+
 float R_framerate_get(void);
-void  R_framerate_set(float ticks_per_second);
+void  R_framerate_set(float frames_per_second);
+
 
 R_MainArgs R_main_args(R_SceneFn on_scene, void *user);
 

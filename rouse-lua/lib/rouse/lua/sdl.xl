@@ -29,18 +29,7 @@
 
 STATICINDEX uint32_t SDL.ticks = SDL_GetTicks
 
-FUNCTION uint32_t SDL.get_ticks()
-    R_LUA_WARN_ON_DEPRECATED_GETTER("SDL.ticks");
-    RETVAL = SDL_GetTicks();
-END
-
-
 STATICINDEX uint32_t SDL.window_flags
-    RETVAL = SDL_GetWindowFlags(R_window);
-END
-
-FUNCTION uint32_t SDL.get_window_flags()
-    R_LUA_WARN_ON_DEPRECATED_GETTER("SDL.window_flags");
     RETVAL = SDL_GetWindowFlags(R_window);
 END
 
@@ -85,23 +74,10 @@ END
 
 STATICINDEX int SDL.gl_swap_interval = SDL_GL_GetSwapInterval
 
-FUNCTION int SDL.get_gl_swap_interval()
-    R_LUA_WARN_ON_DEPRECATED_GETTER("SDL.gl_swap_interval");
-    RETVAL = SDL_GL_GetSwapInterval();
-END
-
 STATICNEWINDEX int SDL.gl_swap_interval
     if (SDL_GL_SetSwapInterval(VALUE) != 0) {
         R_LUA_DIE(L, "Can't set GL swap interval to %d: %s",
                   VALUE, SDL_GetError());
-    }
-END
-
-FUNCTION void SDL.set_gl_swap_interval(int interval)
-    R_LUA_WARN_ON_DEPRECATED_SETTER("SDL.gl_swap_interval");
-    if (SDL_GL_SetSwapInterval(interval) != 0) {
-        R_LUA_DIE(L, "Can't set GL swap interval to %d: %s",
-                  interval, SDL_GetError());
     }
 END
 

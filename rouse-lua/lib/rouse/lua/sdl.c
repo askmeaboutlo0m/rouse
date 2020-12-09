@@ -38,27 +38,9 @@ static int sdl_ticks_staticindex_xl(lua_State *L)
     return 1;
 }
 
-static int sdl_get_ticks_xl(lua_State *L)
-{
-    uint32_t RETVAL;
-    R_LUA_WARN_ON_DEPRECATED_GETTER("SDL.ticks");
-    RETVAL = SDL_GetTicks();
-    XL_pushuint32(L, RETVAL);
-    return 1;
-}
-
 static int sdl_window_flags_staticindex_xl(lua_State *L)
 {
     uint32_t RETVAL;
-    RETVAL = SDL_GetWindowFlags(R_window);
-    XL_pushuint32(L, RETVAL);
-    return 1;
-}
-
-static int sdl_get_window_flags_xl(lua_State *L)
-{
-    uint32_t RETVAL;
-    R_LUA_WARN_ON_DEPRECATED_GETTER("SDL.window_flags");
     RETVAL = SDL_GetWindowFlags(R_window);
     XL_pushuint32(L, RETVAL);
     return 1;
@@ -116,32 +98,12 @@ static int sdl_gl_swap_interval_staticindex_xl(lua_State *L)
     return 1;
 }
 
-static int sdl_get_gl_swap_interval_xl(lua_State *L)
-{
-    int RETVAL;
-    R_LUA_WARN_ON_DEPRECATED_GETTER("SDL.gl_swap_interval");
-    RETVAL = SDL_GL_GetSwapInterval();
-    XL_pushint(L, RETVAL);
-    return 1;
-}
-
 static int sdl_gl_swap_interval_staticnewindex_xl(lua_State *L)
 {
     int VALUE = XL_checkint(L, 1);
     if (SDL_GL_SetSwapInterval(VALUE) != 0) {
         R_LUA_DIE(L, "Can't set GL swap interval to %d: %s",
                   VALUE, SDL_GetError());
-    }
-    return 0;
-}
-
-static int sdl_set_gl_swap_interval_xl(lua_State *L)
-{
-    int interval = XL_checkint(L, 1);
-    R_LUA_WARN_ON_DEPRECATED_SETTER("SDL.gl_swap_interval");
-    if (SDL_GL_SetSwapInterval(interval) != 0) {
-        R_LUA_DIE(L, "Can't set GL swap interval to %d: %s",
-                  interval, SDL_GetError());
     }
     return 0;
 }
@@ -834,12 +796,8 @@ static int sdl_staticnewindex_xl(lua_State *L)
 static luaL_Reg sdl_function_registry_xl[] = {
     {"__index", sdl_staticindex_xl},
     {"__newindex", sdl_staticnewindex_xl},
-    {"get_gl_swap_interval", sdl_get_gl_swap_interval_xl},
-    {"get_ticks", sdl_get_ticks_xl},
-    {"get_window_flags", sdl_get_window_flags_xl},
     {"set_fullscreen", sdl_set_fullscreen_xl},
     {"set_fullscreen_desktop", sdl_set_fullscreen_desktop_xl},
-    {"set_gl_swap_interval", sdl_set_gl_swap_interval_xl},
     {"set_windowed", sdl_set_windowed_xl},
     {"toggle_fullscreen", sdl_toggle_fullscreen_xl},
     {"toggle_fullscreen_desktop", sdl_toggle_fullscreen_desktop_xl},

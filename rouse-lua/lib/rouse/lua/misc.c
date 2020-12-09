@@ -103,15 +103,6 @@ static int r_platform_staticindex_xl(lua_State *L)
     return 1;
 }
 
-static int r_get_platform_xl(lua_State *L)
-{
-    const char *RETVAL;
-    R_LUA_WARN_ON_DEPRECATED_GETTER("R.platform");
-    RETVAL = ROUSE_PLATFORM;
-    lua_pushstring(L, RETVAL);
-    return 1;
-}
-
 static int r_framerate_staticindex_xl(lua_State *L)
 {
     float RETVAL;
@@ -120,42 +111,9 @@ static int r_framerate_staticindex_xl(lua_State *L)
     return 1;
 }
 
-static int r_get_framerate_xl(lua_State *L)
-{
-    float RETVAL;
-    R_LUA_WARN_ON_DEPRECATED_GETTER("R.framerate");
-    RETVAL = R_framerate_get();
-    XL_pushfloat(L, RETVAL);
-    return 1;
-}
-
-static int r_framerate_staticnewindex_xl(lua_State *L)
-{
-    float VALUE = XL_checkfloat(L, 1);
-    R_framerate_set(VALUE);
-    return 0;
-}
-
-static int r_set_framerate_xl(lua_State *L)
-{
-    float ticks_per_second = XL_checkfloat(L, 1);
-    R_LUA_WARN_ON_DEPRECATED_SETTER("R.framerate");
-    R_framerate_set(ticks_per_second);
-    return 0;
-}
-
 static int r_tick_length_staticindex_xl(lua_State *L)
 {
     float RETVAL;
-    RETVAL = R_tick_length;
-    XL_pushfloat(L, RETVAL);
-    return 1;
-}
-
-static int r_get_tick_length_xl(lua_State *L)
-{
-    float RETVAL;
-    R_LUA_WARN_ON_DEPRECATED_GETTER("R.tick_length");
     RETVAL = R_tick_length;
     XL_pushfloat(L, RETVAL);
     return 1;
@@ -168,26 +126,9 @@ static int r_max_ticks_before_render_staticnewindex_xl(lua_State *L)
     return 0;
 }
 
-static int r_set_max_ticks_before_render_xl(lua_State *L)
-{
-    uint32_t max_ticks_before_render = XL_checkuint32(L, 1);
-    R_LUA_WARN_ON_DEPRECATED_SETTER("R.max_ticks_before_render");
-    R_max_ticks_before_render = max_ticks_before_render;
-    return 0;
-}
-
 static int r_al_enabled_staticindex_xl(lua_State *L)
 {
     bool RETVAL;
-    RETVAL = R_al_enabled;
-    lua_pushboolean(L, RETVAL);
-    return 1;
-}
-
-static int r_get_al_enabled_xl(lua_State *L)
-{
-    bool RETVAL;
-    R_LUA_WARN_ON_DEPRECATED_GETTER("R.al_enabled");
     RETVAL = R_al_enabled;
     lua_pushboolean(L, RETVAL);
     return 1;
@@ -288,14 +229,8 @@ static luaL_Reg r_function_registry_xl[] = {
     {"die", r_die_xl},
     {"fetch", r_fetch_xl},
     {"fetch_pack", r_fetch_pack_xl},
-    {"get_al_enabled", r_get_al_enabled_xl},
-    {"get_framerate", r_get_framerate_xl},
-    {"get_platform", r_get_platform_xl},
-    {"get_tick_length", r_get_tick_length_xl},
     {"info", r_info_xl},
     {"rand_between", r_rand_between_xl},
-    {"set_framerate", r_set_framerate_xl},
-    {"set_max_ticks_before_render", r_set_max_ticks_before_render_xl},
     {"timestamp_as_double", r_timestamp_as_double_xl},
     {"warn", r_warn_xl},
     {NULL, NULL},
@@ -316,7 +251,6 @@ static luaL_Reg r_staticindex_registry_xl[] = {
 };
 
 static luaL_Reg r_staticnewindex_registry_xl[] = {
-    {"framerate", r_framerate_staticnewindex_xl},
     {"max_ticks_before_render", r_max_ticks_before_render_staticnewindex_xl},
     {NULL, NULL},
 };

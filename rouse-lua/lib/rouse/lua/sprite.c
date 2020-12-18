@@ -740,6 +740,24 @@ static int r_sprite_angle_index_xl(lua_State *L)
     return 1;
 }
 
+static int r_sprite_tint_index_xl(lua_State *L)
+{
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
+    NVGcolor RETVAL;
+    RETVAL = R_sprite_tint(self);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(NVGcolor), "NVGcolor", 0);
+    return 1;
+}
+
+static int r_sprite_color_index_xl(lua_State *L)
+{
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
+    NVGcolor RETVAL;
+    RETVAL = R_sprite_tint(self);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(NVGcolor), "NVGcolor", 0);
+    return 1;
+}
+
 static int r_sprite_alpha_index_xl(lua_State *L)
 {
     R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
@@ -929,6 +947,22 @@ static int r_sprite_alpha_newindex_xl(lua_State *L)
     R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     float VALUE = XL_checkfloat(L, 2);
     R_sprite_alpha_set(self, VALUE);
+    return 0;
+}
+
+static int r_sprite_tint_newindex_xl(lua_State *L)
+{
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
+    NVGcolor VALUE = *((NVGcolor *)luaL_checkudata(L, 2, "NVGcolor"));
+    R_sprite_tint_set(self, VALUE);
+    return 0;
+}
+
+static int r_sprite_color_newindex_xl(lua_State *L)
+{
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
+    NVGcolor VALUE = *((NVGcolor *)luaL_checkudata(L, 2, "NVGcolor"));
+    R_sprite_tint_set(self, VALUE);
     return 0;
 }
 
@@ -1273,6 +1307,7 @@ static luaL_Reg r_sprite_index_registry_xl[] = {
     {"base", r_sprite_base_index_xl},
     {"base_x", r_sprite_base_x_index_xl},
     {"base_y", r_sprite_base_y_index_xl},
+    {"color", r_sprite_color_index_xl},
     {"content", r_sprite_content_index_xl},
     {"index", r_sprite_index_index_xl},
     {"name", r_sprite_name_index_xl},
@@ -1294,6 +1329,7 @@ static luaL_Reg r_sprite_index_registry_xl[] = {
     {"skew", r_sprite_skew_index_xl},
     {"skew_x", r_sprite_skew_x_index_xl},
     {"skew_y", r_sprite_skew_y_index_xl},
+    {"tint", r_sprite_tint_index_xl},
     {"transform", r_sprite_transform_index_xl},
     {"user", r_sprite_user_index_xl},
     {"world_origin", r_sprite_world_origin_index_xl},
@@ -1365,6 +1401,7 @@ static luaL_Reg r_sprite_newindex_registry_xl[] = {
     {"base", r_sprite_base_newindex_xl},
     {"base_x", r_sprite_base_x_newindex_xl},
     {"base_y", r_sprite_base_y_newindex_xl},
+    {"color", r_sprite_color_newindex_xl},
     {"content", r_sprite_content_newindex_xl},
     {"name", r_sprite_name_newindex_xl},
     {"origin", r_sprite_origin_newindex_xl},
@@ -1385,6 +1422,7 @@ static luaL_Reg r_sprite_newindex_registry_xl[] = {
     {"skew", r_sprite_skew_newindex_xl},
     {"skew_x", r_sprite_skew_x_newindex_xl},
     {"skew_y", r_sprite_skew_y_newindex_xl},
+    {"tint", r_sprite_tint_newindex_xl},
     {"user", r_sprite_user_newindex_xl},
     {"x", r_sprite_x_newindex_xl},
     {"y", r_sprite_y_newindex_xl},

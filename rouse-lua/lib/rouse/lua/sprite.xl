@@ -28,6 +28,7 @@
 
 PPTYPE R_Nvg
 UTYPE R_LuaNvgTransform
+UTYPE NVGcolor
 UTYPE R_V2
 
 
@@ -231,51 +232,55 @@ SETFROMTABLE set
 
 INDEX <NEW>R_AffineTransform *transform = R_sprite_transform
 
-INDEX R_V2  origin   = R_sprite_origin
-INDEX float origin_x = R_sprite_origin_x
-INDEX float origin_y = R_sprite_origin_y
-INDEX R_V2  pos      = R_sprite_pos
-INDEX float pos_x    = R_sprite_pos_x
-INDEX float pos_y    = R_sprite_pos_y
-INDEX R_V2  scale    = R_sprite_scale
-INDEX float scale_x  = R_sprite_scale_x
-INDEX float scale_y  = R_sprite_scale_y
-INDEX R_V2  skew     = R_sprite_skew
-INDEX float skew_x   = R_sprite_skew_x
-INDEX float skew_y   = R_sprite_skew_y
-INDEX float angle    = R_sprite_angle
-INDEX float alpha    = R_sprite_alpha
-INDEX R_V2  base     = R_sprite_base
-INDEX float base_x   = R_sprite_base_x
-INDEX float base_y   = R_sprite_base_y
-INDEX float rotation = R_sprite_rotation
-INDEX R_V2  rel      = R_sprite_rel
-INDEX float rel_x    = R_sprite_rel_x
-INDEX float rel_y    = R_sprite_rel_y
+INDEX R_V2     origin   = R_sprite_origin
+INDEX float    origin_x = R_sprite_origin_x
+INDEX float    origin_y = R_sprite_origin_y
+INDEX R_V2     pos      = R_sprite_pos
+INDEX float    pos_x    = R_sprite_pos_x
+INDEX float    pos_y    = R_sprite_pos_y
+INDEX R_V2     scale    = R_sprite_scale
+INDEX float    scale_x  = R_sprite_scale_x
+INDEX float    scale_y  = R_sprite_scale_y
+INDEX R_V2     skew     = R_sprite_skew
+INDEX float    skew_x   = R_sprite_skew_x
+INDEX float    skew_y   = R_sprite_skew_y
+INDEX float    angle    = R_sprite_angle
+INDEX NVGcolor tint     = R_sprite_tint
+INDEX NVGcolor color    = R_sprite_tint
+INDEX float    alpha    = R_sprite_alpha
+INDEX R_V2     base     = R_sprite_base
+INDEX float    base_x   = R_sprite_base_x
+INDEX float    base_y   = R_sprite_base_y
+INDEX float    rotation = R_sprite_rotation
+INDEX R_V2     rel      = R_sprite_rel
+INDEX float    rel_x    = R_sprite_rel_x
+INDEX float    rel_y    = R_sprite_rel_y
 
 NEWINDEX R_AffineTransform set_transform = R_sprite_transform_set
 
-NEWINDEX R_V2  origin   = R_sprite_origin_set
-NEWINDEX float origin_x = R_sprite_origin_x_set
-NEWINDEX float origin_y = R_sprite_origin_y_set
-NEWINDEX R_V2  pos      = R_sprite_pos_set
-NEWINDEX float pos_x    = R_sprite_pos_x_set
-NEWINDEX float pos_y    = R_sprite_pos_y_set
-NEWINDEX R_V2  scale    = R_sprite_scale_set
-NEWINDEX float scale_x  = R_sprite_scale_x_set
-NEWINDEX float scale_y  = R_sprite_scale_y_set
-NEWINDEX R_V2  skew     = R_sprite_skew_set
-NEWINDEX float skew_x   = R_sprite_skew_x_set
-NEWINDEX float skew_y   = R_sprite_skew_y_set
-NEWINDEX float angle    = R_sprite_angle_set
-NEWINDEX float alpha    = R_sprite_alpha_set
-NEWINDEX R_V2  base     = R_sprite_base_set
-NEWINDEX float base_x   = R_sprite_base_x_set
-NEWINDEX float base_y   = R_sprite_base_y_set
-NEWINDEX float rotation = R_sprite_rotation_set
-NEWINDEX R_V2  rel      = R_sprite_rel_set
-NEWINDEX float rel_x    = R_sprite_rel_x_set
-NEWINDEX float rel_y    = R_sprite_rel_y_set
+NEWINDEX R_V2     origin   = R_sprite_origin_set
+NEWINDEX float    origin_x = R_sprite_origin_x_set
+NEWINDEX float    origin_y = R_sprite_origin_y_set
+NEWINDEX R_V2     pos      = R_sprite_pos_set
+NEWINDEX float    pos_x    = R_sprite_pos_x_set
+NEWINDEX float    pos_y    = R_sprite_pos_y_set
+NEWINDEX R_V2     scale    = R_sprite_scale_set
+NEWINDEX float    scale_x  = R_sprite_scale_x_set
+NEWINDEX float    scale_y  = R_sprite_scale_y_set
+NEWINDEX R_V2     skew     = R_sprite_skew_set
+NEWINDEX float    skew_x   = R_sprite_skew_x_set
+NEWINDEX float    skew_y   = R_sprite_skew_y_set
+NEWINDEX float    angle    = R_sprite_angle_set
+NEWINDEX float    alpha    = R_sprite_alpha_set
+NEWINDEX NVGcolor tint     = R_sprite_tint_set
+NEWINDEX NVGcolor color    = R_sprite_tint_set
+NEWINDEX R_V2     base     = R_sprite_base_set
+NEWINDEX float    base_x   = R_sprite_base_x_set
+NEWINDEX float    base_y   = R_sprite_base_y_set
+NEWINDEX float    rotation = R_sprite_rotation_set
+NEWINDEX R_V2     rel      = R_sprite_rel_set
+NEWINDEX float    rel_x    = R_sprite_rel_x_set
+NEWINDEX float    rel_y    = R_sprite_rel_y_set
 
 INDEX    float x = R_sprite_pos_x
 NEWINDEX float x = R_sprite_pos_x_set

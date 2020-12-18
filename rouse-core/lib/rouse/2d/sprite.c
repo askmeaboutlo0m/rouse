@@ -77,6 +77,7 @@ struct R_Sprite {
     R_Sprite          *tracking;
     R_AffineTransform transform;
     float             alpha;
+    NVGcolor          tint;
     /* These id things keep track of which transforms need to be recalculated.
      * This system is heavily inspired by the way PixiJS works. Each sprite
      * keeps track of its local matrix, which is calculated from its own affine
@@ -136,8 +137,8 @@ R_Sprite *R_sprite_new(const char *name)
 #   define IDENTITY_AFFINE_MATRIX {1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f}
     R_Sprite *sprite = R_NEW_INIT_STRUCT(sprite, R_Sprite,
             R_MAGIC_INIT(R_Sprite) 1, R_strdup(name), NULL, NULL, NULL, NULL,
-            R_affine_transform(), 1.0f, 0, 0, 0, 0, IDENTITY_AFFINE_MATRIX,
-            IDENTITY_AFFINE_MATRIX, NULL, R_user_null(),
+            R_affine_transform(), 1.0f, {{{0.0f, 0.0f, 0.0f, 0.0f}}}, 0, 0, 0, 0,
+            IDENTITY_AFFINE_MATRIX, IDENTITY_AFFINE_MATRIX, NULL, R_user_null(),
             {NULL, NULL, R_user_null()});
     check_sprite(sprite);
     return sprite;
@@ -361,6 +362,18 @@ void R_sprite_alpha_set(R_Sprite *sprite, float value)
 {
     check_sprite(sprite);
     sprite->alpha = value;
+}
+
+NVGcolor R_sprite_tint(R_Sprite *sprite)
+{
+    check_sprite(sprite);
+    return sprite->tint;
+}
+
+void R_sprite_tint_set(R_Sprite *sprite, NVGcolor value)
+{
+    check_sprite(sprite);
+    sprite->tint = value;
 }
 
 static void apply_transform(float matrix[static 6], R_AffineTransform *tf)
@@ -668,19 +681,35 @@ static void draw_sprite(R_Sprite *sprite, R_Nvg *nvg,
                         const float canvas_matrix[static 6])
 {
     R_MAGIC_CHECK(R_Sprite, sprite);
+    NVGcontext *ctx = R_nvg_context(nvg);
 
-    NVGcontext *ctx  = R_nvg_context(nvg);
-    float      alpha = sprite->alpha;
-    if (alpha < 1.0f) {
-        nvgSave(ctx);
-        nvgGlobalAlpha(ctx, R_CLAMP(alpha * nvgGetGlobalAlpha(ctx), 0.0f, 1.0f));
+    float alpha      = sprite->alpha;
+    bool  need_alpha = alpha < 1.0;
+    float prev_alpha;
+    if (need_alpha) {
+        prev_alpha = nvgGetGlobalAlpha(ctx);
+        nvgGlobalAlpha(ctx, R_CLAMP(alpha * prev_alpha, 0.0f, 1.0f));
+    }
+
+    NVGcolor tint      = sprite->tint;
+    bool     need_tint = tint.a > 0.0f;
+    NVGcolor prev_tint;
+    if (need_tint) {
+        prev_tint = nvgGetGlobalTint(ctx);
+        /* Don't automatically mix tints. If the user wants that, they can go
+         * do it themselves. If they don't want it, this lets them override the
+         * tint, which would be impossible if they'd always get mixed. */
+        nvgGlobalTint(ctx, tint);
     }
 
     draw_self(sprite, nvg, canvas_matrix);
     draw_children(sprite, nvg, canvas_matrix);
 
-    if (alpha < 1.0f) {
-        nvgRestore(ctx);
+    if (need_alpha) {
+        nvgGlobalAlpha(ctx, prev_alpha);
+    }
+    if (need_tint) {
+        nvgGlobalTint(ctx, prev_tint);
     }
 }
 

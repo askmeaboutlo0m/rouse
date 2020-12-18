@@ -1,6 +1,8 @@
 //
 // Copyright (c) 2013 Mikko Mononen memon@inside.org
 //
+// Copyright 2020 askmeaboutloom for color tint and get global alpha patches.
+//
 // This software is provided 'as-is', without any express or implied
 // warranty.  In no event will the authors be held liable for any damages
 // arising from the use of this software.
@@ -272,8 +274,14 @@ void nvgLineJoin(NVGcontext* ctx, int join);
 // Already transparent paths will get proportionally more transparent as well.
 void nvgGlobalAlpha(NVGcontext* ctx, float alpha);
 
-// Patch 2020 by askmeaboutloom - get global alpha from context.
+// Reads the global transparency set last by nvgGlobalAlpha.
 float nvgGetGlobalAlpha(NVGcontext *ctx);
+
+// Sets a color tint that's mixed in to all rendered pixels.
+void nvgGlobalTint(NVGcontext *ctx, NVGcolor tint);
+
+// Reads the tint set last by nvgGlobalTint.
+NVGcolor nvgGetGlobalTint(NVGcontext *ctx);
 
 //
 // Transforms

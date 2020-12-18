@@ -1,6 +1,8 @@
 //
 // Copyright (c) 2013 Mikko Mononen memon@inside.org
 //
+// Copyright 2020 askmeaboutloom for color tint patches.
+//
 // This software is provided 'as-is', without any express or implied
 // warranty.  In no event will the authors be held liable for any damages
 // arising from the use of this software.
@@ -75,6 +77,7 @@ struct NVGstate {
 	int lineJoin;
 	int lineCap;
 	float alpha;
+	NVGcolor tint;
 	float xform[6];
 	NVGscissor scissor;
 	float fontSize;
@@ -652,6 +655,7 @@ void nvgReset(NVGcontext* ctx)
 	state->lineCap = NVG_BUTT;
 	state->lineJoin = NVG_MITER;
 	state->alpha = 1.0f;
+	state->tint = nvgRGBAf(0.0f, 0.0f, 0.0f, 0.0f);
 	nvgTransformIdentity(state->xform);
 
 	state->scissor.extent[0] = -1.0f;
@@ -702,11 +706,22 @@ void nvgGlobalAlpha(NVGcontext* ctx, float alpha)
 	state->alpha = alpha;
 }
 
-// Patch 2020 by askmeaboutloom - get global alpha from context.
 float nvgGetGlobalAlpha(NVGcontext *ctx)
 {
 	NVGstate* state = nvg__getState(ctx);
 	return state->alpha;
+}
+
+void nvgGlobalTint(NVGcontext* ctx, NVGcolor tint)
+{
+	NVGstate* state = nvg__getState(ctx);
+	state->tint = tint;
+}
+
+NVGcolor nvgGetGlobalTint(NVGcontext *ctx)
+{
+	NVGstate* state = nvg__getState(ctx);
+	return state->tint;
 }
 
 void nvgTransform(NVGcontext* ctx, float a, float b, float c, float d, float e, float f)
@@ -2223,6 +2238,20 @@ void nvgDebugDumpPathCache(NVGcontext* ctx)
 	}
 }
 
+static void nvg__applyTint(NVGpaint *paint, NVGcolor tint)
+{
+	float u = tint.rgba[3];
+	if (u > 0.0f) {
+		float oneminu = 1.0f - u;
+		int i;
+		for (i = 0; i < 3; i++) {
+			float b = tint.rgba[i] * u;
+			paint->innerColor.rgba[i] = paint->innerColor.rgba[i] * oneminu + b;
+			paint->outerColor.rgba[i] = paint->outerColor.rgba[i] * oneminu + b;
+		}
+	}
+}
+
 void nvgFill(NVGcontext* ctx)
 {
 	NVGstate* state = nvg__getState(ctx);
@@ -2235,6 +2264,8 @@ void nvgFill(NVGcontext* ctx)
 		nvg__expandFill(ctx, ctx->fringeWidth, NVG_MITER, 2.4f);
 	else
 		nvg__expandFill(ctx, 0.0f, NVG_MITER, 2.4f);
+
+	nvg__applyTint(&fillPaint, state->tint);
 
 	// Apply global alpha
 	fillPaint.innerColor.a *= state->alpha;
@@ -2270,6 +2301,8 @@ void nvgStroke(NVGcontext* ctx)
 		strokePaint.outerColor.a *= alpha*alpha;
 		strokeWidth = ctx->fringeWidth;
 	}
+
+	nvg__applyTint(&strokePaint, state->tint);
 
 	// Apply global alpha
 	strokePaint.innerColor.a *= state->alpha;
@@ -2425,6 +2458,8 @@ static void nvg__renderText(NVGcontext* ctx, NVGvertex* verts, int nverts)
 
 	// Render triangles.
 	paint.image = ctx->fontImages[ctx->fontImageIdx];
+
+	nvg__applyTint(&paint, state->tint);
 
 	// Apply global alpha
 	paint.innerColor.a *= state->alpha;

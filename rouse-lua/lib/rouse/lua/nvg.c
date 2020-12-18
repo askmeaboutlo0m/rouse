@@ -132,6 +132,29 @@ static int r_nvg_rgbaf_xl(lua_State *L)
     return 1;
 }
 
+static int r_nvg_rgbx_xl(lua_State *L)
+{
+    uint32_t rgb = XL_checkuint32(L, 1);
+    NVGcolor RETVAL;
+    RETVAL = nvgRGB((unsigned char)((rgb >>  0u) & 0xffu),
+                    (unsigned char)((rgb >>  8u) & 0xffu),
+                    (unsigned char)((rgb >> 16u) & 0xffu));
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(NVGcolor), "NVGcolor", 0);
+    return 1;
+}
+
+static int r_nvg_rgbax_xl(lua_State *L)
+{
+    uint32_t rgba = XL_checkuint32(L, 1);
+    NVGcolor RETVAL;
+    RETVAL = nvgRGBA((unsigned char)((rgba >>  0u) & 0xffu),
+                     (unsigned char)((rgba >>  8u) & 0xffu),
+                     (unsigned char)((rgba >> 16u) & 0xffu),
+                     (unsigned char)((rgba >> 24u) & 0xffu));
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(NVGcolor), "NVGcolor", 0);
+    return 1;
+}
+
 static int nvgcolor_r_index_xl(lua_State *L)
 {
     NVGcolor *self = R_CPPCAST(NVGcolor *, XL_checkutype(L, 1, "NVGcolor"));
@@ -906,7 +929,9 @@ static luaL_Reg r_nvg_function_registry_xl[] = {
     {"rgb", r_nvg_rgb_xl},
     {"rgba", r_nvg_rgba_xl},
     {"rgbaf", r_nvg_rgbaf_xl},
+    {"rgbax", r_nvg_rgbax_xl},
     {"rgbf", r_nvg_rgbf_xl},
+    {"rgbx", r_nvg_rgbx_xl},
     {NULL, NULL},
 };
 

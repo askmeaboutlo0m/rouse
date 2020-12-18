@@ -79,6 +79,19 @@ CONSTRUCTOR rgba(unsigned char r, unsigned char g,
 
 CONSTRUCTOR rgbaf(float r, float g, float b, float a) = nvgRGBAf
 
+CONSTRUCTOR rgbx(uint32_t rgb)
+    RETVAL = nvgRGB((unsigned char)((rgb >>  0u) & 0xffu),
+                    (unsigned char)((rgb >>  8u) & 0xffu),
+                    (unsigned char)((rgb >> 16u) & 0xffu));
+END
+
+CONSTRUCTOR rgbax(uint32_t rgba)
+    RETVAL = nvgRGBA((unsigned char)((rgba >>  0u) & 0xffu),
+                     (unsigned char)((rgba >>  8u) & 0xffu),
+                     (unsigned char)((rgba >> 16u) & 0xffu),
+                     (unsigned char)((rgba >> 24u) & 0xffu));
+END
+
 FIELD float r
 FIELD float g
 FIELD float b

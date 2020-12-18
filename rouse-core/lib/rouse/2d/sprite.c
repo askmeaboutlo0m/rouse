@@ -76,6 +76,7 @@ struct R_Sprite {
     R_Sprite          *next;
     R_Sprite          *tracking;
     R_AffineTransform transform;
+    float             alpha;
     /* These id things keep track of which transforms need to be recalculated.
      * This system is heavily inspired by the way PixiJS works. Each sprite
      * keeps track of its local matrix, which is calculated from its own affine
@@ -107,7 +108,7 @@ R_AffineTransform R_affine_transform(void)
 {
     return (R_AffineTransform){
             R_MAGIC_INIT(R_AffineTransform) {{0.0f, 0.0f}}, {{0.0f, 0.0f}},
-            {{1.0f, 1.0f}}, {{0.0f, 0.0f}}, 0.0f, 1.0f, {{0.0f, 0.0f}}};
+            {{1.0f, 1.0f}}, {{0.0f, 0.0f}}, 0.0f, {{0.0f, 0.0f}}};
 }
 
 
@@ -135,7 +136,7 @@ R_Sprite *R_sprite_new(const char *name)
 #   define IDENTITY_AFFINE_MATRIX {1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f}
     R_Sprite *sprite = R_NEW_INIT_STRUCT(sprite, R_Sprite,
             R_MAGIC_INIT(R_Sprite) 1, R_strdup(name), NULL, NULL, NULL, NULL,
-            R_affine_transform(), 0, 0, 0, 0, IDENTITY_AFFINE_MATRIX,
+            R_affine_transform(), 1.0f, 0, 0, 0, 0, IDENTITY_AFFINE_MATRIX,
             IDENTITY_AFFINE_MATRIX, NULL, R_user_null(),
             {NULL, NULL, R_user_null()});
     check_sprite(sprite);
@@ -342,7 +343,6 @@ GET_SET_TRANSFORM(R_V2,  skew,     skew,     RETRIEVE_FIELD, ASSIGN_FIELD)
 GET_SET_TRANSFORM(float, skew_x,   skew.x,   RETRIEVE_FIELD, ASSIGN_FIELD)
 GET_SET_TRANSFORM(float, skew_y,   skew.y,   RETRIEVE_FIELD, ASSIGN_FIELD)
 GET_SET_TRANSFORM(float, angle,    angle,    RETRIEVE_FIELD, ASSIGN_FIELD)
-GET_SET_TRANSFORM(float, alpha,    alpha,    RETRIEVE_FIELD, ASSIGN_FIELD)
 GET_SET_TRANSFORM(R_V2,  base,     base,     RETRIEVE_FIELD, ASSIGN_FIELD)
 GET_SET_TRANSFORM(float, base_x,   base.x,   RETRIEVE_FIELD, ASSIGN_FIELD)
 GET_SET_TRANSFORM(float, base_y,   base.y,   RETRIEVE_FIELD, ASSIGN_FIELD)
@@ -351,6 +351,17 @@ GET_SET_TRANSFORM(R_V2,  rel,      rel,      RETRIEVE_FUNC,  ASSIGN_FUNC )
 GET_SET_TRANSFORM(float, rel_x,    rel_x,    RETRIEVE_FUNC,  ASSIGN_FUNC )
 GET_SET_TRANSFORM(float, rel_y,    rel_y,    RETRIEVE_FUNC,  ASSIGN_FUNC )
 
+float R_sprite_alpha(R_Sprite *sprite)
+{
+    check_sprite(sprite);
+    return sprite->alpha;
+}
+
+void R_sprite_alpha_set(R_Sprite *sprite, float value)
+{
+    check_sprite(sprite);
+    sprite->alpha = value;
+}
 
 static void apply_transform(float matrix[static 6], R_AffineTransform *tf)
 {
@@ -659,7 +670,7 @@ static void draw_sprite(R_Sprite *sprite, R_Nvg *nvg,
     R_MAGIC_CHECK(R_Sprite, sprite);
 
     NVGcontext *ctx  = R_nvg_context(nvg);
-    float      alpha = sprite->transform.alpha;
+    float      alpha = sprite->alpha;
     if (alpha < 1.0f) {
         nvgSave(ctx);
         nvgGlobalAlpha(ctx, R_CLAMP(alpha * nvgGetGlobalAlpha(ctx), 0.0f, 1.0f));

@@ -46,7 +46,6 @@ FIELD R_V2  skew
 FIELD float skew_x   = skew.x
 FIELD float skew_y   = skew.y
 FIELD float angle
-FIELD float alpha
 FIELD R_V2  base
 FIELD float base_x   = base.x
 FIELD float base_y   = base.y

@@ -29,7 +29,6 @@ typedef struct R_AffineTransform {
     R_V2  scale;
     R_V2  skew;  /* in radians */
     float angle; /* in radians */
-    float alpha;
     R_V2  base;
 } R_AffineTransform;
 

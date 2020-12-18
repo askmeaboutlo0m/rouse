@@ -303,6 +303,14 @@ function SceneBase:seq(topic_or_name, ...)
     return SeqBuilder.new(self, topic, ...)
 end
 
+function SceneBase:delay(...)
+    local args = {...}
+    local last = table.remove(args)
+    return self:seq()
+        :delay(table.unpack(args))
+        :start(last)
+end
+
 
 function SceneBase:kill_all()
     self.scene:kill_all()

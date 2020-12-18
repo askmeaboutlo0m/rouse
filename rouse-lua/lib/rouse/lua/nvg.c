@@ -4,7 +4,7 @@
 /* Modify the matching .xl file and rebuild.     */
 /*************************************************/
 /*
- * Copyright (c) 2019 askmeaboutloom
+ * Copyright (c) 2019, 2020 askmeaboutloom
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -345,6 +345,62 @@ static int r_nvg_method_reset_xl(lua_State *L)
     return 0;
 }
 
+static int r_nvg_method_linear_gradient_xl(lua_State *L)
+{
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
+    float sx = XL_checkfloat(L, 2);
+    float sy = XL_checkfloat(L, 3);
+    float ex = XL_checkfloat(L, 4);
+    float ey = XL_checkfloat(L, 5);
+    NVGcolor icol = *((NVGcolor *)luaL_checkudata(L, 6, "NVGcolor"));
+    NVGcolor ocol = *((NVGcolor *)luaL_checkudata(L, 7, "NVGcolor"));
+    NVGcontext *ctx = R_nvg_context(self);
+#   define self ctx
+    NVGpaint RETVAL;
+    RETVAL = nvgLinearGradient(self, sx, sy, ex, ey, icol, ocol);
+#   undef self
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(NVGpaint), "NVGpaint", 0);
+    return 1;
+}
+
+static int r_nvg_method_box_gradient_xl(lua_State *L)
+{
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
+    float x = XL_checkfloat(L, 2);
+    float y = XL_checkfloat(L, 3);
+    float w = XL_checkfloat(L, 4);
+    float h = XL_checkfloat(L, 5);
+    float r = XL_checkfloat(L, 6);
+    float f = XL_checkfloat(L, 7);
+    NVGcolor icol = *((NVGcolor *)luaL_checkudata(L, 8, "NVGcolor"));
+    NVGcolor ocol = *((NVGcolor *)luaL_checkudata(L, 9, "NVGcolor"));
+    NVGcontext *ctx = R_nvg_context(self);
+#   define self ctx
+    NVGpaint RETVAL;
+    RETVAL = nvgBoxGradient(self, x, y, w, h, r, f, icol, ocol);
+#   undef self
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(NVGpaint), "NVGpaint", 0);
+    return 1;
+}
+
+static int r_nvg_method_radial_gradient_xl(lua_State *L)
+{
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
+    float cx = XL_checkfloat(L, 2);
+    float cy = XL_checkfloat(L, 3);
+    float inr = XL_checkfloat(L, 4);
+    float outr = XL_checkfloat(L, 5);
+    NVGcolor icol = *((NVGcolor *)luaL_checkudata(L, 6, "NVGcolor"));
+    NVGcolor ocol = *((NVGcolor *)luaL_checkudata(L, 7, "NVGcolor"));
+    NVGcontext *ctx = R_nvg_context(self);
+#   define self ctx
+    NVGpaint RETVAL;
+    RETVAL = nvgRadialGradient(self, cx, cy, inr, outr, icol, ocol);
+#   undef self
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(NVGpaint), "NVGpaint", 0);
+    return 1;
+}
+
 static int r_nvg_method_shape_anti_alias_xl(lua_State *L)
 {
     R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
@@ -367,7 +423,16 @@ static int r_nvg_method_stroke_color_xl(lua_State *L)
     return 0;
 }
 
-/* nvgStrokePaint NVGpaint */
+static int r_nvg_method_stroke_paint_xl(lua_State *L)
+{
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
+    NVGpaint paint = *((NVGpaint *)luaL_checkudata(L, 2, "NVGpaint"));
+    NVGcontext *ctx = R_nvg_context(self);
+#   define self ctx
+    nvgStrokePaint(self, paint);
+#   undef self
+    return 0;
+}
 
 static int r_nvg_method_fill_color_xl(lua_State *L)
 {
@@ -380,7 +445,16 @@ static int r_nvg_method_fill_color_xl(lua_State *L)
     return 0;
 }
 
-/* nvgFillPaint NVGpaint */
+static int r_nvg_method_fill_paint_xl(lua_State *L)
+{
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
+    NVGpaint paint = *((NVGpaint *)luaL_checkudata(L, 2, "NVGpaint"));
+    NVGcontext *ctx = R_nvg_context(self);
+#   define self ctx
+    nvgFillPaint(self, paint);
+#   undef self
+    return 0;
+}
 
 static int r_nvg_method_miter_limit_xl(lua_State *L)
 {
@@ -869,6 +943,7 @@ static luaL_Reg r_nvg_method_registry_xl[] = {
     {"begin_frame", r_nvg_method_begin_frame_xl},
     {"begin_path", r_nvg_method_begin_path_xl},
     {"bezier_to", r_nvg_method_bezier_to_xl},
+    {"box_gradient", r_nvg_method_box_gradient_xl},
     {"cancel_frame", r_nvg_method_cancel_frame_xl},
     {"circle", r_nvg_method_circle_xl},
     {"close_path", r_nvg_method_close_path_xl},
@@ -877,15 +952,18 @@ static luaL_Reg r_nvg_method_registry_xl[] = {
     {"end_frame", r_nvg_method_end_frame_xl},
     {"fill", r_nvg_method_fill_xl},
     {"fill_color", r_nvg_method_fill_color_xl},
+    {"fill_paint", r_nvg_method_fill_paint_xl},
     {"global_alpha", r_nvg_method_global_alpha_xl},
     {"intersect_scissor", r_nvg_method_intersect_scissor_xl},
     {"line_cap", r_nvg_method_line_cap_xl},
     {"line_join", r_nvg_method_line_join_xl},
     {"line_to", r_nvg_method_line_to_xl},
+    {"linear_gradient", r_nvg_method_linear_gradient_xl},
     {"miter_limit", r_nvg_method_miter_limit_xl},
     {"move_to", r_nvg_method_move_to_xl},
     {"path_winding", r_nvg_method_path_winding_xl},
     {"quad_to", r_nvg_method_quad_to_xl},
+    {"radial_gradient", r_nvg_method_radial_gradient_xl},
     {"rect", r_nvg_method_rect_xl},
     {"reset", r_nvg_method_reset_xl},
     {"reset_scissor", r_nvg_method_reset_scissor_xl},
@@ -903,6 +981,7 @@ static luaL_Reg r_nvg_method_registry_xl[] = {
     {"skew_y", r_nvg_method_skew_y_xl},
     {"stroke", r_nvg_method_stroke_xl},
     {"stroke_color", r_nvg_method_stroke_color_xl},
+    {"stroke_paint", r_nvg_method_stroke_paint_xl},
     {"stroke_width", r_nvg_method_stroke_width_xl},
     {"transform", r_nvg_method_transform_xl},
     {"transform_by", r_nvg_method_transform_by_xl},
@@ -983,6 +1062,7 @@ static XL_EnumEntry r_nvg_compositeoperation_enum_xl[] = {
 int R_lua_nvg_init(lua_State *L)
 {
     XL_initmetatable(L, "NVGcolor", nvgcolor_method_registry_xl);
+    XL_initmetatable(L, "NVGpaint", NULL);
     XL_initmetatable(L, "R_LuaNvgTransform", r_luanvgtransform_method_registry_xl);
     XL_initmetatable(L, "R_Nvg", r_nvg_method_registry_xl);
     XL_initindextable(L, &nvgcolor_index_dummy_xl, nvgcolor_index_registry_xl);

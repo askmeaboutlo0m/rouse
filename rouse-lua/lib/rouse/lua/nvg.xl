@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 askmeaboutloom
+ * Copyright (c) 2019, 2020 askmeaboutloom
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -114,6 +114,11 @@ METHOD ... __tostring()
 END
 
 
+UTYPE NVGpaint R.Nvg
+
+METATABLE NVGpaint
+
+
 PPTYPE R_Nvg R.Nvg
 
 CONSTRUCTOR new(int flags) = R_nvg_new
@@ -155,19 +160,25 @@ METHOD void restore() = nvgRestore
 METHOD void reset() = nvgReset
 
 
+METHOD NVGpaint linear_gradient(float sx, float sy, float ex, float ey,
+                                NVGcolor icol, NVGcolor ocol) = nvgLinearGradient
+
+METHOD NVGpaint box_gradient(float x, float y, float w, float h, float r,
+                             float f, NVGcolor icol, NVGcolor ocol) = nvgBoxGradient
+
+METHOD NVGpaint radial_gradient(float cx, float cy, float inr, float outr,
+                                NVGcolor icol, NVGcolor ocol) = nvgRadialGradient
+
+
 METHOD void shape_anti_alias(bool enabled) = nvgShapeAntiAlias
 
 METHOD void stroke_color(NVGcolor color) = nvgStrokeColor
 
-@c
-/* nvgStrokePaint NVGpaint */
-@xl
+METHOD void stroke_paint(NVGpaint paint) = nvgStrokePaint
 
 METHOD void fill_color(NVGcolor color) = nvgFillColor
 
-@c
-/* nvgFillPaint NVGpaint */
-@xl
+METHOD void fill_paint(NVGpaint paint) = nvgFillPaint
 
 METHOD void miter_limit(float limit) = nvgMiterLimit
 

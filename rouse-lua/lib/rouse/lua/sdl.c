@@ -775,6 +775,19 @@ static int sdl_event_inner_event_index_xl(lua_State *L)
     return 1;
 }
 
+static int sdl_cursor_staticindex_xl(lua_State *L)
+{
+    bool RETVAL;
+    int result = SDL_ShowCursor(SDL_QUERY);
+    if (result < 0) {
+        R_warn("Can't get cursor visibility: %s", SDL_GetError());
+    }
+    RETVAL = result == SDL_ENABLE;
+    lua_pushboolean(L, RETVAL);
+    return 1;
+}
+
+
 static SDL_Cursor *get_system_cursor(lua_State *L, lua_Integer i)
 {
     static SDL_Cursor *cursors[SDL_NUM_SYSTEM_CURSORS];
@@ -794,11 +807,18 @@ static int sdl_cursor_staticnewindex_xl(lua_State *L)
 {
     luaL_checkany(L, 1);
     int VALUE = 1;
-    SDL_Cursor *cursor = lua_isnil(L, VALUE)
-                       ? SDL_GetDefaultCursor()
-                       : get_system_cursor(L, luaL_checkinteger(L, VALUE));
-    if (cursor) {
-        SDL_SetCursor(cursor);
+    if (lua_isboolean(L, VALUE)) {
+        int show = lua_toboolean(L, VALUE) ? SDL_ENABLE : SDL_DISABLE;
+        if (SDL_ShowCursor(show) < 0) {
+            R_warn("Can't set cursor visibility: %s", SDL_GetError());
+        }
+    } else {
+        SDL_Cursor *cursor = lua_isnil(L, VALUE)
+                        ? SDL_GetDefaultCursor()
+                        : get_system_cursor(L, luaL_checkinteger(L, VALUE));
+        if (cursor) {
+            SDL_SetCursor(cursor);
+        }
     }
     return 0;
 }
@@ -985,6 +1005,7 @@ static luaL_Reg sdl_windowevent_method_registry_xl[] = {
 };
 
 static luaL_Reg sdl_staticindex_registry_xl[] = {
+    {"cursor", sdl_cursor_staticindex_xl},
     {"gl_swap_interval", sdl_gl_swap_interval_staticindex_xl},
     {"mouse_pos", sdl_mouse_pos_staticindex_xl},
     {"mouse_x", sdl_mouse_x_staticindex_xl},

@@ -152,3 +152,14 @@ void R_bitmap_image_draw(R_BitmapImage *bi, NVGcontext *ctx,
     nvgRect(ctx, 0.0f, 0.0f, w, h);
     nvgFill(ctx);
 }
+
+
+NVGpaint R_bitmap_image_pattern(R_BitmapImage *bi, R_Nvg *nvg, float ox,
+                                float oy, float ex, float ey, float angle,
+                                float alpha)
+{
+    check_bitmap_image(bi);
+    NVGcontext *ctx = R_nvg_context(nvg);
+    R_assert(ctx == R_nvg_context(bi->nvg), "nanovg context must match");
+    return nvgImagePattern(ctx, ox, oy, ex, ey, angle, bi->handle, alpha);
+}

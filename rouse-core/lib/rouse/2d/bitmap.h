@@ -40,3 +40,8 @@ int R_bitmap_image_height(R_BitmapImage *bi);
 
 void R_bitmap_image_draw(R_BitmapImage *bi, NVGcontext *ctx,
                          const float matrix[R_STATIC(6)]);
+
+
+NVGpaint R_bitmap_image_pattern(R_BitmapImage *bi, R_Nvg *nvg, float ox,
+                                float oy, float ex, float ey, float angle,
+                                float alpha);

@@ -109,6 +109,44 @@ function SceneBase:on_event(event)
     end
 end
 
+function SceneBase.register_event_handlers(class, reg)
+    local event_handlers = rawget(class, "event_handlers")
+    if not event_handlers then
+        event_handlers       = {}
+        class.event_handlers = event_handlers
+    end
+
+    for key, handler in pairs(reg) do
+        local type
+        if is_string(key) and SDL.EventType[key] then
+            type = SDL.EventType[key]
+        elseif is_integer(key) and SDL.EventType[key] then
+            type = key
+        end
+
+        if type then
+            event_handlers[type] = handler
+        else
+            error("Can't register unknown event type '" .. tostring(key) .. "'")
+        end
+    end
+
+    if not rawget(class, "on_event") then
+        class.on_event = function (self, event)
+            self.super.on_event(self, event)
+            local handler = event_handlers[event.type]
+            if handler then
+                if is_string(handler) then
+                    self[handler](self, event.inner_event)
+                else
+                    handler(self, event.inner_event)
+                end
+            end
+        end
+    end
+end
+
+
 function SceneBase:reset_viewport()
     R.Viewport.reset()
     local vp      = R.Viewport.window()

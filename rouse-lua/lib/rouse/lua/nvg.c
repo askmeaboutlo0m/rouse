@@ -86,75 +86,6 @@ static void check_color_index(lua_State *L, lua_Integer i, int arg)
 }
 
 
-static int r_nvg_rgb_xl(lua_State *L)
-{
-    unsigned char r = XL_checkuchar(L, 1);
-    unsigned char g = XL_checkuchar(L, 2);
-    unsigned char b = XL_checkuchar(L, 3);
-    NVGcolor RETVAL;
-    RETVAL = nvgRGB(r, g, b);
-    XL_pushnewutypeuv(L, &RETVAL, sizeof(NVGcolor), "NVGcolor", 0);
-    return 1;
-}
-
-static int r_nvg_rgbf_xl(lua_State *L)
-{
-    float r = XL_checkfloat(L, 1);
-    float g = XL_checkfloat(L, 2);
-    float b = XL_checkfloat(L, 3);
-    NVGcolor RETVAL;
-    RETVAL = nvgRGBf(r, g, b);
-    XL_pushnewutypeuv(L, &RETVAL, sizeof(NVGcolor), "NVGcolor", 0);
-    return 1;
-}
-
-static int r_nvg_rgba_xl(lua_State *L)
-{
-    unsigned char r = XL_checkuchar(L, 1);
-    unsigned char g = XL_checkuchar(L, 2);
-    unsigned char b = XL_checkuchar(L, 3);
-    unsigned char a = XL_checkuchar(L, 4);
-    NVGcolor RETVAL;
-    RETVAL = nvgRGBA(r, g, b, a);
-    XL_pushnewutypeuv(L, &RETVAL, sizeof(NVGcolor), "NVGcolor", 0);
-    return 1;
-}
-
-static int r_nvg_rgbaf_xl(lua_State *L)
-{
-    float r = XL_checkfloat(L, 1);
-    float g = XL_checkfloat(L, 2);
-    float b = XL_checkfloat(L, 3);
-    float a = XL_checkfloat(L, 4);
-    NVGcolor RETVAL;
-    RETVAL = nvgRGBAf(r, g, b, a);
-    XL_pushnewutypeuv(L, &RETVAL, sizeof(NVGcolor), "NVGcolor", 0);
-    return 1;
-}
-
-static int r_nvg_rgbx_xl(lua_State *L)
-{
-    uint32_t rgb = XL_checkuint32(L, 1);
-    NVGcolor RETVAL;
-    RETVAL = nvgRGB((unsigned char)((rgb >>  0u) & 0xffu),
-                    (unsigned char)((rgb >>  8u) & 0xffu),
-                    (unsigned char)((rgb >> 16u) & 0xffu));
-    XL_pushnewutypeuv(L, &RETVAL, sizeof(NVGcolor), "NVGcolor", 0);
-    return 1;
-}
-
-static int r_nvg_rgbax_xl(lua_State *L)
-{
-    uint32_t rgba = XL_checkuint32(L, 1);
-    NVGcolor RETVAL;
-    RETVAL = nvgRGBA((unsigned char)((rgba >>  0u) & 0xffu),
-                     (unsigned char)((rgba >>  8u) & 0xffu),
-                     (unsigned char)((rgba >> 16u) & 0xffu),
-                     (unsigned char)((rgba >> 24u) & 0xffu));
-    XL_pushnewutypeuv(L, &RETVAL, sizeof(NVGcolor), "NVGcolor", 0);
-    return 1;
-}
-
 static int nvgcolor_r_index_xl(lua_State *L)
 {
     NVGcolor *self = R_CPPCAST(NVGcolor *, XL_checkutype(L, 1, "NVGcolor"));
@@ -286,6 +217,75 @@ static int r_nvg_method_gc_xl(lua_State *L)
     R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype_nullable(L, 1, "R_Nvg"));
     R_nvg_decref(self);
     return 0;
+}
+
+static int r_nvg_rgb_xl(lua_State *L)
+{
+    unsigned char r = XL_checkuchar(L, 1);
+    unsigned char g = XL_checkuchar(L, 2);
+    unsigned char b = XL_checkuchar(L, 3);
+    NVGcolor RETVAL;
+    RETVAL = nvgRGB(r, g, b);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(NVGcolor), "NVGcolor", 0);
+    return 1;
+}
+
+static int r_nvg_rgbf_xl(lua_State *L)
+{
+    float r = XL_checkfloat(L, 1);
+    float g = XL_checkfloat(L, 2);
+    float b = XL_checkfloat(L, 3);
+    NVGcolor RETVAL;
+    RETVAL = nvgRGBf(r, g, b);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(NVGcolor), "NVGcolor", 0);
+    return 1;
+}
+
+static int r_nvg_rgba_xl(lua_State *L)
+{
+    unsigned char r = XL_checkuchar(L, 1);
+    unsigned char g = XL_checkuchar(L, 2);
+    unsigned char b = XL_checkuchar(L, 3);
+    unsigned char a = XL_checkuchar(L, 4);
+    NVGcolor RETVAL;
+    RETVAL = nvgRGBA(r, g, b, a);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(NVGcolor), "NVGcolor", 0);
+    return 1;
+}
+
+static int r_nvg_rgbaf_xl(lua_State *L)
+{
+    float r = XL_checkfloat(L, 1);
+    float g = XL_checkfloat(L, 2);
+    float b = XL_checkfloat(L, 3);
+    float a = XL_checkfloat(L, 4);
+    NVGcolor RETVAL;
+    RETVAL = nvgRGBAf(r, g, b, a);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(NVGcolor), "NVGcolor", 0);
+    return 1;
+}
+
+static int r_nvg_rgbx_xl(lua_State *L)
+{
+    uint32_t rgb = XL_checkuint32(L, 1);
+    NVGcolor RETVAL;
+    RETVAL = nvgRGB((unsigned char)((rgb >> 16u) & 0xffu),
+                    (unsigned char)((rgb >>  8u) & 0xffu),
+                    (unsigned char)((rgb >>  0u) & 0xffu));
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(NVGcolor), "NVGcolor", 0);
+    return 1;
+}
+
+static int r_nvg_rgbax_xl(lua_State *L)
+{
+    uint32_t rgba = XL_checkuint32(L, 1);
+    NVGcolor RETVAL;
+    RETVAL = nvgRGBA((unsigned char)((rgba >> 24u) & 0xffu),
+                     (unsigned char)((rgba >> 16u) & 0xffu),
+                     (unsigned char)((rgba >>  8u) & 0xffu),
+                     (unsigned char)((rgba >>  0u) & 0xffu));
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(NVGcolor), "NVGcolor", 0);
+    return 1;
 }
 
 static int r_nvg_method_create_font_xl(lua_State *L)

@@ -68,29 +68,7 @@ static void check_color_index(lua_State *L, lua_Integer i, int arg)
 
 @xl
 
-UTYPE NVGcolor R.Nvg
-
-CONSTRUCTOR rgb(unsigned char r, unsigned char g, unsigned char b) = nvgRGB
-
-CONSTRUCTOR rgbf(float r, float g, float b) = nvgRGBf
-
-CONSTRUCTOR rgba(unsigned char r, unsigned char g,
-                 unsigned char b, unsigned char a) = nvgRGBA
-
-CONSTRUCTOR rgbaf(float r, float g, float b, float a) = nvgRGBAf
-
-CONSTRUCTOR rgbx(uint32_t rgb)
-    RETVAL = nvgRGB((unsigned char)((rgb >>  0u) & 0xffu),
-                    (unsigned char)((rgb >>  8u) & 0xffu),
-                    (unsigned char)((rgb >> 16u) & 0xffu));
-END
-
-CONSTRUCTOR rgbax(uint32_t rgba)
-    RETVAL = nvgRGBA((unsigned char)((rgba >>  0u) & 0xffu),
-                     (unsigned char)((rgba >>  8u) & 0xffu),
-                     (unsigned char)((rgba >> 16u) & 0xffu),
-                     (unsigned char)((rgba >> 24u) & 0xffu));
-END
+UTYPE NVGcolor R.Nvg.Color
 
 FIELD float r
 FIELD float g
@@ -127,7 +105,7 @@ METHOD ... __tostring()
 END
 
 
-UTYPE NVGpaint R.Nvg
+UTYPE NVGpaint R.Nvg.Paint
 
 METATABLE NVGpaint
 
@@ -137,6 +115,30 @@ PPTYPE R_Nvg R.Nvg
 CONSTRUCTOR new(int flags) = R_nvg_new
 
 DESTRUCTOR = R_nvg_decref
+
+
+FUNCTION NVGcolor R.Nvg.rgb(unsigned char r, unsigned char g,
+                            unsigned char b) = nvgRGB
+
+FUNCTION NVGcolor R.Nvg.rgbf(float r, float g, float b) = nvgRGBf
+
+FUNCTION NVGcolor R.Nvg.rgba(unsigned char r, unsigned char g,
+                 unsigned char b, unsigned char a) = nvgRGBA
+
+FUNCTION NVGcolor R.Nvg.rgbaf(float r, float g, float b, float a) = nvgRGBAf
+
+FUNCTION NVGcolor R.Nvg.rgbx(uint32_t rgb)
+    RETVAL = nvgRGB((unsigned char)((rgb >> 16u) & 0xffu),
+                    (unsigned char)((rgb >>  8u) & 0xffu),
+                    (unsigned char)((rgb >>  0u) & 0xffu));
+END
+
+FUNCTION NVGcolor R.Nvg.rgbax(uint32_t rgba)
+    RETVAL = nvgRGBA((unsigned char)((rgba >> 24u) & 0xffu),
+                     (unsigned char)((rgba >> 16u) & 0xffu),
+                     (unsigned char)((rgba >>  8u) & 0xffu),
+                     (unsigned char)((rgba >>  0u) & 0xffu));
+END
 
 
 // With so many functions the `=` shortcut is vital.

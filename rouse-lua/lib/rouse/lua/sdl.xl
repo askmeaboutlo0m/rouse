@@ -286,6 +286,40 @@ INDEX <NEW>SDL_MouseWheelEvent *wheel
     GET_IN_EVENT_UNION(wheel, SDL_MOUSEWHEEL);
 END
 
+INDEX ... inner_event
+#   define PUSH_EVENT(FIELD, TYPE) do { \
+            TYPE *inner = &self->FIELD; \
+            XL_pushnewutypeuv(L, inner, sizeof(*inner), #TYPE, 0); \
+        } while (0)
+    uint32_t type = self->type;
+    switch (type) {
+        case SDL_WINDOWEVENT:
+            PUSH_EVENT(window, SDL_WindowEvent);
+            break;
+        case SDL_KEYDOWN:
+        case SDL_KEYUP:
+            PUSH_EVENT(key, SDL_KeyboardEvent);
+            break;
+        case SDL_MOUSEMOTION:
+            PUSH_EVENT(motion, SDL_MouseMotionEvent);
+            break;
+        case SDL_MOUSEBUTTONDOWN:
+        case SDL_MOUSEBUTTONUP:
+            PUSH_EVENT(button, SDL_MouseButtonEvent);
+            break;
+        case SDL_MOUSEWHEEL:
+            PUSH_EVENT(wheel, SDL_MouseWheelEvent);
+            break;
+        default:
+            R_warn("Don't know which inner_event belongs to SDL event type %u",
+                   (unsigned int) type);
+            lua_pushnil(L);
+            break;
+    }
+#   undef PUSH_EVENT
+    return 1;
+END
+
 ENUM SDL.Window s/^SDL_WINDOW_//
     SDL_WINDOW_FULLSCREEN
     SDL_WINDOW_OPENGL

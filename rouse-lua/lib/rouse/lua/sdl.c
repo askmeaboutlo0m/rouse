@@ -713,6 +713,42 @@ static int sdl_event_wheel_index_xl(lua_State *L)
     return 1;
 }
 
+static int sdl_event_inner_event_index_xl(lua_State *L)
+{
+    SDL_Event *self = R_CPPCAST(SDL_Event *, XL_checkutype(L, 1, "SDL_Event"));
+#   define PUSH_EVENT(FIELD, TYPE) do { \
+            TYPE *inner = &self->FIELD; \
+            XL_pushnewutypeuv(L, inner, sizeof(*inner), #TYPE, 0); \
+        } while (0)
+    uint32_t type = self->type;
+    switch (type) {
+        case SDL_WINDOWEVENT:
+            PUSH_EVENT(window, SDL_WindowEvent);
+            break;
+        case SDL_KEYDOWN:
+        case SDL_KEYUP:
+            PUSH_EVENT(key, SDL_KeyboardEvent);
+            break;
+        case SDL_MOUSEMOTION:
+            PUSH_EVENT(motion, SDL_MouseMotionEvent);
+            break;
+        case SDL_MOUSEBUTTONDOWN:
+        case SDL_MOUSEBUTTONUP:
+            PUSH_EVENT(button, SDL_MouseButtonEvent);
+            break;
+        case SDL_MOUSEWHEEL:
+            PUSH_EVENT(wheel, SDL_MouseWheelEvent);
+            break;
+        default:
+            R_warn("Don't know which inner_event belongs to SDL event type %u",
+                   (unsigned int) type);
+            lua_pushnil(L);
+            break;
+    }
+#   undef PUSH_EVENT
+    return 1;
+}
+
 static SDL_Cursor *get_system_cursor(lua_State *L, lua_Integer i)
 {
     static SDL_Cursor *cursors[SDL_NUM_SYSTEM_CURSORS];
@@ -806,6 +842,7 @@ static luaL_Reg sdl_function_registry_xl[] = {
 
 static luaL_Reg sdl_event_index_registry_xl[] = {
     {"button", sdl_event_button_index_xl},
+    {"inner_event", sdl_event_inner_event_index_xl},
     {"key", sdl_event_key_index_xl},
     {"motion", sdl_event_motion_index_xl},
     {"timestamp", sdl_event_timestamp_index_xl},

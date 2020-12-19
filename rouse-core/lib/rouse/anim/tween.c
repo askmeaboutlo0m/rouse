@@ -442,7 +442,7 @@ static float calc_between_scale(R_UserData user, R_UNUSED R_V2 source)
 
 static void between_scale_to_json(JSON_Object *obj, R_UserData user)
 {
-    json_object_set_string(obj, "value_type", "between_float");
+    json_object_set_string(obj, "value_type", "between_scale");
     json_object_set_number(obj, "a", user.between.a);
     json_object_set_number(obj, "b", user.between.b);
 }

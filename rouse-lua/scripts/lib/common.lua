@@ -97,10 +97,6 @@ function is_thread(x)
     return type(x) == "thread"
 end
 
-function is_userdata(x)
-    return type(x) == "userdata"
-end
-
 
 function table.merge(...)
     local merged = {}

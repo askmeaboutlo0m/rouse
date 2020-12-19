@@ -27,6 +27,25 @@ static void init_modules(lua_State *L)
     }
 }
 
+static int is_userdata(lua_State *L)
+{
+    if (lua_isuserdata(L, 1)) {
+        if (lua_gettop(L) == 1) {
+            lua_pushboolean(L, true);
+        }
+        else {
+            lua_getmetatable(L, 1);
+            const char *tname = luaL_checkstring(L, 2);
+            luaL_getmetatable(L, tname);
+            lua_pushboolean(L, lua_rawequal(L, -2, -1));
+        }
+    }
+    else {
+        lua_pushboolean(L, false);
+    }
+    return 1;
+}
+
 static int init(lua_State *L)
 {
     R_LUA_CHECK_ARGC(L, 0);
@@ -34,6 +53,9 @@ static int init(lua_State *L)
     lua_pushglobaltable(L);
     lua_pushstring(L, "R");
     lua_pushvalue(L, -3);
+    lua_rawset(L, -3);
+    lua_pushstring(L, "is_userdata");
+    lua_pushcfunction(L, is_userdata);
     lua_rawset(L, -3);
     lua_pop(L, 1);
     init_modules(L);

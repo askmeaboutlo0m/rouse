@@ -207,4 +207,40 @@ END
 SETFROMTABLE set
 
 
+UTYPE R_V4 R.V4
+
+CONSTRUCTOR new(float x, float y, float z, float w) = R_v4
+
+FIELD float x
+FIELD float y
+FIELD float z
+FIELD float w
+
+INDEX float length
+    float x = self->x;
+    float y = self->y;
+    float z = self->z;
+    float w = self->w;
+    RETVAL = sqrtf(x * x + y * y + z * z + w * w);
+END
+
+METHOD ... __tostring()
+    lua_pushfstring(L, "R_V4(%f, %f, %f, %f)", R_lua_float2n(self->x),
+                                               R_lua_float2n(self->y),
+                                               R_lua_float2n(self->z),
+                                               R_lua_float2n(self->w));
+    return 1;
+END
+
+METHOD ... unpack()
+    XL_pushfloat(L, self->x);
+    XL_pushfloat(L, self->y);
+    XL_pushfloat(L, self->z);
+    XL_pushfloat(L, self->w);
+    return 4;
+END
+
+SETFROMTABLE set
+
+
 INIT extern R_lua_geom_init

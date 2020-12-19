@@ -104,6 +104,22 @@ METHOD ... __tostring()
     return 1;
 END
 
+@@PERL
+my @fields = qw(r g b a);
+for my $c (@fields) {
+    print "METHOD NVGcolor with_$c(unsigned char $c)\n";
+    print "    RETVAL = nvgRGBAf(";
+    print join ', ', map { $_ eq $c ? "$c / 255.0f" : "self->$_" } @fields;
+    print ");\n";
+    print "END\n\n";
+    print "METHOD NVGcolor with_${c}f(float $c)\n";
+    print "    RETVAL = nvgRGBAf(";
+    print join ', ', map { $_ eq $c ? "$c" : "self->$_" } @fields;
+    print ");\n";
+    print "END\n\n";
+}
+@@END
+
 
 UTYPE NVGpaint R.Nvg.Paint
 

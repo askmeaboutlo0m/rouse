@@ -203,6 +203,86 @@ static int nvgcolor_method_tostring_xl(lua_State *L)
     return 1;
 }
 
+static int nvgcolor_method_with_r_xl(lua_State *L)
+{
+    NVGcolor *self = R_CPPCAST(NVGcolor *, XL_checkutype(L, 1, "NVGcolor"));
+    unsigned char r = XL_checkuchar(L, 2);
+    NVGcolor RETVAL;
+    RETVAL = nvgRGBAf(r / 255.0f, self->g, self->b, self->a);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(NVGcolor), "NVGcolor", 0);
+    return 1;
+}
+
+static int nvgcolor_method_with_rf_xl(lua_State *L)
+{
+    NVGcolor *self = R_CPPCAST(NVGcolor *, XL_checkutype(L, 1, "NVGcolor"));
+    float r = XL_checkfloat(L, 2);
+    NVGcolor RETVAL;
+    RETVAL = nvgRGBAf(r, self->g, self->b, self->a);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(NVGcolor), "NVGcolor", 0);
+    return 1;
+}
+
+static int nvgcolor_method_with_g_xl(lua_State *L)
+{
+    NVGcolor *self = R_CPPCAST(NVGcolor *, XL_checkutype(L, 1, "NVGcolor"));
+    unsigned char g = XL_checkuchar(L, 2);
+    NVGcolor RETVAL;
+    RETVAL = nvgRGBAf(self->r, g / 255.0f, self->b, self->a);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(NVGcolor), "NVGcolor", 0);
+    return 1;
+}
+
+static int nvgcolor_method_with_gf_xl(lua_State *L)
+{
+    NVGcolor *self = R_CPPCAST(NVGcolor *, XL_checkutype(L, 1, "NVGcolor"));
+    float g = XL_checkfloat(L, 2);
+    NVGcolor RETVAL;
+    RETVAL = nvgRGBAf(self->r, g, self->b, self->a);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(NVGcolor), "NVGcolor", 0);
+    return 1;
+}
+
+static int nvgcolor_method_with_b_xl(lua_State *L)
+{
+    NVGcolor *self = R_CPPCAST(NVGcolor *, XL_checkutype(L, 1, "NVGcolor"));
+    unsigned char b = XL_checkuchar(L, 2);
+    NVGcolor RETVAL;
+    RETVAL = nvgRGBAf(self->r, self->g, b / 255.0f, self->a);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(NVGcolor), "NVGcolor", 0);
+    return 1;
+}
+
+static int nvgcolor_method_with_bf_xl(lua_State *L)
+{
+    NVGcolor *self = R_CPPCAST(NVGcolor *, XL_checkutype(L, 1, "NVGcolor"));
+    float b = XL_checkfloat(L, 2);
+    NVGcolor RETVAL;
+    RETVAL = nvgRGBAf(self->r, self->g, b, self->a);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(NVGcolor), "NVGcolor", 0);
+    return 1;
+}
+
+static int nvgcolor_method_with_a_xl(lua_State *L)
+{
+    NVGcolor *self = R_CPPCAST(NVGcolor *, XL_checkutype(L, 1, "NVGcolor"));
+    unsigned char a = XL_checkuchar(L, 2);
+    NVGcolor RETVAL;
+    RETVAL = nvgRGBAf(self->r, self->g, self->b, a / 255.0f);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(NVGcolor), "NVGcolor", 0);
+    return 1;
+}
+
+static int nvgcolor_method_with_af_xl(lua_State *L)
+{
+    NVGcolor *self = R_CPPCAST(NVGcolor *, XL_checkutype(L, 1, "NVGcolor"));
+    float a = XL_checkfloat(L, 2);
+    NVGcolor RETVAL;
+    RETVAL = nvgRGBAf(self->r, self->g, self->b, a);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(NVGcolor), "NVGcolor", 0);
+    return 1;
+}
+
 static int r_nvg_new_xl(lua_State *L)
 {
     int flags = XL_checkint(L, 1);
@@ -949,6 +1029,14 @@ static luaL_Reg nvgcolor_method_registry_xl[] = {
     {"__newindex", nvgcolor_newindex_xl},
     {"__tostring", nvgcolor_method_tostring_xl},
     {"unpack", nvgcolor_method_unpack_xl},
+    {"with_a", nvgcolor_method_with_a_xl},
+    {"with_af", nvgcolor_method_with_af_xl},
+    {"with_b", nvgcolor_method_with_b_xl},
+    {"with_bf", nvgcolor_method_with_bf_xl},
+    {"with_g", nvgcolor_method_with_g_xl},
+    {"with_gf", nvgcolor_method_with_gf_xl},
+    {"with_r", nvgcolor_method_with_r_xl},
+    {"with_rf", nvgcolor_method_with_rf_xl},
     {NULL, NULL},
 };
 

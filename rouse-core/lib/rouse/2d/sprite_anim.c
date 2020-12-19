@@ -97,6 +97,39 @@ DEF_SPRITE_TWEEN(rel_x)
 DEF_SPRITE_TWEEN(rel_y)
 
 
+static R_V4 get_tint(R_UserData user)
+{
+    R_Sprite* sprite = user.data;
+    NVGcolor  tint   = R_sprite_tint(sprite);
+    return R_v4(tint.r, tint.g, tint.b, tint.a);
+}
+
+static void set_tint(R_UserData user, R_V4 value)
+{
+    R_Sprite *sprite = user.data;
+    R_sprite_tint_set(sprite, nvgRGBAf(value.x, value.y, value.z, value.w));
+}
+
+static void tint_to_json(JSON_Object *obj, R_UserData user)
+{
+    json_object_set_string(obj, "element_type",  "sprite_tint");
+    R_V4 tint = get_tint(user);
+    json_object_set_number(obj, "current_tint.r", tint.x);
+    json_object_set_number(obj, "current_tint.g", tint.y);
+    json_object_set_number(obj, "current_tint.b", tint.z);
+    json_object_set_number(obj, "current_tint.a", tint.w);
+    const char *name = R_sprite_name(user.data);
+    json_object_set_string(obj, "sprite", name ? name : "");
+}
+
+void R_tween_sprite_tint(R_Step *step, R_Sprite *sprite, R_TweenV4 value)
+{
+    R_sprite_incref(sprite);
+    R_tween_add_v4(step, value, R_user_data(sprite), get_tint,
+                   set_tint, tween_sprite_free, tint_to_json);
+}
+
+
 static R_V2 get_scale(R_UserData user)
 {
     R_Sprite* sprite = user.data;

@@ -87,6 +87,13 @@ struct R_TweenElement {
             R_TweenScaleSetFn  set;
             R_TweenScaleCalcFn calc;
         } s;
+        struct {
+            R_V4            source;
+            R_V4            target;
+            R_TweenV4GetFn  get;
+            R_TweenV4SetFn  set;
+            R_TweenV4CalcFn calc;
+        } v4;
     };
 };
 
@@ -497,5 +504,146 @@ void R_tween_add_scale(R_Step *step, R_TweenScale s, R_UserData user,
     R_TweenElement *elem = new_scale_element(user, on_free, to_json, s.user,
                                              s.on_free, s.to_json, get_scale,
                                              set_scale, s.on_calc);
+    tween_add_element(step, elem);
+}
+
+
+R_TweenV4 R_tween_v4(R_TweenV4CalcFn on_calc, R_TweenValueFreeFn on_free,
+                           R_TweenValueJsonFn to_json, R_UserData user)
+{
+    R_assert_not_null(on_calc);
+    return (R_TweenV4){on_calc, on_free, to_json, user};
+}
+
+
+static R_V4 calc_fixed_v4(R_UserData user, R_UNUSED R_V4 source)
+{
+    R_V4 *data = user.data;
+    return *data;
+}
+
+static void free_fixed_v4(R_UserData user)
+{
+    R_V4 *data = user.data;
+    free(data);
+}
+
+static void fixed_v4_to_json(JSON_Object *obj, R_UserData user)
+{
+    R_V4 *data = user.data;
+    json_object_set_string(obj, "value_type", "fixed_v4");
+    json_object_set_number(obj, "value.x", data->x);
+    json_object_set_number(obj, "value.y", data->y);
+    json_object_set_number(obj, "value.z", data->z);
+    json_object_set_number(obj, "value.w", data->w);
+}
+
+R_TweenV4 R_tween_v4_fixed(R_V4 value)
+{
+    R_V4 *data = R_NEW_INIT(data, value);
+    return R_tween_v4(calc_fixed_v4, free_fixed_v4, fixed_v4_to_json,
+                      R_user_data(data));
+}
+
+
+typedef struct R_BetweenV4 {
+    R_V4 a, b;
+} R_BetweenV4;
+
+static R_V4 calc_between_v4(R_UserData user, R_UNUSED R_V4 source)
+{
+    R_BetweenV4 *data = user.data;
+    return R_v4(R_rand_between(data->a.x, data->b.x),
+                R_rand_between(data->a.y, data->b.y),
+                R_rand_between(data->a.z, data->b.z),
+                R_rand_between(data->a.w, data->b.w));
+}
+
+static void free_between_v4(R_UserData user)
+{
+    R_BetweenV4 *data = user.data;
+    free(data);
+}
+
+static void between_v4_to_json(JSON_Object *obj, R_UserData user)
+{
+    R_BetweenV4 *data = user.data;
+    json_object_set_string(obj, "value_type", "between_v4");
+    json_object_set_number(obj, "a.x", data->a.x);
+    json_object_set_number(obj, "a.y", data->a.y);
+    json_object_set_number(obj, "a.z", data->a.z);
+    json_object_set_number(obj, "a.w", data->a.w);
+    json_object_set_number(obj, "b.x", data->b.x);
+    json_object_set_number(obj, "b.y", data->b.y);
+    json_object_set_number(obj, "b.z", data->b.z);
+    json_object_set_number(obj, "b.w", data->b.w);
+}
+
+R_TweenV4 R_tween_v4_between(R_V4 a, R_V4 b)
+{
+    R_BetweenV4 *data = R_NEW_INIT_STRUCT(data, R_BetweenV4, a, b);
+    return R_tween_v4(calc_between_v4, free_between_v4, between_v4_to_json,
+                      R_user_data(data));
+}
+
+
+static void calc_v4_element(R_TweenElement *elem)
+{
+    R_V4 source     = elem->v4.get(elem->user);
+    elem->v4.source = source;
+    elem->v4.target = elem->v4.calc(elem->value_user, source);
+}
+
+static void tick_v4_element(R_TweenElement *elem, float ratio)
+{
+    R_V4 source  = elem->v4.source;
+    R_V4 target  = elem->v4.target;
+    R_V4 current = R_v4(R_lerp(source.x, target.x, ratio),
+                        R_lerp(source.y, target.y, ratio),
+                        R_lerp(source.z, target.z, ratio),
+                        R_lerp(source.w, target.w, ratio));
+    elem->v4.set(elem->user, current);
+}
+
+static void v4_element_to_json(R_TweenElement *elem, JSON_Object *obj)
+{
+    json_object_set_string(obj, "element_type", "v4_element");
+    json_object_set_number(obj, "v4.source.x",  elem->v4.source.x);
+    json_object_set_number(obj, "v4.source.y",  elem->v4.source.y);
+    json_object_set_number(obj, "v4.source.z",  elem->v4.source.z);
+    json_object_set_number(obj, "v4.source.w",  elem->v4.source.w);
+    json_object_set_number(obj, "v4.target.x",  elem->v4.target.x);
+    json_object_set_number(obj, "v4.target.y",  elem->v4.target.y);
+    json_object_set_number(obj, "v4.target.z",  elem->v4.target.z);
+    json_object_set_number(obj, "v4.target.w",  elem->v4.target.w);
+}
+
+static R_TweenElement *new_v4_element(
+        R_UserData user, R_TweenElementFreeFn on_free,
+        R_TweenElementJsonFn to_json, R_UserData value_user,
+        R_TweenValueFreeFn value_on_free, R_TweenValueJsonFn value_to_json,
+        R_TweenV4GetFn get_v4, R_TweenV4SetFn set_v4,
+        R_TweenV4CalcFn calc_v4)
+{
+    R_assert_not_null(get_v4);
+    R_assert_not_null(set_v4);
+    R_assert_not_null(calc_v4);
+    R_TweenElement *elem = R_NEW_INIT_STRUCT(elem, R_TweenElement,
+            R_MAGIC_INIT(R_TweenElement) user, calc_v4_element,
+            tick_v4_element, on_free, to_json, NULL, value_user,
+            value_on_free, value_to_json, v4_element_to_json,
+            {.v4 = {R_v4(0.0f, 0.0f, 0.0f, 0.0f), R_v4(0.0f, 0.0f, 0.0f, 0.0f),
+                    get_v4, set_v4, calc_v4}});
+    R_MAGIC_CHECK(R_TweenElement, elem);
+    return elem;
+}
+
+void R_tween_add_v4(R_Step *step, R_TweenV4 v4, R_UserData user,
+                    R_TweenV4GetFn get_v4, R_TweenV4SetFn set_v4,
+                    R_TweenElementFreeFn on_free, R_TweenElementJsonFn to_json)
+{
+    R_TweenElement *elem = new_v4_element(user, on_free, to_json, v4.user,
+                                             v4.on_free, v4.to_json, get_v4,
+                                             set_v4, v4.on_calc);
     tween_add_element(step, elem);
 }

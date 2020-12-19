@@ -56,6 +56,17 @@ typedef struct R_TweenScale {
     R_UserData         user;
 } R_TweenScale;
 
+typedef R_V4 (*R_TweenV4GetFn )(R_UserData);
+typedef void (*R_TweenV4SetFn )(R_UserData, R_V4);
+typedef R_V4 (*R_TweenV4CalcFn)(R_UserData, R_V4);
+
+typedef struct R_TweenV4 {
+    R_TweenV4CalcFn    on_calc;
+    R_TweenValueFreeFn on_free;
+    R_TweenValueJsonFn to_json;
+    R_UserData         user;
+} R_TweenV4;
+
 
 R_Step *R_tween_new(R_TweenCalcFn on_calc, R_TweenFreeFn on_free,
                     R_TweenJsonFn to_json, R_UserData user, R_EaseFn ease,
@@ -88,3 +99,14 @@ R_TweenScale R_tween_scale_between(float a, float b);
 void R_tween_add_scale(R_Step *step, R_TweenScale s, R_UserData user,
                        R_TweenScaleGetFn get_scale, R_TweenScaleSetFn set_scale,
                        R_TweenElementFreeFn on_free, R_TweenElementJsonFn to_json);
+
+
+R_TweenV4 R_tween_v4(R_TweenV4CalcFn on_calc, R_TweenValueFreeFn on_free,
+                     R_TweenValueJsonFn to_json, R_UserData user);
+
+R_TweenV4 R_tween_v4_fixed(R_V4 value);
+R_TweenV4 R_tween_v4_between(R_V4 a, R_V4 b);
+
+void R_tween_add_v4(R_Step *step, R_TweenV4 v4, R_UserData user,
+                    R_TweenV4GetFn get_v4, R_TweenV4SetFn set_v4,
+                    R_TweenElementFreeFn on_free, R_TweenElementJsonFn to_json);

@@ -46,6 +46,21 @@ function ApplyFloat.custom(fn)
     return fn()
 end
 
+local ApplyColor = {}
+
+function ApplyColor.fixed(value)
+    return value
+end
+
+function ApplyColor.between(a, b)
+    return R.Nvg.rgbaf(R.rand_between(a.r, b.r), R.rand_between(a.g, b.g),
+                       R.rand_between(a.b, b.b), R.rand_between(a.a, b.a))
+end
+
+function ApplyColor.custom(fn)
+    return fn()
+end
+
 
 local SeqBuilder   = class()
 local TweenBuilder = class()
@@ -66,34 +81,62 @@ function TweenBuilder:add_application(application)
 end
 
 
-function TweenBuilder:to_value1(name, type, a)
-    if is_number(a) then
-        return type.fixed(a)
+function TweenBuilder:to_value1(name, type, is_type, convert, a)
+    if is_type(a) then
+        if convert then
+            return type.fixed(convert(a))
+        else
+            return type.fixed(a)
+        end
     elseif is_function(a) then
-        return type.custom(a)
+        if convert then
+            return type.custom(function ()
+                return convert(a())
+            end)
+        else
+            return type.custom(a)
+        end
     else
         arg_types_error(name, a)
     end
 end
 
-function TweenBuilder:to_value2(name, type, a, b)
-    if is_number(a) and is_number(b) then
-        return type.between(a, b)
+function TweenBuilder:to_value2(name, type, is_type, convert, a, b)
+    if is_type(a) and is_type(b) then
+        if convert then
+            return type.between(convert(a), convert(b))
+        else
+            return type.between(a, b)
+        end
     else
         arg_types_error(name, a, b)
     end
 end
 
-function TweenBuilder:to_value(name, type, ...)
+function TweenBuilder:to_value(name, type, is_type, convert, ...)
     local args = {...}
     local argc = #args
     if argc == 1 then
-        return self:to_value1(name, type, args[1])
+        return self:to_value1(name, type, is_type, convert, args[1])
     elseif argc == 2 then
-        return self:to_value2(name, type, args[1], args[2])
+        return self:to_value2(name, type, is_type, convert, args[1], args[2])
     else
         arg_count_error(name, argc)
     end
+end
+
+function TweenBuilder:to_float(name, type, ...)
+    return self:to_value(name, type, is_number, nil, ...)
+end
+
+local function is_nvg_color(x)
+    return is_userdata(x, "NVGcolor")
+end
+
+function TweenBuilder:to_v4_from_color(name, type, ...)
+    return self:to_value(name, type, is_nvg_color, function (color)
+        return R.V4.new(color.r, color.g, color.b, color.a)
+    end, ...)
 end
 
 local function make_tween_functions(prefix, with_topic, specs)
@@ -101,12 +144,12 @@ local function make_tween_functions(prefix, with_topic, specs)
         local tween_name = prefix .. name
         TweenBuilder[name] = function (self, ...)
             local topic = self.topic
-            local value = self:to_value(name, R.TweenFloat, ...)
+            local value = self:to_float(name, R.TweenFloat, ...)
             self:add_attribute(function (tween)
                 tween[tween_name](tween, topic, value)
             end)
             if self.applications then
-                local applied_value = self:to_value(name, ApplyFloat, ...)
+                local applied_value = self:to_float(name, ApplyFloat, ...)
                 self:add_application(function ()
                     topic[name] = applied_value
                 end)
@@ -121,12 +164,12 @@ local function make_tween_functions(prefix, with_topic, specs)
         if with_topic then
             local name_with = name .. "_with"
             TweenBuilder[name_with] = function(self, topic, ...)
-                local value = self:to_value(name, R.TweenFloat, ...)
+                local value = self:to_float(name, R.TweenFloat, ...)
                 self:add_attribute(function (tween)
                     tween[tween_name](tween, topic, value)
                 end)
                 if self.applications then
-                    local applied_value = self:to_value(name, ApplyFloat, ...)
+                    local applied_value = self:to_float(name, ApplyFloat, ...)
                     self:add_application(function ()
                         topic[name] = applied_value
                     end)
@@ -172,27 +215,16 @@ make_tween_functions("al_", true, {
 })
 
 function TweenBuilder:field(key, ...)
-    local topic = self.topic
-    local value = self:to_value("field", R.TweenFloat, ...)
-    self:add_attribute(function (tween)
-        tween:field(topic, key, value)
-    end)
-    if self.applications then
-        local applied_value = self:to_value("field", ApplyFloat, ...)
-        self:add_application(function ()
-            topic[key] = applied_value
-        end)
-    end
-    return self
+    return self:field_with(key, self.topic, ...)
 end
 
 function TweenBuilder:field_with(key, topic, ...)
-    local value = self:to_value("field", R.TweenFloat, ...)
+    local value = self:to_float("field", R.TweenFloat, ...)
     self:add_attribute(function (tween)
         tween:field(topic, key, value)
     end)
     if self.applications then
-        local applied_value = self:to_value("field", ApplyFloat, ...)
+        local applied_value = self:to_float("field", ApplyFloat, ...)
         self:add_application(function ()
             topic[key] = applied_value
         end)
@@ -201,14 +233,40 @@ function TweenBuilder:field_with(key, topic, ...)
 end
 
 
-function TweenBuilder:scale(...)
+function TweenBuilder:tint(...)
+    return self:tint_with(self.topic, ...)
+end
+
+function TweenBuilder:tint_with(topic, ...)
     local topic = self.topic
-    local value = self:to_value("scale", R.TweenScale, ...)
+    local value = self:to_v4_from_color("tint", R.TweenV4, ...)
+    self:add_attribute(function (tween)
+        tween:sprite_tint(topic, value)
+    end)
+    if self.applications then
+        local applied_value = self:to_float("tint", ApplyColor, ...)
+        self:add_application(function ()
+            topic.tint = applied_value
+        end)
+    end
+    return self
+end
+
+TweenBuilder.color = TweenBuilder.tint
+TweenBuilder.c     = TweenBuilder.tint
+
+
+function TweenBuilder:scale(...)
+    return self:scale_with(self.topic, ...)
+end
+
+function TweenBuilder:scale_with(topic, ...)
+    local value = self:to_float("scale", R.TweenScale, ...)
     self:add_attribute(function (tween)
         tween:sprite_scale(topic, value)
     end)
     if self.applications then
-        local applied_value = self:to_value("scale", ApplyFloat, ...)
+        local applied_value = self:to_float("scale", ApplyFloat, ...)
         self:add_application(function ()
             topic.scales = applied_value
         end)

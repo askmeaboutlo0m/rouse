@@ -209,6 +209,97 @@ FUNCTION ... R.TweenScale.custom(any fn)
 END
 
 
+UTYPE R_V4
+UTYPE R_TweenV4 R.TweenV4
+
+METATABLE R_TweenV4
+
+@c
+
+static int protected_tween_v4_calc(lua_State *L)
+{
+    lua_call(L, 1, 1);
+    XL_checkutype(L, -1, "R_V4");
+    return 1;
+}
+
+static R_V4 tween_v4_calc(R_UserData user, R_V4 source)
+{
+    R_LUA_VALUE_DECLARE_UNPACK(user.data, lv, L);
+    lua_pushcfunction(L, protected_tween_v4_calc);
+    R_lua_getreg(L, lv->reg);
+    XL_pushnewutypeuv(L, &source, sizeof(source), "R_V4", 0);
+    if (R_lua_pcall(L, 2, 1)) {
+        R_LUA_ERROR_TO_WARNING(L);
+        return R_v4(0.0f, 0.0f, 0.0f, 0.0f);
+    }
+    else {
+        R_V4 result = *(R_V4 *)lua_touserdata(L, -1);
+        lua_pop(L, 1);
+        return result;
+    }
+}
+
+static void tween_v4_free(R_UserData user)
+{
+    R_lua_value_free(user.data);
+}
+
+static int new_tween_v4_fixed(lua_State *L)
+{
+    R_V4      value = *(R_V4 *)XL_checkutype(L, lua_upvalueindex(1), "R_V4");
+    R_TweenV4 ts    = R_tween_v4_fixed(value);
+    XL_pushnewutypeuv(L, &ts, sizeof(ts), "R_TweenV4", 0);
+    return 1;
+}
+
+static int new_tween_v4_between(lua_State *L)
+{
+    R_V4      a  = *(R_V4 *)XL_checkutype(L, lua_upvalueindex(1), "R_V4");
+    R_V4      b  = *(R_V4 *)XL_checkutype(L, lua_upvalueindex(2), "R_V4");
+    R_TweenV4 ts = R_tween_v4_between(a, b);
+    XL_pushnewutypeuv(L, &ts, sizeof(ts), "R_TweenV4", 0);
+    return 1;
+}
+
+static int new_tween_v4_custom(lua_State *L)
+{
+    R_LuaValue *lv = R_lua_value_new(L, lua_upvalueindex(1));
+    R_TweenV4   ts = R_tween_v4(tween_v4_calc, tween_v4_free,
+                                NULL, R_user_data(lv));
+    XL_pushnewutypeuv(L, &ts, sizeof(ts), "R_TweenV4", 0);
+    return 1;
+}
+
+static R_TweenV4 tween_v4_get(lua_State *L, int index)
+{
+    lua_pushvalue(L, index);
+    lua_call(L, 0, 1);
+    return *((R_TweenV4 *)XL_checkutype(L, -1, "R_TweenV4"));
+}
+
+@xl
+
+FUNCTION ... R.TweenV4.fixed(R_V4 value)
+    XL_pushnewutypeuv(L, &value, sizeof(value), "R_V4", 0);
+    lua_pushcclosure(L, new_tween_v4_fixed, 1);
+    return 1;
+END
+
+FUNCTION ... R.TweenV4.between(R_V4 a, R_V4 b)
+    XL_pushnewutypeuv(L, &a, sizeof(a), "R_V4", 0);
+    XL_pushnewutypeuv(L, &b, sizeof(b), "R_V4", 0);
+    lua_pushcclosure(L, new_tween_v4_between, 2);
+    return 1;
+END
+
+FUNCTION ... R.TweenV4.custom(any fn)
+    lua_pushvalue(L, fn);
+    lua_pushcclosure(L, new_tween_v4_custom, 1);
+    return 1;
+END
+
+
 PPTYPE R_Sprite
 PPTYPE R_AlSource
 PPTYPE R_LuaTween R.LuaTween 1
@@ -223,6 +314,12 @@ for my $name (qw(origin_x origin_y pos_x pos_y scale_x scale_y skew_x skew_y
     print "END\n\n";
 }
 @@END
+
+METHOD ... sprite_tint(R_Sprite *sprite, any value_fn)
+    R_tween_sprite_tint(self, sprite, tween_v4_get(L, value_fn));
+    lua_settop(L, 1);
+    return 1;
+END
 
 METHOD ... sprite_scale(R_Sprite *sprite, any value_fn)
     R_tween_sprite_scale(self, sprite, tween_scale_get(L, value_fn));

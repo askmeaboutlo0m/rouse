@@ -214,6 +214,97 @@ static int r_tweenscale_custom_xl(lua_State *L)
     return 1;
 }
 
+
+static int protected_tween_v4_calc(lua_State *L)
+{
+    lua_call(L, 1, 1);
+    XL_checkutype(L, -1, "R_V4");
+    return 1;
+}
+
+static R_V4 tween_v4_calc(R_UserData user, R_V4 source)
+{
+    R_LUA_VALUE_DECLARE_UNPACK(user.data, lv, L);
+    lua_pushcfunction(L, protected_tween_v4_calc);
+    R_lua_getreg(L, lv->reg);
+    XL_pushnewutypeuv(L, &source, sizeof(source), "R_V4", 0);
+    if (R_lua_pcall(L, 2, 1)) {
+        R_LUA_ERROR_TO_WARNING(L);
+        return R_v4(0.0f, 0.0f, 0.0f, 0.0f);
+    }
+    else {
+        R_V4 result = *(R_V4 *)lua_touserdata(L, -1);
+        lua_pop(L, 1);
+        return result;
+    }
+}
+
+static void tween_v4_free(R_UserData user)
+{
+    R_lua_value_free(user.data);
+}
+
+static int new_tween_v4_fixed(lua_State *L)
+{
+    R_V4      value = *(R_V4 *)XL_checkutype(L, lua_upvalueindex(1), "R_V4");
+    R_TweenV4 ts    = R_tween_v4_fixed(value);
+    XL_pushnewutypeuv(L, &ts, sizeof(ts), "R_TweenV4", 0);
+    return 1;
+}
+
+static int new_tween_v4_between(lua_State *L)
+{
+    R_V4      a  = *(R_V4 *)XL_checkutype(L, lua_upvalueindex(1), "R_V4");
+    R_V4      b  = *(R_V4 *)XL_checkutype(L, lua_upvalueindex(2), "R_V4");
+    R_TweenV4 ts = R_tween_v4_between(a, b);
+    XL_pushnewutypeuv(L, &ts, sizeof(ts), "R_TweenV4", 0);
+    return 1;
+}
+
+static int new_tween_v4_custom(lua_State *L)
+{
+    R_LuaValue *lv = R_lua_value_new(L, lua_upvalueindex(1));
+    R_TweenV4   ts = R_tween_v4(tween_v4_calc, tween_v4_free,
+                                NULL, R_user_data(lv));
+    XL_pushnewutypeuv(L, &ts, sizeof(ts), "R_TweenV4", 0);
+    return 1;
+}
+
+static R_TweenV4 tween_v4_get(lua_State *L, int index)
+{
+    lua_pushvalue(L, index);
+    lua_call(L, 0, 1);
+    return *((R_TweenV4 *)XL_checkutype(L, -1, "R_TweenV4"));
+}
+
+
+static int r_tweenv4_fixed_xl(lua_State *L)
+{
+    R_V4 value = *((R_V4 *)luaL_checkudata(L, 1, "R_V4"));
+    XL_pushnewutypeuv(L, &value, sizeof(value), "R_V4", 0);
+    lua_pushcclosure(L, new_tween_v4_fixed, 1);
+    return 1;
+}
+
+static int r_tweenv4_between_xl(lua_State *L)
+{
+    R_V4 a = *((R_V4 *)luaL_checkudata(L, 1, "R_V4"));
+    R_V4 b = *((R_V4 *)luaL_checkudata(L, 2, "R_V4"));
+    XL_pushnewutypeuv(L, &a, sizeof(a), "R_V4", 0);
+    XL_pushnewutypeuv(L, &b, sizeof(b), "R_V4", 0);
+    lua_pushcclosure(L, new_tween_v4_between, 2);
+    return 1;
+}
+
+static int r_tweenv4_custom_xl(lua_State *L)
+{
+    luaL_checkany(L, 1);
+    int fn = 1;
+    lua_pushvalue(L, fn);
+    lua_pushcclosure(L, new_tween_v4_custom, 1);
+    return 1;
+}
+
 static int r_luatween_method_sprite_origin_x_xl(lua_State *L)
 {
     R_LuaTween *self = R_CPPCAST(R_LuaTween *, XL_checkpptype(L, 1, "R_LuaTween"));
@@ -375,6 +466,17 @@ static int r_luatween_method_sprite_rel_y_xl(lua_State *L)
     luaL_checkany(L, 3);
     int value_fn = 3;
     R_tween_sprite_rel_y(self, sprite, tween_float_get(L, value_fn));
+    lua_settop(L, 1);
+    return 1;
+}
+
+static int r_luatween_method_sprite_tint_xl(lua_State *L)
+{
+    R_LuaTween *self = R_CPPCAST(R_LuaTween *, XL_checkpptype(L, 1, "R_LuaTween"));
+    R_Sprite *sprite = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 2, "R_Sprite"));
+    luaL_checkany(L, 3);
+    int value_fn = 3;
+    R_tween_sprite_tint(self, sprite, tween_v4_get(L, value_fn));
     lua_settop(L, 1);
     return 1;
 }
@@ -1081,6 +1183,13 @@ static luaL_Reg r_tweenscale_function_registry_xl[] = {
     {NULL, NULL},
 };
 
+static luaL_Reg r_tweenv4_function_registry_xl[] = {
+    {"between", r_tweenv4_between_xl},
+    {"custom", r_tweenv4_custom_xl},
+    {"fixed", r_tweenv4_fixed_xl},
+    {NULL, NULL},
+};
+
 static luaL_Reg r_luatween_method_registry_xl[] = {
     {"__index", r_luatween_index_xl},
     {"al_listener_gain", r_luatween_method_al_listener_gain_xl},
@@ -1117,6 +1226,7 @@ static luaL_Reg r_luatween_method_registry_xl[] = {
     {"sprite_scale_y", r_luatween_method_sprite_scale_y_xl},
     {"sprite_skew_x", r_luatween_method_sprite_skew_x_xl},
     {"sprite_skew_y", r_luatween_method_sprite_skew_y_xl},
+    {"sprite_tint", r_luatween_method_sprite_tint_xl},
     {NULL, NULL},
 };
 
@@ -1140,9 +1250,11 @@ int R_lua_seq_init(lua_State *L)
     XL_initmetatable(L, "R_Sequence", r_sequence_method_registry_xl);
     XL_initmetatable(L, "R_TweenFloat", NULL);
     XL_initmetatable(L, "R_TweenScale", NULL);
+    XL_initmetatable(L, "R_TweenV4", NULL);
     XL_initfunctions(L, r_sequence_function_registry_xl, "R", "Sequence", (const char *)NULL);
     XL_initfunctions(L, r_tweenfloat_function_registry_xl, "R", "TweenFloat", (const char *)NULL);
     XL_initfunctions(L, r_tweenscale_function_registry_xl, "R", "TweenScale", (const char *)NULL);
+    XL_initfunctions(L, r_tweenv4_function_registry_xl, "R", "TweenV4", (const char *)NULL);
     return 0;
 }
 

@@ -419,6 +419,22 @@ static int r_nvg_rgbax_xl(lua_State *L)
     return 1;
 }
 
+static int r_nvg_method_image_pattern_xl(lua_State *L)
+{
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
+    float ox = XL_checkfloat(L, 2);
+    float oy = XL_checkfloat(L, 3);
+    float ex = XL_checkfloat(L, 4);
+    float ey = XL_checkfloat(L, 5);
+    float angle = XL_checkfloat(L, 6);
+    R_BitmapImage *image = R_CPPCAST(R_BitmapImage *, XL_checkpptype(L, 7, "R_BitmapImage"));
+    float alpha = XL_checkfloat(L, 8);
+    NVGpaint RETVAL;
+    RETVAL = R_bitmap_image_pattern(image, self, ox, oy, ex, ey, angle, alpha);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(NVGpaint), "NVGpaint", 0);
+    return 1;
+}
+
 static int r_nvg_method_create_font_xl(lua_State *L)
 {
     R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
@@ -1120,6 +1136,7 @@ static luaL_Reg r_nvg_method_registry_xl[] = {
     {"fill_color", r_nvg_method_fill_color_xl},
     {"fill_paint", r_nvg_method_fill_paint_xl},
     {"global_alpha", r_nvg_method_global_alpha_xl},
+    {"image_pattern", r_nvg_method_image_pattern_xl},
     {"intersect_scissor", r_nvg_method_intersect_scissor_xl},
     {"line_cap", r_nvg_method_line_cap_xl},
     {"line_join", r_nvg_method_line_join_xl},

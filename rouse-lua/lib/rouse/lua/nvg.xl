@@ -33,6 +33,8 @@ static void check_matrix_index(lua_State *L, lua_Integer i, int arg)
 
 @xl
 
+PPTYPE R_BitmapImage
+
 UTYPE R_LuaNvgTransform R.Nvg.Transform
 
 INTINDEX float
@@ -193,6 +195,12 @@ FUNCTION NVGcolor R.Nvg.rgbax(uint32_t rgba)
                      (unsigned char)((rgba >> 16u) & 0xffu),
                      (unsigned char)((rgba >>  8u) & 0xffu),
                      (unsigned char)((rgba >>  0u) & 0xffu));
+END
+
+
+METHOD NVGpaint image_pattern(float ox, float oy, float ex, float ey,
+                              float angle, R_BitmapImage *image, float alpha)
+    RETVAL = R_bitmap_image_pattern(image, self, ox, oy, ex, ey, angle, alpha);
 END
 
 

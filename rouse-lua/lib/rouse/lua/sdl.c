@@ -108,6 +108,32 @@ static int sdl_gl_swap_interval_staticnewindex_xl(lua_State *L)
     return 0;
 }
 
+static int sdl_mouse_pos_staticindex_xl(lua_State *L)
+{
+    R_V2 RETVAL;
+    int x, y;
+    SDL_GetMouseState(&x, &y);
+    RETVAL = R_v2(R_int2float(x), R_int2float(y));
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
+    return 1;
+}
+
+static int sdl_mouse_x_staticindex_xl(lua_State *L)
+{
+    int RETVAL;
+    SDL_GetMouseState(&RETVAL, NULL);
+    XL_pushint(L, RETVAL);
+    return 1;
+}
+
+static int sdl_mouse_y_staticindex_xl(lua_State *L)
+{
+    int RETVAL;
+    SDL_GetMouseState(&RETVAL, NULL);
+    XL_pushint(L, RETVAL);
+    return 1;
+}
+
 static int sdl_windowevent_type_index_xl(lua_State *L)
 {
     SDL_WindowEvent *self = R_CPPCAST(SDL_WindowEvent *, XL_checkutype(L, 1, "SDL_WindowEvent"));
@@ -960,6 +986,9 @@ static luaL_Reg sdl_windowevent_method_registry_xl[] = {
 
 static luaL_Reg sdl_staticindex_registry_xl[] = {
     {"gl_swap_interval", sdl_gl_swap_interval_staticindex_xl},
+    {"mouse_pos", sdl_mouse_pos_staticindex_xl},
+    {"mouse_x", sdl_mouse_x_staticindex_xl},
+    {"mouse_y", sdl_mouse_y_staticindex_xl},
     {"ticks", sdl_ticks_staticindex_xl},
     {"window_flags", sdl_window_flags_staticindex_xl},
     {NULL, NULL},

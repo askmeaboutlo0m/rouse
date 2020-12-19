@@ -26,6 +26,8 @@
 
 @xl
 
+UTYPE R_V2
+
 
 STATICINDEX uint32_t SDL.ticks = SDL_GetTicks
 
@@ -79,6 +81,21 @@ STATICNEWINDEX int SDL.gl_swap_interval
         R_LUA_DIE(L, "Can't set GL swap interval to %d: %s",
                   VALUE, SDL_GetError());
     }
+END
+
+
+STATICINDEX R_V2 SDL.mouse_pos
+    int x, y;
+    SDL_GetMouseState(&x, &y);
+    RETVAL = R_v2(R_int2float(x), R_int2float(y));
+END
+
+STATICINDEX int SDL.mouse_x
+    SDL_GetMouseState(&RETVAL, NULL);
+END
+
+STATICINDEX int SDL.mouse_y
+    SDL_GetMouseState(&RETVAL, NULL);
 END
 
 

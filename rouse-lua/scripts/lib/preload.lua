@@ -87,9 +87,9 @@ function PreloadScene:parse_resources(lines_or_function)
 end
 
 function PreloadScene:get_packfiles(packfiles_or_function)
-    return packfiles_or_function
-       and maybe_call(packfiles_or_function)
-        or packfiles_or_function
+    if packfiles_or_function then
+       return maybe_call(packfiles_or_function)
+   end
 end
 
 function PreloadScene:get_total_packfile_bytes(packfiles)

@@ -37,6 +37,10 @@ PPTYPE R_BitmapImage
 
 UTYPE R_LuaNvgTransform R.Nvg.Transform
 
+CONSTRUCTOR identity()
+    nvgTransformIdentity(RETVAL.matrix);
+END
+
 INTINDEX float
     check_matrix_index(L, INDEX, 2);
     RETVAL = self->matrix[INDEX - 1];
@@ -45,6 +49,64 @@ END
 INTNEWINDEX float
     check_matrix_index(L, INDEX, 2);
     self->matrix[INDEX - 1] = VALUE;
+END
+
+METHOD ... translate(float tx, float ty)
+    float tf[6];
+    nvgTransformTranslate(tf, tx, ty);
+    nvgTransformPremultiply(self->matrix, tf);
+    lua_pushvalue(L, 1);
+    return 1;
+END
+
+METHOD ... scale(float sx, float sy)
+    float tf[6];
+    nvgTransformScale(tf, sx, sy);
+    nvgTransformPremultiply(self->matrix, tf);
+    lua_pushvalue(L, 1);
+    return 1;
+END
+
+METHOD ... rotate(float a)
+    float tf[6];
+    nvgTransformRotate(tf, a);
+    nvgTransformPremultiply(self->matrix, tf);
+    lua_pushvalue(L, 1);
+    return 1;
+END
+
+METHOD ... skew_x(float a)
+    float tf[6];
+    nvgTransformSkewX(tf, a);
+    nvgTransformPremultiply(self->matrix, tf);
+    lua_pushvalue(L, 1);
+    return 1;
+END
+
+METHOD ... skew_y(float a)
+    float tf[6];
+    nvgTransformSkewY(tf, a);
+    nvgTransformPremultiply(self->matrix, tf);
+    lua_pushvalue(L, 1);
+    return 1;
+END
+
+METHOD ... multiply(R_LuaNvgTransform *tf)
+    nvgTransformMultiply(self->matrix, tf->matrix);
+    lua_pushvalue(L, 1);
+    return 1;
+END
+
+METHOD ... premultiply(R_LuaNvgTransform *tf)
+    nvgTransformPremultiply(self->matrix, tf->matrix);
+    lua_pushvalue(L, 1);
+    return 1;
+END
+
+METHOD ... inverse(R_LuaNvgTransform *tf)
+    nvgTransformInverse(self->matrix, tf->matrix);
+    lua_pushvalue(L, 1);
+    return 1;
 END
 
 METHOD lua_Integer __len()

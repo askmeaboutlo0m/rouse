@@ -37,6 +37,14 @@ static void check_matrix_index(lua_State *L, lua_Integer i, int arg)
 }
 
 
+static int r_nvg_transform_identity_xl(lua_State *L)
+{
+    R_LuaNvgTransform RETVAL;
+    nvgTransformIdentity(RETVAL.matrix);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_LuaNvgTransform), "R_LuaNvgTransform", 0);
+    return 1;
+}
+
 static int r_luanvgtransform_intindex_xl(lua_State *L)
 {
     R_LuaNvgTransform *self = R_CPPCAST(R_LuaNvgTransform *, XL_checkutype(L, 1, "R_LuaNvgTransform"));
@@ -56,6 +64,90 @@ static int r_luanvgtransform_intnewindex_xl(lua_State *L)
     check_matrix_index(L, INDEX, 2);
     self->matrix[INDEX - 1] = VALUE;
     return 0;
+}
+
+static int r_luanvgtransform_method_translate_xl(lua_State *L)
+{
+    R_LuaNvgTransform *self = R_CPPCAST(R_LuaNvgTransform *, XL_checkutype(L, 1, "R_LuaNvgTransform"));
+    float tx = XL_checkfloat(L, 2);
+    float ty = XL_checkfloat(L, 3);
+    float tf[6];
+    nvgTransformTranslate(tf, tx, ty);
+    nvgTransformPremultiply(self->matrix, tf);
+    lua_pushvalue(L, 1);
+    return 1;
+}
+
+static int r_luanvgtransform_method_scale_xl(lua_State *L)
+{
+    R_LuaNvgTransform *self = R_CPPCAST(R_LuaNvgTransform *, XL_checkutype(L, 1, "R_LuaNvgTransform"));
+    float sx = XL_checkfloat(L, 2);
+    float sy = XL_checkfloat(L, 3);
+    float tf[6];
+    nvgTransformScale(tf, sx, sy);
+    nvgTransformPremultiply(self->matrix, tf);
+    lua_pushvalue(L, 1);
+    return 1;
+}
+
+static int r_luanvgtransform_method_rotate_xl(lua_State *L)
+{
+    R_LuaNvgTransform *self = R_CPPCAST(R_LuaNvgTransform *, XL_checkutype(L, 1, "R_LuaNvgTransform"));
+    float a = XL_checkfloat(L, 2);
+    float tf[6];
+    nvgTransformRotate(tf, a);
+    nvgTransformPremultiply(self->matrix, tf);
+    lua_pushvalue(L, 1);
+    return 1;
+}
+
+static int r_luanvgtransform_method_skew_x_xl(lua_State *L)
+{
+    R_LuaNvgTransform *self = R_CPPCAST(R_LuaNvgTransform *, XL_checkutype(L, 1, "R_LuaNvgTransform"));
+    float a = XL_checkfloat(L, 2);
+    float tf[6];
+    nvgTransformSkewX(tf, a);
+    nvgTransformPremultiply(self->matrix, tf);
+    lua_pushvalue(L, 1);
+    return 1;
+}
+
+static int r_luanvgtransform_method_skew_y_xl(lua_State *L)
+{
+    R_LuaNvgTransform *self = R_CPPCAST(R_LuaNvgTransform *, XL_checkutype(L, 1, "R_LuaNvgTransform"));
+    float a = XL_checkfloat(L, 2);
+    float tf[6];
+    nvgTransformSkewY(tf, a);
+    nvgTransformPremultiply(self->matrix, tf);
+    lua_pushvalue(L, 1);
+    return 1;
+}
+
+static int r_luanvgtransform_method_multiply_xl(lua_State *L)
+{
+    R_LuaNvgTransform *self = R_CPPCAST(R_LuaNvgTransform *, XL_checkutype(L, 1, "R_LuaNvgTransform"));
+    R_LuaNvgTransform *tf = R_CPPCAST(R_LuaNvgTransform *, XL_checkutype(L, 2, "R_LuaNvgTransform"));
+    nvgTransformMultiply(self->matrix, tf->matrix);
+    lua_pushvalue(L, 1);
+    return 1;
+}
+
+static int r_luanvgtransform_method_premultiply_xl(lua_State *L)
+{
+    R_LuaNvgTransform *self = R_CPPCAST(R_LuaNvgTransform *, XL_checkutype(L, 1, "R_LuaNvgTransform"));
+    R_LuaNvgTransform *tf = R_CPPCAST(R_LuaNvgTransform *, XL_checkutype(L, 2, "R_LuaNvgTransform"));
+    nvgTransformPremultiply(self->matrix, tf->matrix);
+    lua_pushvalue(L, 1);
+    return 1;
+}
+
+static int r_luanvgtransform_method_inverse_xl(lua_State *L)
+{
+    R_LuaNvgTransform *self = R_CPPCAST(R_LuaNvgTransform *, XL_checkutype(L, 1, "R_LuaNvgTransform"));
+    R_LuaNvgTransform *tf = R_CPPCAST(R_LuaNvgTransform *, XL_checkutype(L, 2, "R_LuaNvgTransform"));
+    nvgTransformInverse(self->matrix, tf->matrix);
+    lua_pushvalue(L, 1);
+    return 1;
 }
 
 static int r_luanvgtransform_method_len_xl(lua_State *L)
@@ -1084,6 +1176,11 @@ static luaL_Reg r_nvg_function_registry_xl[] = {
     {NULL, NULL},
 };
 
+static luaL_Reg r_nvg_transform_function_registry_xl[] = {
+    {"identity", r_nvg_transform_identity_xl},
+    {NULL, NULL},
+};
+
 static luaL_Reg nvgcolor_index_registry_xl[] = {
     {"a", nvgcolor_a_index_xl},
     {"b", nvgcolor_b_index_xl},
@@ -1114,6 +1211,14 @@ static luaL_Reg r_luanvgtransform_method_registry_xl[] = {
     {"__len", r_luanvgtransform_method_len_xl},
     {"__newindex", r_luanvgtransform_newindex_xl},
     {"__tostring", r_luanvgtransform_method_tostring_xl},
+    {"inverse", r_luanvgtransform_method_inverse_xl},
+    {"multiply", r_luanvgtransform_method_multiply_xl},
+    {"premultiply", r_luanvgtransform_method_premultiply_xl},
+    {"rotate", r_luanvgtransform_method_rotate_xl},
+    {"scale", r_luanvgtransform_method_scale_xl},
+    {"skew_x", r_luanvgtransform_method_skew_x_xl},
+    {"skew_y", r_luanvgtransform_method_skew_y_xl},
+    {"translate", r_luanvgtransform_method_translate_xl},
     {NULL, NULL},
 };
 
@@ -1251,6 +1356,7 @@ int R_lua_nvg_init(lua_State *L)
     XL_initindextable(L, &nvgcolor_index_dummy_xl, nvgcolor_index_registry_xl);
     XL_initnewindextable(L, &nvgcolor_newindex_dummy_xl, nvgcolor_newindex_registry_xl);
     XL_initfunctions(L, r_nvg_function_registry_xl, "R", "Nvg", (const char *)NULL);
+    XL_initfunctions(L, r_nvg_transform_function_registry_xl, "R", "Nvg", "Transform", (const char *)NULL);
     XL_initenum(L, r_nvg_winding_enum_xl, "R", "Nvg", "Winding", (const char *)NULL);
     XL_initenum(L, r_nvg_solidity_enum_xl, "R", "Nvg", "Solidity", (const char *)NULL);
     XL_initenum(L, r_nvg_linecap_enum_xl, "R", "Nvg", "LineCap", (const char *)NULL);

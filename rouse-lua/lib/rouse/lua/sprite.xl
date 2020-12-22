@@ -230,6 +230,28 @@ END
 SETFROMTABLE set
 
 
+INDEX any matrix
+    R_LuaNvgTransform tf;
+    if (R_sprite_matrix(self, tf.matrix)) {
+        XL_pushnewutypeuv(L, &tf, sizeof(tf), "R_LuaNvgTransform", 0);
+    }
+    else {
+        lua_pushnil(L);
+    }
+    return 1;
+END
+
+NEWINDEX any matrix
+    if (lua_isnil(L, VALUE)) {
+        R_sprite_matrix_set(self, NULL);
+    }
+    else {
+        R_LuaNvgTransform *tf = XL_checkutype(L, VALUE, "R_LuaNvgTransform");
+        R_sprite_matrix_set(self, tf->matrix);
+    }
+END
+
+
 INDEX <NEW>R_AffineTransform *transform = R_sprite_transform
 
 INDEX R_V2     origin   = R_sprite_origin

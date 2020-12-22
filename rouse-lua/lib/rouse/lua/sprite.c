@@ -614,6 +614,37 @@ static int r_sprite_method_set_xl(lua_State *L)
     return XL_setfromtable(L, "R_Sprite", 1, 2);
 }
 
+static int r_sprite_matrix_index_xl(lua_State *L)
+{
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
+    int RETVAL;
+    R_LuaNvgTransform tf;
+    if (R_sprite_matrix(self, tf.matrix)) {
+        XL_pushnewutypeuv(L, &tf, sizeof(tf), "R_LuaNvgTransform", 0);
+    }
+    else {
+        lua_pushnil(L);
+    }
+    return 1;
+    lua_pushvalue(L, RETVAL);
+    return 1;
+}
+
+static int r_sprite_matrix_newindex_xl(lua_State *L)
+{
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
+    luaL_checkany(L, 2);
+    int VALUE = 2;
+    if (lua_isnil(L, VALUE)) {
+        R_sprite_matrix_set(self, NULL);
+    }
+    else {
+        R_LuaNvgTransform *tf = XL_checkutype(L, VALUE, "R_LuaNvgTransform");
+        R_sprite_matrix_set(self, tf->matrix);
+    }
+    return 0;
+}
+
 static int r_sprite_transform_index_xl(lua_State *L)
 {
     R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
@@ -1310,6 +1341,7 @@ static luaL_Reg r_sprite_index_registry_xl[] = {
     {"color", r_sprite_color_index_xl},
     {"content", r_sprite_content_index_xl},
     {"index", r_sprite_index_index_xl},
+    {"matrix", r_sprite_matrix_index_xl},
     {"name", r_sprite_name_index_xl},
     {"origin", r_sprite_origin_index_xl},
     {"origin_x", r_sprite_origin_x_index_xl},
@@ -1403,6 +1435,7 @@ static luaL_Reg r_sprite_newindex_registry_xl[] = {
     {"base_y", r_sprite_base_y_newindex_xl},
     {"color", r_sprite_color_newindex_xl},
     {"content", r_sprite_content_newindex_xl},
+    {"matrix", r_sprite_matrix_newindex_xl},
     {"name", r_sprite_name_newindex_xl},
     {"origin", r_sprite_origin_newindex_xl},
     {"origin_x", r_sprite_origin_x_newindex_xl},

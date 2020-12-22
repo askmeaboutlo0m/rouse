@@ -152,6 +152,10 @@ void R_sprite_draw_vector_image(R_Sprite *sprite, R_VectorImage *vi);
 void R_sprite_draw_text_field(R_Sprite *sprite, R_TextField *field);
 
 
+bool R_sprite_matrix    (R_Sprite *sprite, float *out_matrix);
+void R_sprite_matrix_set(R_Sprite *sprite, const float *matrix);
+
+
 R_AffineTransform R_sprite_transform(R_Sprite *sprite);
 
 R_V2     R_sprite_origin  (R_Sprite *sprite);

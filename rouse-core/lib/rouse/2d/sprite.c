@@ -75,6 +75,7 @@ struct R_Sprite {
     R_Sprite          *children;
     R_Sprite          *next;
     R_Sprite          *tracking;
+    bool              use_transform;
     R_AffineTransform transform;
     float             alpha;
     NVGcolor          tint;
@@ -137,9 +138,9 @@ R_Sprite *R_sprite_new(const char *name)
 #   define IDENTITY_AFFINE_MATRIX {1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f}
     R_Sprite *sprite = R_NEW_INIT_STRUCT(sprite, R_Sprite,
             R_MAGIC_INIT(R_Sprite) 1, R_strdup(name), NULL, NULL, NULL, NULL,
-            R_affine_transform(), 1.0f, {{{0.0f, 0.0f, 0.0f, 0.0f}}}, 0, 0, 0, 0,
-            IDENTITY_AFFINE_MATRIX, IDENTITY_AFFINE_MATRIX, NULL, R_user_null(),
-            {NULL, NULL, R_user_null()});
+            true, R_affine_transform(), 1.0f, {{{0.0f, 0.0f, 0.0f, 0.0f}}}, 0,
+            0, 0, 0, IDENTITY_AFFINE_MATRIX, IDENTITY_AFFINE_MATRIX, NULL,
+            R_user_null(), {NULL, NULL, R_user_null()});
     check_sprite(sprite);
     return sprite;
 }
@@ -291,6 +292,60 @@ void R_sprite_draw_text_field(R_Sprite *sprite, R_TextField *field)
 }
 
 
+static void copy_matrix(float dst[R_STATIC(6)], const float src[R_STATIC(6)])
+{
+    dst[0] = src[0];
+    dst[1] = src[1];
+    dst[2] = src[2];
+    dst[3] = src[3];
+    dst[4] = src[4];
+    dst[5] = src[5];
+}
+
+static void apply_transform(float matrix[static 6], R_AffineTransform *tf)
+{
+    float angle  = tf->angle;
+    R_V2  skew   = tf->skew;
+    R_V2  scale  = tf->scale;
+    R_V2  origin = tf->origin;
+    R_V2  pos    = tf->pos;
+    matrix[0] =  cosf(angle + skew.y) * scale.x;
+    matrix[1] =  sinf(angle + skew.y) * scale.x;
+    matrix[2] = -sinf(angle - skew.x) * scale.y;
+    matrix[3] =  cosf(angle - skew.x) * scale.y;
+    matrix[4] = pos.x + origin.x - origin.x * matrix[0] - origin.y * matrix[2];
+    matrix[5] = pos.y + origin.y - origin.x * matrix[1] - origin.y * matrix[3];
+}
+
+bool R_sprite_matrix(R_Sprite *sprite, float *out_matrix)
+{
+    check_sprite(sprite);
+    bool use_transform = sprite->use_transform;
+    if (use_transform && sprite->local_id != sprite->current_id) {
+        nvgTransformIdentity(out_matrix);
+        apply_transform(out_matrix, &sprite->transform);
+    }
+    else {
+        copy_matrix(out_matrix, sprite->local);
+    }
+    return use_transform;
+}
+
+void R_sprite_matrix_set(R_Sprite *sprite, const float *matrix)
+{
+    check_sprite(sprite);
+    if (matrix) {
+        sprite->use_transform = false;
+        copy_matrix(sprite->local, matrix);
+        ++sprite->current_id;
+    }
+    else if (!sprite->use_transform) {
+        sprite->use_transform = true;
+        ++sprite->current_id;
+    }
+}
+
+
 R_AffineTransform R_sprite_transform(R_Sprite *sprite)
 {
     check_sprite_transform(sprite);
@@ -376,21 +431,6 @@ void R_sprite_tint_set(R_Sprite *sprite, NVGcolor value)
     sprite->tint = value;
 }
 
-static void apply_transform(float matrix[static 6], R_AffineTransform *tf)
-{
-    float angle  = tf->angle;
-    R_V2  skew   = tf->skew;
-    R_V2  scale  = tf->scale;
-    R_V2  origin = tf->origin;
-    R_V2  pos    = tf->pos;
-    matrix[0] =  cosf(angle + skew.y) * scale.x;
-    matrix[1] =  sinf(angle + skew.y) * scale.x;
-    matrix[2] = -sinf(angle - skew.x) * scale.y;
-    matrix[3] =  cosf(angle - skew.x) * scale.y;
-    matrix[4] = pos.x + origin.x - origin.x * matrix[0] - origin.y * matrix[2];
-    matrix[5] = pos.y + origin.y - origin.x * matrix[1] - origin.y * matrix[3];
-}
-
 /* Watch out: this does NOT set the parent_id to a new value! You either need
  * to call `calc_world` right after or set the parent_id to -1 yourself. */
 static void calc_local(R_Sprite *sprite)
@@ -433,7 +473,9 @@ static float *update_world(R_Sprite *sprite, bool update_parent)
             }
             /* Recalculate matrices only as needed. */
             if (sprite->local_id != sprite->current_id) {
-                calc_local(sprite);
+                if (sprite->use_transform) {
+                    calc_local(sprite);
+                }
                 calc_world(sprite, parent);
             }
             else if (sprite->parent_id != parent->world_id) {
@@ -441,7 +483,9 @@ static float *update_world(R_Sprite *sprite, bool update_parent)
             }
         }
         else if (sprite->local_id != sprite->current_id) {
-            calc_local(sprite);
+            if (sprite->use_transform) {
+                calc_local(sprite);
+            }
             memcpy(sprite->world, sprite->local, sizeof(float[6]));
         }
     }

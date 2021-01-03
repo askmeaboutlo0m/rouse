@@ -234,7 +234,7 @@ function PreloadScene:on_tick(rendered)
 end
 
 
-local function calculate_ratio(bytes, total_bytes)
+function PreloadScene:calculate_ratio(bytes, total_bytes)
     return total_bytes and total_bytes > 0
        and math.min(bytes / math.max(total_bytes, 1), 1.0)
         or 1.0
@@ -248,8 +248,8 @@ function PreloadScene:on_render()
     local vp  = R.Viewport.window()
     nvg:begin_frame(vp.w, vp.h, 1.0)
 
-    local fetch_ratio = calculate_ratio(self.fetch_bytes + self.temp_bytes,
-                                        self.fetch_total_bytes)
+    local fetch_ratio = self:calculate_ratio(self.fetch_bytes + self.temp_bytes,
+                                             self.fetch_total_bytes)
     local outer_w = vp.w * self.outer_ratio_x
     local fetch_w = outer_w * fetch_ratio
     local outer_h = vp.h * self.outer_ratio_y
@@ -261,7 +261,7 @@ function PreloadScene:on_render()
     nvg:rounded_rect(outer_x, outer_y, fetch_w, outer_h, self.roundness)
     nvg:fill()
 
-    local ratio   = calculate_ratio(self.bytes, self.total_bytes)
+    local ratio   = self:calculate_ratio(self.bytes, self.total_bytes)
     local inner_h = outer_h * self.inner_ratio_y
     local delta   = outer_h - inner_h
     local inner_w = (outer_w - delta) * ratio

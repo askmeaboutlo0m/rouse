@@ -1347,6 +1347,16 @@ static XL_EnumEntry r_nvg_compositeoperation_enum_xl[] = {
     {NULL, (lua_Integer) 0},
 };
 
+static XL_EnumEntry r_nvg_imageflags_enum_xl[] = {
+    {"GENERATE_MIPMAPS", (lua_Integer) NVG_IMAGE_GENERATE_MIPMAPS},
+    {"REPEATX", (lua_Integer) NVG_IMAGE_REPEATX},
+    {"REPEATY", (lua_Integer) NVG_IMAGE_REPEATY},
+    {"FLIPY", (lua_Integer) NVG_IMAGE_FLIPY},
+    {"PREMULTIPLIED", (lua_Integer) NVG_IMAGE_PREMULTIPLIED},
+    {"NEAREST", (lua_Integer) NVG_IMAGE_NEAREST},
+    {NULL, (lua_Integer) 0},
+};
+
 int R_lua_nvg_init(lua_State *L)
 {
     XL_initmetatable(L, "NVGcolor", nvgcolor_method_registry_xl);
@@ -1363,6 +1373,7 @@ int R_lua_nvg_init(lua_State *L)
     XL_initenum(L, r_nvg_align_enum_xl, "R", "Nvg", "Align", (const char *)NULL);
     XL_initenum(L, r_nvg_blendfactor_enum_xl, "R", "Nvg", "BlendFactor", (const char *)NULL);
     XL_initenum(L, r_nvg_compositeoperation_enum_xl, "R", "Nvg", "CompositeOperation", (const char *)NULL);
+    XL_initenum(L, r_nvg_imageflags_enum_xl, "R", "Nvg", "ImageFlags", (const char *)NULL);
     return 0;
 }
 

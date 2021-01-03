@@ -22,14 +22,15 @@ local PreloadScene = class()
 
 
 function PreloadScene:init(args)
-    self.nvg         = args.nvg or R.Nvg.new(0)
-    self.ms          = args.ms or 10
-    self.on_done     = args.on_done or error("No on_done callback given")
-    self.loaded      = {font = {}, image = {}, json = {}, sound = {}}
-    self.current     = 1
-    self.bytes       = 0
-    self.fetch_bytes = 0
-    self.temp_bytes  = 0
+    self.nvg                = args.nvg or R.Nvg.new(0)
+    self.ms                 = args.ms or 10
+    self.on_done            = args.on_done or error("No on_done callback given")
+    self.loaded             = {font = {}, image = {}, json = {}, sound = {}}
+    self.current            = 1
+    self.bytes              = 0
+    self.fetch_bytes        = 0
+    self.temp_bytes         = 0
+    self.bitmap_image_flags = args.bitmap_image_flags
 
     if args.packfile and not args.packfiles then
         R.warn("The 'packfile' argument is deprecated, use 'packfiles' instead")
@@ -136,6 +137,20 @@ function PreloadScene:fetch_next_resource()
 end
 
 
+function PreloadScene:get_bitmap_image_flags(path)
+    local flags_or_function = self.bitmap_image_flags
+    if flags_or_function then
+        if is_function(flags_or_function) then
+            return flags_or_function(path)
+        else
+            return flags_or_function
+        end
+    else
+        return 0
+    end
+end
+
+
 PreloadScene.load_type_lua = false
 
 function PreloadScene:load_type_json(key, path)
@@ -151,7 +166,8 @@ function PreloadScene:load_type_ogg(key, path)
 end
 
 function PreloadScene:load_type_png(key, path)
-    return "image", R.BitmapImage.from_file(self.nvg, path, 0)
+    return "image", R.BitmapImage.from_file(self.nvg, path,
+                                            self:get_bitmap_image_flags(path))
 end
 
 function PreloadScene:load_type_rvg(key, path)

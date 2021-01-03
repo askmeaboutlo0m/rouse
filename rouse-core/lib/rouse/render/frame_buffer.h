@@ -1,7 +1,7 @@
 /*
  * render/frame_buffer.h - OpenGL frame buffer handleage.
  *
- * Copyright (c) 2019 askmeaboutloom
+ * Copyright (c) 2019, 2021 askmeaboutloom
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,7 @@ typedef enum R_FrameBufferAttachmentType {
 
 typedef struct R_FrameBufferOptions {
     R_MAGIC_FIELD
-    int                         width, height, samples;
+    int                         width, height, samples, min_filter, mag_filter;
     R_FrameBufferAttachmentType color_type, depth_type, stencil_type;
 } R_FrameBufferOptions;
 

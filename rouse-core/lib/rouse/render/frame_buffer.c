@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 askmeaboutloom
+ * Copyright (c) 2019, 2021 askmeaboutloom
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,21 +51,23 @@ static void gen_buffer(unsigned int *buf, unsigned int component,
 }
 
 static void gen_texture(unsigned int *tex, int internal_format,
-                        unsigned int format, int width, int height)
+                        unsigned int format, int width, int height,
+                        int min_filter, int mag_filter)
 {
     R_GL(glGenTextures, 1, tex);
     R_GL(glBindTexture, GL_TEXTURE_2D, *tex);
     R_GL(glTexImage2D, GL_TEXTURE_2D, 0, internal_format, width, height,
                        0, format, GL_UNSIGNED_BYTE, NULL);
-    R_GL(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    R_GL(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    R_GL(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag_filter);
+    R_GL(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min_filter);
     R_GL(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     R_GL(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     R_GL(glBindTexture, GL_TEXTURE_2D, 0);
 }
 
 static void gen_color_buffer(R_FrameBuffer *fb,
-                             R_FrameBufferAttachmentType type)
+                             R_FrameBufferAttachmentType type,
+                             int min_filter, int mag_filter)
 {
     switch (type) {
         case R_FRAME_BUFFER_ATTACHMENT_NONE:
@@ -76,7 +78,7 @@ static void gen_color_buffer(R_FrameBuffer *fb,
             break;
         case R_FRAME_BUFFER_ATTACHMENT_TEXTURE:
             gen_texture(&fb->color, GL_RGBA, GL_RGBA, fb->real_width,
-                        fb->real_height);
+                        fb->real_height, min_filter, mag_filter);
             break;
         default:
             R_die("Unknown frame buffer color type: %d", type);
@@ -84,7 +86,8 @@ static void gen_color_buffer(R_FrameBuffer *fb,
 }
 
 static void gen_depth_buffer(R_FrameBuffer *fb,
-                             R_FrameBufferAttachmentType type)
+                             R_FrameBufferAttachmentType type,
+                             int min_filter, int mag_filter)
 {
     switch (type) {
         case R_FRAME_BUFFER_ATTACHMENT_NONE:
@@ -95,7 +98,7 @@ static void gen_depth_buffer(R_FrameBuffer *fb,
             break;
         case R_FRAME_BUFFER_ATTACHMENT_TEXTURE:
             gen_texture(&fb->depth, GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT,
-                        fb->real_width, fb->real_height);
+                        fb->real_width, fb->real_height, min_filter, mag_filter);
             break;
         default:
             R_die("Unknown frame buffer depth type: %d", type);
@@ -204,6 +207,8 @@ R_FrameBufferOptions R_frame_buffer_options(void)
         .width        = 0,
         .height       = 0,
         .samples      = 1,
+        .min_filter   = GL_LINEAR,
+        .mag_filter   = GL_LINEAR,
         .color_type   = R_FRAME_BUFFER_ATTACHMENT_NONE,
         .depth_type   = R_FRAME_BUFFER_ATTACHMENT_NONE,
         .stencil_type = R_FRAME_BUFFER_ATTACHMENT_NONE,
@@ -248,8 +253,10 @@ R_FrameBuffer *R_frame_buffer_new(const R_FrameBufferOptions *options)
             options->depth_type, options->stencil_type, NULL);
     R_MAGIC_CHECK(R_FrameBuffer, fb);
 
-    gen_color_buffer(  fb, options->color_type);
-    gen_depth_buffer(  fb, options->depth_type);
+    int min_filter = options->min_filter;
+    int mag_filter = options->mag_filter;
+    gen_color_buffer(  fb, options->color_type, min_filter, mag_filter);
+    gen_depth_buffer(  fb, options->depth_type, min_filter, mag_filter);
     gen_stencil_buffer(fb, options->stencil_type);
 
     gen_frame_buffer(fb);

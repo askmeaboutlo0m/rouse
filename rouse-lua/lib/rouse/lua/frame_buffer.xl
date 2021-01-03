@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 askmeaboutloom
+ * Copyright (c) 2019, 2021 askmeaboutloom
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,13 +26,52 @@
 
 @xl
 
+UTYPE R_FrameBufferOptions
+
+NEWINDEXFIELD int width
+NEWINDEXFIELD int height
+NEWINDEXFIELD int samples
+
+NEWINDEX const char *filter
+    int filter;
+    if (R_str_equal(VALUE, "nearest")) {
+        filter = GL_NEAREST;
+    } else if (R_str_equal(VALUE, "linear")) {
+        filter = GL_LINEAR;
+    } else {
+        R_LUA_DIE(L, "Unknown frame buffer filter '%s'", VALUE);
+    }
+    self->min_filter = self->mag_filter = filter;
+END
+
+SETFROMTABLE set
+
+
 PPTYPE R_FrameBuffer R.FrameBuffer
 
 CONSTRUCTOR new()
     return luaL_error(L, "R.FrameBuffer.new not yet implemented");
 END
 
-CONSTRUCTOR new_2d(int width, int height) = R_frame_buffer_2d_new
+CONSTRUCTOR new_2d()
+    int argc = lua_gettop(L);
+    if (argc == 1) {
+        R_FrameBufferOptions *options = XL_pushnewutypeuv(
+                L, (R_FrameBufferOptions[1]){R_frame_buffer_2d_options(0, 0)},
+                sizeof(R_FrameBufferOptions), "R_FrameBufferOptions", 0);
+        lua_getfield(L, -1, "set");
+        lua_pushvalue(L, -2);
+        lua_pushvalue(L, 1);
+        lua_call(L, 2, 0);
+        RETVAL = R_frame_buffer_new(options);
+    } else if (argc == 2) {
+        int width  = XL_checkint(L, 1);
+        int height = XL_checkint(L, 2);
+        RETVAL     = R_frame_buffer_2d_new(width, height);
+    } else {
+        R_LUA_DIE(L, "Wrong number of arguments to R.FrameBuffer.new_2d");
+    }
+END
 
 DESTRUCTOR = R_frame_buffer_free
 

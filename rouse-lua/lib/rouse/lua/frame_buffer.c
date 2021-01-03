@@ -4,7 +4,7 @@
 /* Modify the matching .xl file and rebuild.     */
 /*************************************************/
 /*
- * Copyright (c) 2019 askmeaboutloom
+ * Copyright (c) 2019, 2021 askmeaboutloom
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,6 +30,51 @@
 #include "util.h"
 
 
+static int r_framebufferoptions_width_newindex_xl(lua_State *L)
+{
+    R_FrameBufferOptions *self = R_CPPCAST(R_FrameBufferOptions *, XL_checkutype(L, 1, "R_FrameBufferOptions"));
+    int VALUE = XL_checkint(L, 2);
+    self->width = VALUE;
+    return 0;
+}
+
+static int r_framebufferoptions_height_newindex_xl(lua_State *L)
+{
+    R_FrameBufferOptions *self = R_CPPCAST(R_FrameBufferOptions *, XL_checkutype(L, 1, "R_FrameBufferOptions"));
+    int VALUE = XL_checkint(L, 2);
+    self->height = VALUE;
+    return 0;
+}
+
+static int r_framebufferoptions_samples_newindex_xl(lua_State *L)
+{
+    R_FrameBufferOptions *self = R_CPPCAST(R_FrameBufferOptions *, XL_checkutype(L, 1, "R_FrameBufferOptions"));
+    int VALUE = XL_checkint(L, 2);
+    self->samples = VALUE;
+    return 0;
+}
+
+static int r_framebufferoptions_filter_newindex_xl(lua_State *L)
+{
+    R_FrameBufferOptions *self = R_CPPCAST(R_FrameBufferOptions *, XL_checkutype(L, 1, "R_FrameBufferOptions"));
+    const char *VALUE = luaL_checkstring(L, 2);
+    int filter;
+    if (R_str_equal(VALUE, "nearest")) {
+        filter = GL_NEAREST;
+    } else if (R_str_equal(VALUE, "linear")) {
+        filter = GL_LINEAR;
+    } else {
+        R_LUA_DIE(L, "Unknown frame buffer filter '%s'", VALUE);
+    }
+    self->min_filter = self->mag_filter = filter;
+    return 0;
+}
+
+static int r_framebufferoptions_method_set_xl(lua_State *L)
+{
+    return XL_setfromtable(L, "R_FrameBufferOptions", 1, 2);
+}
+
 static int r_framebuffer_new_xl(lua_State *L)
 {
     R_FrameBuffer *RETVAL;
@@ -40,10 +85,24 @@ static int r_framebuffer_new_xl(lua_State *L)
 
 static int r_framebuffer_new_2d_xl(lua_State *L)
 {
-    int width = XL_checkint(L, 1);
-    int height = XL_checkint(L, 2);
     R_FrameBuffer *RETVAL;
-    RETVAL = R_frame_buffer_2d_new(width, height);
+    int argc = lua_gettop(L);
+    if (argc == 1) {
+        R_FrameBufferOptions *options = XL_pushnewutypeuv(
+                L, (R_FrameBufferOptions[1]){R_frame_buffer_2d_options(0, 0)},
+                sizeof(R_FrameBufferOptions), "R_FrameBufferOptions", 0);
+        lua_getfield(L, -1, "set");
+        lua_pushvalue(L, -2);
+        lua_pushvalue(L, 1);
+        lua_call(L, 2, 0);
+        RETVAL = R_frame_buffer_new(options);
+    } else if (argc == 2) {
+        int width  = XL_checkint(L, 1);
+        int height = XL_checkint(L, 2);
+        RETVAL     = R_frame_buffer_2d_new(width, height);
+    } else {
+        R_LUA_DIE(L, "Wrong number of arguments to R.FrameBuffer.new_2d");
+    }
     XL_pushnewpptypeuv(L, RETVAL, "R_FrameBuffer", 0);
     return 1;
 }
@@ -180,6 +239,17 @@ static int r_framebuffer_index_xl(lua_State *L)
     return XL_index(L, "R_FrameBuffer", &r_framebuffer_index_dummy_xl, 1, 2);
 }
 
+static int r_framebufferoptions_index_xl(lua_State *L)
+{
+    return XL_index_fallback(L, "R_FrameBufferOptions", 1, 2);
+}
+
+static int r_framebufferoptions_newindex_dummy_xl;
+static int r_framebufferoptions_newindex_xl(lua_State *L)
+{
+    return XL_newindex(L, "R_FrameBufferOptions", &r_framebufferoptions_newindex_dummy_xl, 1, 2, 3);
+}
+
 static luaL_Reg r_framebuffer_function_registry_xl[] = {
     {"new", r_framebuffer_new_xl},
     {"new_2d", r_framebuffer_new_2d_xl},
@@ -208,10 +278,27 @@ static luaL_Reg r_framebuffer_method_registry_xl[] = {
     {NULL, NULL},
 };
 
+static luaL_Reg r_framebufferoptions_method_registry_xl[] = {
+    {"__index", r_framebufferoptions_index_xl},
+    {"__newindex", r_framebufferoptions_newindex_xl},
+    {"set", r_framebufferoptions_method_set_xl},
+    {NULL, NULL},
+};
+
+static luaL_Reg r_framebufferoptions_newindex_registry_xl[] = {
+    {"filter", r_framebufferoptions_filter_newindex_xl},
+    {"height", r_framebufferoptions_height_newindex_xl},
+    {"samples", r_framebufferoptions_samples_newindex_xl},
+    {"width", r_framebufferoptions_width_newindex_xl},
+    {NULL, NULL},
+};
+
 int R_lua_frame_buffer_init(lua_State *L)
 {
     XL_initmetatable(L, "R_FrameBuffer", r_framebuffer_method_registry_xl);
+    XL_initmetatable(L, "R_FrameBufferOptions", r_framebufferoptions_method_registry_xl);
     XL_initindextable(L, &r_framebuffer_index_dummy_xl, r_framebuffer_index_registry_xl);
+    XL_initnewindextable(L, &r_framebufferoptions_newindex_dummy_xl, r_framebufferoptions_newindex_registry_xl);
     XL_initfunctions(L, r_framebuffer_function_registry_xl, "R", "FrameBuffer", (const char *)NULL);
     return 0;
 }

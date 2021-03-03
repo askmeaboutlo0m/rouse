@@ -99,6 +99,20 @@ STATICINDEX int SDL.mouse_y
 END
 
 
+STATICINDEX bool SDL.text_input_active
+    RETVAL = SDL_IsTextInputActive();
+END
+
+STATICNEWINDEX bool SDL.text_input_active
+    if (VALUE) {
+        SDL_StartTextInput();
+    }
+    else {
+        SDL_StopTextInput();
+    }
+END
+
+
 UTYPE SDL_WindowEvent
 
 INDEXFIELD uint32_t type
@@ -240,6 +254,14 @@ INDEX int32_t effective_y
 END
 
 
+UTYPE SDL_TextInputEvent
+
+INDEXFIELD uint32_t   type
+INDEXFIELD uint32_t   timestamp
+INDEXFIELD uint32_t   window_id = windowID
+INDEXFIELD const char *text
+
+
 UTYPE SDL_Event SDL.Event
 
 INDEXFIELD uint32_t type
@@ -303,6 +325,10 @@ INDEX <NEW>SDL_MouseWheelEvent *wheel
     GET_IN_EVENT_UNION(wheel, SDL_MOUSEWHEEL);
 END
 
+INDEX <NEW>SDL_TextInputEvent *text
+    GET_IN_EVENT_UNION(text, SDL_TEXTINPUT);
+END
+
 INDEX ... inner_event
 #   define PUSH_EVENT(FIELD, TYPE) do { \
             TYPE *inner = &self->FIELD; \
@@ -326,6 +352,9 @@ INDEX ... inner_event
             break;
         case SDL_MOUSEWHEEL:
             PUSH_EVENT(wheel, SDL_MouseWheelEvent);
+            break;
+        case SDL_TEXTINPUT:
+            PUSH_EVENT(text, SDL_TextInputEvent);
             break;
         default:
             R_warn("Don't know which inner_event belongs to SDL event type %u",

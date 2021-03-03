@@ -134,6 +134,26 @@ static int sdl_mouse_y_staticindex_xl(lua_State *L)
     return 1;
 }
 
+static int sdl_text_input_active_staticindex_xl(lua_State *L)
+{
+    bool RETVAL;
+    RETVAL = SDL_IsTextInputActive();
+    lua_pushboolean(L, RETVAL);
+    return 1;
+}
+
+static int sdl_text_input_active_staticnewindex_xl(lua_State *L)
+{
+    bool VALUE = XL_checkbool(L, 1);
+    if (VALUE) {
+        SDL_StartTextInput();
+    }
+    else {
+        SDL_StopTextInput();
+    }
+    return 0;
+}
+
 static int sdl_windowevent_type_index_xl(lua_State *L)
 {
     SDL_WindowEvent *self = R_CPPCAST(SDL_WindowEvent *, XL_checkutype(L, 1, "SDL_WindowEvent"));
@@ -640,6 +660,42 @@ static int sdl_mousewheelevent_effective_y_index_xl(lua_State *L)
     return 1;
 }
 
+static int sdl_textinputevent_type_index_xl(lua_State *L)
+{
+    SDL_TextInputEvent *self = R_CPPCAST(SDL_TextInputEvent *, XL_checkutype(L, 1, "SDL_TextInputEvent"));
+    uint32_t RETVAL;
+    RETVAL = self->type;
+    XL_pushuint32(L, RETVAL);
+    return 1;
+}
+
+static int sdl_textinputevent_timestamp_index_xl(lua_State *L)
+{
+    SDL_TextInputEvent *self = R_CPPCAST(SDL_TextInputEvent *, XL_checkutype(L, 1, "SDL_TextInputEvent"));
+    uint32_t RETVAL;
+    RETVAL = self->timestamp;
+    XL_pushuint32(L, RETVAL);
+    return 1;
+}
+
+static int sdl_textinputevent_window_id_index_xl(lua_State *L)
+{
+    SDL_TextInputEvent *self = R_CPPCAST(SDL_TextInputEvent *, XL_checkutype(L, 1, "SDL_TextInputEvent"));
+    uint32_t RETVAL;
+    RETVAL = self->windowID;
+    XL_pushuint32(L, RETVAL);
+    return 1;
+}
+
+static int sdl_textinputevent_text_index_xl(lua_State *L)
+{
+    SDL_TextInputEvent *self = R_CPPCAST(SDL_TextInputEvent *, XL_checkutype(L, 1, "SDL_TextInputEvent"));
+    const char *RETVAL;
+    RETVAL = self->text;
+    lua_pushstring(L, RETVAL);
+    return 1;
+}
+
 static int sdl_event_type_index_xl(lua_State *L)
 {
     SDL_Event *self = R_CPPCAST(SDL_Event *, XL_checkutype(L, 1, "SDL_Event"));
@@ -739,6 +795,15 @@ static int sdl_event_wheel_index_xl(lua_State *L)
     return 1;
 }
 
+static int sdl_event_text_index_xl(lua_State *L)
+{
+    SDL_Event *self = R_CPPCAST(SDL_Event *, XL_checkutype(L, 1, "SDL_Event"));
+    SDL_TextInputEvent RETVAL;
+    GET_IN_EVENT_UNION(text, SDL_TEXTINPUT);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(SDL_TextInputEvent), "SDL_TextInputEvent", 0);
+    return 1;
+}
+
 static int sdl_event_inner_event_index_xl(lua_State *L)
 {
     SDL_Event *self = R_CPPCAST(SDL_Event *, XL_checkutype(L, 1, "SDL_Event"));
@@ -764,6 +829,9 @@ static int sdl_event_inner_event_index_xl(lua_State *L)
             break;
         case SDL_MOUSEWHEEL:
             PUSH_EVENT(wheel, SDL_MouseWheelEvent);
+            break;
+        case SDL_TEXTINPUT:
+            PUSH_EVENT(text, SDL_TextInputEvent);
             break;
         default:
             R_warn("Don't know which inner_event belongs to SDL event type %u",
@@ -857,6 +925,12 @@ static int sdl_mousewheelevent_index_xl(lua_State *L)
     return XL_index(L, "SDL_MouseWheelEvent", &sdl_mousewheelevent_index_dummy_xl, 1, 2);
 }
 
+static int sdl_textinputevent_index_dummy_xl;
+static int sdl_textinputevent_index_xl(lua_State *L)
+{
+    return XL_index(L, "SDL_TextInputEvent", &sdl_textinputevent_index_dummy_xl, 1, 2);
+}
+
 static int sdl_windowevent_index_dummy_xl;
 static int sdl_windowevent_index_xl(lua_State *L)
 {
@@ -891,6 +965,7 @@ static luaL_Reg sdl_event_index_registry_xl[] = {
     {"inner_event", sdl_event_inner_event_index_xl},
     {"key", sdl_event_key_index_xl},
     {"motion", sdl_event_motion_index_xl},
+    {"text", sdl_event_text_index_xl},
     {"timestamp", sdl_event_timestamp_index_xl},
     {"type", sdl_event_type_index_xl},
     {"wheel", sdl_event_wheel_index_xl},
@@ -964,6 +1039,14 @@ static luaL_Reg sdl_mousewheelevent_index_registry_xl[] = {
     {NULL, NULL},
 };
 
+static luaL_Reg sdl_textinputevent_index_registry_xl[] = {
+    {"text", sdl_textinputevent_text_index_xl},
+    {"timestamp", sdl_textinputevent_timestamp_index_xl},
+    {"type", sdl_textinputevent_type_index_xl},
+    {"window_id", sdl_textinputevent_window_id_index_xl},
+    {NULL, NULL},
+};
+
 static luaL_Reg sdl_windowevent_index_registry_xl[] = {
     {"data1", sdl_windowevent_data1_index_xl},
     {"data2", sdl_windowevent_data2_index_xl},
@@ -999,6 +1082,11 @@ static luaL_Reg sdl_mousewheelevent_method_registry_xl[] = {
     {NULL, NULL},
 };
 
+static luaL_Reg sdl_textinputevent_method_registry_xl[] = {
+    {"__index", sdl_textinputevent_index_xl},
+    {NULL, NULL},
+};
+
 static luaL_Reg sdl_windowevent_method_registry_xl[] = {
     {"__index", sdl_windowevent_index_xl},
     {NULL, NULL},
@@ -1010,6 +1098,7 @@ static luaL_Reg sdl_staticindex_registry_xl[] = {
     {"mouse_pos", sdl_mouse_pos_staticindex_xl},
     {"mouse_x", sdl_mouse_x_staticindex_xl},
     {"mouse_y", sdl_mouse_y_staticindex_xl},
+    {"text_input_active", sdl_text_input_active_staticindex_xl},
     {"ticks", sdl_ticks_staticindex_xl},
     {"window_flags", sdl_window_flags_staticindex_xl},
     {NULL, NULL},
@@ -1018,6 +1107,7 @@ static luaL_Reg sdl_staticindex_registry_xl[] = {
 static luaL_Reg sdl_staticnewindex_registry_xl[] = {
     {"cursor", sdl_cursor_staticnewindex_xl},
     {"gl_swap_interval", sdl_gl_swap_interval_staticnewindex_xl},
+    {"text_input_active", sdl_text_input_active_staticnewindex_xl},
     {NULL, NULL},
 };
 
@@ -1685,12 +1775,14 @@ int R_lua_sdl_init(lua_State *L)
     XL_initmetatable(L, "SDL_MouseButtonEvent", sdl_mousebuttonevent_method_registry_xl);
     XL_initmetatable(L, "SDL_MouseMotionEvent", sdl_mousemotionevent_method_registry_xl);
     XL_initmetatable(L, "SDL_MouseWheelEvent", sdl_mousewheelevent_method_registry_xl);
+    XL_initmetatable(L, "SDL_TextInputEvent", sdl_textinputevent_method_registry_xl);
     XL_initmetatable(L, "SDL_WindowEvent", sdl_windowevent_method_registry_xl);
     XL_initindextable(L, &sdl_event_index_dummy_xl, sdl_event_index_registry_xl);
     XL_initindextable(L, &sdl_keyboardevent_index_dummy_xl, sdl_keyboardevent_index_registry_xl);
     XL_initindextable(L, &sdl_mousebuttonevent_index_dummy_xl, sdl_mousebuttonevent_index_registry_xl);
     XL_initindextable(L, &sdl_mousemotionevent_index_dummy_xl, sdl_mousemotionevent_index_registry_xl);
     XL_initindextable(L, &sdl_mousewheelevent_index_dummy_xl, sdl_mousewheelevent_index_registry_xl);
+    XL_initindextable(L, &sdl_textinputevent_index_dummy_xl, sdl_textinputevent_index_registry_xl);
     XL_initindextable(L, &sdl_windowevent_index_dummy_xl, sdl_windowevent_index_registry_xl);
     XL_initindextable(L, &sdl_staticindex_dummy_xl, sdl_staticindex_registry_xl);
     XL_initnewindextable(L, &sdl_staticnewindex_dummy_xl, sdl_staticnewindex_registry_xl);

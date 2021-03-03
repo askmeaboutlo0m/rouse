@@ -51,22 +51,41 @@ function slurplines(filename)
 end
 
 
+function dofile_env(filename, env)
+    local result, err = loadfile(filename, "bt", env)
+    if result then
+        return result()
+    else
+        error(err)
+    end
+end
+
+
 redofile_caching = false
 
 redofile = (function ()
     local cache = {}
-    return function (filename)
+
+    local function dofile_maybe_env(filename, env)
+        if env then
+            return dofile_env(filename, env)
+        else
+            return dofile(filename)
+        end
+    end
+
+    return function (filename, env)
         if redofile_caching then
             local cached = cache[filename]
             if cached then
                 return cached
             else
-                local value     = dofile(filename)
+                local value     = dofile_maybe_env(filename, env)
                 cache[filename] = value
                 return value
             end
         else
-            return dofile(filename)
+            return dofile_maybe_env(filename, env)
         end
     end
 end)()

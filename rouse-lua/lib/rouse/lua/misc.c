@@ -277,16 +277,16 @@ static int r_timestamp_as_double_xl(lua_State *L)
 extern "C" {
 #endif
 
-static int r_staticindex_dummy_xl;
+int r_staticindex_anchor_xl;
 static int r_staticindex_xl(lua_State *L)
 {
-    return XL_staticindex(L, &r_staticindex_dummy_xl, 2);
+    return XL_staticindex(L, &r_staticindex_anchor_xl, 2);
 }
 
-static int r_staticnewindex_dummy_xl;
+int r_staticnewindex_anchor_xl;
 static int r_staticnewindex_xl(lua_State *L)
 {
-    return XL_staticnewindex(L, &r_staticnewindex_dummy_xl, 1, 2, 3);
+    return XL_staticnewindex(L, &r_staticnewindex_anchor_xl, 1, 2, 3);
 }
 
 static luaL_Reg r_function_registry_xl[] = {
@@ -341,8 +341,8 @@ static XL_EnumEntry r_logbit_enum_xl[] = {
 
 int R_lua_misc_init(lua_State *L)
 {
-    XL_initindextable(L, &r_staticindex_dummy_xl, r_staticindex_registry_xl);
-    XL_initnewindextable(L, &r_staticnewindex_dummy_xl, r_staticnewindex_registry_xl);
+    XL_initindextable(L, &r_staticindex_anchor_xl, r_staticindex_registry_xl);
+    XL_initnewindextable(L, &r_staticnewindex_anchor_xl, r_staticnewindex_registry_xl);
     XL_initstaticmetatable(L, "R", (const char *)NULL);
     XL_initfunctions(L, r_function_registry_xl, "R", (const char *)NULL);
     XL_initfunctions(L, r_log_function_registry_xl, "R", "log", (const char *)NULL);

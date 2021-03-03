@@ -186,7 +186,9 @@ static WarnString *init_lua(lua_State *L)
 {
     WarnString *ws = attach_warn_function(L);
     open_lua_libs(L);
-    disallow_questionable_features(L);
+    if (!ROUSE_LUA_QUESTIONABLE_FEATURES) {
+        disallow_questionable_features(L);
+    }
     seed_random(L);
     return ws;
 }
@@ -234,6 +236,34 @@ static const char *get_global_string(lua_State *L, const char *global_name)
     return s;
 }
 
+extern int sdl_staticindex_anchor_xl;
+extern int sdl_staticnewindex_anchor_xl;
+
+static int disallow(lua_State *L)
+{
+    const char *what = lua_tostring(L, lua_upvalueindex(1));
+    return luaL_error(L, "%s is not allowed", what);
+}
+
+static void disallow_questionable_features_on_post_init(lua_State *L)
+{
+    if (!ROUSE_LUA_QUESTIONABLE_FEATURES) {
+        lua_rawgetp(L, LUA_REGISTRYINDEX, &sdl_staticnewindex_anchor_xl);
+        lua_pushstring(L, "clipboard_text");
+        lua_pushstring(L, "Setting SDL.clipboard_text");
+        lua_pushcclosure(L, disallow, 1);
+        lua_rawset(L, -3);
+        lua_pop(L, 1);
+
+        lua_rawgetp(L, LUA_REGISTRYINDEX, &sdl_staticnewindex_anchor_xl);
+        lua_pushstring(L, "clipboard_text");
+        lua_pushstring(L, "Setting SDL.clipboard_text");
+        lua_pushcclosure(L, disallow, 1);
+        lua_rawset(L, -3);
+        lua_pop(L, 1);
+    }
+}
+
 static void run_main(lua_State *L)
 {
     const char *path = get_global_string(L, "MAIN");
@@ -241,7 +271,7 @@ static void run_main(lua_State *L)
         const char *error = lua_tostring(L, -1);
         R_die("Error running '%s': %s", path, error);
     }
-    R_lua_main(L);
+    R_lua_main(L, disallow_questionable_features_on_post_init);
 }
 
 

@@ -202,16 +202,16 @@ static int r_viewport_from_window_coords_xl(lua_State *L)
 extern "C" {
 #endif
 
-static int r_viewport_index_dummy_xl;
+static int r_viewport_index_anchor_xl;
 static int r_viewport_index_xl(lua_State *L)
 {
-    return XL_index(L, "R_Viewport", &r_viewport_index_dummy_xl, 1, 2);
+    return XL_index(L, "R_Viewport", &r_viewport_index_anchor_xl, 1, 2);
 }
 
-static int r_viewport_newindex_dummy_xl;
+int r_viewport_newindex_anchor_xl;
 static int r_viewport_newindex_xl(lua_State *L)
 {
-    return XL_newindex(L, "R_Viewport", &r_viewport_newindex_dummy_xl, 1, 2, 3);
+    return XL_newindex(L, "R_Viewport", &r_viewport_newindex_anchor_xl, 1, 2, 3);
 }
 
 static luaL_Reg r_viewport_function_registry_xl[] = {
@@ -255,8 +255,8 @@ static luaL_Reg r_viewport_newindex_registry_xl[] = {
 int R_lua_viewport_init(lua_State *L)
 {
     XL_initmetatable(L, "R_Viewport", r_viewport_method_registry_xl);
-    XL_initindextable(L, &r_viewport_index_dummy_xl, r_viewport_index_registry_xl);
-    XL_initnewindextable(L, &r_viewport_newindex_dummy_xl, r_viewport_newindex_registry_xl);
+    XL_initindextable(L, &r_viewport_index_anchor_xl, r_viewport_index_registry_xl);
+    XL_initnewindextable(L, &r_viewport_newindex_anchor_xl, r_viewport_newindex_registry_xl);
     XL_initfunctions(L, r_viewport_function_registry_xl, "R", "Viewport", (const char *)NULL);
     return 0;
 }

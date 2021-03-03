@@ -233,10 +233,10 @@ static int r_framebuffer_method_write_to_stdout_xl(lua_State *L)
 extern "C" {
 #endif
 
-static int r_framebuffer_index_dummy_xl;
+static int r_framebuffer_index_anchor_xl;
 static int r_framebuffer_index_xl(lua_State *L)
 {
-    return XL_index(L, "R_FrameBuffer", &r_framebuffer_index_dummy_xl, 1, 2);
+    return XL_index(L, "R_FrameBuffer", &r_framebuffer_index_anchor_xl, 1, 2);
 }
 
 static int r_framebufferoptions_index_xl(lua_State *L)
@@ -244,10 +244,10 @@ static int r_framebufferoptions_index_xl(lua_State *L)
     return XL_index_fallback(L, "R_FrameBufferOptions", 1, 2);
 }
 
-static int r_framebufferoptions_newindex_dummy_xl;
+int r_framebufferoptions_newindex_anchor_xl;
 static int r_framebufferoptions_newindex_xl(lua_State *L)
 {
-    return XL_newindex(L, "R_FrameBufferOptions", &r_framebufferoptions_newindex_dummy_xl, 1, 2, 3);
+    return XL_newindex(L, "R_FrameBufferOptions", &r_framebufferoptions_newindex_anchor_xl, 1, 2, 3);
 }
 
 static luaL_Reg r_framebuffer_function_registry_xl[] = {
@@ -297,8 +297,8 @@ int R_lua_frame_buffer_init(lua_State *L)
 {
     XL_initmetatable(L, "R_FrameBuffer", r_framebuffer_method_registry_xl);
     XL_initmetatable(L, "R_FrameBufferOptions", r_framebufferoptions_method_registry_xl);
-    XL_initindextable(L, &r_framebuffer_index_dummy_xl, r_framebuffer_index_registry_xl);
-    XL_initnewindextable(L, &r_framebufferoptions_newindex_dummy_xl, r_framebufferoptions_newindex_registry_xl);
+    XL_initindextable(L, &r_framebuffer_index_anchor_xl, r_framebuffer_index_registry_xl);
+    XL_initnewindextable(L, &r_framebufferoptions_newindex_anchor_xl, r_framebufferoptions_newindex_registry_xl);
     XL_initfunctions(L, r_framebuffer_function_registry_xl, "R", "FrameBuffer", (const char *)NULL);
     return 0;
 }

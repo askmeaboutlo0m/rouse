@@ -1277,28 +1277,28 @@ static int r_sprite_method_draw_xl(lua_State *L)
 extern "C" {
 #endif
 
-static int r_affinetransform_index_dummy_xl;
+static int r_affinetransform_index_anchor_xl;
 static int r_affinetransform_index_xl(lua_State *L)
 {
-    return XL_index(L, "R_AffineTransform", &r_affinetransform_index_dummy_xl, 1, 2);
+    return XL_index(L, "R_AffineTransform", &r_affinetransform_index_anchor_xl, 1, 2);
 }
 
-static int r_sprite_index_dummy_xl;
+static int r_sprite_index_anchor_xl;
 static int r_sprite_index_xl(lua_State *L)
 {
-    return XL_index(L, "R_Sprite", &r_sprite_index_dummy_xl, 1, 2);
+    return XL_index(L, "R_Sprite", &r_sprite_index_anchor_xl, 1, 2);
 }
 
-static int r_affinetransform_newindex_dummy_xl;
+int r_affinetransform_newindex_anchor_xl;
 static int r_affinetransform_newindex_xl(lua_State *L)
 {
-    return XL_newindex(L, "R_AffineTransform", &r_affinetransform_newindex_dummy_xl, 1, 2, 3);
+    return XL_newindex(L, "R_AffineTransform", &r_affinetransform_newindex_anchor_xl, 1, 2, 3);
 }
 
-static int r_sprite_newindex_dummy_xl;
+int r_sprite_newindex_anchor_xl;
 static int r_sprite_newindex_xl(lua_State *L)
 {
-    return XL_newindex(L, "R_Sprite", &r_sprite_newindex_dummy_xl, 1, 2, 3);
+    return XL_newindex(L, "R_Sprite", &r_sprite_newindex_anchor_xl, 1, 2, 3);
 }
 
 static luaL_Reg r_sprite_function_registry_xl[] = {
@@ -1466,10 +1466,10 @@ int R_lua_sprite_init(lua_State *L)
 {
     XL_initmetatable(L, "R_AffineTransform", r_affinetransform_method_registry_xl);
     XL_initmetatable(L, "R_Sprite", r_sprite_method_registry_xl);
-    XL_initindextable(L, &r_affinetransform_index_dummy_xl, r_affinetransform_index_registry_xl);
-    XL_initindextable(L, &r_sprite_index_dummy_xl, r_sprite_index_registry_xl);
-    XL_initnewindextable(L, &r_affinetransform_newindex_dummy_xl, r_affinetransform_newindex_registry_xl);
-    XL_initnewindextable(L, &r_sprite_newindex_dummy_xl, r_sprite_newindex_registry_xl);
+    XL_initindextable(L, &r_affinetransform_index_anchor_xl, r_affinetransform_index_registry_xl);
+    XL_initindextable(L, &r_sprite_index_anchor_xl, r_sprite_index_registry_xl);
+    XL_initnewindextable(L, &r_affinetransform_newindex_anchor_xl, r_affinetransform_newindex_registry_xl);
+    XL_initnewindextable(L, &r_sprite_newindex_anchor_xl, r_sprite_newindex_registry_xl);
     XL_initfunctions(L, r_sprite_function_registry_xl, "R", "Sprite", (const char *)NULL);
     return 0;
 }

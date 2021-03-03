@@ -1,4 +1,4 @@
-void R_lua_main(lua_State *L);
+void R_lua_main(lua_State *L, void (*on_post_init)(lua_State *));
 
 /*
  * Emscripten only! On any other platform this will just `lua_error`. You can

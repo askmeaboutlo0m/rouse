@@ -8,6 +8,7 @@
 typedef struct R_LuaMainArgs {
     lua_State *L;
     int       ref;
+    void      (*on_post_init)(lua_State *L);
 } R_LuaMainArgs;
 
 
@@ -98,6 +99,10 @@ static R_Scene *on_scene(void *user)
     lua_pushcfunction(L, init);
     if (R_lua_pcall(L, 0, 0)) {
         R_die("Can't initialize Lua bindings: %s", R_LUA_ERROR_GET(L));
+    }
+
+    if (largs->on_post_init) {
+        largs->on_post_init(L);
     }
 
     lua_pushcfunction(L, protected_on_scene);
@@ -235,10 +240,10 @@ static int unravel_main_args(lua_State *L)
     return 0;
 }
 
-void R_lua_main(lua_State *L)
+void R_lua_main(lua_State *L, void (*on_post_init)(lua_State *))
 {
     luaL_checktype(L, -1, LUA_TTABLE);
-    R_LuaMainArgs largs = {L, R_lua_reg_at(L, -1)};
+    R_LuaMainArgs largs = {L, R_lua_reg_at(L, -1), on_post_init};
     R_MainArgs    args  = R_main_args(on_scene, &largs);
 
     lua_pushcfunction(L, unravel_main_args);

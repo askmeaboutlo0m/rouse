@@ -88,10 +88,10 @@ static int r_bitmapimage_method_draw_xl(lua_State *L)
 extern "C" {
 #endif
 
-static int r_bitmapimage_index_dummy_xl;
+static int r_bitmapimage_index_anchor_xl;
 static int r_bitmapimage_index_xl(lua_State *L)
 {
-    return XL_index(L, "R_BitmapImage", &r_bitmapimage_index_dummy_xl, 1, 2);
+    return XL_index(L, "R_BitmapImage", &r_bitmapimage_index_anchor_xl, 1, 2);
 }
 
 static luaL_Reg r_bitmapimage_function_registry_xl[] = {
@@ -116,7 +116,7 @@ static luaL_Reg r_bitmapimage_method_registry_xl[] = {
 int R_lua_bitmap_image_init(lua_State *L)
 {
     XL_initmetatable(L, "R_BitmapImage", r_bitmapimage_method_registry_xl);
-    XL_initindextable(L, &r_bitmapimage_index_dummy_xl, r_bitmapimage_index_registry_xl);
+    XL_initindextable(L, &r_bitmapimage_index_anchor_xl, r_bitmapimage_index_registry_xl);
     XL_initfunctions(L, r_bitmapimage_function_registry_xl, "R", "BitmapImage", (const char *)NULL);
     return 0;
 }

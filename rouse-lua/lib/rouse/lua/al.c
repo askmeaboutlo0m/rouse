@@ -1006,34 +1006,34 @@ static int r_alsource_playing_index_xl(lua_State *L)
 extern "C" {
 #endif
 
-static int r_albuffer_index_dummy_xl;
+static int r_albuffer_index_anchor_xl;
 static int r_albuffer_index_xl(lua_State *L)
 {
-    return XL_index(L, "R_AlBuffer", &r_albuffer_index_dummy_xl, 1, 2);
+    return XL_index(L, "R_AlBuffer", &r_albuffer_index_anchor_xl, 1, 2);
 }
 
-static int r_alsource_index_dummy_xl;
+static int r_alsource_index_anchor_xl;
 static int r_alsource_index_xl(lua_State *L)
 {
-    return XL_index(L, "R_AlSource", &r_alsource_index_dummy_xl, 1, 2);
+    return XL_index(L, "R_AlSource", &r_alsource_index_anchor_xl, 1, 2);
 }
 
-static int r_alsource_newindex_dummy_xl;
+int r_alsource_newindex_anchor_xl;
 static int r_alsource_newindex_xl(lua_State *L)
 {
-    return XL_newindex(L, "R_AlSource", &r_alsource_newindex_dummy_xl, 1, 2, 3);
+    return XL_newindex(L, "R_AlSource", &r_alsource_newindex_anchor_xl, 1, 2, 3);
 }
 
-static int r_al_listener_staticindex_dummy_xl;
+int r_al_listener_staticindex_anchor_xl;
 static int r_al_listener_staticindex_xl(lua_State *L)
 {
-    return XL_staticindex(L, &r_al_listener_staticindex_dummy_xl, 2);
+    return XL_staticindex(L, &r_al_listener_staticindex_anchor_xl, 2);
 }
 
-static int r_al_listener_staticnewindex_dummy_xl;
+int r_al_listener_staticnewindex_anchor_xl;
 static int r_al_listener_staticnewindex_xl(lua_State *L)
 {
-    return XL_staticnewindex(L, &r_al_listener_staticnewindex_dummy_xl, 1, 2, 3);
+    return XL_staticnewindex(L, &r_al_listener_staticnewindex_anchor_xl, 1, 2, 3);
 }
 
 static luaL_Reg r_al_buffer_function_registry_xl[] = {
@@ -1162,11 +1162,11 @@ int R_lua_al_init(lua_State *L)
 {
     XL_initmetatable(L, "R_AlBuffer", r_albuffer_method_registry_xl);
     XL_initmetatable(L, "R_AlSource", r_alsource_method_registry_xl);
-    XL_initindextable(L, &r_albuffer_index_dummy_xl, r_albuffer_index_registry_xl);
-    XL_initindextable(L, &r_alsource_index_dummy_xl, r_alsource_index_registry_xl);
-    XL_initnewindextable(L, &r_alsource_newindex_dummy_xl, r_alsource_newindex_registry_xl);
-    XL_initindextable(L, &r_al_listener_staticindex_dummy_xl, r_al_listener_staticindex_registry_xl);
-    XL_initnewindextable(L, &r_al_listener_staticnewindex_dummy_xl, r_al_listener_staticnewindex_registry_xl);
+    XL_initindextable(L, &r_albuffer_index_anchor_xl, r_albuffer_index_registry_xl);
+    XL_initindextable(L, &r_alsource_index_anchor_xl, r_alsource_index_registry_xl);
+    XL_initnewindextable(L, &r_alsource_newindex_anchor_xl, r_alsource_newindex_registry_xl);
+    XL_initindextable(L, &r_al_listener_staticindex_anchor_xl, r_al_listener_staticindex_registry_xl);
+    XL_initnewindextable(L, &r_al_listener_staticnewindex_anchor_xl, r_al_listener_staticnewindex_registry_xl);
     XL_initstaticmetatable(L, "R", "Al", "listener", (const char *)NULL);
     XL_initfunctions(L, r_al_buffer_function_registry_xl, "R", "Al", "Buffer", (const char *)NULL);
     XL_initfunctions(L, r_al_source_function_registry_xl, "R", "Al", "Source", (const char *)NULL);

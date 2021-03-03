@@ -1130,13 +1130,13 @@ static int r_nvg_method_stroke_xl(lua_State *L)
 extern "C" {
 #endif
 
-static int nvgcolor_index_dummy_xl;
+static int nvgcolor_index_anchor_xl;
 static int nvgcolor_index_xl(lua_State *L)
 {
     if (lua_isinteger(L, 2)) {
         return nvgcolor_intindex_xl(L);
     }
-    return XL_index(L, "NVGcolor", &nvgcolor_index_dummy_xl, 1, 2);
+    return XL_index(L, "NVGcolor", &nvgcolor_index_anchor_xl, 1, 2);
 }
 
 static int r_luanvgtransform_index_xl(lua_State *L)
@@ -1152,13 +1152,13 @@ static int r_nvg_index_xl(lua_State *L)
     return XL_index_fallback(L, "R_Nvg", 1, 2);
 }
 
-static int nvgcolor_newindex_dummy_xl;
+int nvgcolor_newindex_anchor_xl;
 static int nvgcolor_newindex_xl(lua_State *L)
 {
     if (lua_isinteger(L, 2)) {
         return nvgcolor_intnewindex_xl(L);
     }
-    return XL_newindex(L, "NVGcolor", &nvgcolor_newindex_dummy_xl, 1, 2, 3);
+    return XL_newindex(L, "NVGcolor", &nvgcolor_newindex_anchor_xl, 1, 2, 3);
 }
 
 #define r_luanvgtransform_newindex_xl r_luanvgtransform_intnewindex_xl
@@ -1363,8 +1363,8 @@ int R_lua_nvg_init(lua_State *L)
     XL_initmetatable(L, "NVGpaint", NULL);
     XL_initmetatable(L, "R_LuaNvgTransform", r_luanvgtransform_method_registry_xl);
     XL_initmetatable(L, "R_Nvg", r_nvg_method_registry_xl);
-    XL_initindextable(L, &nvgcolor_index_dummy_xl, nvgcolor_index_registry_xl);
-    XL_initnewindextable(L, &nvgcolor_newindex_dummy_xl, nvgcolor_newindex_registry_xl);
+    XL_initindextable(L, &nvgcolor_index_anchor_xl, nvgcolor_index_registry_xl);
+    XL_initnewindextable(L, &nvgcolor_newindex_anchor_xl, nvgcolor_newindex_registry_xl);
     XL_initfunctions(L, r_nvg_function_registry_xl, "R", "Nvg", (const char *)NULL);
     XL_initfunctions(L, r_nvg_transform_function_registry_xl, "R", "Nvg", "Transform", (const char *)NULL);
     XL_initenum(L, r_nvg_winding_enum_xl, "R", "Nvg", "Winding", (const char *)NULL);

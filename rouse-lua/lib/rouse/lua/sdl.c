@@ -108,6 +108,31 @@ static int sdl_gl_swap_interval_staticnewindex_xl(lua_State *L)
     return 0;
 }
 
+static int sdl_clipboard_text_staticindex_xl(lua_State *L)
+{
+    const char *RETVAL;
+    if (SDL_HasClipboardText()) {
+        RETVAL = SDL_GetClipboardText();
+        if (!RETVAL) {
+            R_LUA_DIE(L, "Can't get clipboard text: %s", SDL_GetError());
+        }
+    }
+    else {
+        RETVAL = NULL;
+    }
+    lua_pushstring(L, RETVAL);
+    return 1;
+}
+
+static int sdl_clipboard_text_staticnewindex_xl(lua_State *L)
+{
+    const char *VALUE = luaL_checkstring(L, 1);
+    if (SDL_SetClipboardText(VALUE) != 0) {
+        R_LUA_DIE(L, "Can't set clipboard text: %s", SDL_GetError());
+    }
+    return 0;
+}
+
 static int sdl_mouse_pos_staticindex_xl(lua_State *L)
 {
     R_V2 RETVAL;
@@ -895,58 +920,58 @@ static int sdl_cursor_staticnewindex_xl(lua_State *L)
 extern "C" {
 #endif
 
-static int sdl_event_index_dummy_xl;
+static int sdl_event_index_anchor_xl;
 static int sdl_event_index_xl(lua_State *L)
 {
-    return XL_index(L, "SDL_Event", &sdl_event_index_dummy_xl, 1, 2);
+    return XL_index(L, "SDL_Event", &sdl_event_index_anchor_xl, 1, 2);
 }
 
-static int sdl_keyboardevent_index_dummy_xl;
+static int sdl_keyboardevent_index_anchor_xl;
 static int sdl_keyboardevent_index_xl(lua_State *L)
 {
-    return XL_index(L, "SDL_KeyboardEvent", &sdl_keyboardevent_index_dummy_xl, 1, 2);
+    return XL_index(L, "SDL_KeyboardEvent", &sdl_keyboardevent_index_anchor_xl, 1, 2);
 }
 
-static int sdl_mousebuttonevent_index_dummy_xl;
+static int sdl_mousebuttonevent_index_anchor_xl;
 static int sdl_mousebuttonevent_index_xl(lua_State *L)
 {
-    return XL_index(L, "SDL_MouseButtonEvent", &sdl_mousebuttonevent_index_dummy_xl, 1, 2);
+    return XL_index(L, "SDL_MouseButtonEvent", &sdl_mousebuttonevent_index_anchor_xl, 1, 2);
 }
 
-static int sdl_mousemotionevent_index_dummy_xl;
+static int sdl_mousemotionevent_index_anchor_xl;
 static int sdl_mousemotionevent_index_xl(lua_State *L)
 {
-    return XL_index(L, "SDL_MouseMotionEvent", &sdl_mousemotionevent_index_dummy_xl, 1, 2);
+    return XL_index(L, "SDL_MouseMotionEvent", &sdl_mousemotionevent_index_anchor_xl, 1, 2);
 }
 
-static int sdl_mousewheelevent_index_dummy_xl;
+static int sdl_mousewheelevent_index_anchor_xl;
 static int sdl_mousewheelevent_index_xl(lua_State *L)
 {
-    return XL_index(L, "SDL_MouseWheelEvent", &sdl_mousewheelevent_index_dummy_xl, 1, 2);
+    return XL_index(L, "SDL_MouseWheelEvent", &sdl_mousewheelevent_index_anchor_xl, 1, 2);
 }
 
-static int sdl_textinputevent_index_dummy_xl;
+static int sdl_textinputevent_index_anchor_xl;
 static int sdl_textinputevent_index_xl(lua_State *L)
 {
-    return XL_index(L, "SDL_TextInputEvent", &sdl_textinputevent_index_dummy_xl, 1, 2);
+    return XL_index(L, "SDL_TextInputEvent", &sdl_textinputevent_index_anchor_xl, 1, 2);
 }
 
-static int sdl_windowevent_index_dummy_xl;
+static int sdl_windowevent_index_anchor_xl;
 static int sdl_windowevent_index_xl(lua_State *L)
 {
-    return XL_index(L, "SDL_WindowEvent", &sdl_windowevent_index_dummy_xl, 1, 2);
+    return XL_index(L, "SDL_WindowEvent", &sdl_windowevent_index_anchor_xl, 1, 2);
 }
 
-static int sdl_staticindex_dummy_xl;
+int sdl_staticindex_anchor_xl;
 static int sdl_staticindex_xl(lua_State *L)
 {
-    return XL_staticindex(L, &sdl_staticindex_dummy_xl, 2);
+    return XL_staticindex(L, &sdl_staticindex_anchor_xl, 2);
 }
 
-static int sdl_staticnewindex_dummy_xl;
+int sdl_staticnewindex_anchor_xl;
 static int sdl_staticnewindex_xl(lua_State *L)
 {
-    return XL_staticnewindex(L, &sdl_staticnewindex_dummy_xl, 1, 2, 3);
+    return XL_staticnewindex(L, &sdl_staticnewindex_anchor_xl, 1, 2, 3);
 }
 
 static luaL_Reg sdl_function_registry_xl[] = {
@@ -1093,6 +1118,7 @@ static luaL_Reg sdl_windowevent_method_registry_xl[] = {
 };
 
 static luaL_Reg sdl_staticindex_registry_xl[] = {
+    {"clipboard_text", sdl_clipboard_text_staticindex_xl},
     {"cursor", sdl_cursor_staticindex_xl},
     {"gl_swap_interval", sdl_gl_swap_interval_staticindex_xl},
     {"mouse_pos", sdl_mouse_pos_staticindex_xl},
@@ -1105,6 +1131,7 @@ static luaL_Reg sdl_staticindex_registry_xl[] = {
 };
 
 static luaL_Reg sdl_staticnewindex_registry_xl[] = {
+    {"clipboard_text", sdl_clipboard_text_staticnewindex_xl},
     {"cursor", sdl_cursor_staticnewindex_xl},
     {"gl_swap_interval", sdl_gl_swap_interval_staticnewindex_xl},
     {"text_input_active", sdl_text_input_active_staticnewindex_xl},
@@ -1777,15 +1804,15 @@ int R_lua_sdl_init(lua_State *L)
     XL_initmetatable(L, "SDL_MouseWheelEvent", sdl_mousewheelevent_method_registry_xl);
     XL_initmetatable(L, "SDL_TextInputEvent", sdl_textinputevent_method_registry_xl);
     XL_initmetatable(L, "SDL_WindowEvent", sdl_windowevent_method_registry_xl);
-    XL_initindextable(L, &sdl_event_index_dummy_xl, sdl_event_index_registry_xl);
-    XL_initindextable(L, &sdl_keyboardevent_index_dummy_xl, sdl_keyboardevent_index_registry_xl);
-    XL_initindextable(L, &sdl_mousebuttonevent_index_dummy_xl, sdl_mousebuttonevent_index_registry_xl);
-    XL_initindextable(L, &sdl_mousemotionevent_index_dummy_xl, sdl_mousemotionevent_index_registry_xl);
-    XL_initindextable(L, &sdl_mousewheelevent_index_dummy_xl, sdl_mousewheelevent_index_registry_xl);
-    XL_initindextable(L, &sdl_textinputevent_index_dummy_xl, sdl_textinputevent_index_registry_xl);
-    XL_initindextable(L, &sdl_windowevent_index_dummy_xl, sdl_windowevent_index_registry_xl);
-    XL_initindextable(L, &sdl_staticindex_dummy_xl, sdl_staticindex_registry_xl);
-    XL_initnewindextable(L, &sdl_staticnewindex_dummy_xl, sdl_staticnewindex_registry_xl);
+    XL_initindextable(L, &sdl_event_index_anchor_xl, sdl_event_index_registry_xl);
+    XL_initindextable(L, &sdl_keyboardevent_index_anchor_xl, sdl_keyboardevent_index_registry_xl);
+    XL_initindextable(L, &sdl_mousebuttonevent_index_anchor_xl, sdl_mousebuttonevent_index_registry_xl);
+    XL_initindextable(L, &sdl_mousemotionevent_index_anchor_xl, sdl_mousemotionevent_index_registry_xl);
+    XL_initindextable(L, &sdl_mousewheelevent_index_anchor_xl, sdl_mousewheelevent_index_registry_xl);
+    XL_initindextable(L, &sdl_textinputevent_index_anchor_xl, sdl_textinputevent_index_registry_xl);
+    XL_initindextable(L, &sdl_windowevent_index_anchor_xl, sdl_windowevent_index_registry_xl);
+    XL_initindextable(L, &sdl_staticindex_anchor_xl, sdl_staticindex_registry_xl);
+    XL_initnewindextable(L, &sdl_staticnewindex_anchor_xl, sdl_staticnewindex_registry_xl);
     XL_initstaticmetatable(L, "SDL", (const char *)NULL);
     XL_initfunctions(L, sdl_function_registry_xl, "SDL", (const char *)NULL);
     XL_initenum(L, sdl_window_enum_xl, "SDL", "Window", (const char *)NULL);

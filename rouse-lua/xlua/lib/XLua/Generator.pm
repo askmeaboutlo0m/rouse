@@ -356,7 +356,7 @@ sub generate_blocks ($self, $blocks) {
 
 
 sub generate_index_metamethod ($self, $package, $type_name, $fallback = 0) {
-    my $dummy_name = c_name("$package.index_dummy");
+    my $dummy_name = c_name("$package.index_anchor");
     my $func_name  = c_name("$package.index");
 
     $self->println("static int $dummy_name;") unless $fallback;
@@ -407,10 +407,10 @@ sub generate_fallback_index_metamethods ($self) {
 }
 
 sub generate_newindex_metamethod ($self, $package, $type_name) {
-    my $dummy_name = c_name("$package.newindex_dummy");
+    my $dummy_name = c_name("$package.newindex_anchor");
     my $func_name  = c_name("$package.newindex");
 
-    $self->println("static int $dummy_name;");
+    $self->println("int $dummy_name;");
     $self->println("static int $func_name(lua_State *L)");
     $self->println('{');
 
@@ -460,10 +460,10 @@ sub generate_intnewindex_metamethods ($self, $blocks) {
 }
 
 sub generate_staticindex_metamethod ($self, $package) {
-    my $dummy_name = c_name("$package.staticindex_dummy");
+    my $dummy_name = c_name("$package.staticindex_anchor");
     my $func_name  = c_name("$package.staticindex");
 
-    $self->println("static int $dummy_name;");
+    $self->println("int $dummy_name;");
     $self->println("static int $func_name(lua_State *L)");
     $self->println('{');
     $self->println("    return XL_staticindex(L, &$dummy_name, 2);");
@@ -483,10 +483,10 @@ sub generate_staticindex_metamethods ($self, $blocks) {
 }
 
 sub generate_staticnewindex_metamethod ($self, $package) {
-    my $dummy_name = c_name("$package.staticnewindex_dummy");
+    my $dummy_name = c_name("$package.staticnewindex_anchor");
     my $func_name  = c_name("$package.staticnewindex");
 
-    $self->println("static int $dummy_name;");
+    $self->println("int $dummy_name;");
     $self->println("static int $func_name(lua_State *L)");
     $self->println('{');
 
@@ -569,7 +569,7 @@ sub generate_init_metatables ($self, $metatables) {
 sub generate_init_indextables ($self) {
     my $index_registry = $self->{registries}{index};
     for my $package (sort keys %$index_registry) {
-        my $dummy_name    = c_name("${package}_index_dummy");
+        my $dummy_name    = c_name("${package}_index_anchor");
         my $registry_name = c_name("${package}_index_registry");
         $self->println("    XL_initindextable(L, &$dummy_name, $registry_name);");
     }
@@ -578,7 +578,7 @@ sub generate_init_indextables ($self) {
 sub generate_init_newindextables ($self) {
     my $newindex_registry = $self->{registries}{newindex};
     for my $package (sort keys %$newindex_registry) {
-        my $dummy_name    = c_name("${package}_newindex_dummy");
+        my $dummy_name    = c_name("${package}_newindex_anchor");
         my $registry_name = c_name("${package}_newindex_registry");
         $self->println("    XL_initnewindextable(L, &$dummy_name, $registry_name);");
     }
@@ -587,7 +587,7 @@ sub generate_init_newindextables ($self) {
 sub generate_init_staticindextables ($self) {
     my $staticindex_registry = $self->{registries}{staticindex};
     for my $package (sort keys %$staticindex_registry) {
-        my $dummy_name    = c_name("${package}_staticindex_dummy");
+        my $dummy_name    = c_name("${package}_staticindex_anchor");
         my $registry_name = c_name("${package}_staticindex_registry");
         $self->println("    XL_initindextable(L, &$dummy_name, $registry_name);");
     }
@@ -596,7 +596,7 @@ sub generate_init_staticindextables ($self) {
 sub generate_init_staticnewindextables ($self) {
     my $staticnewindex_registry = $self->{registries}{staticnewindex};
     for my $package (sort keys %$staticnewindex_registry) {
-        my $dummy_name    = c_name("${package}_staticnewindex_dummy");
+        my $dummy_name    = c_name("${package}_staticnewindex_anchor");
         my $registry_name = c_name("${package}_staticnewindex_registry");
         $self->println("    XL_initnewindextable(L, &$dummy_name, $registry_name);");
     }

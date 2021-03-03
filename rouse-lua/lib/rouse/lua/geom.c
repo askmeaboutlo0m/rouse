@@ -501,40 +501,40 @@ static int r_v4_method_set_xl(lua_State *L)
 extern "C" {
 #endif
 
-static int r_v2_index_dummy_xl;
+static int r_v2_index_anchor_xl;
 static int r_v2_index_xl(lua_State *L)
 {
-    return XL_index(L, "R_V2", &r_v2_index_dummy_xl, 1, 2);
+    return XL_index(L, "R_V2", &r_v2_index_anchor_xl, 1, 2);
 }
 
-static int r_v3_index_dummy_xl;
+static int r_v3_index_anchor_xl;
 static int r_v3_index_xl(lua_State *L)
 {
-    return XL_index(L, "R_V3", &r_v3_index_dummy_xl, 1, 2);
+    return XL_index(L, "R_V3", &r_v3_index_anchor_xl, 1, 2);
 }
 
-static int r_v4_index_dummy_xl;
+static int r_v4_index_anchor_xl;
 static int r_v4_index_xl(lua_State *L)
 {
-    return XL_index(L, "R_V4", &r_v4_index_dummy_xl, 1, 2);
+    return XL_index(L, "R_V4", &r_v4_index_anchor_xl, 1, 2);
 }
 
-static int r_v2_newindex_dummy_xl;
+int r_v2_newindex_anchor_xl;
 static int r_v2_newindex_xl(lua_State *L)
 {
-    return XL_newindex(L, "R_V2", &r_v2_newindex_dummy_xl, 1, 2, 3);
+    return XL_newindex(L, "R_V2", &r_v2_newindex_anchor_xl, 1, 2, 3);
 }
 
-static int r_v3_newindex_dummy_xl;
+int r_v3_newindex_anchor_xl;
 static int r_v3_newindex_xl(lua_State *L)
 {
-    return XL_newindex(L, "R_V3", &r_v3_newindex_dummy_xl, 1, 2, 3);
+    return XL_newindex(L, "R_V3", &r_v3_newindex_anchor_xl, 1, 2, 3);
 }
 
-static int r_v4_newindex_dummy_xl;
+int r_v4_newindex_anchor_xl;
 static int r_v4_newindex_xl(lua_State *L)
 {
-    return XL_newindex(L, "R_V4", &r_v4_newindex_dummy_xl, 1, 2, 3);
+    return XL_newindex(L, "R_V4", &r_v4_newindex_anchor_xl, 1, 2, 3);
 }
 
 static luaL_Reg r_v2_function_registry_xl[] = {
@@ -637,12 +637,12 @@ int R_lua_geom_init(lua_State *L)
     XL_initmetatable(L, "R_V2", r_v2_method_registry_xl);
     XL_initmetatable(L, "R_V3", r_v3_method_registry_xl);
     XL_initmetatable(L, "R_V4", r_v4_method_registry_xl);
-    XL_initindextable(L, &r_v2_index_dummy_xl, r_v2_index_registry_xl);
-    XL_initindextable(L, &r_v3_index_dummy_xl, r_v3_index_registry_xl);
-    XL_initindextable(L, &r_v4_index_dummy_xl, r_v4_index_registry_xl);
-    XL_initnewindextable(L, &r_v2_newindex_dummy_xl, r_v2_newindex_registry_xl);
-    XL_initnewindextable(L, &r_v3_newindex_dummy_xl, r_v3_newindex_registry_xl);
-    XL_initnewindextable(L, &r_v4_newindex_dummy_xl, r_v4_newindex_registry_xl);
+    XL_initindextable(L, &r_v2_index_anchor_xl, r_v2_index_registry_xl);
+    XL_initindextable(L, &r_v3_index_anchor_xl, r_v3_index_registry_xl);
+    XL_initindextable(L, &r_v4_index_anchor_xl, r_v4_index_registry_xl);
+    XL_initnewindextable(L, &r_v2_newindex_anchor_xl, r_v2_newindex_registry_xl);
+    XL_initnewindextable(L, &r_v3_newindex_anchor_xl, r_v3_newindex_registry_xl);
+    XL_initnewindextable(L, &r_v4_newindex_anchor_xl, r_v4_newindex_registry_xl);
     XL_initfunctions(L, r_v2_function_registry_xl, "R", "V2", (const char *)NULL);
     XL_initfunctions(L, r_v3_function_registry_xl, "R", "V3", (const char *)NULL);
     XL_initfunctions(L, r_v4_function_registry_xl, "R", "V4", (const char *)NULL);

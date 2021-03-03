@@ -84,6 +84,25 @@ STATICNEWINDEX int SDL.gl_swap_interval
 END
 
 
+STATICINDEX const char *SDL.clipboard_text
+    if (SDL_HasClipboardText()) {
+        RETVAL = SDL_GetClipboardText();
+        if (!RETVAL) {
+            R_LUA_DIE(L, "Can't get clipboard text: %s", SDL_GetError());
+        }
+    }
+    else {
+        RETVAL = NULL;
+    }
+END
+
+STATICNEWINDEX const char *SDL.clipboard_text
+    if (SDL_SetClipboardText(VALUE) != 0) {
+        R_LUA_DIE(L, "Can't set clipboard text: %s", SDL_GetError());
+    }
+END
+
+
 STATICINDEX R_V2 SDL.mouse_pos
     int x, y;
     SDL_GetMouseState(&x, &y);

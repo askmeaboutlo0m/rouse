@@ -288,16 +288,16 @@ static int r_textfield_method_draw_xl(lua_State *L)
 extern "C" {
 #endif
 
-static int r_textfield_index_dummy_xl;
+static int r_textfield_index_anchor_xl;
 static int r_textfield_index_xl(lua_State *L)
 {
-    return XL_index(L, "R_TextField", &r_textfield_index_dummy_xl, 1, 2);
+    return XL_index(L, "R_TextField", &r_textfield_index_anchor_xl, 1, 2);
 }
 
-static int r_textfield_newindex_dummy_xl;
+int r_textfield_newindex_anchor_xl;
 static int r_textfield_newindex_xl(lua_State *L)
 {
-    return XL_newindex(L, "R_TextField", &r_textfield_newindex_dummy_xl, 1, 2, 3);
+    return XL_newindex(L, "R_TextField", &r_textfield_newindex_anchor_xl, 1, 2, 3);
 }
 
 static luaL_Reg r_textfield_function_registry_xl[] = {
@@ -349,8 +349,8 @@ static luaL_Reg r_textfield_newindex_registry_xl[] = {
 int R_lua_text_field_init(lua_State *L)
 {
     XL_initmetatable(L, "R_TextField", r_textfield_method_registry_xl);
-    XL_initindextable(L, &r_textfield_index_dummy_xl, r_textfield_index_registry_xl);
-    XL_initnewindextable(L, &r_textfield_newindex_dummy_xl, r_textfield_newindex_registry_xl);
+    XL_initindextable(L, &r_textfield_index_anchor_xl, r_textfield_index_registry_xl);
+    XL_initnewindextable(L, &r_textfield_newindex_anchor_xl, r_textfield_newindex_registry_xl);
     XL_initfunctions(L, r_textfield_function_registry_xl, "R", "TextField", (const char *)NULL);
     return 0;
 }

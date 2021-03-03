@@ -123,10 +123,10 @@ static int r_sample_al_buffer_size_index_xl(lua_State *L)
 extern "C" {
 #endif
 
-static int r_sample_index_dummy_xl;
+static int r_sample_index_anchor_xl;
 static int r_sample_index_xl(lua_State *L)
 {
-    return XL_index(L, "R_Sample", &r_sample_index_dummy_xl, 1, 2);
+    return XL_index(L, "R_Sample", &r_sample_index_anchor_xl, 1, 2);
 }
 
 static luaL_Reg r_sample_function_registry_xl[] = {
@@ -152,7 +152,7 @@ static luaL_Reg r_sample_method_registry_xl[] = {
 int R_lua_sample_init(lua_State *L)
 {
     XL_initmetatable(L, "R_Sample", r_sample_method_registry_xl);
-    XL_initindextable(L, &r_sample_index_dummy_xl, r_sample_index_registry_xl);
+    XL_initindextable(L, &r_sample_index_anchor_xl, r_sample_index_registry_xl);
     XL_initfunctions(L, r_sample_function_registry_xl, "R", "Sample", (const char *)NULL);
     return 0;
 }

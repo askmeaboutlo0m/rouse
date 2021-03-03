@@ -86,10 +86,10 @@ static int r_vectorimage_method_draw_xl(lua_State *L)
 extern "C" {
 #endif
 
-static int r_vectorimage_index_dummy_xl;
+static int r_vectorimage_index_anchor_xl;
 static int r_vectorimage_index_xl(lua_State *L)
 {
-    return XL_index(L, "R_VectorImage", &r_vectorimage_index_dummy_xl, 1, 2);
+    return XL_index(L, "R_VectorImage", &r_vectorimage_index_anchor_xl, 1, 2);
 }
 
 static luaL_Reg r_vectorimage_function_registry_xl[] = {
@@ -114,7 +114,7 @@ static luaL_Reg r_vectorimage_method_registry_xl[] = {
 int R_lua_vector_image_init(lua_State *L)
 {
     XL_initmetatable(L, "R_VectorImage", r_vectorimage_method_registry_xl);
-    XL_initindextable(L, &r_vectorimage_index_dummy_xl, r_vectorimage_index_registry_xl);
+    XL_initindextable(L, &r_vectorimage_index_anchor_xl, r_vectorimage_index_registry_xl);
     XL_initfunctions(L, r_vectorimage_function_registry_xl, "R", "VectorImage", (const char *)NULL);
     return 0;
 }

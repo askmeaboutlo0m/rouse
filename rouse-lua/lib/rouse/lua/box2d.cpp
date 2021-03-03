@@ -918,22 +918,22 @@ static int b2world_method_debug_draw_xl(lua_State *L)
 extern "C" {
 #endif
 
-static int b2body_index_dummy_xl;
+static int b2body_index_anchor_xl;
 static int b2body_index_xl(lua_State *L)
 {
-    return XL_index(L, "b2Body", &b2body_index_dummy_xl, 1, 2);
+    return XL_index(L, "b2Body", &b2body_index_anchor_xl, 1, 2);
 }
 
-static int b2fixture_index_dummy_xl;
+static int b2fixture_index_anchor_xl;
 static int b2fixture_index_xl(lua_State *L)
 {
-    return XL_index(L, "b2Fixture", &b2fixture_index_dummy_xl, 1, 2);
+    return XL_index(L, "b2Fixture", &b2fixture_index_anchor_xl, 1, 2);
 }
 
-static int b2joint_index_dummy_xl;
+static int b2joint_index_anchor_xl;
 static int b2joint_index_xl(lua_State *L)
 {
-    return XL_index(L, "b2Joint", &b2joint_index_dummy_xl, 1, 2);
+    return XL_index(L, "b2Joint", &b2joint_index_anchor_xl, 1, 2);
 }
 
 static int b2shape_index_xl(lua_State *L)
@@ -946,34 +946,34 @@ static int b2world_index_xl(lua_State *L)
     return XL_index_fallback(L, "b2World", 1, 2);
 }
 
-static int r_luab2motorjointdef_newindex_dummy_xl;
+int r_luab2motorjointdef_newindex_anchor_xl;
 static int r_luab2motorjointdef_newindex_xl(lua_State *L)
 {
-    return XL_newindex(L, "R_LuaB2MotorJointDef", &r_luab2motorjointdef_newindex_dummy_xl, 1, 2, 3);
+    return XL_newindex(L, "R_LuaB2MotorJointDef", &r_luab2motorjointdef_newindex_anchor_xl, 1, 2, 3);
 }
 
-static int r_luab2revolutejointdef_newindex_dummy_xl;
+int r_luab2revolutejointdef_newindex_anchor_xl;
 static int r_luab2revolutejointdef_newindex_xl(lua_State *L)
 {
-    return XL_newindex(L, "R_LuaB2RevoluteJointDef", &r_luab2revolutejointdef_newindex_dummy_xl, 1, 2, 3);
+    return XL_newindex(L, "R_LuaB2RevoluteJointDef", &r_luab2revolutejointdef_newindex_anchor_xl, 1, 2, 3);
 }
 
-static int b2body_newindex_dummy_xl;
+int b2body_newindex_anchor_xl;
 static int b2body_newindex_xl(lua_State *L)
 {
-    return XL_newindex(L, "b2Body", &b2body_newindex_dummy_xl, 1, 2, 3);
+    return XL_newindex(L, "b2Body", &b2body_newindex_anchor_xl, 1, 2, 3);
 }
 
-static int b2bodydef_newindex_dummy_xl;
+int b2bodydef_newindex_anchor_xl;
 static int b2bodydef_newindex_xl(lua_State *L)
 {
-    return XL_newindex(L, "b2BodyDef", &b2bodydef_newindex_dummy_xl, 1, 2, 3);
+    return XL_newindex(L, "b2BodyDef", &b2bodydef_newindex_anchor_xl, 1, 2, 3);
 }
 
-static int b2fixturedef_newindex_dummy_xl;
+int b2fixturedef_newindex_anchor_xl;
 static int b2fixturedef_newindex_xl(lua_State *L)
 {
-    return XL_newindex(L, "b2FixtureDef", &b2fixturedef_newindex_dummy_xl, 1, 2, 3);
+    return XL_newindex(L, "b2FixtureDef", &b2fixturedef_newindex_anchor_xl, 1, 2, 3);
 }
 
 static luaL_Reg b2_shape_function_registry_xl[] = {
@@ -1152,14 +1152,14 @@ int R_lua_box2d_init(lua_State *L)
     XL_initmetatable(L, "b2Joint", b2joint_method_registry_xl);
     XL_initmetatable(L, "b2Shape", b2shape_method_registry_xl);
     XL_initmetatable(L, "b2World", b2world_method_registry_xl);
-    XL_initindextable(L, &b2body_index_dummy_xl, b2body_index_registry_xl);
-    XL_initindextable(L, &b2fixture_index_dummy_xl, b2fixture_index_registry_xl);
-    XL_initindextable(L, &b2joint_index_dummy_xl, b2joint_index_registry_xl);
-    XL_initnewindextable(L, &r_luab2motorjointdef_newindex_dummy_xl, r_luab2motorjointdef_newindex_registry_xl);
-    XL_initnewindextable(L, &r_luab2revolutejointdef_newindex_dummy_xl, r_luab2revolutejointdef_newindex_registry_xl);
-    XL_initnewindextable(L, &b2body_newindex_dummy_xl, b2body_newindex_registry_xl);
-    XL_initnewindextable(L, &b2bodydef_newindex_dummy_xl, b2bodydef_newindex_registry_xl);
-    XL_initnewindextable(L, &b2fixturedef_newindex_dummy_xl, b2fixturedef_newindex_registry_xl);
+    XL_initindextable(L, &b2body_index_anchor_xl, b2body_index_registry_xl);
+    XL_initindextable(L, &b2fixture_index_anchor_xl, b2fixture_index_registry_xl);
+    XL_initindextable(L, &b2joint_index_anchor_xl, b2joint_index_registry_xl);
+    XL_initnewindextable(L, &r_luab2motorjointdef_newindex_anchor_xl, r_luab2motorjointdef_newindex_registry_xl);
+    XL_initnewindextable(L, &r_luab2revolutejointdef_newindex_anchor_xl, r_luab2revolutejointdef_newindex_registry_xl);
+    XL_initnewindextable(L, &b2body_newindex_anchor_xl, b2body_newindex_registry_xl);
+    XL_initnewindextable(L, &b2bodydef_newindex_anchor_xl, b2bodydef_newindex_registry_xl);
+    XL_initnewindextable(L, &b2fixturedef_newindex_anchor_xl, b2fixturedef_newindex_registry_xl);
     XL_initfunctions(L, b2_shape_function_registry_xl, "B2", "Shape", (const char *)NULL);
     XL_initfunctions(L, b2_world_function_registry_xl, "B2", "World", (const char *)NULL);
     XL_initenum(L, b2_draw_enum_xl, "B2", "Draw", (const char *)NULL);

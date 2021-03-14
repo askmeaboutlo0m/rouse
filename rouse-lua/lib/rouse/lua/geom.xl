@@ -164,6 +164,10 @@ FUNCTION R_V2 R_V2:__div(any a, any b)
     }
 END
 
+FUNCTION R_V2 R_V2:__unm(R_V2 *a)
+    RETVAL = R_v2(-a->x, -a->y);
+END
+
 METHOD float distance2(R_V2 *b)
     RETVAL = R_v2_distance2(*self, *b);
 END

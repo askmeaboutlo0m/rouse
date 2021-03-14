@@ -257,6 +257,15 @@ static int r_v2_method_div_xl(lua_State *L)
     return 1;
 }
 
+static int r_v2_method_unm_xl(lua_State *L)
+{
+    R_V2 *a = R_CPPCAST(R_V2 *, XL_checkutype(L, 1, "R_V2"));
+    R_V2 RETVAL;
+    RETVAL = R_v2(-a->x, -a->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
+    return 1;
+}
+
 static int r_v2_method_distance2_xl(lua_State *L)
 {
     R_V2 *self = R_CPPCAST(R_V2 *, XL_checkutype(L, 1, "R_V2"));
@@ -586,6 +595,7 @@ static luaL_Reg r_v2_method_registry_xl[] = {
     {"__newindex", r_v2_newindex_xl},
     {"__sub", r_v2_method_sub_xl},
     {"__tostring", r_v2_method_tostring_xl},
+    {"__unm", r_v2_method_unm_xl},
     {"distance", r_v2_method_distance_xl},
     {"distance2", r_v2_method_distance2_xl},
     {"set", r_v2_method_set_xl},

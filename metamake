@@ -129,6 +129,11 @@ build_emscripten() {
                           "-DSDL2_IMAGE_LDFLAGS=$sdl_image_flags" \
                           "-DOPENAL_CFLAGS=$(pkg-config --cflags openal)" \
                           '-DOPENAL_LDFLAGS=-lopenal'
+
+    cmake_rouse_lua_args '-DBOX2D_CFLAGS="-isystem$EMPREFIX/include"' \
+                         '-DBOX2D_LDFLAGS="-L$EMPREFIX/lib"' \
+                         '-DBOX2D_LIBS=libbox2d.a'
+
     build_all
 }
 

@@ -80,7 +80,7 @@ static int b2vec2_array_from_table(lua_State *L)
     }
 
     b2Vec2 **pp    = R_CPPCAST(b2Vec2 **, lua_touserdata(L, 1));
-    b2Vec2 *points = new b2Vec2[len];
+    b2Vec2 *points = new b2Vec2[R_CPPCAST(size_t, len)];
     *pp            = points;
 
     for (int i = 0; i < len; ++i) {
@@ -828,14 +828,14 @@ struct R_B2DrawNvg : public b2Draw {
     }
 
     virtual void DrawSolidPolygon(const b2Vec2 *vertices, int32 vertex_count,
-                                  const b2Color &color)
+                                  const b2Color &color) override
     {
         draw_polygon_with(m_nvg, m_stroke_width, vertices,
                           vertex_count, color, true);
     }
 
     virtual void DrawCircle(const b2Vec2 &center, float radius,
-                            const b2Color &color)
+                            const b2Color &color) override
     {
         NVGcontext *ctx = R_nvg_context(m_nvg);
         nvgBeginPath(ctx);
@@ -847,6 +847,7 @@ struct R_B2DrawNvg : public b2Draw {
 
     virtual void DrawSolidCircle(const b2Vec2& center, float radius,
                                  const b2Vec2& axis, const b2Color& color)
+                                 override
     {
         NVGcontext *ctx = R_nvg_context(m_nvg);
 
@@ -867,7 +868,7 @@ struct R_B2DrawNvg : public b2Draw {
     }
 
     virtual void DrawSegment(const b2Vec2 &p1, const b2Vec2 &p2,
-                             const b2Color& color)
+                             const b2Color& color) override
     {
         NVGcontext *ctx = R_nvg_context(m_nvg);
         nvgBeginPath(ctx);
@@ -886,6 +887,7 @@ struct R_B2DrawNvg : public b2Draw {
     }
 
     virtual void DrawPoint(const b2Vec2 &p, float size, const b2Color& color)
+                           override
     {
         NVGcontext *ctx = R_nvg_context(m_nvg);
         nvgBeginPath(ctx);
@@ -901,7 +903,7 @@ static int b2world_method_debug_draw_xl(lua_State *L)
     R_Nvg *nvg = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 2, "R_Nvg"));
     R_LuaNvgTransform transform = *((R_LuaNvgTransform *)luaL_checkudata(L, 3, "R_LuaNvgTransform"));
     float stroke_width = XL_checkfloat(L, 4);
-    int flags = XL_checkint(L, 5);
+    unsigned int flags = XL_checkuint(L, 5);
     R_nvg_transform_set(R_nvg_context(nvg), transform.matrix);
     R_B2DrawNvg draw{nvg, stroke_width};
     draw.SetFlags(flags);

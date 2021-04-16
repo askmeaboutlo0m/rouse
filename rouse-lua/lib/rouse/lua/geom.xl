@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, 2020 askmeaboutloom
+ * Copyright (c) 2019, 2020, 2021 askmeaboutloom
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,10 +35,19 @@ CONSTRUCTOR polar(float len, float angle) = R_v2_polar
 FIELD float x
 FIELD float y
 
+@c
+
+static float v2_length(R_V2 v2)
+{
+    float x = v2.x;
+    float y = v2.y;
+    return sqrtf(x * x + y * y);
+}
+
+@xl
+
 INDEX float length
-    float x = self->x;
-    float y = self->y;
-    RETVAL = sqrtf(x * x + y * y);
+    RETVAL = v2_length(*self);
 END
 
 INDEX any angle
@@ -51,6 +60,12 @@ INDEX any angle
         XL_pushfloat(L, atan2f(y, x));
     }
     return 1;
+END
+
+INDEX R_V2 normal
+    float length = v2_length(*self);
+    RETVAL = length == 0.0 ? R_v2(0.0, 0.0)
+           : R_v2(self->x / length, self->y / length);
 END
 
 METHOD ... __tostring()

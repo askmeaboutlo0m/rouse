@@ -4,7 +4,7 @@
 /* Modify the matching .xl file and rebuild.     */
 /*************************************************/
 /*
- * Copyright (c) 2019, 2020 askmeaboutloom
+ * Copyright (c) 2019, 2020, 2021 askmeaboutloom
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -84,13 +84,20 @@ static int r_v2_y_newindex_xl(lua_State *L)
     return 0;
 }
 
+
+static float v2_length(R_V2 v2)
+{
+    float x = v2.x;
+    float y = v2.y;
+    return sqrtf(x * x + y * y);
+}
+
+
 static int r_v2_length_index_xl(lua_State *L)
 {
     R_V2 *self = R_CPPCAST(R_V2 *, XL_checkutype(L, 1, "R_V2"));
     float RETVAL;
-    float x = self->x;
-    float y = self->y;
-    RETVAL = sqrtf(x * x + y * y);
+    RETVAL = v2_length(*self);
     XL_pushfloat(L, RETVAL);
     return 1;
 }
@@ -109,6 +116,17 @@ static int r_v2_angle_index_xl(lua_State *L)
     }
     return 1;
     lua_pushvalue(L, RETVAL);
+    return 1;
+}
+
+static int r_v2_normal_index_xl(lua_State *L)
+{
+    R_V2 *self = R_CPPCAST(R_V2 *, XL_checkutype(L, 1, "R_V2"));
+    R_V2 RETVAL;
+    float length = v2_length(*self);
+    RETVAL = length == 0.0 ? R_v2(0.0, 0.0)
+           : R_v2(self->x / length, self->y / length);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
     return 1;
 }
 
@@ -565,6 +583,7 @@ static luaL_Reg r_v4_function_registry_xl[] = {
 static luaL_Reg r_v2_index_registry_xl[] = {
     {"angle", r_v2_angle_index_xl},
     {"length", r_v2_length_index_xl},
+    {"normal", r_v2_normal_index_xl},
     {"x", r_v2_x_index_xl},
     {"y", r_v2_y_index_xl},
     {NULL, NULL},

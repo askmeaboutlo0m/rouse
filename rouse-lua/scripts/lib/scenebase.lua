@@ -1,4 +1,4 @@
--- Copyright (c) 2019, 2020 askmeaboutloom
+-- Copyright (c) 2019, 2020, 2021 askmeaboutloom
 --
 -- Permission is hereby granted, free of charge, to any person obtaining a copy
 -- of this software and associated documentation files (the "Software"), to deal
@@ -252,8 +252,8 @@ function SceneBase:add(spec)
         end
     end
 
-    local x = spec.world_x or spec.x or 0.0
-    local y = spec.world_y or spec.y or 0.0
+    local x = spec.world_x or spec.x or spec.pos and spec.pos.x or 0.0
+    local y = spec.world_y or spec.y or spec.pos and spec.pos.y or 0.0
 
     if (spec.world_x or spec.world_y) and parent then
         x = x - parent.world_pos_x

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 askmeaboutloom
+ * Copyright (c) 2020, 2021 askmeaboutloom
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -197,14 +197,44 @@ INDEX float rotation
     RETVAL = R_to_deg(self->GetAngle());
 END
 
+INDEX R_V2 linear_velocity
+    RETVAL = to_v2(self->GetLinearVelocity());
+END
+
 NEWINDEX R_V2 linear_velocity
     self->SetLinearVelocity(from_v2(VALUE));
 END
+
+INDEX float angular_velocity = .GetAngularVelocity
 
 NEWINDEX float angular_velocity = .SetAngularVelocity
 
 METHOD void set_transform(R_V2 position, float angle)
     self->SetTransform(from_v2(position), angle);
+END
+
+METHOD void apply_angular_impulse(float impulse, bool wake)
+    self->ApplyAngularImpulse(impulse, wake);
+END
+
+METHOD void apply_force(R_V2 force, R_V2 point, bool wake)
+    self->ApplyForce(from_v2(force), from_v2(point), wake);
+END
+
+METHOD void apply_force_to_center(R_V2 force, bool wake)
+    self->ApplyForceToCenter(from_v2(force), wake);
+END
+
+METHOD void apply_linear_impulse(R_V2 impulse, R_V2 point, bool wake)
+    self->ApplyLinearImpulse(from_v2(impulse), from_v2(point), wake);
+END
+
+METHOD void apply_linear_impulse_to_center(R_V2 impulse, bool wake)
+    self->ApplyLinearImpulseToCenter(from_v2(impulse), wake);
+END
+
+METHOD void apply_torque(float torque, bool wake)
+    self->ApplyTorque(torque, wake);
 END
 
 @@PERL

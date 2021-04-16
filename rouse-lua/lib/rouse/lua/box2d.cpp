@@ -4,7 +4,7 @@
 /* Modify the matching .xl file and rebuild.     */
 /*************************************************/
 /*
- * Copyright (c) 2020 askmeaboutloom
+ * Copyright (c) 2020, 2021 askmeaboutloom
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -268,12 +268,30 @@ static int b2body_rotation_index_xl(lua_State *L)
     return 1;
 }
 
+static int b2body_linear_velocity_index_xl(lua_State *L)
+{
+    b2Body *self = R_CPPCAST(b2Body *, XL_checkpptype(L, 1, "b2Body"));
+    R_V2 RETVAL;
+    RETVAL = to_v2(self->GetLinearVelocity());
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
+    return 1;
+}
+
 static int b2body_linear_velocity_newindex_xl(lua_State *L)
 {
     b2Body *self = R_CPPCAST(b2Body *, XL_checkpptype(L, 1, "b2Body"));
     R_V2 VALUE = *((R_V2 *)luaL_checkudata(L, 2, "R_V2"));
     self->SetLinearVelocity(from_v2(VALUE));
     return 0;
+}
+
+static int b2body_angular_velocity_index_xl(lua_State *L)
+{
+    b2Body *self = R_CPPCAST(b2Body *, XL_checkpptype(L, 1, "b2Body"));
+    float RETVAL;
+    RETVAL = self->GetAngularVelocity();
+    XL_pushfloat(L, RETVAL);
+    return 1;
 }
 
 static int b2body_angular_velocity_newindex_xl(lua_State *L)
@@ -290,6 +308,62 @@ static int b2body_method_set_transform_xl(lua_State *L)
     R_V2 position = *((R_V2 *)luaL_checkudata(L, 2, "R_V2"));
     float angle = XL_checkfloat(L, 3);
     self->SetTransform(from_v2(position), angle);
+    return 0;
+}
+
+static int b2body_method_apply_angular_impulse_xl(lua_State *L)
+{
+    b2Body *self = R_CPPCAST(b2Body *, XL_checkpptype(L, 1, "b2Body"));
+    float impulse = XL_checkfloat(L, 2);
+    bool wake = XL_checkbool(L, 3);
+    self->ApplyAngularImpulse(impulse, wake);
+    return 0;
+}
+
+static int b2body_method_apply_force_xl(lua_State *L)
+{
+    b2Body *self = R_CPPCAST(b2Body *, XL_checkpptype(L, 1, "b2Body"));
+    R_V2 force = *((R_V2 *)luaL_checkudata(L, 2, "R_V2"));
+    R_V2 point = *((R_V2 *)luaL_checkudata(L, 3, "R_V2"));
+    bool wake = XL_checkbool(L, 4);
+    self->ApplyForce(from_v2(force), from_v2(point), wake);
+    return 0;
+}
+
+static int b2body_method_apply_force_to_center_xl(lua_State *L)
+{
+    b2Body *self = R_CPPCAST(b2Body *, XL_checkpptype(L, 1, "b2Body"));
+    R_V2 force = *((R_V2 *)luaL_checkudata(L, 2, "R_V2"));
+    bool wake = XL_checkbool(L, 3);
+    self->ApplyForceToCenter(from_v2(force), wake);
+    return 0;
+}
+
+static int b2body_method_apply_linear_impulse_xl(lua_State *L)
+{
+    b2Body *self = R_CPPCAST(b2Body *, XL_checkpptype(L, 1, "b2Body"));
+    R_V2 impulse = *((R_V2 *)luaL_checkudata(L, 2, "R_V2"));
+    R_V2 point = *((R_V2 *)luaL_checkudata(L, 3, "R_V2"));
+    bool wake = XL_checkbool(L, 4);
+    self->ApplyLinearImpulse(from_v2(impulse), from_v2(point), wake);
+    return 0;
+}
+
+static int b2body_method_apply_linear_impulse_to_center_xl(lua_State *L)
+{
+    b2Body *self = R_CPPCAST(b2Body *, XL_checkpptype(L, 1, "b2Body"));
+    R_V2 impulse = *((R_V2 *)luaL_checkudata(L, 2, "R_V2"));
+    bool wake = XL_checkbool(L, 3);
+    self->ApplyLinearImpulseToCenter(from_v2(impulse), wake);
+    return 0;
+}
+
+static int b2body_method_apply_torque_xl(lua_State *L)
+{
+    b2Body *self = R_CPPCAST(b2Body *, XL_checkpptype(L, 1, "b2Body"));
+    float torque = XL_checkfloat(L, 2);
+    bool wake = XL_checkbool(L, 3);
+    self->ApplyTorque(torque, wake);
     return 0;
 }
 
@@ -992,7 +1066,9 @@ static luaL_Reg b2_world_function_registry_xl[] = {
 
 static luaL_Reg b2body_index_registry_xl[] = {
     {"angle", b2body_angle_index_xl},
+    {"angular_velocity", b2body_angular_velocity_index_xl},
     {"destroyed", b2body_destroyed_index_xl},
+    {"linear_velocity", b2body_linear_velocity_index_xl},
     {"pos", b2body_pos_index_xl},
     {"position", b2body_position_index_xl},
     {"rotation", b2body_rotation_index_xl},
@@ -1022,6 +1098,12 @@ static luaL_Reg r_luab2revolutejointdef_method_registry_xl[] = {
 static luaL_Reg b2body_method_registry_xl[] = {
     {"__index", b2body_index_xl},
     {"__newindex", b2body_newindex_xl},
+    {"apply_angular_impulse", b2body_method_apply_angular_impulse_xl},
+    {"apply_force", b2body_method_apply_force_xl},
+    {"apply_force_to_center", b2body_method_apply_force_to_center_xl},
+    {"apply_linear_impulse", b2body_method_apply_linear_impulse_xl},
+    {"apply_linear_impulse_to_center", b2body_method_apply_linear_impulse_to_center_xl},
+    {"apply_torque", b2body_method_apply_torque_xl},
     {"create_fixture", b2body_method_create_fixture_xl},
     {"set_transform", b2body_method_set_transform_xl},
     {NULL, NULL},

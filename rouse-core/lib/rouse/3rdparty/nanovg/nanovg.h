@@ -52,6 +52,7 @@ struct NVGpaint {
 	NVGcolor innerColor;
 	NVGcolor outerColor;
 	int image;
+	unsigned int texture;
 };
 typedef struct NVGpaint NVGpaint;
 
@@ -430,6 +431,9 @@ NVGpaint nvgRadialGradient(NVGcontext* ctx, float cx, float cy, float inr, float
 // The gradient is transformed by the current transform when it is passed to nvgFillPaint() or nvgStrokePaint().
 NVGpaint nvgImagePattern(NVGcontext* ctx, float ox, float oy, float ex, float ey,
 						 float angle, int image, float alpha);
+
+NVGpaint nvgTexturePattern(NVGcontext* ctx, float ox, float oy, float ex, float ey,
+						   float angle, unsigned int texture, float alpha);
 
 //
 // Scissoring

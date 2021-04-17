@@ -953,12 +953,10 @@ NVGpaint nvgBoxGradient(NVGcontext* ctx,
 }
 
 
-NVGpaint nvgImagePattern(NVGcontext* ctx,
-								float cx, float cy, float w, float h, float angle,
-								int image, float alpha)
+static NVGpaint nvg__pattern(float cx, float cy, float w, float h, float angle,
+								float alpha)
 {
 	NVGpaint p;
-	NVG_NOTUSED(ctx);
 	memset(&p, 0, sizeof(p));
 
 	nvgTransformRotate(p.xform, angle);
@@ -968,10 +966,30 @@ NVGpaint nvgImagePattern(NVGcontext* ctx,
 	p.extent[0] = w;
 	p.extent[1] = h;
 
-	p.image = image;
-
 	p.innerColor = p.outerColor = nvgRGBAf(1,1,1,alpha);
 
+	return p;
+}
+
+NVGpaint nvgImagePattern(NVGcontext* ctx,
+								float cx, float cy, float w, float h, float angle,
+								int image, float alpha)
+{
+	NVGpaint p;
+	NVG_NOTUSED(ctx);
+	p = nvg__pattern(cx, cy, w, h, angle, alpha);
+	p.image = image;
+	return p;
+}
+
+NVGpaint nvgTexturePattern(NVGcontext* ctx,
+								float cx, float cy, float w, float h, float angle,
+								unsigned int texture, float alpha)
+{
+	NVGpaint p;
+	NVG_NOTUSED(ctx);
+	p = nvg__pattern(cx, cy, w, h, angle, alpha);
+	p.texture = texture;
 	return p;
 }
 

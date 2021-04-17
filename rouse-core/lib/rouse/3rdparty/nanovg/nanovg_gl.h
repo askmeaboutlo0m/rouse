@@ -169,7 +169,7 @@ enum GLNVGcallType {
 
 struct GLNVGcall {
 	int type;
-	int image;
+	unsigned int texture;
 	int pathOffset;
 	int pathCount;
 	int triangleOffset;
@@ -957,6 +957,21 @@ static int glnvg__convertPaint(GLNVGcontext* gl, GLNVGfragUniforms* frag, NVGpai
 			frag->texType = 2.0f;
 		#endif
 //		printf("frag->texType = %d\n", frag->texType);
+	} else if (paint->texture != 0) {
+		float m1[6], m2[6];
+		nvgTransformTranslate(m1, 0.0f, frag->extent[1] * 0.5f);
+		nvgTransformMultiply(m1, paint->xform);
+		nvgTransformScale(m2, 1.0f, -1.0f);
+		nvgTransformMultiply(m2, m1);
+		nvgTransformTranslate(m1, 0.0f, -frag->extent[1] * 0.5f);
+		nvgTransformMultiply(m1, m2);
+		nvgTransformInverse(invxform, m1);
+		frag->type = NSVG_SHADER_FILLIMG;
+		#if NANOVG_GL_USE_UNIFORMBUFFER
+		frag->texType = 1;
+		#else
+		frag->texType = 1.0f;
+		#endif
 	} else {
 		frag->type = NSVG_SHADER_FILLGRAD;
 		frag->radius = paint->radius;
@@ -971,7 +986,7 @@ static int glnvg__convertPaint(GLNVGcontext* gl, GLNVGfragUniforms* frag, NVGpai
 
 static GLNVGfragUniforms* nvg__fragUniformPtr(GLNVGcontext* gl, int i);
 
-static void glnvg__setUniforms(GLNVGcontext* gl, int uniformOffset, int image)
+static void glnvg__setUniforms(GLNVGcontext* gl, int uniformOffset, unsigned int texture)
 {
 #if NANOVG_GL_USE_UNIFORMBUFFER
 	glBindBufferRange(GL_UNIFORM_BUFFER, GLNVG_FRAG_BINDING, gl->fragBuf, uniformOffset, sizeof(GLNVGfragUniforms));
@@ -980,9 +995,8 @@ static void glnvg__setUniforms(GLNVGcontext* gl, int uniformOffset, int image)
 	glUniform4fv(gl->shader.loc[GLNVG_LOC_FRAG], NANOVG_GL_UNIFORMARRAY_SIZE, &(frag->uniformArray[0][0]));
 #endif
 
-	if (image != 0) {
-		GLNVGtexture* tex = glnvg__findTexture(gl, image);
-		glnvg__bindTexture(gl, tex != NULL ? tex->tex : 0);
+	if (texture != 0) {
+		glnvg__bindTexture(gl, texture);
 		glnvg__checkError(gl, "tex paint tex");
 	} else {
 		glnvg__bindTexture(gl, 0);
@@ -1022,7 +1036,7 @@ static void glnvg__fill(GLNVGcontext* gl, GLNVGcall* call)
 	// Draw anti-aliased pixels
 	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 
-	glnvg__setUniforms(gl, call->uniformOffset + gl->fragSize, call->image);
+	glnvg__setUniforms(gl, call->uniformOffset + gl->fragSize, call->texture);
 	glnvg__checkError(gl, "fill fill");
 
 	if (gl->flags & NVG_ANTIALIAS) {
@@ -1046,7 +1060,7 @@ static void glnvg__convexFill(GLNVGcontext* gl, GLNVGcall* call)
 	GLNVGpath* paths = &gl->paths[call->pathOffset];
 	int i, npaths = call->pathCount;
 
-	glnvg__setUniforms(gl, call->uniformOffset, call->image);
+	glnvg__setUniforms(gl, call->uniformOffset, call->texture);
 	glnvg__checkError(gl, "convex fill");
 
 	for (i = 0; i < npaths; i++) {
@@ -1071,13 +1085,13 @@ static void glnvg__stroke(GLNVGcontext* gl, GLNVGcall* call)
 		// Fill the stroke base without overlap
 		glnvg__stencilFunc(gl, GL_EQUAL, 0x0, 0xff);
 		glStencilOp(GL_KEEP, GL_KEEP, GL_INCR);
-		glnvg__setUniforms(gl, call->uniformOffset + gl->fragSize, call->image);
+		glnvg__setUniforms(gl, call->uniformOffset + gl->fragSize, call->texture);
 		glnvg__checkError(gl, "stroke fill 0");
 		for (i = 0; i < npaths; i++)
 			glDrawArrays(GL_TRIANGLE_STRIP, paths[i].strokeOffset, paths[i].strokeCount);
 
 		// Draw anti-aliased pixels.
-		glnvg__setUniforms(gl, call->uniformOffset, call->image);
+		glnvg__setUniforms(gl, call->uniformOffset, call->texture);
 		glnvg__stencilFunc(gl, GL_EQUAL, 0x00, 0xff);
 		glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 		for (i = 0; i < npaths; i++)
@@ -1097,7 +1111,7 @@ static void glnvg__stroke(GLNVGcontext* gl, GLNVGcall* call)
 //		glnvg__convertPaint(gl, nvg__fragUniformPtr(gl, call->uniformOffset + gl->fragSize), paint, scissor, strokeWidth, fringe, 1.0f - 0.5f/255.0f);
 
 	} else {
-		glnvg__setUniforms(gl, call->uniformOffset, call->image);
+		glnvg__setUniforms(gl, call->uniformOffset, call->texture);
 		glnvg__checkError(gl, "stroke fill");
 		// Draw Strokes
 		for (i = 0; i < npaths; i++)
@@ -1107,7 +1121,7 @@ static void glnvg__stroke(GLNVGcontext* gl, GLNVGcall* call)
 
 static void glnvg__triangles(GLNVGcontext* gl, GLNVGcall* call)
 {
-	glnvg__setUniforms(gl, call->uniformOffset, call->image);
+	glnvg__setUniforms(gl, call->uniformOffset, call->texture);
 	glnvg__checkError(gl, "triangles fill");
 
 	glDrawArrays(GL_TRIANGLES, call->triangleOffset, call->triangleCount);
@@ -1342,6 +1356,17 @@ static void glnvg__vset(NVGvertex* vtx, float x, float y, float u, float v)
 	vtx->v = v;
 }
 
+static unsigned int glnvg__getPaintTexture(GLNVGcontext *gl, const NVGpaint *paint)
+{
+	GLNVGtexture* tex;
+	if (paint->image != 0) {
+		tex = glnvg__findTexture(gl, paint->image);
+		return tex == NULL ? 0 : tex->tex;
+	} else {
+		return paint->texture;
+	}
+}
+
 static void glnvg__renderFill(void* uptr, NVGpaint* paint, NVGcompositeOperationState compositeOperation, NVGscissor* scissor, float fringe,
 							  const float* bounds, const NVGpath* paths, int npaths)
 {
@@ -1358,7 +1383,7 @@ static void glnvg__renderFill(void* uptr, NVGpaint* paint, NVGcompositeOperation
 	call->pathOffset = glnvg__allocPaths(gl, npaths);
 	if (call->pathOffset == -1) goto error;
 	call->pathCount = npaths;
-	call->image = paint->image;
+	call->texture = glnvg__getPaintTexture(gl, paint);
 	call->blendFunc = glnvg__blendCompositeOperation(compositeOperation);
 
 	if (npaths == 1 && paths[0].convex)
@@ -1437,7 +1462,7 @@ static void glnvg__renderStroke(void* uptr, NVGpaint* paint, NVGcompositeOperati
 	call->pathOffset = glnvg__allocPaths(gl, npaths);
 	if (call->pathOffset == -1) goto error;
 	call->pathCount = npaths;
-	call->image = paint->image;
+	call->texture = glnvg__getPaintTexture(gl, paint);
 	call->blendFunc = glnvg__blendCompositeOperation(compositeOperation);
 
 	// Allocate vertices for all the paths.
@@ -1490,7 +1515,7 @@ static void glnvg__renderTriangles(void* uptr, NVGpaint* paint, NVGcompositeOper
 	if (call == NULL) return;
 
 	call->type = GLNVG_TRIANGLES;
-	call->image = paint->image;
+	call->texture = glnvg__getPaintTexture(gl, paint);
 	call->blendFunc = glnvg__blendCompositeOperation(compositeOperation);
 
 	// Allocate vertices for all the paths.

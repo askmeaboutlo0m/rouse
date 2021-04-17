@@ -34,6 +34,7 @@ static void check_matrix_index(lua_State *L, lua_Integer i, int arg)
 @xl
 
 PPTYPE R_BitmapImage
+PPTYPE R_FrameBuffer
 
 UTYPE R_LuaNvgTransform R.Nvg.Transform
 
@@ -263,6 +264,12 @@ END
 METHOD NVGpaint image_pattern(float ox, float oy, float ex, float ey,
                               float angle, R_BitmapImage *image, float alpha)
     RETVAL = R_bitmap_image_pattern(image, self, ox, oy, ex, ey, angle, alpha);
+END
+
+METHOD NVGpaint frame_buffer_pattern(float ox, float oy, float ex, float ey,
+                                    float angle, R_FrameBuffer *fb, float alpha)
+    RETVAL = nvgTexturePattern(R_nvg_context(self), ox, oy, ex, ey, angle,
+                               fb->color, alpha);
 END
 
 

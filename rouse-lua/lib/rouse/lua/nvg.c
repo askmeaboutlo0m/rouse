@@ -527,6 +527,23 @@ static int r_nvg_method_image_pattern_xl(lua_State *L)
     return 1;
 }
 
+static int r_nvg_method_frame_buffer_pattern_xl(lua_State *L)
+{
+    R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
+    float ox = XL_checkfloat(L, 2);
+    float oy = XL_checkfloat(L, 3);
+    float ex = XL_checkfloat(L, 4);
+    float ey = XL_checkfloat(L, 5);
+    float angle = XL_checkfloat(L, 6);
+    R_FrameBuffer *fb = R_CPPCAST(R_FrameBuffer *, XL_checkpptype(L, 7, "R_FrameBuffer"));
+    float alpha = XL_checkfloat(L, 8);
+    NVGpaint RETVAL;
+    RETVAL = nvgTexturePattern(R_nvg_context(self), ox, oy, ex, ey, angle,
+                               fb->color, alpha);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(NVGpaint), "NVGpaint", 0);
+    return 1;
+}
+
 static int r_nvg_method_create_font_xl(lua_State *L)
 {
     R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
@@ -1240,6 +1257,7 @@ static luaL_Reg r_nvg_method_registry_xl[] = {
     {"fill", r_nvg_method_fill_xl},
     {"fill_color", r_nvg_method_fill_color_xl},
     {"fill_paint", r_nvg_method_fill_paint_xl},
+    {"frame_buffer_pattern", r_nvg_method_frame_buffer_pattern_xl},
     {"global_alpha", r_nvg_method_global_alpha_xl},
     {"image_pattern", r_nvg_method_image_pattern_xl},
     {"intersect_scissor", r_nvg_method_intersect_scissor_xl},

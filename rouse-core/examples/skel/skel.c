@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 askmeaboutloom
+ * Copyright (c) 2019, 2021 askmeaboutloom
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -63,7 +63,7 @@ static void on_free(void *data)
     SceneData *sd = data;
     R_binder_free(sd->binder);
     R_gl_texture_free(sd->texture);
-    R_model_free(sd->model);
+    R_model_decref(sd->model);
     free(sd);
 }
 

@@ -31,9 +31,15 @@ typedef enum R_BufferType {
     R_BUFFER_TYPE_FLOAT  = 102, /* 'f' in ASCII */
 } R_BufferType;
 
+typedef union R_MeshBufferValues {
+    unsigned short *ushorts; /* R_BUFFER_TYPE_USHORT */
+    float          *floats;  /* R_BUFFER_TYPE_FLOAT  */
+} R_MeshBufferValues;
+
 /* A buffer in a mesh. Usually some kind of index or vertex buffer. */
 typedef struct R_MeshBuffer {
     R_MAGIC_FIELD
+    int refs;
     /* The data type of the buffer, from `R_BufferType`. */
     R_BufferType type;
     /*
@@ -56,24 +62,27 @@ typedef struct R_MeshBuffer {
      * need depends on the `type` of this mesh buffer.
      */
     union {
-        unsigned short *ushorts; /* R_BUFFER_TYPE_USHORT */
-        float          *floats;  /* R_BUFFER_TYPE_FLOAT  */
+        R_MeshBufferValues values;
+        unsigned short     *ushorts;
+        float              *floats;
     };
 } R_MeshBuffer;
 
 typedef struct R_Mesh {
     R_MAGIC_FIELD
+    int refs;
     struct {
-        int           count;
-        R_MeshBuffer *values;
+        int          count;
+        R_MeshBuffer **values;
     } buffer;
 } R_Mesh;
 
 typedef struct R_Model {
     R_MAGIC_FIELD
+    int refs;
     struct {
         int    count;
-        R_Mesh *values;
+        R_Mesh **values;
     } mesh;
 } R_Model;
 
@@ -101,10 +110,18 @@ R_Model *R_model_new(const char *title, R_ParseReadFn read, R_UserData user,
 
 R_Model *R_model_from_file(const char *path);
 
-void R_model_free(R_Model *model);
+R_Model *R_model_decref(R_Model *model);
+R_Model *R_model_incref(R_Model *model);
 
+int R_model_refs(R_Model *model);
 
 R_Mesh *R_model_mesh_by_index(R_Model *model, int index);
+
+
+R_Mesh *R_mesh_decref(R_Mesh *mesh);
+R_Mesh *R_mesh_incref(R_Mesh *mesh);
+
+int R_mesh_refs(R_Mesh *mesh);
 
 
 int R_mesh_buffer_index_by_name(R_Mesh *mesh, const char *name);
@@ -119,3 +136,9 @@ unsigned short *R_mesh_ushorts_by_name(R_Mesh *mesh, const char *name,
 
 float *R_mesh_floats_by_index(R_Mesh *mesh, int index, int *out_count);
 float *R_mesh_floats_by_name(R_Mesh *mesh, const char *name, int *out_count);
+
+
+R_MeshBuffer *R_mesh_buffer_decref(R_MeshBuffer *mbuf);
+R_MeshBuffer *R_mesh_buffer_incref(R_MeshBuffer *mbuf);
+
+int R_mesh_buffer_refs(R_MeshBuffer *mbuf);

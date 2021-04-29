@@ -75,7 +75,7 @@ static void test_cube(void)
     float_buffer_ok(R_mesh_buffer_by_index(mesh, 2), "normals",
                     R_LENGTH(cube_normals), 3, cube_normals);
 
-    R_model_free(cube);
+    R_model_decref(cube);
 }
 
 

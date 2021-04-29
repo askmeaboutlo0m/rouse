@@ -1,0 +1,78 @@
+/*
+ * Copyright (c) 2021 askmeaboutloom
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+#include <rouse.h>
+#include "lua_inc.h"
+#include "intern.h"
+#include "util.h"
+
+@xl
+
+UTYPE R_V3
+UTYPE R_M4
+
+
+PPTYPE R_Camera R.Camera
+
+FIELD R_M4 proj
+FIELD R_M4 view
+
+CONSTRUCTOR new() = R_camera_new
+
+CONSTRUCTOR new_perspective(float fov, float aspect_ratio,
+                            float near, float far) = R_camera_new_perspective
+
+DESTRUCTOR = R_camera_free
+
+METHOD void bind(int proj_location, int view_location) = R_camera_bind
+
+
+PPTYPE R_FirstPerson R.FirstPerson
+
+FIELD R_V3  pos
+FIELD float h
+FIELD float v
+
+CONSTRUCTOR new(R_V3 pos, float h, float v) = R_first_person_new
+
+DESTRUCTOR = R_first_person_free
+
+INDEX ... directions
+    R_V3 forward, right, up;
+    R_first_person_directions(self, &forward, &right, &up);
+    lua_createtable(L, 0, 3);
+    XL_pushnewutypeuv(L, &forward, sizeof(R_V3), "R_V3", 0);
+    lua_setfield(L, -1, "forward");
+    XL_pushnewutypeuv(L, &right, sizeof(R_V3), "R_V3", 0);
+    lua_setfield(L, -1, "right");
+    XL_pushnewutypeuv(L, &up, sizeof(R_V3), "R_V3", 0);
+    lua_setfield(L, -1, "up");
+    return 1;
+END
+
+METHOD void look(float hd, float vd) = R_first_person_look
+
+METHOD void move(float forward, float right, float up) = R_first_person_move
+
+METHOD void apply(R_Camera *camera) = R_first_person_apply
+
+
+INIT extern R_lua_camera_init

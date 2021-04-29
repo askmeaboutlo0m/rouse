@@ -80,6 +80,7 @@ set(rouse_lua_sources
 set(rouse_lua_xls
     "${CMAKE_SOURCE_DIR}/lib/rouse/lua/al.xl"
     "${CMAKE_SOURCE_DIR}/lib/rouse/lua/bitmap.xl"
+    "${CMAKE_SOURCE_DIR}/lib/rouse/lua/camera.xl"
     "${CMAKE_SOURCE_DIR}/lib/rouse/lua/ease.xl"
     "${CMAKE_SOURCE_DIR}/lib/rouse/lua/frame_buffer.xl"
     "${CMAKE_SOURCE_DIR}/lib/rouse/lua/frame_renderer.xl"

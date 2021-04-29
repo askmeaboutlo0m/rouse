@@ -262,4 +262,72 @@ END
 SETFROMTABLE set
 
 
+UTYPE R_M4 R.M4
+
+CONSTRUCTOR identity() = R_m4_identity
+
+FIELD float m00
+FIELD float m01
+FIELD float m02
+FIELD float m03
+FIELD float m10
+FIELD float m11
+FIELD float m12
+FIELD float m13
+FIELD float m20
+FIELD float m21
+FIELD float m22
+FIELD float m23
+FIELD float m30
+FIELD float m31
+FIELD float m32
+FIELD float m33
+
+METHOD ... __tostring()
+    lua_pushfstring(L, "R_M4(%f, %f, %f, %f, %f, %f, %f, %f, "
+                            "%f, %f, %f, %f, %f, %f, %f, %f)",
+                    R_lua_float2n(self->m00), R_lua_float2n(self->m01),
+                    R_lua_float2n(self->m02), R_lua_float2n(self->m03),
+                    R_lua_float2n(self->m10), R_lua_float2n(self->m11),
+                    R_lua_float2n(self->m12), R_lua_float2n(self->m13),
+                    R_lua_float2n(self->m20), R_lua_float2n(self->m21),
+                    R_lua_float2n(self->m22), R_lua_float2n(self->m23),
+                    R_lua_float2n(self->m30), R_lua_float2n(self->m31),
+                    R_lua_float2n(self->m32), R_lua_float2n(self->m33));
+    return 1;
+END
+
+METHOD ... unpack()
+    XL_pushfloat(L, self->m00);
+    XL_pushfloat(L, self->m01);
+    XL_pushfloat(L, self->m02);
+    XL_pushfloat(L, self->m03);
+    XL_pushfloat(L, self->m10);
+    XL_pushfloat(L, self->m11);
+    XL_pushfloat(L, self->m12);
+    XL_pushfloat(L, self->m13);
+    XL_pushfloat(L, self->m20);
+    XL_pushfloat(L, self->m21);
+    XL_pushfloat(L, self->m22);
+    XL_pushfloat(L, self->m23);
+    XL_pushfloat(L, self->m30);
+    XL_pushfloat(L, self->m31);
+    XL_pushfloat(L, self->m32);
+    XL_pushfloat(L, self->m33);
+    return 16;
+END
+
+METHOD R_M4 rotate_x(float angle)
+    RETVAL = R_m4_rotate_x(*self, angle);
+END
+
+METHOD R_M4 rotate_y(float angle)
+    RETVAL = R_m4_rotate_y(*self, angle);
+END
+
+METHOD R_M4 rotate_z(float angle)
+    RETVAL = R_m4_rotate_z(*self, angle);
+END
+
+
 INIT extern R_lua_geom_init

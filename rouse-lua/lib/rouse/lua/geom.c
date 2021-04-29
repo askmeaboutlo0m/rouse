@@ -524,9 +524,363 @@ static int r_v4_method_set_xl(lua_State *L)
     return XL_setfromtable(L, "R_V4", 1, 2);
 }
 
+static int r_m4_identity_xl(lua_State *L)
+{
+    R_M4 RETVAL;
+    RETVAL = R_m4_identity();
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_M4), "R_M4", 0);
+    return 1;
+}
+
+static int r_m4_m00_index_xl(lua_State *L)
+{
+    R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
+    float RETVAL;
+    RETVAL = self->m00;
+    XL_pushfloat(L, RETVAL);
+    return 1;
+}
+
+static int r_m4_m00_newindex_xl(lua_State *L)
+{
+    R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
+    float VALUE = XL_checkfloat(L, 2);
+    self->m00 = VALUE;
+    return 0;
+}
+
+static int r_m4_m01_index_xl(lua_State *L)
+{
+    R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
+    float RETVAL;
+    RETVAL = self->m01;
+    XL_pushfloat(L, RETVAL);
+    return 1;
+}
+
+static int r_m4_m01_newindex_xl(lua_State *L)
+{
+    R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
+    float VALUE = XL_checkfloat(L, 2);
+    self->m01 = VALUE;
+    return 0;
+}
+
+static int r_m4_m02_index_xl(lua_State *L)
+{
+    R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
+    float RETVAL;
+    RETVAL = self->m02;
+    XL_pushfloat(L, RETVAL);
+    return 1;
+}
+
+static int r_m4_m02_newindex_xl(lua_State *L)
+{
+    R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
+    float VALUE = XL_checkfloat(L, 2);
+    self->m02 = VALUE;
+    return 0;
+}
+
+static int r_m4_m03_index_xl(lua_State *L)
+{
+    R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
+    float RETVAL;
+    RETVAL = self->m03;
+    XL_pushfloat(L, RETVAL);
+    return 1;
+}
+
+static int r_m4_m03_newindex_xl(lua_State *L)
+{
+    R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
+    float VALUE = XL_checkfloat(L, 2);
+    self->m03 = VALUE;
+    return 0;
+}
+
+static int r_m4_m10_index_xl(lua_State *L)
+{
+    R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
+    float RETVAL;
+    RETVAL = self->m10;
+    XL_pushfloat(L, RETVAL);
+    return 1;
+}
+
+static int r_m4_m10_newindex_xl(lua_State *L)
+{
+    R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
+    float VALUE = XL_checkfloat(L, 2);
+    self->m10 = VALUE;
+    return 0;
+}
+
+static int r_m4_m11_index_xl(lua_State *L)
+{
+    R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
+    float RETVAL;
+    RETVAL = self->m11;
+    XL_pushfloat(L, RETVAL);
+    return 1;
+}
+
+static int r_m4_m11_newindex_xl(lua_State *L)
+{
+    R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
+    float VALUE = XL_checkfloat(L, 2);
+    self->m11 = VALUE;
+    return 0;
+}
+
+static int r_m4_m12_index_xl(lua_State *L)
+{
+    R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
+    float RETVAL;
+    RETVAL = self->m12;
+    XL_pushfloat(L, RETVAL);
+    return 1;
+}
+
+static int r_m4_m12_newindex_xl(lua_State *L)
+{
+    R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
+    float VALUE = XL_checkfloat(L, 2);
+    self->m12 = VALUE;
+    return 0;
+}
+
+static int r_m4_m13_index_xl(lua_State *L)
+{
+    R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
+    float RETVAL;
+    RETVAL = self->m13;
+    XL_pushfloat(L, RETVAL);
+    return 1;
+}
+
+static int r_m4_m13_newindex_xl(lua_State *L)
+{
+    R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
+    float VALUE = XL_checkfloat(L, 2);
+    self->m13 = VALUE;
+    return 0;
+}
+
+static int r_m4_m20_index_xl(lua_State *L)
+{
+    R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
+    float RETVAL;
+    RETVAL = self->m20;
+    XL_pushfloat(L, RETVAL);
+    return 1;
+}
+
+static int r_m4_m20_newindex_xl(lua_State *L)
+{
+    R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
+    float VALUE = XL_checkfloat(L, 2);
+    self->m20 = VALUE;
+    return 0;
+}
+
+static int r_m4_m21_index_xl(lua_State *L)
+{
+    R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
+    float RETVAL;
+    RETVAL = self->m21;
+    XL_pushfloat(L, RETVAL);
+    return 1;
+}
+
+static int r_m4_m21_newindex_xl(lua_State *L)
+{
+    R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
+    float VALUE = XL_checkfloat(L, 2);
+    self->m21 = VALUE;
+    return 0;
+}
+
+static int r_m4_m22_index_xl(lua_State *L)
+{
+    R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
+    float RETVAL;
+    RETVAL = self->m22;
+    XL_pushfloat(L, RETVAL);
+    return 1;
+}
+
+static int r_m4_m22_newindex_xl(lua_State *L)
+{
+    R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
+    float VALUE = XL_checkfloat(L, 2);
+    self->m22 = VALUE;
+    return 0;
+}
+
+static int r_m4_m23_index_xl(lua_State *L)
+{
+    R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
+    float RETVAL;
+    RETVAL = self->m23;
+    XL_pushfloat(L, RETVAL);
+    return 1;
+}
+
+static int r_m4_m23_newindex_xl(lua_State *L)
+{
+    R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
+    float VALUE = XL_checkfloat(L, 2);
+    self->m23 = VALUE;
+    return 0;
+}
+
+static int r_m4_m30_index_xl(lua_State *L)
+{
+    R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
+    float RETVAL;
+    RETVAL = self->m30;
+    XL_pushfloat(L, RETVAL);
+    return 1;
+}
+
+static int r_m4_m30_newindex_xl(lua_State *L)
+{
+    R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
+    float VALUE = XL_checkfloat(L, 2);
+    self->m30 = VALUE;
+    return 0;
+}
+
+static int r_m4_m31_index_xl(lua_State *L)
+{
+    R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
+    float RETVAL;
+    RETVAL = self->m31;
+    XL_pushfloat(L, RETVAL);
+    return 1;
+}
+
+static int r_m4_m31_newindex_xl(lua_State *L)
+{
+    R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
+    float VALUE = XL_checkfloat(L, 2);
+    self->m31 = VALUE;
+    return 0;
+}
+
+static int r_m4_m32_index_xl(lua_State *L)
+{
+    R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
+    float RETVAL;
+    RETVAL = self->m32;
+    XL_pushfloat(L, RETVAL);
+    return 1;
+}
+
+static int r_m4_m32_newindex_xl(lua_State *L)
+{
+    R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
+    float VALUE = XL_checkfloat(L, 2);
+    self->m32 = VALUE;
+    return 0;
+}
+
+static int r_m4_m33_index_xl(lua_State *L)
+{
+    R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
+    float RETVAL;
+    RETVAL = self->m33;
+    XL_pushfloat(L, RETVAL);
+    return 1;
+}
+
+static int r_m4_m33_newindex_xl(lua_State *L)
+{
+    R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
+    float VALUE = XL_checkfloat(L, 2);
+    self->m33 = VALUE;
+    return 0;
+}
+
+static int r_m4_method_tostring_xl(lua_State *L)
+{
+    R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
+    lua_pushfstring(L, "R_M4(%f, %f, %f, %f, %f, %f, %f, %f, "
+                            "%f, %f, %f, %f, %f, %f, %f, %f)",
+                    R_lua_float2n(self->m00), R_lua_float2n(self->m01),
+                    R_lua_float2n(self->m02), R_lua_float2n(self->m03),
+                    R_lua_float2n(self->m10), R_lua_float2n(self->m11),
+                    R_lua_float2n(self->m12), R_lua_float2n(self->m13),
+                    R_lua_float2n(self->m20), R_lua_float2n(self->m21),
+                    R_lua_float2n(self->m22), R_lua_float2n(self->m23),
+                    R_lua_float2n(self->m30), R_lua_float2n(self->m31),
+                    R_lua_float2n(self->m32), R_lua_float2n(self->m33));
+    return 1;
+}
+
+static int r_m4_method_unpack_xl(lua_State *L)
+{
+    R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
+    XL_pushfloat(L, self->m00);
+    XL_pushfloat(L, self->m01);
+    XL_pushfloat(L, self->m02);
+    XL_pushfloat(L, self->m03);
+    XL_pushfloat(L, self->m10);
+    XL_pushfloat(L, self->m11);
+    XL_pushfloat(L, self->m12);
+    XL_pushfloat(L, self->m13);
+    XL_pushfloat(L, self->m20);
+    XL_pushfloat(L, self->m21);
+    XL_pushfloat(L, self->m22);
+    XL_pushfloat(L, self->m23);
+    XL_pushfloat(L, self->m30);
+    XL_pushfloat(L, self->m31);
+    XL_pushfloat(L, self->m32);
+    XL_pushfloat(L, self->m33);
+    return 16;
+}
+
+static int r_m4_method_rotate_x_xl(lua_State *L)
+{
+    R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
+    float angle = XL_checkfloat(L, 2);
+    R_M4 RETVAL;
+    RETVAL = R_m4_rotate_x(*self, angle);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_M4), "R_M4", 0);
+    return 1;
+}
+
+static int r_m4_method_rotate_y_xl(lua_State *L)
+{
+    R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
+    float angle = XL_checkfloat(L, 2);
+    R_M4 RETVAL;
+    RETVAL = R_m4_rotate_y(*self, angle);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_M4), "R_M4", 0);
+    return 1;
+}
+
+static int r_m4_method_rotate_z_xl(lua_State *L)
+{
+    R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
+    float angle = XL_checkfloat(L, 2);
+    R_M4 RETVAL;
+    RETVAL = R_m4_rotate_z(*self, angle);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_M4), "R_M4", 0);
+    return 1;
+}
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+static int r_m4_index_anchor_xl;
+static int r_m4_index_xl(lua_State *L)
+{
+    return XL_index(L, "R_M4", &r_m4_index_anchor_xl, 1, 2);
+}
 
 static int r_v2_index_anchor_xl;
 static int r_v2_index_xl(lua_State *L)
@@ -544,6 +898,12 @@ static int r_v4_index_anchor_xl;
 static int r_v4_index_xl(lua_State *L)
 {
     return XL_index(L, "R_V4", &r_v4_index_anchor_xl, 1, 2);
+}
+
+int r_m4_newindex_anchor_xl;
+static int r_m4_newindex_xl(lua_State *L)
+{
+    return XL_newindex(L, "R_M4", &r_m4_newindex_anchor_xl, 1, 2, 3);
 }
 
 int r_v2_newindex_anchor_xl;
@@ -564,6 +924,11 @@ static int r_v4_newindex_xl(lua_State *L)
     return XL_newindex(L, "R_V4", &r_v4_newindex_anchor_xl, 1, 2, 3);
 }
 
+static luaL_Reg r_m4_function_registry_xl[] = {
+    {"identity", r_m4_identity_xl},
+    {NULL, NULL},
+};
+
 static luaL_Reg r_v2_function_registry_xl[] = {
     {"new", r_v2_new_xl},
     {"polar", r_v2_polar_xl},
@@ -577,6 +942,26 @@ static luaL_Reg r_v3_function_registry_xl[] = {
 
 static luaL_Reg r_v4_function_registry_xl[] = {
     {"new", r_v4_new_xl},
+    {NULL, NULL},
+};
+
+static luaL_Reg r_m4_index_registry_xl[] = {
+    {"m00", r_m4_m00_index_xl},
+    {"m01", r_m4_m01_index_xl},
+    {"m02", r_m4_m02_index_xl},
+    {"m03", r_m4_m03_index_xl},
+    {"m10", r_m4_m10_index_xl},
+    {"m11", r_m4_m11_index_xl},
+    {"m12", r_m4_m12_index_xl},
+    {"m13", r_m4_m13_index_xl},
+    {"m20", r_m4_m20_index_xl},
+    {"m21", r_m4_m21_index_xl},
+    {"m22", r_m4_m22_index_xl},
+    {"m23", r_m4_m23_index_xl},
+    {"m30", r_m4_m30_index_xl},
+    {"m31", r_m4_m31_index_xl},
+    {"m32", r_m4_m32_index_xl},
+    {"m33", r_m4_m33_index_xl},
     {NULL, NULL},
 };
 
@@ -603,6 +988,17 @@ static luaL_Reg r_v4_index_registry_xl[] = {
     {"x", r_v4_x_index_xl},
     {"y", r_v4_y_index_xl},
     {"z", r_v4_z_index_xl},
+    {NULL, NULL},
+};
+
+static luaL_Reg r_m4_method_registry_xl[] = {
+    {"__index", r_m4_index_xl},
+    {"__newindex", r_m4_newindex_xl},
+    {"__tostring", r_m4_method_tostring_xl},
+    {"rotate_x", r_m4_method_rotate_x_xl},
+    {"rotate_y", r_m4_method_rotate_y_xl},
+    {"rotate_z", r_m4_method_rotate_z_xl},
+    {"unpack", r_m4_method_unpack_xl},
     {NULL, NULL},
 };
 
@@ -640,6 +1036,26 @@ static luaL_Reg r_v4_method_registry_xl[] = {
     {NULL, NULL},
 };
 
+static luaL_Reg r_m4_newindex_registry_xl[] = {
+    {"m00", r_m4_m00_newindex_xl},
+    {"m01", r_m4_m01_newindex_xl},
+    {"m02", r_m4_m02_newindex_xl},
+    {"m03", r_m4_m03_newindex_xl},
+    {"m10", r_m4_m10_newindex_xl},
+    {"m11", r_m4_m11_newindex_xl},
+    {"m12", r_m4_m12_newindex_xl},
+    {"m13", r_m4_m13_newindex_xl},
+    {"m20", r_m4_m20_newindex_xl},
+    {"m21", r_m4_m21_newindex_xl},
+    {"m22", r_m4_m22_newindex_xl},
+    {"m23", r_m4_m23_newindex_xl},
+    {"m30", r_m4_m30_newindex_xl},
+    {"m31", r_m4_m31_newindex_xl},
+    {"m32", r_m4_m32_newindex_xl},
+    {"m33", r_m4_m33_newindex_xl},
+    {NULL, NULL},
+};
+
 static luaL_Reg r_v2_newindex_registry_xl[] = {
     {"x", r_v2_x_newindex_xl},
     {"y", r_v2_y_newindex_xl},
@@ -663,15 +1079,19 @@ static luaL_Reg r_v4_newindex_registry_xl[] = {
 
 int R_lua_geom_init(lua_State *L)
 {
+    XL_initmetatable(L, "R_M4", r_m4_method_registry_xl);
     XL_initmetatable(L, "R_V2", r_v2_method_registry_xl);
     XL_initmetatable(L, "R_V3", r_v3_method_registry_xl);
     XL_initmetatable(L, "R_V4", r_v4_method_registry_xl);
+    XL_initindextable(L, &r_m4_index_anchor_xl, r_m4_index_registry_xl);
     XL_initindextable(L, &r_v2_index_anchor_xl, r_v2_index_registry_xl);
     XL_initindextable(L, &r_v3_index_anchor_xl, r_v3_index_registry_xl);
     XL_initindextable(L, &r_v4_index_anchor_xl, r_v4_index_registry_xl);
+    XL_initnewindextable(L, &r_m4_newindex_anchor_xl, r_m4_newindex_registry_xl);
     XL_initnewindextable(L, &r_v2_newindex_anchor_xl, r_v2_newindex_registry_xl);
     XL_initnewindextable(L, &r_v3_newindex_anchor_xl, r_v3_newindex_registry_xl);
     XL_initnewindextable(L, &r_v4_newindex_anchor_xl, r_v4_newindex_registry_xl);
+    XL_initfunctions(L, r_m4_function_registry_xl, "R", "M4", (const char *)NULL);
     XL_initfunctions(L, r_v2_function_registry_xl, "R", "V2", (const char *)NULL);
     XL_initfunctions(L, r_v3_function_registry_xl, "R", "V3", (const char *)NULL);
     XL_initfunctions(L, r_v4_function_registry_xl, "R", "V4", (const char *)NULL);

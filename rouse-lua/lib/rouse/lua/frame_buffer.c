@@ -61,12 +61,57 @@ static int r_framebufferoptions_filter_newindex_xl(lua_State *L)
     int filter;
     if (R_str_equal(VALUE, "nearest")) {
         filter = GL_NEAREST;
-    } else if (R_str_equal(VALUE, "linear")) {
+    }
+    else if (R_str_equal(VALUE, "linear")) {
         filter = GL_LINEAR;
-    } else {
+    }
+    else {
         R_LUA_DIE(L, "Unknown frame buffer filter '%s'", VALUE);
     }
     self->min_filter = self->mag_filter = filter;
+    return 0;
+}
+
+
+static R_FrameBufferAttachmentType get_attachment_type(
+    lua_State *L, const char *what, const char *value)
+{
+    if (R_str_equal(value, "none")) {
+        return R_FRAME_BUFFER_ATTACHMENT_NONE;
+    }
+    else if (R_str_equal(value, "buffer")) {
+        return R_FRAME_BUFFER_ATTACHMENT_BUFFER;
+    }
+    else if (R_str_equal(value, "texture")) {
+        return R_FRAME_BUFFER_ATTACHMENT_TEXTURE;
+    }
+    else {
+        R_LUA_DIE(L, "Unknown frame buffer %s attachment type '%s'", what, value);
+    }
+}
+
+
+static int r_framebufferoptions_color_type_newindex_xl(lua_State *L)
+{
+    R_FrameBufferOptions *self = R_CPPCAST(R_FrameBufferOptions *, XL_checkutype(L, 1, "R_FrameBufferOptions"));
+    const char *VALUE = luaL_checkstring(L, 2);
+    self->color_type = get_attachment_type(L, "color", VALUE);
+    return 0;
+}
+
+static int r_framebufferoptions_depth_type_newindex_xl(lua_State *L)
+{
+    R_FrameBufferOptions *self = R_CPPCAST(R_FrameBufferOptions *, XL_checkutype(L, 1, "R_FrameBufferOptions"));
+    const char *VALUE = luaL_checkstring(L, 2);
+    self->depth_type = get_attachment_type(L, "depth", VALUE);
+    return 0;
+}
+
+static int r_framebufferoptions_stencil_type_newindex_xl(lua_State *L)
+{
+    R_FrameBufferOptions *self = R_CPPCAST(R_FrameBufferOptions *, XL_checkutype(L, 1, "R_FrameBufferOptions"));
+    const char *VALUE = luaL_checkstring(L, 2);
+    self->stencil_type = get_attachment_type(L, "stencil", VALUE);
     return 0;
 }
 
@@ -78,7 +123,20 @@ static int r_framebufferoptions_method_set_xl(lua_State *L)
 static int r_framebuffer_new_xl(lua_State *L)
 {
     R_FrameBuffer *RETVAL;
-    return luaL_error(L, "R.FrameBuffer.new not yet implemented");
+    int argc = lua_gettop(L);
+    if (argc == 1) {
+        R_FrameBufferOptions *options = XL_pushnewutypeuv(
+                L, (R_FrameBufferOptions[1]){R_frame_buffer_options()},
+                sizeof(R_FrameBufferOptions), "R_FrameBufferOptions", 0);
+        lua_getfield(L, -1, "set");
+        lua_pushvalue(L, -2);
+        lua_pushvalue(L, 1);
+        lua_call(L, 2, 0);
+        RETVAL = R_frame_buffer_new(options);
+    }
+    else {
+        R_LUA_DIE(L, "Wrong number of arguments to R.FrameBuffer.new");
+    }
     XL_pushnewpptypeuv(L, RETVAL, "R_FrameBuffer", 0);
     return 1;
 }
@@ -96,11 +154,13 @@ static int r_framebuffer_new_2d_xl(lua_State *L)
         lua_pushvalue(L, 1);
         lua_call(L, 2, 0);
         RETVAL = R_frame_buffer_new(options);
-    } else if (argc == 2) {
+    }
+    else if (argc == 2) {
         int width  = XL_checkint(L, 1);
         int height = XL_checkint(L, 2);
         RETVAL     = R_frame_buffer_2d_new(width, height);
-    } else {
+    }
+    else {
         R_LUA_DIE(L, "Wrong number of arguments to R.FrameBuffer.new_2d");
     }
     XL_pushnewpptypeuv(L, RETVAL, "R_FrameBuffer", 0);
@@ -286,9 +346,12 @@ static luaL_Reg r_framebufferoptions_method_registry_xl[] = {
 };
 
 static luaL_Reg r_framebufferoptions_newindex_registry_xl[] = {
+    {"color_type", r_framebufferoptions_color_type_newindex_xl},
+    {"depth_type", r_framebufferoptions_depth_type_newindex_xl},
     {"filter", r_framebufferoptions_filter_newindex_xl},
     {"height", r_framebufferoptions_height_newindex_xl},
     {"samples", r_framebufferoptions_samples_newindex_xl},
+    {"stencil_type", r_framebufferoptions_stencil_type_newindex_xl},
     {"width", r_framebufferoptions_width_newindex_xl},
     {NULL, NULL},
 };

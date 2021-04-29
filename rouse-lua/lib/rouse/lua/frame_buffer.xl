@@ -36,12 +36,47 @@ NEWINDEX const char *filter
     int filter;
     if (R_str_equal(VALUE, "nearest")) {
         filter = GL_NEAREST;
-    } else if (R_str_equal(VALUE, "linear")) {
+    }
+    else if (R_str_equal(VALUE, "linear")) {
         filter = GL_LINEAR;
-    } else {
+    }
+    else {
         R_LUA_DIE(L, "Unknown frame buffer filter '%s'", VALUE);
     }
     self->min_filter = self->mag_filter = filter;
+END
+
+@c
+
+static R_FrameBufferAttachmentType get_attachment_type(
+    lua_State *L, const char *what, const char *value)
+{
+    if (R_str_equal(value, "none")) {
+        return R_FRAME_BUFFER_ATTACHMENT_NONE;
+    }
+    else if (R_str_equal(value, "buffer")) {
+        return R_FRAME_BUFFER_ATTACHMENT_BUFFER;
+    }
+    else if (R_str_equal(value, "texture")) {
+        return R_FRAME_BUFFER_ATTACHMENT_TEXTURE;
+    }
+    else {
+        R_LUA_DIE(L, "Unknown frame buffer %s attachment type '%s'", what, value);
+    }
+}
+
+@xl
+
+NEWINDEX const char *color_type
+    self->color_type = get_attachment_type(L, "color", VALUE);
+END
+
+NEWINDEX const char *depth_type
+    self->depth_type = get_attachment_type(L, "depth", VALUE);
+END
+
+NEWINDEX const char *stencil_type
+    self->stencil_type = get_attachment_type(L, "stencil", VALUE);
 END
 
 SETFROMTABLE set
@@ -50,7 +85,20 @@ SETFROMTABLE set
 PPTYPE R_FrameBuffer R.FrameBuffer
 
 CONSTRUCTOR new()
-    return luaL_error(L, "R.FrameBuffer.new not yet implemented");
+    int argc = lua_gettop(L);
+    if (argc == 1) {
+        R_FrameBufferOptions *options = XL_pushnewutypeuv(
+                L, (R_FrameBufferOptions[1]){R_frame_buffer_options()},
+                sizeof(R_FrameBufferOptions), "R_FrameBufferOptions", 0);
+        lua_getfield(L, -1, "set");
+        lua_pushvalue(L, -2);
+        lua_pushvalue(L, 1);
+        lua_call(L, 2, 0);
+        RETVAL = R_frame_buffer_new(options);
+    }
+    else {
+        R_LUA_DIE(L, "Wrong number of arguments to R.FrameBuffer.new");
+    }
 END
 
 CONSTRUCTOR new_2d()
@@ -64,11 +112,13 @@ CONSTRUCTOR new_2d()
         lua_pushvalue(L, 1);
         lua_call(L, 2, 0);
         RETVAL = R_frame_buffer_new(options);
-    } else if (argc == 2) {
+    }
+    else if (argc == 2) {
         int width  = XL_checkint(L, 1);
         int height = XL_checkint(L, 2);
         RETVAL     = R_frame_buffer_2d_new(width, height);
-    } else {
+    }
+    else {
         R_LUA_DIE(L, "Wrong number of arguments to R.FrameBuffer.new_2d");
     }
 END

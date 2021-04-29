@@ -51,7 +51,10 @@ struct NVGpaint {
 	float feather;
 	NVGcolor innerColor;
 	NVGcolor outerColor;
-	int image;
+	union {
+		int image;
+		int flip;
+	};
 	unsigned int texture;
 };
 typedef struct NVGpaint NVGpaint;
@@ -433,7 +436,7 @@ NVGpaint nvgImagePattern(NVGcontext* ctx, float ox, float oy, float ex, float ey
 						 float angle, int image, float alpha);
 
 NVGpaint nvgTexturePattern(NVGcontext* ctx, float ox, float oy, float ex, float ey,
-						   float angle, unsigned int texture, float alpha);
+						   float angle, unsigned int texture, float alpha, int flip);
 
 //
 // Scissoring

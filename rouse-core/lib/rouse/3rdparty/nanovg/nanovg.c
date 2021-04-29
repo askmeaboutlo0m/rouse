@@ -984,12 +984,13 @@ NVGpaint nvgImagePattern(NVGcontext* ctx,
 
 NVGpaint nvgTexturePattern(NVGcontext* ctx,
 								float cx, float cy, float w, float h, float angle,
-								unsigned int texture, float alpha)
+								unsigned int texture, float alpha, int flip)
 {
 	NVGpaint p;
 	NVG_NOTUSED(ctx);
 	p = nvg__pattern(cx, cy, w, h, angle, alpha);
 	p.texture = texture;
+	p.flip 	  = flip;
 	return p;
 }
 

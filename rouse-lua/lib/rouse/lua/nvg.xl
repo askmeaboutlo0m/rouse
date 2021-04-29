@@ -268,8 +268,10 @@ END
 
 METHOD NVGpaint frame_buffer_pattern(float ox, float oy, float ex, float ey,
                                     float angle, R_FrameBuffer *fb, float alpha)
+    bool flip = lua_gettop(L) == XL_REQUIRED_ARGC
+             || lua_toboolean(L, XL_REQUIRED_ARGC + 1);
     RETVAL = nvgTexturePattern(R_nvg_context(self), ox, oy, ex, ey, angle,
-                               fb->color, alpha);
+                               fb->color, alpha, flip);
 END
 
 

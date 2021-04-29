@@ -527,6 +527,7 @@ static int r_nvg_method_image_pattern_xl(lua_State *L)
     return 1;
 }
 
+#define XL_REQUIRED_ARGC 8
 static int r_nvg_method_frame_buffer_pattern_xl(lua_State *L)
 {
     R_Nvg *self = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 1, "R_Nvg"));
@@ -538,11 +539,14 @@ static int r_nvg_method_frame_buffer_pattern_xl(lua_State *L)
     R_FrameBuffer *fb = R_CPPCAST(R_FrameBuffer *, XL_checkpptype(L, 7, "R_FrameBuffer"));
     float alpha = XL_checkfloat(L, 8);
     NVGpaint RETVAL;
+    bool flip = lua_gettop(L) == XL_REQUIRED_ARGC
+             || lua_toboolean(L, XL_REQUIRED_ARGC + 1);
     RETVAL = nvgTexturePattern(R_nvg_context(self), ox, oy, ex, ey, angle,
-                               fb->color, alpha);
+                               fb->color, alpha, flip);
     XL_pushnewutypeuv(L, &RETVAL, sizeof(NVGpaint), "NVGpaint", 0);
     return 1;
 }
+#undef XL_REQUIRED_ARGC
 
 static int r_nvg_method_create_font_xl(lua_State *L)
 {

@@ -928,7 +928,26 @@ static int glnvg__convertPaint(GLNVGcontext* gl, GLNVGfragUniforms* frag, NVGpai
 	frag->strokeMult = (width*0.5f + fringe*0.5f) / fringe;
 	frag->strokeThr = strokeThr;
 
-	if (paint->image != 0) {
+	if (paint->texture != 0) {
+		if (paint->flip) {
+			float m1[6], m2[6];
+			nvgTransformTranslate(m1, 0.0f, frag->extent[1] * 0.5f);
+			nvgTransformMultiply(m1, paint->xform);
+			nvgTransformScale(m2, 1.0f, -1.0f);
+			nvgTransformMultiply(m2, m1);
+			nvgTransformTranslate(m1, 0.0f, -frag->extent[1] * 0.5f);
+			nvgTransformMultiply(m1, m2);
+			nvgTransformInverse(invxform, m1);
+		} else {
+			nvgTransformInverse(invxform, paint->xform);
+		}
+		frag->type = NSVG_SHADER_FILLIMG;
+		#if NANOVG_GL_USE_UNIFORMBUFFER
+		frag->texType = 1;
+		#else
+		frag->texType = 1.0f;
+		#endif
+	} else if (paint->image != 0) {
 		tex = glnvg__findTexture(gl, paint->image);
 		if (tex == NULL) return 0;
 		if ((tex->flags & NVG_IMAGE_FLIPY) != 0) {
@@ -957,21 +976,6 @@ static int glnvg__convertPaint(GLNVGcontext* gl, GLNVGfragUniforms* frag, NVGpai
 			frag->texType = 2.0f;
 		#endif
 //		printf("frag->texType = %d\n", frag->texType);
-	} else if (paint->texture != 0) {
-		float m1[6], m2[6];
-		nvgTransformTranslate(m1, 0.0f, frag->extent[1] * 0.5f);
-		nvgTransformMultiply(m1, paint->xform);
-		nvgTransformScale(m2, 1.0f, -1.0f);
-		nvgTransformMultiply(m2, m1);
-		nvgTransformTranslate(m1, 0.0f, -frag->extent[1] * 0.5f);
-		nvgTransformMultiply(m1, m2);
-		nvgTransformInverse(invxform, m1);
-		frag->type = NSVG_SHADER_FILLIMG;
-		#if NANOVG_GL_USE_UNIFORMBUFFER
-		frag->texType = 1;
-		#else
-		frag->texType = 1.0f;
-		#endif
 	} else {
 		frag->type = NSVG_SHADER_FILLGRAD;
 		frag->radius = paint->radius;
@@ -1359,11 +1363,11 @@ static void glnvg__vset(NVGvertex* vtx, float x, float y, float u, float v)
 static unsigned int glnvg__getPaintTexture(GLNVGcontext *gl, const NVGpaint *paint)
 {
 	GLNVGtexture* tex;
-	if (paint->image != 0) {
+	if (paint->texture != 0) {
+		return paint->texture;
+	} else {
 		tex = glnvg__findTexture(gl, paint->image);
 		return tex == NULL ? 0 : tex->tex;
-	} else {
-		return paint->texture;
 	}
 }
 

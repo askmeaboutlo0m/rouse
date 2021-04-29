@@ -522,7 +522,7 @@ sub parse_staticnewindex_directive ($self, $in, $line) {
 
 
 sub parse_enum_directive ($self, $in, $line) {
-    my ($location, $subs) = $line =~ /\A($package_qr)(?:\s+(s.+))?\z/
+    my ($location, $subs) = $line =~ /\A($package_qr|\w+)(?:\s+(s.+))?\z/
         or die "Can't parse ENUM: '$line'\n";
 
     my ($package, $name) = $location =~ /\A(.*?)\.?(\w+)\z/;

@@ -113,7 +113,9 @@ build_emscripten() {
                       '-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON' \
                       '-DCMAKE_C_COMPILER="$base/cross/emccwrap"' \
                       '-DCMAKE_C_COMPILER_AR="$(which emar)"' \
-                      '-DCMAKE_C_COMPILER_RANLIB="$(which emranlib)"'
+                      '-DCMAKE_C_COMPILER_RANLIB="$(which emranlib)"' \
+                      '-DCMAKE_CXX_COMPILER_AR="$(which emar)"' \
+                      '-DCMAKE_CXX_COMPILER_RANLIB="$(which emranlib)"'
 
     sdl_image_flags="'-sUSE_SDL_IMAGE=2 -sSDL2_IMAGE_FORMATS=[\"png\"]'"
     cmake_rouse_core_args '-DUSE_PKGCONFIG=OFF' \

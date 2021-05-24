@@ -69,7 +69,7 @@ for my $file (@ARGV) {
     chdir $rouse_svg_dir or die "Can't chdir to '$rouse_svg_dir': $!\n";
     my @svgs = find_svgs($out_dir);
     run('carton', 'exec', './rouse-svg', @svgs);
-    run('rm', @svgs);
+    run('rm', @svgs) if @svgs;
 
     run('rm', '-rf', $asset_dir);
     run('mkdir', '-p', $asset_parent);

@@ -95,6 +95,20 @@ void R_string_free(R_String *s)
     }
 }
 
+char *R_string_free_keep_buffer(R_String *s)
+{
+    if (s) {
+        R_MAGIC_CHECK(R_String, s);
+        char *d = s->d;
+        R_MAGIC_POISON(R_String, s);
+        free(s);
+        return d;
+    }
+    else {
+        return NULL;
+    }
+}
+
 void R_string_reserve(R_String *s, size_t capacity)
 {
     R_MAGIC_CHECK(R_String, s);

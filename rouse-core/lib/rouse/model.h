@@ -115,6 +115,8 @@ R_Model *R_model_incref(R_Model *model);
 
 int R_model_refs(R_Model *model);
 
+char *R_model_dump(R_Model *model);
+
 R_Mesh *R_model_mesh_by_index(R_Model *model, int index);
 
 

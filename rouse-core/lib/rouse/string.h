@@ -59,6 +59,8 @@ R_String *R_string_from_bin(const void *data, size_t len);
 
 void R_string_free(R_String *s);
 
+char *R_string_free_keep_buffer(R_String *s);
+
 void R_string_reserve(R_String *s, size_t capacity);
 
 void R_string_clear(R_String *s);

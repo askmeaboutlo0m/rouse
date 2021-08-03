@@ -33,6 +33,7 @@
 #include "parse.h"
 #include "model.h"
 #include "refcount.h"
+#include "string.h"
 
 
 static void check_file_magic(R_Parse *parse)
@@ -210,6 +211,87 @@ static void free_model(R_Model *model)
 }
 
 R_DEFINE_REFCOUNT_FUNCS(R_Model, model, refs)
+
+
+static void write_ushort(R_MeshBuffer *mbuf, int i, R_String *s)
+{
+    R_string_printf(s, "%u", (unsigned int) mbuf->ushorts[i]);
+}
+
+static void write_float(R_MeshBuffer *mbuf, int i, R_String *s)
+{
+    R_string_printf(s, "%f", (double) mbuf->floats[i]);
+}
+
+static void dump_mesh_buffer_values_to(
+    R_MeshBuffer *mbuf, R_String *s,
+    void (*write)(R_MeshBuffer *, int, R_String *))
+{
+    int count   = mbuf->count;
+    int divisor = mbuf->divisor;
+    for (int i = 0; i < count; ++i) {
+        int mod = i % divisor;
+        if (mod == 0) {
+            R_string_append(s, "        (");
+        }
+        write(mbuf, i, s);
+        if (mod == divisor - 1) {
+            R_string_append(s, ")\n");
+        }
+        else {
+            R_string_append(s, ", ");
+        }
+    }
+}
+
+static void dump_mesh_buffer_to(R_MeshBuffer *mbuf, R_String *s)
+{
+    R_string_printf(s, "buffer with %d elements and divisor %d\n",
+                    mbuf->count, mbuf->divisor);
+    if (mbuf->name) {
+        R_string_printf(s, "      name: '%s'\n", mbuf->name);
+    }
+
+    if (mbuf->type == R_BUFFER_TYPE_USHORT) {
+        R_string_append(s, "      ushort values:\n");
+        dump_mesh_buffer_values_to(mbuf, s, write_ushort);
+    }
+    else if (mbuf->type == R_BUFFER_TYPE_FLOAT) {
+        R_string_append(s, "      float values:\n");
+        dump_mesh_buffer_values_to(mbuf, s, write_float);
+    }
+    else {
+        R_string_append(s, "      unknown type, can't decode values\n");
+    }
+}
+
+static void dump_mesh_to(R_Mesh *mesh, R_String *s)
+{
+    int buffer_count = mesh->buffer.count;
+    R_string_printf(s, "mesh with %d buffer(s)\n", buffer_count);
+    for (int i = 0; i < buffer_count; ++i) {
+        R_string_printf(s, "    [%d] ", i);
+        dump_mesh_buffer_to(mesh->buffer.values[i], s);
+    }
+}
+
+static void dump_model_to(R_Model *model, R_String *s)
+{
+    int mesh_count = model->mesh.count;
+    R_string_printf(s, "model with %d mesh(es)\n", mesh_count);
+    for (int i = 0; i < mesh_count; ++i) {
+        R_string_printf(s, "  [%d] ", i);
+        dump_mesh_to(model->mesh.values[i], s);
+    }
+}
+
+char *R_model_dump(R_Model *model)
+{
+    check_model(model);
+    R_String *s = R_string_new(0);
+    dump_model_to(model, s);
+    return R_string_free_keep_buffer(s);
+}
 
 
 R_Mesh *R_model_mesh_by_index(R_Model *model, int index)

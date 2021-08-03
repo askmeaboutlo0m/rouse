@@ -44,6 +44,7 @@ R_EaseFn R_lua_named_ease(lua_State *L, int name_index);
     X(R_lua_gl_init) \
     X(R_lua_json_init) \
     X(R_lua_misc_init) \
+    X(R_lua_model_init) \
     X(R_lua_nvg_init) \
     X(R_lua_scene_init) \
     X(R_lua_sdl_init) \

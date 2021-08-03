@@ -1,0 +1,118 @@
+/*
+ * Copyright (c) 2021 askmeaboutloom
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+#include <rouse.h>
+#include "lua_inc.h"
+#include "intern.h"
+#include "util.h"
+
+@xl
+
+PPTYPE R_MeshBuffer
+
+DESTRUCTOR = R_mesh_buffer_decref
+
+INDEXFIELD int        refs
+INDEXFIELD const char *name
+INDEXFIELD int        count
+INDEXFIELD int        divisor
+
+INDEX lua_Integer type
+    RETVAL = (lua_Integer) self->type;
+END
+
+INDEX const char *type_name
+    switch (self->type) {
+        case R_BUFFER_TYPE_USHORT:
+            RETVAL = "ushort";
+            break;
+        case R_BUFFER_TYPE_FLOAT:
+            RETVAL = "float";
+            break;
+        default:
+            RETVAL = "unknown";
+            break;
+    }
+END
+
+
+PPTYPE R_Mesh
+
+DESTRUCTOR = R_mesh_decref
+
+INDEXFIELD int refs
+INDEXFIELD int buffer_count = buffer.count
+
+METHOD <NEW>R_MeshBuffer *buffer()
+    int type = lua_type(L, 2);
+    if (type == LUA_TNUMBER) {
+        int index = XL_checkint(L, 2);
+        if (index > 0 && index <= self->buffer.count) {
+            RETVAL = R_mesh_buffer_incref(self->buffer.values[index - 1]);
+        }
+        else {
+            R_LUA_DIE(L, "Mesh buffer index %d out of bounds [1, %d]",
+                      self->buffer.count);
+        }
+    }
+    else if (type == LUA_TSTRING) {
+        const char *name = lua_tostring(L, 2);
+        int index = R_mesh_buffer_index_by_name(self, name);
+        if (index >= 0) {
+            RETVAL = R_mesh_buffer_incref(self->buffer.values[index]);
+        }
+        else {
+            R_LUA_DIE(L, "Mesh buffer with name '%s' not found", name);
+        }
+    }
+    else {
+        R_LUA_DIE(L, "Can't get a mesh buffer by a %s", lua_typename(L, type));
+    }
+END
+
+
+PPTYPE R_Model R.Model
+
+CONSTRUCTOR from_file(const char *path) = R_model_from_file
+
+DESTRUCTOR = R_model_decref
+
+INDEXFIELD int refs
+INDEXFIELD int mesh_count = mesh.count
+
+METHOD <NEW>R_Mesh *mesh(int index)
+    if (index > 0 && index <= self->mesh.count) {
+        RETVAL = R_mesh_incref(self->mesh.values[index - 1]);
+    }
+    else {
+        R_LUA_DIE(L, "Mesh index %d out of bounds [1, %d]", self->mesh.count);
+    }
+END
+
+METHOD const char *dump()
+    char *s = R_model_dump(self);
+    RETVAL = s;
+LEAVE
+    free(s);
+END
+
+
+INIT extern R_lua_model_init

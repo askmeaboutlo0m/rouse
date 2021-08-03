@@ -88,6 +88,7 @@ set(rouse_lua_xls
     "${CMAKE_SOURCE_DIR}/lib/rouse/lua/gl.xl"
     "${CMAKE_SOURCE_DIR}/lib/rouse/lua/json.xl"
     "${CMAKE_SOURCE_DIR}/lib/rouse/lua/misc.xl"
+    "${CMAKE_SOURCE_DIR}/lib/rouse/lua/model.xl"
     "${CMAKE_SOURCE_DIR}/lib/rouse/lua/nvg.xl"
     "${CMAKE_SOURCE_DIR}/lib/rouse/lua/sample.xl"
     "${CMAKE_SOURCE_DIR}/lib/rouse/lua/scene.xl"

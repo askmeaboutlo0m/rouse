@@ -18,14 +18,22 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-local PreloadScene = class()
+local PreloadScene <const> = class()
+local asset_types  <const> = {"font", "image", "model", "json", "sound"}
 
+local function get_empty_loaded()
+    local loaded = {}
+    for _, type in ipairs(asset_types) do
+        loaded[type] = {}
+    end
+    return loaded
+end
 
 function PreloadScene:init(args)
     self.nvg                = args.nvg or R.Nvg.new(0)
     self.ms                 = args.ms or 10
     self.on_done            = args.on_done or error("No on_done callback given")
-    self.loaded             = {font = {}, image = {}, json = {}, sound = {}}
+    self.loaded             = get_empty_loaded()
     self.current            = 1
     self.bytes              = 0
     self.fetch_bytes        = 0
@@ -172,6 +180,10 @@ end
 
 function PreloadScene:load_type_rvg(key, path)
     return "image", R.VectorImage.from_file(path)
+end
+
+function PreloadScene:load_type_rmodel(key, path)
+    return "model", R.Model.from_file(path)
 end
 
 function PreloadScene:load_type_ttf(key, path)

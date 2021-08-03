@@ -30,6 +30,10 @@
 #include "util.h"
 
 
+typedef unsigned int R_LuaGlBuffer;
+typedef unsigned int R_LuaGlProgram;
+
+
 static int r_gl_clear_xl(lua_State *L)
 {
     float r = XL_checkfloat(L, 1);
@@ -42,18 +46,620 @@ static int r_gl_clear_xl(lua_State *L)
     return 0;
 }
 
+static int r_gl_uniform_m4_xl(lua_State *L)
+{
+    int uniform = XL_checkint(L, 1);
+    R_M4 *m4 = R_CPPCAST(R_M4 *, XL_checkutype(L, 2, "R_M4"));
+    R_GL(glUniformMatrix4fv, uniform, 1, GL_FALSE, R_M4_GL(*m4));
+    return 0;
+}
+
+static int r_gl_enable_xl(lua_State *L)
+{
+    unsigned int cap = XL_checkuint(L, 1);
+    R_GL_CLEAR_ERROR();
+    R_GL(glEnable, cap);
+    return 0;
+}
+
+static int r_gl_disable_xl(lua_State *L)
+{
+    unsigned int cap = XL_checkuint(L, 1);
+    R_GL_CLEAR_ERROR();
+    R_GL(glDisable, cap);
+    return 0;
+}
+
+static int r_gl_depth_func_xl(lua_State *L)
+{
+    unsigned int func = XL_checkuint(L, 1);
+    R_GL_CLEAR_ERROR();
+    R_GL(glDepthFunc, func);
+    return 0;
+}
+
+static int r_gl_cull_face_xl(lua_State *L)
+{
+    unsigned int face = XL_checkuint(L, 1);
+    R_GL_CLEAR_ERROR();
+    R_GL(glCullFace, face);
+    return 0;
+}
+
+static int r_gl_blend_func_xl(lua_State *L)
+{
+    unsigned int sfactor = XL_checkuint(L, 1);
+    unsigned int dfactor = XL_checkuint(L, 2);
+    R_GL_CLEAR_ERROR();
+    R_GL(glBlendFunc, sfactor, dfactor);
+    return 0;
+}
+
+static int r_gl_enable_vertex_attrib_array_xl(lua_State *L)
+{
+    unsigned int index = XL_checkuint(L, 1);
+    R_GL_CLEAR_ERROR();
+    R_GL(glEnableVertexAttribArray, index);
+    return 0;
+}
+
+static int r_gl_disable_vertex_attrib_array_xl(lua_State *L)
+{
+    unsigned int index = XL_checkuint(L, 1);
+    R_GL_CLEAR_ERROR();
+    R_GL(glDisableVertexAttribArray, index);
+    return 0;
+}
+
+static int r_gl_disable_all_vertex_attrib_arrays_xl(lua_State *L)
+{
+    XL_UNUSED(L);
+    R_GL_CLEAR_ERROR();
+    int max = R_gl_max_vertex_attribs;
+    for (int i = 0; i < max; ++i) {
+        R_GL(glDisableVertexAttribArray, R_int2uint(i));
+    }
+    return 0;
+}
+
+static int r_gl_buffer_data_xl(lua_State *L)
+{
+    R_MeshBuffer *mbuf = R_CPPCAST(R_MeshBuffer *, XL_checkpptype(L, 1, "R_MeshBuffer"));
+    unsigned int target = XL_checkuint(L, 2);
+    unsigned int usage = XL_checkuint(L, 3);
+    R_BufferType buftype = mbuf->type;
+    size_t       size;
+    void         *data;
+    if (buftype == R_BUFFER_TYPE_USHORT) {
+        size = sizeof(*mbuf->ushorts) * R_int2size(mbuf->count);
+        data = mbuf->ushorts;
+    }
+    else if (buftype == R_BUFFER_TYPE_FLOAT) {
+        size = sizeof(*mbuf->floats) * R_int2size(mbuf->count);
+        data = mbuf->floats;
+    }
+    else {
+        R_LUA_DIE(L, "Unknown buffer type: %d", (int) buftype);
+    }
+    R_GL_CLEAR_ERROR();
+    R_GL(glBufferData, target, R_size2ptrdiff(size), data, usage);
+    return 0;
+}
+
+static int r_gl_vertex_attrib_pointer_xl(lua_State *L)
+{
+    R_MeshBuffer *mbuf = R_CPPCAST(R_MeshBuffer *, XL_checkpptype(L, 1, "R_MeshBuffer"));
+    unsigned int index = XL_checkuint(L, 2);
+    R_BufferType buftype = mbuf->type;
+    unsigned int type;
+    if (buftype == R_BUFFER_TYPE_USHORT) {
+        type = GL_UNSIGNED_SHORT;
+    }
+    else if (buftype == R_BUFFER_TYPE_FLOAT) {
+        type = GL_FLOAT;
+    }
+    else {
+        R_LUA_DIE(L, "Unknown buffer type: %d", (int) buftype);
+    }
+    R_GL_CLEAR_ERROR();
+    R_GL(glVertexAttribPointer, index, mbuf->divisor, type, GL_FALSE, 0, NULL);
+    return 0;
+}
+
+static int r_gl_draw_arrays_xl(lua_State *L)
+{
+    unsigned int mode = XL_checkuint(L, 1);
+    int first = XL_checkint(L, 2);
+    int count = XL_checkint(L, 3);
+    R_GL_CLEAR_ERROR();
+    R_GL(glDrawArrays, mode, first, count);
+    return 0;
+}
+
+static int r_gl_draw_elements_xl(lua_State *L)
+{
+    unsigned int mode = XL_checkuint(L, 1);
+    int count = XL_checkint(L, 2);
+    R_GL_CLEAR_ERROR();
+    R_GL(glDrawElements, mode, count, GL_UNSIGNED_SHORT, NULL);
+    return 0;
+}
+
+static int r_gl_buffer_new_xl(lua_State *L)
+{
+    R_LuaGlBuffer *RETVAL;
+    R_GL_CLEAR_ERROR();
+    RETVAL = R_NEW(RETVAL);
+    R_GL(glGenBuffers, 1, RETVAL);
+    XL_pushnewpptypeuv(L, RETVAL, "R_LuaGlBuffer", 0);
+    return 1;
+}
+
+static int r_luaglbuffer_method_gc_xl(lua_State *L)
+{
+    R_LuaGlBuffer *self = R_CPPCAST(R_LuaGlBuffer *, XL_checkpptype_nullable(L, 1, "R_LuaGlBuffer"));
+    R_GL_CLEAR_ERROR();
+    R_GL(glDeleteBuffers, 1, self);
+    free(self);
+    return 0;
+}
+
+static int r_luaglbuffer_method_bind_xl(lua_State *L)
+{
+    R_LuaGlBuffer *self = R_CPPCAST(R_LuaGlBuffer *, XL_checkpptype(L, 1, "R_LuaGlBuffer"));
+    unsigned int target = XL_checkuint(L, 2);
+    R_GL_CLEAR_ERROR();
+    R_GL(glBindBuffer, target, *self);
+    return 0;
+}
+
+static int r_luaglbuffer_method_unbind_xl(lua_State *L)
+{
+    R_LuaGlBuffer *self = R_CPPCAST(R_LuaGlBuffer *, XL_checkpptype(L, 1, "R_LuaGlBuffer"));
+    unsigned int target = XL_checkuint(L, 2);
+    XL_UNUSED(self);
+    R_GL_CLEAR_ERROR();
+    R_GL(glBindBuffer, target, 0);
+    return 0;
+}
+
+static int r_gl_buffer_unbind_xl(lua_State *L)
+{
+    unsigned int target = XL_checkuint(L, 1);
+    XL_UNUSED(L);
+    R_GL_CLEAR_ERROR();
+    R_GL(glBindBuffer, target, 0);
+    return 0;
+}
+
+static int r_gl_program_new_xl(lua_State *L)
+{
+    const char *vert = luaL_checkstring(L, 1);
+    const char *frag = luaL_checkstring(L, 2);
+    R_LuaGlProgram *RETVAL;
+    RETVAL  = R_NEW(RETVAL);
+    *RETVAL = R_gl_program_new(vert, frag);
+    XL_pushnewpptypeuv(L, RETVAL, "R_LuaGlProgram", 0);
+    return 1;
+}
+
+static int r_luaglprogram_method_gc_xl(lua_State *L)
+{
+    R_LuaGlProgram *self = R_CPPCAST(R_LuaGlProgram *, XL_checkpptype_nullable(L, 1, "R_LuaGlProgram"));
+    R_gl_program_free(*self);
+    free(self);
+    return 0;
+}
+
+static int r_luaglprogram_method_uniform_location_xl(lua_State *L)
+{
+    R_LuaGlProgram *self = R_CPPCAST(R_LuaGlProgram *, XL_checkpptype(L, 1, "R_LuaGlProgram"));
+    const char *name = luaL_checkstring(L, 2);
+    int RETVAL;
+    RETVAL = R_gl_uniform_location(*self, name);
+    XL_pushint(L, RETVAL);
+    return 1;
+}
+
+static int r_luaglprogram_method_bind_xl(lua_State *L)
+{
+    R_LuaGlProgram *self = R_CPPCAST(R_LuaGlProgram *, XL_checkpptype(L, 1, "R_LuaGlProgram"));
+    R_GL_CLEAR_ERROR();
+    R_GL(glUseProgram, *self);
+    return 0;
+}
+
+static int r_luaglprogram_method_unbind_xl(lua_State *L)
+{
+    R_LuaGlProgram *self = R_CPPCAST(R_LuaGlProgram *, XL_checkpptype(L, 1, "R_LuaGlProgram"));
+    XL_UNUSED(self);
+    R_GL_CLEAR_ERROR();
+    R_GL(glUseProgram, 0);
+    return 0;
+}
+
+static int r_gl_program_unbind_xl(lua_State *L)
+{
+    XL_UNUSED(L);
+    R_GL_CLEAR_ERROR();
+    R_GL(glUseProgram, 0);
+    return 0;
+}
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+static int r_luaglbuffer_index_xl(lua_State *L)
+{
+    return XL_index_fallback(L, "R_LuaGlBuffer", 1, 2);
+}
+
+static int r_luaglprogram_index_xl(lua_State *L)
+{
+    return XL_index_fallback(L, "R_LuaGlProgram", 1, 2);
+}
+
 static luaL_Reg r_gl_function_registry_xl[] = {
+    {"blend_func", r_gl_blend_func_xl},
+    {"buffer_data", r_gl_buffer_data_xl},
     {"clear", r_gl_clear_xl},
+    {"cull_face", r_gl_cull_face_xl},
+    {"depth_func", r_gl_depth_func_xl},
+    {"disable", r_gl_disable_xl},
+    {"disable_all_vertex_attrib_arrays", r_gl_disable_all_vertex_attrib_arrays_xl},
+    {"disable_vertex_attrib_array", r_gl_disable_vertex_attrib_array_xl},
+    {"draw_arrays", r_gl_draw_arrays_xl},
+    {"draw_elements", r_gl_draw_elements_xl},
+    {"enable", r_gl_enable_xl},
+    {"enable_vertex_attrib_array", r_gl_enable_vertex_attrib_array_xl},
+    {"uniform_m4", r_gl_uniform_m4_xl},
+    {"vertex_attrib_pointer", r_gl_vertex_attrib_pointer_xl},
     {NULL, NULL},
+};
+
+static luaL_Reg r_gl_buffer_function_registry_xl[] = {
+    {"new", r_gl_buffer_new_xl},
+    {"unbind", r_gl_buffer_unbind_xl},
+    {NULL, NULL},
+};
+
+static luaL_Reg r_gl_program_function_registry_xl[] = {
+    {"new", r_gl_program_new_xl},
+    {"unbind", r_gl_program_unbind_xl},
+    {NULL, NULL},
+};
+
+static luaL_Reg r_luaglbuffer_method_registry_xl[] = {
+    {"__gc", r_luaglbuffer_method_gc_xl},
+    {"__index", r_luaglbuffer_index_xl},
+    {"bind", r_luaglbuffer_method_bind_xl},
+    {"unbind", r_luaglbuffer_method_unbind_xl},
+    {NULL, NULL},
+};
+
+static luaL_Reg r_luaglprogram_method_registry_xl[] = {
+    {"__gc", r_luaglprogram_method_gc_xl},
+    {"__index", r_luaglprogram_index_xl},
+    {"bind", r_luaglprogram_method_bind_xl},
+    {"unbind", r_luaglprogram_method_unbind_xl},
+    {"uniform_location", r_luaglprogram_method_uniform_location_xl},
+    {NULL, NULL},
+};
+
+static XL_EnumEntry _gl_enum_xl[] = {
+    {"DEPTH_BUFFER_BIT", (lua_Integer) GL_DEPTH_BUFFER_BIT},
+    {"STENCIL_BUFFER_BIT", (lua_Integer) GL_STENCIL_BUFFER_BIT},
+    {"COLOR_BUFFER_BIT", (lua_Integer) GL_COLOR_BUFFER_BIT},
+    {"FALSE", (lua_Integer) GL_FALSE},
+    {"TRUE", (lua_Integer) GL_TRUE},
+    {"POINTS", (lua_Integer) GL_POINTS},
+    {"LINES", (lua_Integer) GL_LINES},
+    {"LINE_LOOP", (lua_Integer) GL_LINE_LOOP},
+    {"LINE_STRIP", (lua_Integer) GL_LINE_STRIP},
+    {"TRIANGLES", (lua_Integer) GL_TRIANGLES},
+    {"TRIANGLE_STRIP", (lua_Integer) GL_TRIANGLE_STRIP},
+    {"TRIANGLE_FAN", (lua_Integer) GL_TRIANGLE_FAN},
+    {"ZERO", (lua_Integer) GL_ZERO},
+    {"ONE", (lua_Integer) GL_ONE},
+    {"SRC_COLOR", (lua_Integer) GL_SRC_COLOR},
+    {"ONE_MINUS_SRC_COLOR", (lua_Integer) GL_ONE_MINUS_SRC_COLOR},
+    {"SRC_ALPHA", (lua_Integer) GL_SRC_ALPHA},
+    {"ONE_MINUS_SRC_ALPHA", (lua_Integer) GL_ONE_MINUS_SRC_ALPHA},
+    {"DST_ALPHA", (lua_Integer) GL_DST_ALPHA},
+    {"ONE_MINUS_DST_ALPHA", (lua_Integer) GL_ONE_MINUS_DST_ALPHA},
+    {"DST_COLOR", (lua_Integer) GL_DST_COLOR},
+    {"ONE_MINUS_DST_COLOR", (lua_Integer) GL_ONE_MINUS_DST_COLOR},
+    {"SRC_ALPHA_SATURATE", (lua_Integer) GL_SRC_ALPHA_SATURATE},
+    {"FUNC_ADD", (lua_Integer) GL_FUNC_ADD},
+    {"BLEND_EQUATION", (lua_Integer) GL_BLEND_EQUATION},
+    {"BLEND_EQUATION_RGB", (lua_Integer) GL_BLEND_EQUATION_RGB},
+    {"BLEND_EQUATION_ALPHA", (lua_Integer) GL_BLEND_EQUATION_ALPHA},
+    {"FUNC_SUBTRACT", (lua_Integer) GL_FUNC_SUBTRACT},
+    {"FUNC_REVERSE_SUBTRACT", (lua_Integer) GL_FUNC_REVERSE_SUBTRACT},
+    {"BLEND_DST_RGB", (lua_Integer) GL_BLEND_DST_RGB},
+    {"BLEND_SRC_RGB", (lua_Integer) GL_BLEND_SRC_RGB},
+    {"BLEND_DST_ALPHA", (lua_Integer) GL_BLEND_DST_ALPHA},
+    {"BLEND_SRC_ALPHA", (lua_Integer) GL_BLEND_SRC_ALPHA},
+    {"CONSTANT_COLOR", (lua_Integer) GL_CONSTANT_COLOR},
+    {"ONE_MINUS_CONSTANT_COLOR", (lua_Integer) GL_ONE_MINUS_CONSTANT_COLOR},
+    {"CONSTANT_ALPHA", (lua_Integer) GL_CONSTANT_ALPHA},
+    {"ONE_MINUS_CONSTANT_ALPHA", (lua_Integer) GL_ONE_MINUS_CONSTANT_ALPHA},
+    {"BLEND_COLOR", (lua_Integer) GL_BLEND_COLOR},
+    {"ARRAY_BUFFER", (lua_Integer) GL_ARRAY_BUFFER},
+    {"ELEMENT_ARRAY_BUFFER", (lua_Integer) GL_ELEMENT_ARRAY_BUFFER},
+    {"ARRAY_BUFFER_BINDING", (lua_Integer) GL_ARRAY_BUFFER_BINDING},
+    {"ELEMENT_ARRAY_BUFFER_BINDING", (lua_Integer) GL_ELEMENT_ARRAY_BUFFER_BINDING},
+    {"STREAM_DRAW", (lua_Integer) GL_STREAM_DRAW},
+    {"STATIC_DRAW", (lua_Integer) GL_STATIC_DRAW},
+    {"DYNAMIC_DRAW", (lua_Integer) GL_DYNAMIC_DRAW},
+    {"BUFFER_SIZE", (lua_Integer) GL_BUFFER_SIZE},
+    {"BUFFER_USAGE", (lua_Integer) GL_BUFFER_USAGE},
+    {"CURRENT_VERTEX_ATTRIB", (lua_Integer) GL_CURRENT_VERTEX_ATTRIB},
+    {"FRONT", (lua_Integer) GL_FRONT},
+    {"BACK", (lua_Integer) GL_BACK},
+    {"FRONT_AND_BACK", (lua_Integer) GL_FRONT_AND_BACK},
+    {"TEXTURE_2D", (lua_Integer) GL_TEXTURE_2D},
+    {"CULL_FACE", (lua_Integer) GL_CULL_FACE},
+    {"BLEND", (lua_Integer) GL_BLEND},
+    {"DITHER", (lua_Integer) GL_DITHER},
+    {"STENCIL_TEST", (lua_Integer) GL_STENCIL_TEST},
+    {"DEPTH_TEST", (lua_Integer) GL_DEPTH_TEST},
+    {"SCISSOR_TEST", (lua_Integer) GL_SCISSOR_TEST},
+    {"POLYGON_OFFSET_FILL", (lua_Integer) GL_POLYGON_OFFSET_FILL},
+    {"SAMPLE_ALPHA_TO_COVERAGE", (lua_Integer) GL_SAMPLE_ALPHA_TO_COVERAGE},
+    {"SAMPLE_COVERAGE", (lua_Integer) GL_SAMPLE_COVERAGE},
+    {"NO_ERROR", (lua_Integer) GL_NO_ERROR},
+    {"INVALID_ENUM", (lua_Integer) GL_INVALID_ENUM},
+    {"INVALID_VALUE", (lua_Integer) GL_INVALID_VALUE},
+    {"INVALID_OPERATION", (lua_Integer) GL_INVALID_OPERATION},
+    {"OUT_OF_MEMORY", (lua_Integer) GL_OUT_OF_MEMORY},
+    {"CW", (lua_Integer) GL_CW},
+    {"CCW", (lua_Integer) GL_CCW},
+    {"LINE_WIDTH", (lua_Integer) GL_LINE_WIDTH},
+    {"ALIASED_POINT_SIZE_RANGE", (lua_Integer) GL_ALIASED_POINT_SIZE_RANGE},
+    {"ALIASED_LINE_WIDTH_RANGE", (lua_Integer) GL_ALIASED_LINE_WIDTH_RANGE},
+    {"CULL_FACE_MODE", (lua_Integer) GL_CULL_FACE_MODE},
+    {"FRONT_FACE", (lua_Integer) GL_FRONT_FACE},
+    {"DEPTH_RANGE", (lua_Integer) GL_DEPTH_RANGE},
+    {"DEPTH_WRITEMASK", (lua_Integer) GL_DEPTH_WRITEMASK},
+    {"DEPTH_CLEAR_VALUE", (lua_Integer) GL_DEPTH_CLEAR_VALUE},
+    {"DEPTH_FUNC", (lua_Integer) GL_DEPTH_FUNC},
+    {"STENCIL_CLEAR_VALUE", (lua_Integer) GL_STENCIL_CLEAR_VALUE},
+    {"STENCIL_FUNC", (lua_Integer) GL_STENCIL_FUNC},
+    {"STENCIL_FAIL", (lua_Integer) GL_STENCIL_FAIL},
+    {"STENCIL_PASS_DEPTH_FAIL", (lua_Integer) GL_STENCIL_PASS_DEPTH_FAIL},
+    {"STENCIL_PASS_DEPTH_PASS", (lua_Integer) GL_STENCIL_PASS_DEPTH_PASS},
+    {"STENCIL_REF", (lua_Integer) GL_STENCIL_REF},
+    {"STENCIL_VALUE_MASK", (lua_Integer) GL_STENCIL_VALUE_MASK},
+    {"STENCIL_WRITEMASK", (lua_Integer) GL_STENCIL_WRITEMASK},
+    {"STENCIL_BACK_FUNC", (lua_Integer) GL_STENCIL_BACK_FUNC},
+    {"STENCIL_BACK_FAIL", (lua_Integer) GL_STENCIL_BACK_FAIL},
+    {"STENCIL_BACK_PASS_DEPTH_FAIL", (lua_Integer) GL_STENCIL_BACK_PASS_DEPTH_FAIL},
+    {"STENCIL_BACK_PASS_DEPTH_PASS", (lua_Integer) GL_STENCIL_BACK_PASS_DEPTH_PASS},
+    {"STENCIL_BACK_REF", (lua_Integer) GL_STENCIL_BACK_REF},
+    {"STENCIL_BACK_VALUE_MASK", (lua_Integer) GL_STENCIL_BACK_VALUE_MASK},
+    {"STENCIL_BACK_WRITEMASK", (lua_Integer) GL_STENCIL_BACK_WRITEMASK},
+    {"VIEWPORT", (lua_Integer) GL_VIEWPORT},
+    {"SCISSOR_BOX", (lua_Integer) GL_SCISSOR_BOX},
+    {"COLOR_CLEAR_VALUE", (lua_Integer) GL_COLOR_CLEAR_VALUE},
+    {"COLOR_WRITEMASK", (lua_Integer) GL_COLOR_WRITEMASK},
+    {"UNPACK_ALIGNMENT", (lua_Integer) GL_UNPACK_ALIGNMENT},
+    {"PACK_ALIGNMENT", (lua_Integer) GL_PACK_ALIGNMENT},
+    {"MAX_TEXTURE_SIZE", (lua_Integer) GL_MAX_TEXTURE_SIZE},
+    {"MAX_VIEWPORT_DIMS", (lua_Integer) GL_MAX_VIEWPORT_DIMS},
+    {"SUBPIXEL_BITS", (lua_Integer) GL_SUBPIXEL_BITS},
+    {"RED_BITS", (lua_Integer) GL_RED_BITS},
+    {"GREEN_BITS", (lua_Integer) GL_GREEN_BITS},
+    {"BLUE_BITS", (lua_Integer) GL_BLUE_BITS},
+    {"ALPHA_BITS", (lua_Integer) GL_ALPHA_BITS},
+    {"DEPTH_BITS", (lua_Integer) GL_DEPTH_BITS},
+    {"STENCIL_BITS", (lua_Integer) GL_STENCIL_BITS},
+    {"POLYGON_OFFSET_UNITS", (lua_Integer) GL_POLYGON_OFFSET_UNITS},
+    {"POLYGON_OFFSET_FACTOR", (lua_Integer) GL_POLYGON_OFFSET_FACTOR},
+    {"TEXTURE_BINDING_2D", (lua_Integer) GL_TEXTURE_BINDING_2D},
+    {"SAMPLE_BUFFERS", (lua_Integer) GL_SAMPLE_BUFFERS},
+    {"SAMPLES", (lua_Integer) GL_SAMPLES},
+    {"SAMPLE_COVERAGE_VALUE", (lua_Integer) GL_SAMPLE_COVERAGE_VALUE},
+    {"SAMPLE_COVERAGE_INVERT", (lua_Integer) GL_SAMPLE_COVERAGE_INVERT},
+    {"NUM_COMPRESSED_TEXTURE_FORMATS", (lua_Integer) GL_NUM_COMPRESSED_TEXTURE_FORMATS},
+    {"COMPRESSED_TEXTURE_FORMATS", (lua_Integer) GL_COMPRESSED_TEXTURE_FORMATS},
+    {"DONT_CARE", (lua_Integer) GL_DONT_CARE},
+    {"FASTEST", (lua_Integer) GL_FASTEST},
+    {"NICEST", (lua_Integer) GL_NICEST},
+    {"GENERATE_MIPMAP_HINT", (lua_Integer) GL_GENERATE_MIPMAP_HINT},
+    {"BYTE", (lua_Integer) GL_BYTE},
+    {"UNSIGNED_BYTE", (lua_Integer) GL_UNSIGNED_BYTE},
+    {"SHORT", (lua_Integer) GL_SHORT},
+    {"UNSIGNED_SHORT", (lua_Integer) GL_UNSIGNED_SHORT},
+    {"INT", (lua_Integer) GL_INT},
+    {"UNSIGNED_INT", (lua_Integer) GL_UNSIGNED_INT},
+    {"FLOAT", (lua_Integer) GL_FLOAT},
+    {"FIXED", (lua_Integer) GL_FIXED},
+    {"DEPTH_COMPONENT", (lua_Integer) GL_DEPTH_COMPONENT},
+    {"ALPHA", (lua_Integer) GL_ALPHA},
+    {"RGB", (lua_Integer) GL_RGB},
+    {"RGBA", (lua_Integer) GL_RGBA},
+    {"LUMINANCE", (lua_Integer) GL_LUMINANCE},
+    {"LUMINANCE_ALPHA", (lua_Integer) GL_LUMINANCE_ALPHA},
+    {"UNSIGNED_SHORT_4_4_4_4", (lua_Integer) GL_UNSIGNED_SHORT_4_4_4_4},
+    {"UNSIGNED_SHORT_5_5_5_1", (lua_Integer) GL_UNSIGNED_SHORT_5_5_5_1},
+    {"UNSIGNED_SHORT_5_6_5", (lua_Integer) GL_UNSIGNED_SHORT_5_6_5},
+    {"FRAGMENT_SHADER", (lua_Integer) GL_FRAGMENT_SHADER},
+    {"VERTEX_SHADER", (lua_Integer) GL_VERTEX_SHADER},
+    {"MAX_VERTEX_ATTRIBS", (lua_Integer) GL_MAX_VERTEX_ATTRIBS},
+    {"MAX_VERTEX_UNIFORM_VECTORS", (lua_Integer) GL_MAX_VERTEX_UNIFORM_VECTORS},
+    {"MAX_VARYING_VECTORS", (lua_Integer) GL_MAX_VARYING_VECTORS},
+    {"MAX_COMBINED_TEXTURE_IMAGE_UNITS", (lua_Integer) GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS},
+    {"MAX_VERTEX_TEXTURE_IMAGE_UNITS", (lua_Integer) GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS},
+    {"MAX_TEXTURE_IMAGE_UNITS", (lua_Integer) GL_MAX_TEXTURE_IMAGE_UNITS},
+    {"MAX_FRAGMENT_UNIFORM_VECTORS", (lua_Integer) GL_MAX_FRAGMENT_UNIFORM_VECTORS},
+    {"SHADER_TYPE", (lua_Integer) GL_SHADER_TYPE},
+    {"DELETE_STATUS", (lua_Integer) GL_DELETE_STATUS},
+    {"LINK_STATUS", (lua_Integer) GL_LINK_STATUS},
+    {"VALIDATE_STATUS", (lua_Integer) GL_VALIDATE_STATUS},
+    {"ATTACHED_SHADERS", (lua_Integer) GL_ATTACHED_SHADERS},
+    {"ACTIVE_UNIFORMS", (lua_Integer) GL_ACTIVE_UNIFORMS},
+    {"ACTIVE_UNIFORM_MAX_LENGTH", (lua_Integer) GL_ACTIVE_UNIFORM_MAX_LENGTH},
+    {"ACTIVE_ATTRIBUTES", (lua_Integer) GL_ACTIVE_ATTRIBUTES},
+    {"ACTIVE_ATTRIBUTE_MAX_LENGTH", (lua_Integer) GL_ACTIVE_ATTRIBUTE_MAX_LENGTH},
+    {"SHADING_LANGUAGE_VERSION", (lua_Integer) GL_SHADING_LANGUAGE_VERSION},
+    {"CURRENT_PROGRAM", (lua_Integer) GL_CURRENT_PROGRAM},
+    {"NEVER", (lua_Integer) GL_NEVER},
+    {"LESS", (lua_Integer) GL_LESS},
+    {"EQUAL", (lua_Integer) GL_EQUAL},
+    {"LEQUAL", (lua_Integer) GL_LEQUAL},
+    {"GREATER", (lua_Integer) GL_GREATER},
+    {"NOTEQUAL", (lua_Integer) GL_NOTEQUAL},
+    {"GEQUAL", (lua_Integer) GL_GEQUAL},
+    {"ALWAYS", (lua_Integer) GL_ALWAYS},
+    {"KEEP", (lua_Integer) GL_KEEP},
+    {"REPLACE", (lua_Integer) GL_REPLACE},
+    {"INCR", (lua_Integer) GL_INCR},
+    {"DECR", (lua_Integer) GL_DECR},
+    {"INVERT", (lua_Integer) GL_INVERT},
+    {"INCR_WRAP", (lua_Integer) GL_INCR_WRAP},
+    {"DECR_WRAP", (lua_Integer) GL_DECR_WRAP},
+    {"VENDOR", (lua_Integer) GL_VENDOR},
+    {"RENDERER", (lua_Integer) GL_RENDERER},
+    {"VERSION", (lua_Integer) GL_VERSION},
+    {"EXTENSIONS", (lua_Integer) GL_EXTENSIONS},
+    {"NEAREST", (lua_Integer) GL_NEAREST},
+    {"LINEAR", (lua_Integer) GL_LINEAR},
+    {"NEAREST_MIPMAP_NEAREST", (lua_Integer) GL_NEAREST_MIPMAP_NEAREST},
+    {"LINEAR_MIPMAP_NEAREST", (lua_Integer) GL_LINEAR_MIPMAP_NEAREST},
+    {"NEAREST_MIPMAP_LINEAR", (lua_Integer) GL_NEAREST_MIPMAP_LINEAR},
+    {"LINEAR_MIPMAP_LINEAR", (lua_Integer) GL_LINEAR_MIPMAP_LINEAR},
+    {"TEXTURE_MAG_FILTER", (lua_Integer) GL_TEXTURE_MAG_FILTER},
+    {"TEXTURE_MIN_FILTER", (lua_Integer) GL_TEXTURE_MIN_FILTER},
+    {"TEXTURE_WRAP_S", (lua_Integer) GL_TEXTURE_WRAP_S},
+    {"TEXTURE_WRAP_T", (lua_Integer) GL_TEXTURE_WRAP_T},
+    {"TEXTURE", (lua_Integer) GL_TEXTURE},
+    {"TEXTURE_CUBE_MAP", (lua_Integer) GL_TEXTURE_CUBE_MAP},
+    {"TEXTURE_BINDING_CUBE_MAP", (lua_Integer) GL_TEXTURE_BINDING_CUBE_MAP},
+    {"TEXTURE_CUBE_MAP_POSITIVE_X", (lua_Integer) GL_TEXTURE_CUBE_MAP_POSITIVE_X},
+    {"TEXTURE_CUBE_MAP_NEGATIVE_X", (lua_Integer) GL_TEXTURE_CUBE_MAP_NEGATIVE_X},
+    {"TEXTURE_CUBE_MAP_POSITIVE_Y", (lua_Integer) GL_TEXTURE_CUBE_MAP_POSITIVE_Y},
+    {"TEXTURE_CUBE_MAP_NEGATIVE_Y", (lua_Integer) GL_TEXTURE_CUBE_MAP_NEGATIVE_Y},
+    {"TEXTURE_CUBE_MAP_POSITIVE_Z", (lua_Integer) GL_TEXTURE_CUBE_MAP_POSITIVE_Z},
+    {"TEXTURE_CUBE_MAP_NEGATIVE_Z", (lua_Integer) GL_TEXTURE_CUBE_MAP_NEGATIVE_Z},
+    {"MAX_CUBE_MAP_TEXTURE_SIZE", (lua_Integer) GL_MAX_CUBE_MAP_TEXTURE_SIZE},
+    {"TEXTURE0", (lua_Integer) GL_TEXTURE0},
+    {"TEXTURE1", (lua_Integer) GL_TEXTURE1},
+    {"TEXTURE2", (lua_Integer) GL_TEXTURE2},
+    {"TEXTURE3", (lua_Integer) GL_TEXTURE3},
+    {"TEXTURE4", (lua_Integer) GL_TEXTURE4},
+    {"TEXTURE5", (lua_Integer) GL_TEXTURE5},
+    {"TEXTURE6", (lua_Integer) GL_TEXTURE6},
+    {"TEXTURE7", (lua_Integer) GL_TEXTURE7},
+    {"TEXTURE8", (lua_Integer) GL_TEXTURE8},
+    {"TEXTURE9", (lua_Integer) GL_TEXTURE9},
+    {"TEXTURE10", (lua_Integer) GL_TEXTURE10},
+    {"TEXTURE11", (lua_Integer) GL_TEXTURE11},
+    {"TEXTURE12", (lua_Integer) GL_TEXTURE12},
+    {"TEXTURE13", (lua_Integer) GL_TEXTURE13},
+    {"TEXTURE14", (lua_Integer) GL_TEXTURE14},
+    {"TEXTURE15", (lua_Integer) GL_TEXTURE15},
+    {"TEXTURE16", (lua_Integer) GL_TEXTURE16},
+    {"TEXTURE17", (lua_Integer) GL_TEXTURE17},
+    {"TEXTURE18", (lua_Integer) GL_TEXTURE18},
+    {"TEXTURE19", (lua_Integer) GL_TEXTURE19},
+    {"TEXTURE20", (lua_Integer) GL_TEXTURE20},
+    {"TEXTURE21", (lua_Integer) GL_TEXTURE21},
+    {"TEXTURE22", (lua_Integer) GL_TEXTURE22},
+    {"TEXTURE23", (lua_Integer) GL_TEXTURE23},
+    {"TEXTURE24", (lua_Integer) GL_TEXTURE24},
+    {"TEXTURE25", (lua_Integer) GL_TEXTURE25},
+    {"TEXTURE26", (lua_Integer) GL_TEXTURE26},
+    {"TEXTURE27", (lua_Integer) GL_TEXTURE27},
+    {"TEXTURE28", (lua_Integer) GL_TEXTURE28},
+    {"TEXTURE29", (lua_Integer) GL_TEXTURE29},
+    {"TEXTURE30", (lua_Integer) GL_TEXTURE30},
+    {"TEXTURE31", (lua_Integer) GL_TEXTURE31},
+    {"ACTIVE_TEXTURE", (lua_Integer) GL_ACTIVE_TEXTURE},
+    {"REPEAT", (lua_Integer) GL_REPEAT},
+    {"CLAMP_TO_EDGE", (lua_Integer) GL_CLAMP_TO_EDGE},
+    {"MIRRORED_REPEAT", (lua_Integer) GL_MIRRORED_REPEAT},
+    {"FLOAT_VEC2", (lua_Integer) GL_FLOAT_VEC2},
+    {"FLOAT_VEC3", (lua_Integer) GL_FLOAT_VEC3},
+    {"FLOAT_VEC4", (lua_Integer) GL_FLOAT_VEC4},
+    {"INT_VEC2", (lua_Integer) GL_INT_VEC2},
+    {"INT_VEC3", (lua_Integer) GL_INT_VEC3},
+    {"INT_VEC4", (lua_Integer) GL_INT_VEC4},
+    {"BOOL", (lua_Integer) GL_BOOL},
+    {"BOOL_VEC2", (lua_Integer) GL_BOOL_VEC2},
+    {"BOOL_VEC3", (lua_Integer) GL_BOOL_VEC3},
+    {"BOOL_VEC4", (lua_Integer) GL_BOOL_VEC4},
+    {"FLOAT_MAT2", (lua_Integer) GL_FLOAT_MAT2},
+    {"FLOAT_MAT3", (lua_Integer) GL_FLOAT_MAT3},
+    {"FLOAT_MAT4", (lua_Integer) GL_FLOAT_MAT4},
+    {"SAMPLER_2D", (lua_Integer) GL_SAMPLER_2D},
+    {"SAMPLER_CUBE", (lua_Integer) GL_SAMPLER_CUBE},
+    {"VERTEX_ATTRIB_ARRAY_ENABLED", (lua_Integer) GL_VERTEX_ATTRIB_ARRAY_ENABLED},
+    {"VERTEX_ATTRIB_ARRAY_SIZE", (lua_Integer) GL_VERTEX_ATTRIB_ARRAY_SIZE},
+    {"VERTEX_ATTRIB_ARRAY_STRIDE", (lua_Integer) GL_VERTEX_ATTRIB_ARRAY_STRIDE},
+    {"VERTEX_ATTRIB_ARRAY_TYPE", (lua_Integer) GL_VERTEX_ATTRIB_ARRAY_TYPE},
+    {"VERTEX_ATTRIB_ARRAY_NORMALIZED", (lua_Integer) GL_VERTEX_ATTRIB_ARRAY_NORMALIZED},
+    {"VERTEX_ATTRIB_ARRAY_POINTER", (lua_Integer) GL_VERTEX_ATTRIB_ARRAY_POINTER},
+    {"VERTEX_ATTRIB_ARRAY_BUFFER_BINDING", (lua_Integer) GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING},
+    {"IMPLEMENTATION_COLOR_READ_TYPE", (lua_Integer) GL_IMPLEMENTATION_COLOR_READ_TYPE},
+    {"IMPLEMENTATION_COLOR_READ_FORMAT", (lua_Integer) GL_IMPLEMENTATION_COLOR_READ_FORMAT},
+    {"COMPILE_STATUS", (lua_Integer) GL_COMPILE_STATUS},
+    {"INFO_LOG_LENGTH", (lua_Integer) GL_INFO_LOG_LENGTH},
+    {"SHADER_SOURCE_LENGTH", (lua_Integer) GL_SHADER_SOURCE_LENGTH},
+    {"SHADER_COMPILER", (lua_Integer) GL_SHADER_COMPILER},
+    {"SHADER_BINARY_FORMATS", (lua_Integer) GL_SHADER_BINARY_FORMATS},
+    {"NUM_SHADER_BINARY_FORMATS", (lua_Integer) GL_NUM_SHADER_BINARY_FORMATS},
+    {"LOW_FLOAT", (lua_Integer) GL_LOW_FLOAT},
+    {"MEDIUM_FLOAT", (lua_Integer) GL_MEDIUM_FLOAT},
+    {"HIGH_FLOAT", (lua_Integer) GL_HIGH_FLOAT},
+    {"LOW_INT", (lua_Integer) GL_LOW_INT},
+    {"MEDIUM_INT", (lua_Integer) GL_MEDIUM_INT},
+    {"HIGH_INT", (lua_Integer) GL_HIGH_INT},
+    {"FRAMEBUFFER", (lua_Integer) GL_FRAMEBUFFER},
+    {"RENDERBUFFER", (lua_Integer) GL_RENDERBUFFER},
+    {"RGBA4", (lua_Integer) GL_RGBA4},
+    {"RGB5_A1", (lua_Integer) GL_RGB5_A1},
+    {"RGB565", (lua_Integer) GL_RGB565},
+    {"DEPTH_COMPONENT16", (lua_Integer) GL_DEPTH_COMPONENT16},
+    {"STENCIL_INDEX8", (lua_Integer) GL_STENCIL_INDEX8},
+    {"RENDERBUFFER_WIDTH", (lua_Integer) GL_RENDERBUFFER_WIDTH},
+    {"RENDERBUFFER_HEIGHT", (lua_Integer) GL_RENDERBUFFER_HEIGHT},
+    {"RENDERBUFFER_INTERNAL_FORMAT", (lua_Integer) GL_RENDERBUFFER_INTERNAL_FORMAT},
+    {"RENDERBUFFER_RED_SIZE", (lua_Integer) GL_RENDERBUFFER_RED_SIZE},
+    {"RENDERBUFFER_GREEN_SIZE", (lua_Integer) GL_RENDERBUFFER_GREEN_SIZE},
+    {"RENDERBUFFER_BLUE_SIZE", (lua_Integer) GL_RENDERBUFFER_BLUE_SIZE},
+    {"RENDERBUFFER_ALPHA_SIZE", (lua_Integer) GL_RENDERBUFFER_ALPHA_SIZE},
+    {"RENDERBUFFER_DEPTH_SIZE", (lua_Integer) GL_RENDERBUFFER_DEPTH_SIZE},
+    {"RENDERBUFFER_STENCIL_SIZE", (lua_Integer) GL_RENDERBUFFER_STENCIL_SIZE},
+    {"FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE", (lua_Integer) GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE},
+    {"FRAMEBUFFER_ATTACHMENT_OBJECT_NAME", (lua_Integer) GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME},
+    {"FRAMEBUFFER_ATTACHMENT_TEXTURE_LEVEL", (lua_Integer) GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LEVEL},
+    {"FRAMEBUFFER_ATTACHMENT_TEXTURE_CUBE_MAP_FACE", (lua_Integer) GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_CUBE_MAP_FACE},
+    {"COLOR_ATTACHMENT0", (lua_Integer) GL_COLOR_ATTACHMENT0},
+    {"DEPTH_ATTACHMENT", (lua_Integer) GL_DEPTH_ATTACHMENT},
+    {"STENCIL_ATTACHMENT", (lua_Integer) GL_STENCIL_ATTACHMENT},
+    {"NONE", (lua_Integer) GL_NONE},
+    {"FRAMEBUFFER_COMPLETE", (lua_Integer) GL_FRAMEBUFFER_COMPLETE},
+    {"FRAMEBUFFER_INCOMPLETE_ATTACHMENT", (lua_Integer) GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT},
+    {"FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT", (lua_Integer) GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT},
+    {"FRAMEBUFFER_INCOMPLETE_DIMENSIONS", (lua_Integer) GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS},
+    {"FRAMEBUFFER_UNSUPPORTED", (lua_Integer) GL_FRAMEBUFFER_UNSUPPORTED},
+    {"FRAMEBUFFER_BINDING", (lua_Integer) GL_FRAMEBUFFER_BINDING},
+    {"RENDERBUFFER_BINDING", (lua_Integer) GL_RENDERBUFFER_BINDING},
+    {"MAX_RENDERBUFFER_SIZE", (lua_Integer) GL_MAX_RENDERBUFFER_SIZE},
+    {"INVALID_FRAMEBUFFER_OPERATION", (lua_Integer) GL_INVALID_FRAMEBUFFER_OPERATION},
+    {NULL, (lua_Integer) 0},
 };
 
 int R_lua_gl_init(lua_State *L)
 {
+    XL_initmetatable(L, "R_LuaGlBuffer", r_luaglbuffer_method_registry_xl);
+    XL_initmetatable(L, "R_LuaGlProgram", r_luaglprogram_method_registry_xl);
     XL_initfunctions(L, r_gl_function_registry_xl, "R", "GL", (const char *)NULL);
+    XL_initfunctions(L, r_gl_buffer_function_registry_xl, "R", "GL", "Buffer", (const char *)NULL);
+    XL_initfunctions(L, r_gl_program_function_registry_xl, "R", "GL", "Program", (const char *)NULL);
+    XL_initenum(L, _gl_enum_xl, "GL", (const char *)NULL);
     return 0;
 }
 

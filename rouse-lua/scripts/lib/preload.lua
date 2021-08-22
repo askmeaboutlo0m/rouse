@@ -19,7 +19,9 @@
 -- SOFTWARE.
 
 local PreloadScene <const> = class()
-local asset_types  <const> = {"font", "image", "model", "json", "sound"}
+local asset_types  <const> = {
+    "font", "image", "model", "json", "texture", "sound",
+}
 
 local function get_empty_loaded()
     local loaded = {}
@@ -190,8 +192,12 @@ function PreloadScene:load_type_ttf(key, path)
     return "font", self.nvg:create_font(key, path)
 end
 
+PreloadScene["load_type_texture.png"] = function (self, key, path)
+    return "texture", R.GL.Texture.new(path)
+end
+
 function PreloadScene:load_resource(path)
-    local key, suffix = string.match(path, "([^/]+)%.([^%./]+)$")
+    local key, suffix = string.match(path, "([^/%.]+)%.([^/]+)$")
     local loader      = self["load_type_" .. suffix]
     if loader then
         local prefix, asset_or_reason = loader(self, key, path)

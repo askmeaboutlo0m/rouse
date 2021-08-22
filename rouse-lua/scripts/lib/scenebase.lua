@@ -188,6 +188,10 @@ function SceneBase:sound_asset(key)
     return self:asset("sound", key)
 end
 
+function SceneBase:texture_asset(key)
+    return self:asset("texture", key)
+end
+
 
 function SceneBase:sprite(...)
     local retvals = {}

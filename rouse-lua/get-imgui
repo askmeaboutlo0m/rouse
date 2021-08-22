@@ -23,7 +23,7 @@
 # SOFTWARE.
 #
 IMGUI_GIT_URL='https://github.com/ocornut/imgui.git'
-IMGUI_GIT_CHECKOUT='f99fe72c42bd5d578c2443409192b139b1c6623d'
+IMGUI_GIT_CHECKOUT='32d4f6c5d9088dd1599d342a08f8376c00565900'
 
 IMNODES_GIT_URL='https://github.com/Nelarius/imnodes.git'
 IMNODES_GIT_CHECKOUT='c63f347f06f16f78249bdd0914b1bc04dabc4f0a'

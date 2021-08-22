@@ -642,13 +642,12 @@ static void ImGuiLua_RegisterEnumImGuiNavInput(lua_State *L)
     ImGuiLua_SetEnumValue(L, "FocusNext", 13);
     ImGuiLua_SetEnumValue(L, "TweakSlow", 14);
     ImGuiLua_SetEnumValue(L, "TweakFast", 15);
-    ImGuiLua_SetEnumValue(L, "KeyMenu_", 16);
-    ImGuiLua_SetEnumValue(L, "KeyLeft_", 17);
-    ImGuiLua_SetEnumValue(L, "KeyRight_", 18);
-    ImGuiLua_SetEnumValue(L, "KeyUp_", 19);
-    ImGuiLua_SetEnumValue(L, "KeyDown_", 20);
-    ImGuiLua_SetEnumValue(L, "COUNT", 21);
-    ImGuiLua_SetEnumValue(L, "InternalStart_", ImGuiNavInput_KeyMenu_);
+    ImGuiLua_SetEnumValue(L, "KeyLeft_", 16);
+    ImGuiLua_SetEnumValue(L, "KeyRight_", 17);
+    ImGuiLua_SetEnumValue(L, "KeyUp_", 18);
+    ImGuiLua_SetEnumValue(L, "KeyDown_", 19);
+    ImGuiLua_SetEnumValue(L, "COUNT", 20);
+    ImGuiLua_SetEnumValue(L, "InternalStart_", ImGuiNavInput_KeyLeft_);
 }
 
 IMGUILUA_ENUM(ImGuiPopupFlags)
@@ -701,30 +700,31 @@ IMGUILUA_ENUM(ImGuiStyleVar)
 static void ImGuiLua_RegisterEnumImGuiStyleVar(lua_State *L)
 {
     ImGuiLua_SetEnumValue(L, "Alpha", 0);
-    ImGuiLua_SetEnumValue(L, "WindowPadding", 1);
-    ImGuiLua_SetEnumValue(L, "WindowRounding", 2);
-    ImGuiLua_SetEnumValue(L, "WindowBorderSize", 3);
-    ImGuiLua_SetEnumValue(L, "WindowMinSize", 4);
-    ImGuiLua_SetEnumValue(L, "WindowTitleAlign", 5);
-    ImGuiLua_SetEnumValue(L, "ChildRounding", 6);
-    ImGuiLua_SetEnumValue(L, "ChildBorderSize", 7);
-    ImGuiLua_SetEnumValue(L, "PopupRounding", 8);
-    ImGuiLua_SetEnumValue(L, "PopupBorderSize", 9);
-    ImGuiLua_SetEnumValue(L, "FramePadding", 10);
-    ImGuiLua_SetEnumValue(L, "FrameRounding", 11);
-    ImGuiLua_SetEnumValue(L, "FrameBorderSize", 12);
-    ImGuiLua_SetEnumValue(L, "ItemSpacing", 13);
-    ImGuiLua_SetEnumValue(L, "ItemInnerSpacing", 14);
-    ImGuiLua_SetEnumValue(L, "IndentSpacing", 15);
-    ImGuiLua_SetEnumValue(L, "CellPadding", 16);
-    ImGuiLua_SetEnumValue(L, "ScrollbarSize", 17);
-    ImGuiLua_SetEnumValue(L, "ScrollbarRounding", 18);
-    ImGuiLua_SetEnumValue(L, "GrabMinSize", 19);
-    ImGuiLua_SetEnumValue(L, "GrabRounding", 20);
-    ImGuiLua_SetEnumValue(L, "TabRounding", 21);
-    ImGuiLua_SetEnumValue(L, "ButtonTextAlign", 22);
-    ImGuiLua_SetEnumValue(L, "SelectableTextAlign", 23);
-    ImGuiLua_SetEnumValue(L, "COUNT", 24);
+    ImGuiLua_SetEnumValue(L, "DisabledAlpha", 1);
+    ImGuiLua_SetEnumValue(L, "WindowPadding", 2);
+    ImGuiLua_SetEnumValue(L, "WindowRounding", 3);
+    ImGuiLua_SetEnumValue(L, "WindowBorderSize", 4);
+    ImGuiLua_SetEnumValue(L, "WindowMinSize", 5);
+    ImGuiLua_SetEnumValue(L, "WindowTitleAlign", 6);
+    ImGuiLua_SetEnumValue(L, "ChildRounding", 7);
+    ImGuiLua_SetEnumValue(L, "ChildBorderSize", 8);
+    ImGuiLua_SetEnumValue(L, "PopupRounding", 9);
+    ImGuiLua_SetEnumValue(L, "PopupBorderSize", 10);
+    ImGuiLua_SetEnumValue(L, "FramePadding", 11);
+    ImGuiLua_SetEnumValue(L, "FrameRounding", 12);
+    ImGuiLua_SetEnumValue(L, "FrameBorderSize", 13);
+    ImGuiLua_SetEnumValue(L, "ItemSpacing", 14);
+    ImGuiLua_SetEnumValue(L, "ItemInnerSpacing", 15);
+    ImGuiLua_SetEnumValue(L, "IndentSpacing", 16);
+    ImGuiLua_SetEnumValue(L, "CellPadding", 17);
+    ImGuiLua_SetEnumValue(L, "ScrollbarSize", 18);
+    ImGuiLua_SetEnumValue(L, "ScrollbarRounding", 19);
+    ImGuiLua_SetEnumValue(L, "GrabMinSize", 20);
+    ImGuiLua_SetEnumValue(L, "GrabRounding", 21);
+    ImGuiLua_SetEnumValue(L, "TabRounding", 22);
+    ImGuiLua_SetEnumValue(L, "ButtonTextAlign", 23);
+    ImGuiLua_SetEnumValue(L, "SelectableTextAlign", 24);
+    ImGuiLua_SetEnumValue(L, "COUNT", 25);
 }
 
 IMGUILUA_ENUM(ImGuiTabBarFlags)
@@ -1126,6 +1126,27 @@ static int ImGui_BeginCombo(lua_State *L)
     }
     lua_pushboolean(L, RETVAL);
     return 1;
+}
+
+
+// function ImGui::BeginDisabled
+
+IMGUILUA_FUNCTION(ImGui::BeginDisabled)
+static int ImGui_BeginDisabled(lua_State *L)
+{
+    int ARGC = lua_gettop(L);
+    if (ARGC > 1) {
+        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 0, 1);
+    }
+    bool disabled;
+    if (ARGC < 1) {
+        disabled = true;
+    }
+    else {
+        disabled = lua_toboolean(L, 1);
+    }
+    ImGui::BeginDisabled(disabled);
+    return 0;
 }
 
 
@@ -1895,7 +1916,7 @@ static int ImGui_ColorConvertFloat4ToU32(lua_State *L)
     ImVec4 in;
     in = ImGuiLua_ToImVec4(L, 1);
     ImU32 RETVAL = ImGui::ColorConvertFloat4ToU32(in);
-    lua_pushinteger(L, static_cast<ImU32>(RETVAL));
+    lua_pushinteger(L, static_cast<lua_Integer>(RETVAL));
     return 1;
 }
 
@@ -2421,6 +2442,20 @@ static int ImGui_EndCombo(lua_State *L)
 }
 
 
+// function ImGui::EndDisabled
+
+IMGUILUA_FUNCTION(ImGui::EndDisabled)
+static int ImGui_EndDisabled(lua_State *L)
+{
+    int ARGC = lua_gettop(L);
+    if (ARGC != 0) {
+        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
+    }
+    ImGui::EndDisabled();
+    return 0;
+}
+
+
 // function ImGui::EndDragDropSource
 
 IMGUILUA_FUNCTION(ImGui::EndDragDropSource)
@@ -2647,7 +2682,7 @@ static int ImGui_GetColorU32_if(lua_State *L)
         alpha_mul = static_cast<float>(luaL_checknumber(L, 2));
     }
     ImU32 RETVAL = ImGui::GetColorU32(idx,alpha_mul);
-    lua_pushinteger(L, static_cast<ImU32>(RETVAL));
+    lua_pushinteger(L, static_cast<lua_Integer>(RETVAL));
     return 1;
 }
 
@@ -2660,7 +2695,7 @@ static int ImGui_GetColorU32_u32(lua_State *L)
     ImU32 col;
     col = static_cast<ImU32>(luaL_checkinteger(L, 1));
     ImU32 RETVAL = ImGui::GetColorU32(col);
-    lua_pushinteger(L, static_cast<ImU32>(RETVAL));
+    lua_pushinteger(L, static_cast<lua_Integer>(RETVAL));
     return 1;
 }
 
@@ -2673,7 +2708,7 @@ static int ImGui_GetColorU32_v4(lua_State *L)
     ImVec4 col;
     col = ImGuiLua_ToImVec4(L, 1);
     ImU32 RETVAL = ImGui::GetColorU32(col);
-    lua_pushinteger(L, static_cast<ImU32>(RETVAL));
+    lua_pushinteger(L, static_cast<lua_Integer>(RETVAL));
     return 1;
 }
 
@@ -6771,6 +6806,7 @@ static luaL_Reg ImGuiLua_RegImGui[] = {
     {"im_gui_begin_child", ImGui_BeginChild},
     {"begin_child_frame", ImGui_BeginChildFrame},
     {"begin_combo", ImGui_BeginCombo},
+    {"begin_disabled", ImGui_BeginDisabled},
     {"begin_drag_drop_source", ImGui_BeginDragDropSource},
     {"begin_drag_drop_target", ImGui_BeginDragDropTarget},
     {"begin_group", ImGui_BeginGroup},
@@ -6815,6 +6851,7 @@ static luaL_Reg ImGuiLua_RegImGui[] = {
     {"end_child", ImGui_EndChild},
     {"end_child_frame", ImGui_EndChildFrame},
     {"end_combo", ImGui_EndCombo},
+    {"end_disabled", ImGui_EndDisabled},
     {"end_drag_drop_source", ImGui_EndDragDropSource},
     {"end_drag_drop_target", ImGui_EndDragDropTarget},
     {"end_group", ImGui_EndGroup},

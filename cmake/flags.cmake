@@ -11,5 +11,5 @@ if(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
     endif()
 
     set(rouse_cflags   ${rouse_common_warnings} -Wstrict-prototypes)
-    set(rouse_cxxflags ${rouse_common_warnings} -fno-exceptions)
+    set(rouse_cxxflags ${rouse_common_warnings} -fno-exceptions -fno-rtti)
 endif()

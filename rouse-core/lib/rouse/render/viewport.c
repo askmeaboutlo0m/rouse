@@ -39,7 +39,8 @@
 #include "../main.h"
 
 
-static R_Viewport window_viewport = {0, 0, 0, 0};
+static R_Viewport window_viewport     = {0, 0, 0, 0};
+static R_Viewport window_viewport_raw = {0, 0, 0, 0};
 
 
 void R_viewport_set(R_Viewport viewport)
@@ -59,19 +60,22 @@ R_Viewport R_window_viewport(void)
     return window_viewport;
 }
 
-
-static void get_window_size(float *out_w, float *out_h)
+R_Viewport R_window_viewport_raw(void)
 {
-    int w, h;
-    SDL_GL_GetDrawableSize(R_window, &w, &h);
-    *out_w = R_int2float(w);
-    *out_h = R_int2float(h);
+    return window_viewport_raw;
 }
+
 
 void R_window_viewport_resize(void)
 {
-    float x, y, w, h;
-    get_window_size(&w, &h);
+    int raw_w, raw_h;
+    SDL_GL_GetDrawableSize(R_window, &raw_w, &raw_h);
+    window_viewport_raw.w = raw_w;
+    window_viewport_raw.h = raw_h;
+
+    float x, y;
+    float w = R_int2float(raw_w);
+    float h = R_int2float(raw_h);
 
     if (R_height * (w / R_width) <= h) {
         float ratio = w / R_width;

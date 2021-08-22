@@ -39,6 +39,9 @@ void R_viewport_reset(void);
 /* Gives you the application's window viewport. */
 R_Viewport R_window_viewport(void);
 
+/* Application window viewport without aspect ratio correction. */
+R_Viewport R_window_viewport_raw(void);
+
 /*
  * Resize the window viewport according to the application window's size.
  * This will center the viewport so that the aspect ratio of `R_width` and

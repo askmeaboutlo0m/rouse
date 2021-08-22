@@ -57,6 +57,11 @@ FUNCTION <NEW>R_Viewport *R.Viewport.window()
     RETVAL = R_window_viewport();
 END
 
+FUNCTION <NEW>R_Viewport *R.Viewport.window_raw()
+    XL_UNUSED(L);
+    RETVAL = R_window_viewport_raw();
+END
+
 FUNCTION void R.Viewport.resize_window()
     XL_UNUSED(L);
     R_window_viewport_resize();

@@ -173,6 +173,15 @@ static int r_viewport_window_xl(lua_State *L)
     return 1;
 }
 
+static int r_viewport_window_raw_xl(lua_State *L)
+{
+    R_Viewport RETVAL;
+    XL_UNUSED(L);
+    RETVAL = R_window_viewport_raw();
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_Viewport), "R_Viewport", 0);
+    return 1;
+}
+
 static int r_viewport_resize_window_xl(lua_State *L)
 {
     XL_UNUSED(L);
@@ -222,6 +231,7 @@ static luaL_Reg r_viewport_function_registry_xl[] = {
     {"set", r_viewport_set_xl},
     {"set_window", r_viewport_set_window_xl},
     {"window", r_viewport_window_xl},
+    {"window_raw", r_viewport_window_raw_xl},
     {NULL, NULL},
 };
 

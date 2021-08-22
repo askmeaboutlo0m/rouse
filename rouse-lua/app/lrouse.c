@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 askmeaboutloom
+ * Copyright (c) 2019, 2020, 2021 askmeaboutloom
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,7 +19,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#include <rouse/lua.h>
+#include <rouse.h>
+#include <rouse/lua/lua_inc.h>
+#include <rouse/lua/main.h>
 
 #ifdef __EMSCRIPTEN__
 #   include <emscripten/fetch.h>

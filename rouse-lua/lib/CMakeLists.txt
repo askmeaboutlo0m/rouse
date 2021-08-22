@@ -1,11 +1,4 @@
-add_library(lua STATIC "${lua_sources}" "${lua_headers}")
-set_target_properties(lua PROPERTIES OUTPUT_NAME rouse_lua_5_3_5)
-set_language_standards(lua)
-add_asan_if_available(lua)
-
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    target_compile_definitions(lua PUBLIC LUA_USE_APICHECK)
-endif()
+add_subdirectory(3rdparty/lua)
 
 
 function(process_xls inputs_name suffix outputs_name)

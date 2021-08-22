@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 askmeaboutloom
+ * Copyright (c) 2019, 2021 askmeaboutloom
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,7 +46,7 @@ R_Camera *R_camera_new_perspective(float fov, float aspect_ratio,
                                    float near, float far)
 {
     R_Camera *camera = R_camera_new();
-    camera->proj = R_m4_perspective(fov, aspect_ratio, near, far);
+    R_camera_perspective_set(camera, fov, aspect_ratio, near, far);
     return camera;
 }
 
@@ -56,6 +56,13 @@ void R_camera_free(R_Camera *camera)
         R_MAGIC_POISON(R_Camera, camera);
         free(camera);
     }
+}
+
+void R_camera_perspective_set(R_Camera *camera, float fov, float aspect_ratio,
+                              float near, float far)
+{
+    R_MAGIC_CHECK(R_Camera, camera);
+    camera->proj = R_m4_perspective(fov, aspect_ratio, near, far);
 }
 
 static void bind_matrix(R_M4 *matrix, int location)

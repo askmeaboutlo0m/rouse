@@ -42,6 +42,9 @@ R_Camera *R_camera_new_perspective(float fov, float aspect_ratio,
 
 void R_camera_free(R_Camera *camera);
 
+void R_camera_perspective_set(R_Camera *camera, float fov, float aspect_ratio,
+                              float near, float far);
+
 void R_camera_bind(R_Camera *camera, int proj_location, int view_location);
 
 

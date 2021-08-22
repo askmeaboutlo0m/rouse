@@ -118,7 +118,9 @@ function SceneBase.register_event_handlers(class, reg)
 
     for key, handler in pairs(reg) do
         local type
-        if is_string(key) and SDL.EventType[key] then
+        if key == "ANY" then
+            type = "ANY"
+        elseif is_string(key) and SDL.EventType[key] then
             type = SDL.EventType[key]
         elseif is_integer(key) and SDL.EventType[key] then
             type = key
@@ -134,6 +136,16 @@ function SceneBase.register_event_handlers(class, reg)
     if not rawget(class, "on_event") then
         class.on_event = function (self, event)
             self.super.on_event(self, event)
+
+            local any_handler = event_handlers["ANY"]
+            if any_handler then
+                if is_string(any_handler) then
+                    self[any_handler](self, event)
+                else
+                    any_handler(self, event)
+                end
+            end
+
             local handler = event_handlers[event.type]
             if handler then
                 if is_string(handler) then

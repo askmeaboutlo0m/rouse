@@ -1,0 +1,7 @@
+add_executable(rmodel "${CMAKE_CURRENT_LIST_DIR}/rmodel.c")
+set_language_standards(rmodel)
+target_compile_options(rmodel PRIVATE ${rouse_cflags})
+target_link_libraries(rmodel PUBLIC -lassimp)
+add_asan_if_available(rmodel)
+add_clang_tidy_if_available(rmodel)
+set_target_properties(rmodel PROPERTIES OUTPUT_NAME "rmodel")

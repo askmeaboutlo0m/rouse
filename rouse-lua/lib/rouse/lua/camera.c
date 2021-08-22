@@ -91,6 +91,17 @@ static int r_camera_method_gc_xl(lua_State *L)
     return 0;
 }
 
+static int r_camera_method_set_perspective_xl(lua_State *L)
+{
+    R_Camera *self = R_CPPCAST(R_Camera *, XL_checkpptype(L, 1, "R_Camera"));
+    float fov = XL_checkfloat(L, 2);
+    float aspect_ratio = XL_checkfloat(L, 3);
+    float near = XL_checkfloat(L, 4);
+    float far = XL_checkfloat(L, 5);
+    R_camera_perspective_set(self, fov, aspect_ratio, near, far);
+    return 0;
+}
+
 static int r_camera_method_bind_xl(lua_State *L)
 {
     R_Camera *self = R_CPPCAST(R_Camera *, XL_checkpptype(L, 1, "R_Camera"));
@@ -269,6 +280,7 @@ static luaL_Reg r_camera_method_registry_xl[] = {
     {"__index", r_camera_index_xl},
     {"__newindex", r_camera_newindex_xl},
     {"bind", r_camera_method_bind_xl},
+    {"set_perspective", r_camera_method_set_perspective_xl},
     {NULL, NULL},
 };
 

@@ -42,6 +42,10 @@ CONSTRUCTOR new_perspective(float fov, float aspect_ratio,
 
 DESTRUCTOR = R_camera_free
 
+
+METHOD void set_perspective(float fov, float aspect_ratio,
+                            float near, float far) = R_camera_perspective_set
+
 METHOD void bind(int proj_location, int view_location) = R_camera_bind
 
 

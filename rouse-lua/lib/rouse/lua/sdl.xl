@@ -1075,4 +1075,37 @@ STATICNEWINDEX any SDL.cursor
 END
 
 
+STATICINDEX bool SDL.capture_mouse
+    RETVAL = SDL_GetWindowFlags(R_window) & SDL_WINDOW_MOUSE_CAPTURE;
+END
+
+STATICNEWINDEX bool SDL.capture_mouse
+    if (SDL_CaptureMouse(VALUE) < 0) {
+        R_LUA_DIE(L, "Can't %s mouse capture: %s", VALUE ? "enable" :"disable",
+                  SDL_GetError());
+    }
+END
+
+
+STATICINDEX bool SDL.relative_mouse_mode
+    RETVAL = SDL_GetRelativeMouseMode();
+END
+
+STATICNEWINDEX bool SDL.relative_mouse_mode
+    if (SDL_SetRelativeMouseMode(VALUE) < 0) {
+        R_LUA_DIE(L, "Can't %s relative mouse mode: %s",
+                  VALUE ? "enable" :"disable", SDL_GetError());
+    }
+END
+
+
+STATICINDEX bool SDL.window_grab
+    RETVAL = SDL_GetWindowGrab(R_window);
+END
+
+STATICNEWINDEX bool SDL.window_grab
+    SDL_SetWindowGrab(R_window, VALUE);
+END
+
+
 INIT extern R_lua_sdl_init

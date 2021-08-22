@@ -916,6 +916,57 @@ static int sdl_cursor_staticnewindex_xl(lua_State *L)
     return 0;
 }
 
+static int sdl_capture_mouse_staticindex_xl(lua_State *L)
+{
+    bool RETVAL;
+    RETVAL = SDL_GetWindowFlags(R_window) & SDL_WINDOW_MOUSE_CAPTURE;
+    lua_pushboolean(L, RETVAL);
+    return 1;
+}
+
+static int sdl_capture_mouse_staticnewindex_xl(lua_State *L)
+{
+    bool VALUE = XL_checkbool(L, 1);
+    if (SDL_CaptureMouse(VALUE) < 0) {
+        R_LUA_DIE(L, "Can't %s mouse capture: %s", VALUE ? "enable" :"disable",
+                  SDL_GetError());
+    }
+    return 0;
+}
+
+static int sdl_relative_mouse_mode_staticindex_xl(lua_State *L)
+{
+    bool RETVAL;
+    RETVAL = SDL_GetRelativeMouseMode();
+    lua_pushboolean(L, RETVAL);
+    return 1;
+}
+
+static int sdl_relative_mouse_mode_staticnewindex_xl(lua_State *L)
+{
+    bool VALUE = XL_checkbool(L, 1);
+    if (SDL_SetRelativeMouseMode(VALUE) < 0) {
+        R_LUA_DIE(L, "Can't %s relative mouse mode: %s",
+                  VALUE ? "enable" :"disable", SDL_GetError());
+    }
+    return 0;
+}
+
+static int sdl_window_grab_staticindex_xl(lua_State *L)
+{
+    bool RETVAL;
+    RETVAL = SDL_GetWindowGrab(R_window);
+    lua_pushboolean(L, RETVAL);
+    return 1;
+}
+
+static int sdl_window_grab_staticnewindex_xl(lua_State *L)
+{
+    bool VALUE = XL_checkbool(L, 1);
+    SDL_SetWindowGrab(R_window, VALUE);
+    return 0;
+}
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -1118,23 +1169,29 @@ static luaL_Reg sdl_windowevent_method_registry_xl[] = {
 };
 
 static luaL_Reg sdl_staticindex_registry_xl[] = {
+    {"capture_mouse", sdl_capture_mouse_staticindex_xl},
     {"clipboard_text", sdl_clipboard_text_staticindex_xl},
     {"cursor", sdl_cursor_staticindex_xl},
     {"gl_swap_interval", sdl_gl_swap_interval_staticindex_xl},
     {"mouse_pos", sdl_mouse_pos_staticindex_xl},
     {"mouse_x", sdl_mouse_x_staticindex_xl},
     {"mouse_y", sdl_mouse_y_staticindex_xl},
+    {"relative_mouse_mode", sdl_relative_mouse_mode_staticindex_xl},
     {"text_input_active", sdl_text_input_active_staticindex_xl},
     {"ticks", sdl_ticks_staticindex_xl},
     {"window_flags", sdl_window_flags_staticindex_xl},
+    {"window_grab", sdl_window_grab_staticindex_xl},
     {NULL, NULL},
 };
 
 static luaL_Reg sdl_staticnewindex_registry_xl[] = {
+    {"capture_mouse", sdl_capture_mouse_staticnewindex_xl},
     {"clipboard_text", sdl_clipboard_text_staticnewindex_xl},
     {"cursor", sdl_cursor_staticnewindex_xl},
     {"gl_swap_interval", sdl_gl_swap_interval_staticnewindex_xl},
+    {"relative_mouse_mode", sdl_relative_mouse_mode_staticnewindex_xl},
     {"text_input_active", sdl_text_input_active_staticnewindex_xl},
+    {"window_grab", sdl_window_grab_staticnewindex_xl},
     {NULL, NULL},
 };
 

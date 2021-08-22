@@ -185,7 +185,7 @@ sub parse_until_end ($self, $in) {
 
 sub parse_body ($self, $in, $has_retval, $args, $after_args) {
     my $arg_names = join ', ', map { $_->{name} } @$args;
-    if ($after_args =~ /\A\s*=\s*(\w+)\s*\z/) {
+    if ($after_args =~ /\A\s*=\s*((?:\w|::)+)\s*\z/) {
         my $call = sprintf '%s(%s)', $1, $arg_names;
         return $has_retval ? "    RETVAL = $call;" : "    $call;";
     }

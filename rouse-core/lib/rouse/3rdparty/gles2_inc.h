@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, 2020 askmeaboutloom
+ * Copyright (c) 2019, 2020, 2021 askmeaboutloom
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,25 @@
 
 #include "GLES2/gl2.h"
 #include "GLES2/gl2ext.h"
+
+/*
+ * These extension functions are always available in WebGL and Dear Imgui
+ * makes use of them under Emscripten, so we include their prototypes here.
+ */
+#ifdef __EMSCRIPTEN__
+#   ifdef __cplusplus
+extern "C" {
+#   endif
+
+GL_APICALL void GL_APIENTRY glBindVertexArrayOES(GLuint array);
+GL_APICALL void GL_APIENTRY glDeleteVertexArraysOES(GLsizei n, const GLuint *arrays);
+GL_APICALL void GL_APIENTRY glGenVertexArraysOES(GLsizei n, GLuint *arrays);
+GL_APICALL GLboolean GL_APIENTRY glIsVertexArrayOES(GLuint array);
+
+#   ifdef __cplusplus
+}
+#   endif
+#endif
 
 /* Don't load standard GL functions dynamically in Emscripten. */
 #ifdef __EMSCRIPTEN__

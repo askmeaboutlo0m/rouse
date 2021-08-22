@@ -1,0 +1,6 @@
+add_library(imgui STATIC "${imgui_sources}" "${imgui_headers}")
+set_language_standards(imgui)
+add_asan_if_available(imgui)
+target_compile_definitions(imgui PUBLIC IMGUI_USER_CONFIG)
+target_include_directories(imgui INTERFACE "${CMAKE_CURRENT_LIST_DIR}")
+target_link_libraries(imgui PUBLIC Rouse::sdl2)

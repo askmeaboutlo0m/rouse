@@ -21,6 +21,9 @@ static void init_modules(lua_State *L)
 #ifdef ROUSE_LUA_BOX2D_ENABLED
         R_lua_box2d_init,
 #endif
+#ifdef ROUSE_LUA_IMGUI_ENABLED
+        R_lua_imgui_init,
+#endif
     };
     for (size_t i = 0; i < R_LENGTH(init_funcs); ++i) {
         lua_pushcfunction(L, init_funcs[i]);

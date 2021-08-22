@@ -10,3 +10,4 @@ local
 _Inline
 .cache/
 compile_commands.json
+*_git/

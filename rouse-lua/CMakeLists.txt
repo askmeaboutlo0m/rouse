@@ -36,5 +36,9 @@ if(BUILD_WITH_BOX2D)
     list(APPEND rouse_lua_export_targets rouse_lua_box2d)
 endif()
 
+if(BUILD_WITH_IMGUI)
+    list(APPEND rouse_lua_export_targets imgui imnodes rouse_lua_imgui )
+endif()
+
 export(TARGETS ${rouse_lua_export_targets}
        NAMESPACE RouseLua:: FILE RouseLua.cmake)

@@ -1,0 +1,5 @@
+add_library(imnodes STATIC "${imnodes_sources}" "${imnodes_headers}")
+set_language_standards(imnodes)
+add_asan_if_available(imnodes)
+target_include_directories(imnodes INTERFACE "${CMAKE_CURRENT_LIST_DIR}")
+target_link_libraries(imnodes imgui)

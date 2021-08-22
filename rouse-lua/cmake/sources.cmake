@@ -63,6 +63,33 @@ set(lua_sources
     "${CMAKE_SOURCE_DIR}/lib/rouse/lua_5_4_1/lvm.c"
     "${CMAKE_SOURCE_DIR}/lib/rouse/lua_5_4_1/lzio.c")
 
+set(imgui_headers
+    "${CMAKE_SOURCE_DIR}/lib/3rdparty/imgui/imconfig.h"
+    "${CMAKE_SOURCE_DIR}/lib/3rdparty/imgui/imgui.h"
+    "${CMAKE_SOURCE_DIR}/lib/3rdparty/imgui/imgui_impl_opengl3.h"
+    "${CMAKE_SOURCE_DIR}/lib/3rdparty/imgui/imgui_impl_sdl.h"
+    "${CMAKE_SOURCE_DIR}/lib/3rdparty/imgui/imgui_internal.h"
+    "${CMAKE_SOURCE_DIR}/lib/3rdparty/imgui/imstb_rectpack.h"
+    "${CMAKE_SOURCE_DIR}/lib/3rdparty/imgui/imstb_textedit.h"
+    "${CMAKE_SOURCE_DIR}/lib/3rdparty/imgui/imstb_truetype.h"
+    "${CMAKE_SOURCE_DIR}/lib/3rdparty/imgui/rouse_imconfig.h")
+
+set(imgui_sources
+    "${CMAKE_SOURCE_DIR}/lib/3rdparty/imgui/imgui.cpp"
+    "${CMAKE_SOURCE_DIR}/lib/3rdparty/imgui/imgui_demo.cpp"
+    "${CMAKE_SOURCE_DIR}/lib/3rdparty/imgui/imgui_draw.cpp"
+    "${CMAKE_SOURCE_DIR}/lib/3rdparty/imgui/imgui_impl_opengl3.cpp"
+    "${CMAKE_SOURCE_DIR}/lib/3rdparty/imgui/imgui_impl_sdl.cpp"
+    "${CMAKE_SOURCE_DIR}/lib/3rdparty/imgui/imgui_tables.cpp"
+    "${CMAKE_SOURCE_DIR}/lib/3rdparty/imgui/imgui_widgets.cpp")
+
+set(imnodes_headers
+    "${CMAKE_SOURCE_DIR}/lib/3rdparty/imnodes/imnodes.h"
+    "${CMAKE_SOURCE_DIR}/lib/3rdparty/imnodes/imnodes_internal.h")
+
+set(imnodes_sources
+    "${CMAKE_SOURCE_DIR}/lib/3rdparty/imnodes/imnodes.cpp")
+
 set(rouse_lua_headers
     "${CMAKE_SOURCE_DIR}/lib/rouse/lua.h"
     "${CMAKE_SOURCE_DIR}/lib/rouse/lua/intern.h"
@@ -105,3 +132,12 @@ unset(rouse_lua_box2d_sources)
 
 set(rouse_lua_box2d_xls
     "${CMAKE_SOURCE_DIR}/lib/rouse/lua/box2d.xl")
+
+unset(rouse_lua_imgui_headers)
+
+set(rouse_lua_imgui_sources
+    "${CMAKE_SOURCE_DIR}/lib/rouse/lua/imgui_gen.cpp"
+    "${CMAKE_SOURCE_DIR}/lib/rouse/lua/imnodes_gen.cpp")
+
+set(rouse_lua_imgui_xls
+    "${CMAKE_SOURCE_DIR}/lib/rouse/lua/imgui.xl")

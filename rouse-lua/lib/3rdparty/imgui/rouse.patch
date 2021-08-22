@@ -1,0 +1,61 @@
+From 7316910ea80b1daece74a6612c7ed6d8b2e35220 Mon Sep 17 00:00:00 2001
+From: askmeaboutloom <askmeaboutloom@live.de>
+Date: Tue, 3 Aug 2021 16:46:25 +0200
+Subject: [PATCH] Rouse ImGui patches
+
+---
+ backends/imgui_impl_opengl3.cpp | 8 +-------
+ backends/imgui_impl_sdl.cpp     | 4 ++--
+ imgui.h                         | 2 +-
+ 3 files changed, 4 insertions(+), 10 deletions(-)
+
+diff --git a/backends/imgui_impl_opengl3.cpp b/backends/imgui_impl_opengl3.cpp
+index 8f72d438..4360d21c 100644
+--- a/backends/imgui_impl_opengl3.cpp
++++ b/backends/imgui_impl_opengl3.cpp
+@@ -95,13 +95,7 @@
+ 
+ // GL includes
+ #if defined(IMGUI_IMPL_OPENGL_ES2)
+-#include <GLES2/gl2.h>
+-#if defined(__EMSCRIPTEN__)
+-#ifndef GL_GLEXT_PROTOTYPES
+-#define GL_GLEXT_PROTOTYPES
+-#endif
+-#include <GLES2/gl2ext.h>
+-#endif
++#include "../../../../rouse-core/lib/rouse/3rdparty/gles2_inc.h"
+ #elif defined(IMGUI_IMPL_OPENGL_ES3)
+ #if (defined(__APPLE__) && (TARGET_OS_IOS || TARGET_OS_TV))
+ #include <OpenGLES/ES3/gl.h>    // Use GL ES 3
+diff --git a/backends/imgui_impl_sdl.cpp b/backends/imgui_impl_sdl.cpp
+index 09e6acb6..ffc8990b 100644
+--- a/backends/imgui_impl_sdl.cpp
++++ b/backends/imgui_impl_sdl.cpp
+@@ -53,8 +53,8 @@
+ #include "imgui_impl_sdl.h"
+ 
+ // SDL
+-#include <SDL.h>
+-#include <SDL_syswm.h>
++#include <SDL2/SDL.h>
++#include <SDL2/SDL_syswm.h>
+ #if defined(__APPLE__)
+ #include "TargetConditionals.h"
+ #endif
+diff --git a/imgui.h b/imgui.h
+index 182c46a5..250e664b 100644
+--- a/imgui.h
++++ b/imgui.h
+@@ -40,7 +40,7 @@ Index of this file:
+ 
+ // Configuration file with compile-time options (edit imconfig.h or '#define IMGUI_USER_CONFIG "myfilename.h" from your build system')
+ #ifdef IMGUI_USER_CONFIG
+-#include IMGUI_USER_CONFIG
++#include "rouse_imconfig.h"
+ #endif
+ #if !defined(IMGUI_DISABLE_INCLUDE_IMCONFIG_H) || defined(IMGUI_INCLUDE_IMCONFIG_H)
+ #include "imconfig.h"
+-- 
+2.32.0
+

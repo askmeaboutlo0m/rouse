@@ -42,21 +42,33 @@ add_asan_if_available(rouse_lua)
 add_clang_tidy_if_available(rouse_lua)
 
 
+function(add_rouse_lua_library name)
+    string(TOUPPER "${name}" capitalized_name)
+
+    process_xls("rouse_lua_${name}_xls" ".cpp" "rouse_lua_${name}_gen_sources")
+
+    add_library("rouse_lua_${name}" STATIC "${rouse_lua_${name}_sources}"
+                                           "${rouse_lua_${name}_gen_sources}"
+                                           "${rouse_lua_${name}_headers}")
+    set_language_standards("rouse_lua_${name}")
+    target_compile_options("rouse_lua_${name}" PRIVATE ${rouse_cxxflags})
+    target_link_libraries("rouse_lua_${name}" PUBLIC Rouse::rouse lua "${name}")
+    add_asan_if_available("rouse_lua_${name}")
+    add_clang_tidy_if_available("rouse_lua_${name}")
+
+    target_compile_definitions(rouse_lua PUBLIC
+        "ROUSE_LUA_${capitalized_name}_ENABLED")
+    target_link_libraries(rouse_lua PUBLIC "rouse_lua_${name}")
+endfunction()
+
 if(BUILD_WITH_BOX2D)
     add_rouse_library_raw(box2d "${BOX2D_CFLAGS}" "${BOX2D_LDFLAGS}" "${BOX2D_LIBS}")
+    add_rouse_lua_library(box2d)
+endif()
 
-    process_xls(rouse_lua_box2d_xls ".cpp" rouse_lua_box2d_gen_sources)
-
-    add_library(rouse_lua_box2d STATIC "${rouse_lua_box2d_sources}"
-                                       "${rouse_lua_box2d_gen_sources}"
-                                       "${rouse_lua_box2d_headers}")
-    set_language_standards(rouse_lua_box2d)
-    target_compile_options(rouse_lua_box2d PRIVATE ${rouse_cxxflags})
-    target_link_libraries(rouse_lua_box2d PUBLIC Rouse::rouse lua)
-    target_link_libraries(rouse_lua_box2d INTERFACE box2d)
-    add_asan_if_available(rouse_lua_box2d)
-    add_clang_tidy_if_available(rouse_lua_box2d)
-
-    target_compile_definitions(rouse_lua PUBLIC ROUSE_LUA_BOX2D_ENABLED)
-    target_link_libraries(rouse_lua PUBLIC rouse_lua_box2d)
+if(BUILD_WITH_IMGUI)
+    add_subdirectory(3rdparty/imgui)
+    add_subdirectory(3rdparty/imnodes)
+    add_rouse_lua_library(imgui)
+    target_link_libraries(rouse_lua_imgui PUBLIC imnodes)
 endif()

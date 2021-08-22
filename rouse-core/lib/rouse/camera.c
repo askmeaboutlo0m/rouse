@@ -151,7 +151,7 @@ void R_first_person_apply(R_FirstPerson *fp, R_Camera *camera)
 {
     R_MAGIC_CHECK(R_FirstPerson, fp);
     R_MAGIC_CHECK(R_Camera, camera);
-    R_V3 fv, rv, uv;
-    R_first_person_directions(fp, &fv, &rv, &uv);
+    R_V3 fv, uv;
+    R_first_person_directions(fp, &fv, NULL, &uv);
     camera->view = R_m4_look_at(fp->pos, R_v3_add(fp->pos, fv), uv);
 }

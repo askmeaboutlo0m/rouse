@@ -912,3 +912,41 @@ static inline R_M4 R_m4_rotate_xyz(R_M4 m, R_V3 angles)
                                                         angles.y),
                                                         angles.z);
 }
+
+static inline void R_m4_scale_make(R_M4 m, R_V3 v)
+{
+    glm_scale_make(m.raw, v.raw);
+}
+
+static inline R_M4 R_m4_scale_to(R_M4 m, R_V3 v)
+{
+    R_M4 dest;
+    glm_scale_to(m.raw, v.raw, dest.raw);
+    return dest;
+}
+
+static inline void R_m4_scale_uni(R_M4 m, float s)
+{
+    glm_scale_uni(m.raw, s);
+}
+
+
+static inline R_M4 R_m4_scale_x(R_M4 m, float x)
+{
+    return R_m4_scale_to(m, R_v3(x, 1.0f, 1.0f));
+}
+
+static inline R_M4 R_m4_scale_y(R_M4 m, float y)
+{
+    return R_m4_scale_to(m, R_v3(1.0f, y, 1.0f));
+}
+
+static inline R_M4 R_m4_scale_z(R_M4 m, float z)
+{
+    return R_m4_scale_to(m, R_v3(1.0f, 1.0f, z));
+}
+
+static inline R_M4 R_m4_scale_xyz(R_M4 m, R_V3 scales)
+{
+    return R_m4_scale_to(m, scales);
+}

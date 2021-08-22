@@ -41,6 +41,7 @@ my %name_types = (
     look        => 'm4_look',
     lookat      => 'm4_look_at',
     rotate      => 'm4_rotate',
+    scale       => 'm4_scale',
     translate   => 'm4_translate',
 );
 
@@ -475,4 +476,28 @@ static inline R_M4 R_m4_rotate_xyz(R_M4 m, R_V3 angles)
     return R_m4_rotate_z(R_m4_rotate_y(R_m4_rotate_x(m, angles.x),
                                                         angles.y),
                                                         angles.z);
+}
+
+@ void glm_scale_make(mat4 m, vec3 v)
+@ void glm_scale_to(mat4 m, vec3 v, mat4 dest)
+@ void glm_scale_uni(mat4 m, float s)
+
+static inline R_M4 R_m4_scale_x(R_M4 m, float x)
+{
+    return R_m4_scale_to(m, R_v3(x, 1.0f, 1.0f));
+}
+
+static inline R_M4 R_m4_scale_y(R_M4 m, float y)
+{
+    return R_m4_scale_to(m, R_v3(1.0f, y, 1.0f));
+}
+
+static inline R_M4 R_m4_scale_z(R_M4 m, float z)
+{
+    return R_m4_scale_to(m, R_v3(1.0f, 1.0f, z));
+}
+
+static inline R_M4 R_m4_scale_xyz(R_M4 m, R_V3 scales)
+{
+    return R_m4_scale_to(m, scales);
 }

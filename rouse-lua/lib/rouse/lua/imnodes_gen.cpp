@@ -1101,7 +1101,7 @@ static int ImGuiLua_GetSelected(lua_State *L)
         lua_Alloc alloc = lua_getallocf(L, &ud);
 
         size_t size = sizeof(int) * static_cast<size_t>(n);
-        int *ids = static_cast<int *>(alloc(ud, NULL, LUA_TNONE, size));
+        int *ids = static_cast<int *>(alloc(ud, NULL, LUA_TNIL, size));
         if (!ids) {
             return luaL_error(L, "Could not allocate buffer for %d ids", n);
         }

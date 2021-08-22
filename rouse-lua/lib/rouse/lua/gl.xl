@@ -27,6 +27,7 @@
 
 typedef unsigned int R_LuaGlBuffer;
 typedef unsigned int R_LuaGlProgram;
+typedef unsigned int R_LuaGlTexture;
 
 @xl
 
@@ -38,8 +39,19 @@ FUNCTION void R.GL.clear(float r, float g, float b, float a,
                          float depth, int stencil) = R_gl_clear
 
 
-FUNCTION void R.GL.uniform_m4(int uniform, R_M4 *m4)
-    R_GL(glUniformMatrix4fv, uniform, 1, GL_FALSE, R_M4_GL(*m4));
+FUNCTION void R.GL.uniform_1i(int location, int i)
+    R_GL_CLEAR_ERROR();
+    R_GL(glUniform1i, location, i);
+END
+
+FUNCTION void R.GL.uniform_1f(int location, float f)
+    R_GL_CLEAR_ERROR();
+    R_GL(glUniform1f, location, f);
+END
+
+FUNCTION void R.GL.uniform_m4(int location, R_M4 *m4)
+    R_GL_CLEAR_ERROR();
+    R_GL(glUniformMatrix4fv, location, 1, GL_FALSE, R_M4_GL(*m4));
 END
 
 
@@ -74,17 +86,35 @@ FUNCTION void R.GL.enable_vertex_attrib_array(unsigned int index)
     R_GL(glEnableVertexAttribArray, index);
 END
 
+FUNCTION void R.GL.enable_vertex_attrib_arrays()
+    R_GL_CLEAR_ERROR();
+    lua_Integer argc = lua_gettop(L);
+    for (lua_Integer i = 1; i <= argc; ++i) {
+        unsigned int index = XL_checkuint(L, i);
+        R_GL(glEnableVertexAttribArray, index);
+    }
+END
+
 FUNCTION void R.GL.disable_vertex_attrib_array(unsigned int index)
     R_GL_CLEAR_ERROR();
     R_GL(glDisableVertexAttribArray, index);
 END
 
+FUNCTION void R.GL.disable_vertex_attrib_arrays()
+    R_GL_CLEAR_ERROR();
+    lua_Integer argc = lua_gettop(L);
+    for (lua_Integer i = 1; i <= argc; ++i) {
+        unsigned int index = XL_checkuint(L, i);
+        R_GL(glDisableVertexAttribArray, index);
+    }
+END
+
 FUNCTION void R.GL.disable_all_vertex_attrib_arrays()
     XL_UNUSED(L);
     R_GL_CLEAR_ERROR();
-    int max = R_gl_max_vertex_attribs;
-    for (int i = 0; i < max; ++i) {
-        R_GL(glDisableVertexAttribArray, R_int2uint(i));
+    unsigned int max = R_int2uint(R_gl_max_vertex_attribs);
+    for (unsigned int index = 0; index < max; ++index) {
+        R_GL(glDisableVertexAttribArray, index);
     }
 END
 
@@ -134,6 +164,22 @@ END
 FUNCTION void R.GL.draw_elements(unsigned int mode, int count)
     R_GL_CLEAR_ERROR();
     R_GL(glDrawElements, mode, count, GL_UNSIGNED_SHORT, NULL);
+END
+
+
+FUNCTION void R.GL.active_texture(unsigned int index)
+    R_GL_CLEAR_ERROR();
+    R_GL(glActiveTexture, GL_TEXTURE0 + index);
+END
+
+FUNCTION void R.GL.bind_texture(unsigned int type, unsigned int texture)
+    R_GL_CLEAR_ERROR();
+    R_GL(glBindTexture, type, texture);
+END
+
+FUNCTION void R.GL.bind_texture2d(unsigned int texture)
+    R_GL_CLEAR_ERROR();
+    R_GL(glBindTexture, GL_TEXTURE_2D, texture);
 END
 
 
@@ -200,6 +246,25 @@ FUNCTION void R.GL.Program.unbind()
     XL_UNUSED(L);
     R_GL_CLEAR_ERROR();
     R_GL(glUseProgram, 0);
+END
+
+
+PPTYPE R_LuaGlTexture R.GL.Texture
+
+CONSTRUCTOR new(const char *path)
+    R_TextureOptions options = R_texture_options();
+    /* TODO: fill options */
+    RETVAL  = R_NEW(RETVAL);
+    *RETVAL = R_gl_texture_new(path, &options);
+END
+
+DESTRUCTOR
+    R_gl_texture_free(*self);
+    free(self);
+END
+
+INDEX unsigned int id
+    RETVAL = *self;
 END
 
 

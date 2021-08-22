@@ -32,6 +32,7 @@
 
 typedef unsigned int R_LuaGlBuffer;
 typedef unsigned int R_LuaGlProgram;
+typedef unsigned int R_LuaGlTexture;
 
 
 static int r_gl_clear_xl(lua_State *L)
@@ -46,11 +47,30 @@ static int r_gl_clear_xl(lua_State *L)
     return 0;
 }
 
+static int r_gl_uniform_1i_xl(lua_State *L)
+{
+    int location = XL_checkint(L, 1);
+    int i = XL_checkint(L, 2);
+    R_GL_CLEAR_ERROR();
+    R_GL(glUniform1i, location, i);
+    return 0;
+}
+
+static int r_gl_uniform_1f_xl(lua_State *L)
+{
+    int location = XL_checkint(L, 1);
+    float f = XL_checkfloat(L, 2);
+    R_GL_CLEAR_ERROR();
+    R_GL(glUniform1f, location, f);
+    return 0;
+}
+
 static int r_gl_uniform_m4_xl(lua_State *L)
 {
-    int uniform = XL_checkint(L, 1);
+    int location = XL_checkint(L, 1);
     R_M4 *m4 = R_CPPCAST(R_M4 *, XL_checkutype(L, 2, "R_M4"));
-    R_GL(glUniformMatrix4fv, uniform, 1, GL_FALSE, R_M4_GL(*m4));
+    R_GL_CLEAR_ERROR();
+    R_GL(glUniformMatrix4fv, location, 1, GL_FALSE, R_M4_GL(*m4));
     return 0;
 }
 
@@ -103,6 +123,17 @@ static int r_gl_enable_vertex_attrib_array_xl(lua_State *L)
     return 0;
 }
 
+static int r_gl_enable_vertex_attrib_arrays_xl(lua_State *L)
+{
+    R_GL_CLEAR_ERROR();
+    lua_Integer argc = lua_gettop(L);
+    for (lua_Integer i = 1; i <= argc; ++i) {
+        unsigned int index = XL_checkuint(L, i);
+        R_GL(glEnableVertexAttribArray, index);
+    }
+    return 0;
+}
+
 static int r_gl_disable_vertex_attrib_array_xl(lua_State *L)
 {
     unsigned int index = XL_checkuint(L, 1);
@@ -111,13 +142,24 @@ static int r_gl_disable_vertex_attrib_array_xl(lua_State *L)
     return 0;
 }
 
+static int r_gl_disable_vertex_attrib_arrays_xl(lua_State *L)
+{
+    R_GL_CLEAR_ERROR();
+    lua_Integer argc = lua_gettop(L);
+    for (lua_Integer i = 1; i <= argc; ++i) {
+        unsigned int index = XL_checkuint(L, i);
+        R_GL(glDisableVertexAttribArray, index);
+    }
+    return 0;
+}
+
 static int r_gl_disable_all_vertex_attrib_arrays_xl(lua_State *L)
 {
     XL_UNUSED(L);
     R_GL_CLEAR_ERROR();
-    int max = R_gl_max_vertex_attribs;
-    for (int i = 0; i < max; ++i) {
-        R_GL(glDisableVertexAttribArray, R_int2uint(i));
+    unsigned int max = R_int2uint(R_gl_max_vertex_attribs);
+    for (unsigned int index = 0; index < max; ++index) {
+        R_GL(glDisableVertexAttribArray, index);
     }
     return 0;
 }
@@ -182,6 +224,31 @@ static int r_gl_draw_elements_xl(lua_State *L)
     int count = XL_checkint(L, 2);
     R_GL_CLEAR_ERROR();
     R_GL(glDrawElements, mode, count, GL_UNSIGNED_SHORT, NULL);
+    return 0;
+}
+
+static int r_gl_active_texture_xl(lua_State *L)
+{
+    unsigned int index = XL_checkuint(L, 1);
+    R_GL_CLEAR_ERROR();
+    R_GL(glActiveTexture, GL_TEXTURE0 + index);
+    return 0;
+}
+
+static int r_gl_bind_texture_xl(lua_State *L)
+{
+    unsigned int type = XL_checkuint(L, 1);
+    unsigned int texture = XL_checkuint(L, 2);
+    R_GL_CLEAR_ERROR();
+    R_GL(glBindTexture, type, texture);
+    return 0;
+}
+
+static int r_gl_bind_texture2d_xl(lua_State *L)
+{
+    unsigned int texture = XL_checkuint(L, 1);
+    R_GL_CLEAR_ERROR();
+    R_GL(glBindTexture, GL_TEXTURE_2D, texture);
     return 0;
 }
 
@@ -286,9 +353,44 @@ static int r_gl_program_unbind_xl(lua_State *L)
     return 0;
 }
 
+static int r_gl_texture_new_xl(lua_State *L)
+{
+    const char *path = luaL_checkstring(L, 1);
+    R_LuaGlTexture *RETVAL;
+    R_TextureOptions options = R_texture_options();
+    /* TODO: fill options */
+    RETVAL  = R_NEW(RETVAL);
+    *RETVAL = R_gl_texture_new(path, &options);
+    XL_pushnewpptypeuv(L, RETVAL, "R_LuaGlTexture", 0);
+    return 1;
+}
+
+static int r_luagltexture_method_gc_xl(lua_State *L)
+{
+    R_LuaGlTexture *self = R_CPPCAST(R_LuaGlTexture *, XL_checkpptype_nullable(L, 1, "R_LuaGlTexture"));
+    R_gl_texture_free(*self);
+    free(self);
+    return 0;
+}
+
+static int r_luagltexture_id_index_xl(lua_State *L)
+{
+    R_LuaGlTexture *self = R_CPPCAST(R_LuaGlTexture *, XL_checkpptype(L, 1, "R_LuaGlTexture"));
+    unsigned int RETVAL;
+    RETVAL = *self;
+    XL_pushuint(L, RETVAL);
+    return 1;
+}
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+static int r_luagltexture_index_anchor_xl;
+static int r_luagltexture_index_xl(lua_State *L)
+{
+    return XL_index(L, "R_LuaGlTexture", &r_luagltexture_index_anchor_xl, 1, 2);
+}
 
 static int r_luaglbuffer_index_xl(lua_State *L)
 {
@@ -301,6 +403,9 @@ static int r_luaglprogram_index_xl(lua_State *L)
 }
 
 static luaL_Reg r_gl_function_registry_xl[] = {
+    {"active_texture", r_gl_active_texture_xl},
+    {"bind_texture", r_gl_bind_texture_xl},
+    {"bind_texture2d", r_gl_bind_texture2d_xl},
     {"blend_func", r_gl_blend_func_xl},
     {"buffer_data", r_gl_buffer_data_xl},
     {"clear", r_gl_clear_xl},
@@ -309,10 +414,14 @@ static luaL_Reg r_gl_function_registry_xl[] = {
     {"disable", r_gl_disable_xl},
     {"disable_all_vertex_attrib_arrays", r_gl_disable_all_vertex_attrib_arrays_xl},
     {"disable_vertex_attrib_array", r_gl_disable_vertex_attrib_array_xl},
+    {"disable_vertex_attrib_arrays", r_gl_disable_vertex_attrib_arrays_xl},
     {"draw_arrays", r_gl_draw_arrays_xl},
     {"draw_elements", r_gl_draw_elements_xl},
     {"enable", r_gl_enable_xl},
     {"enable_vertex_attrib_array", r_gl_enable_vertex_attrib_array_xl},
+    {"enable_vertex_attrib_arrays", r_gl_enable_vertex_attrib_arrays_xl},
+    {"uniform_1f", r_gl_uniform_1f_xl},
+    {"uniform_1i", r_gl_uniform_1i_xl},
     {"uniform_m4", r_gl_uniform_m4_xl},
     {"vertex_attrib_pointer", r_gl_vertex_attrib_pointer_xl},
     {NULL, NULL},
@@ -330,6 +439,16 @@ static luaL_Reg r_gl_program_function_registry_xl[] = {
     {NULL, NULL},
 };
 
+static luaL_Reg r_gl_texture_function_registry_xl[] = {
+    {"new", r_gl_texture_new_xl},
+    {NULL, NULL},
+};
+
+static luaL_Reg r_luagltexture_index_registry_xl[] = {
+    {"id", r_luagltexture_id_index_xl},
+    {NULL, NULL},
+};
+
 static luaL_Reg r_luaglbuffer_method_registry_xl[] = {
     {"__gc", r_luaglbuffer_method_gc_xl},
     {"__index", r_luaglbuffer_index_xl},
@@ -344,6 +463,12 @@ static luaL_Reg r_luaglprogram_method_registry_xl[] = {
     {"bind", r_luaglprogram_method_bind_xl},
     {"unbind", r_luaglprogram_method_unbind_xl},
     {"uniform_location", r_luaglprogram_method_uniform_location_xl},
+    {NULL, NULL},
+};
+
+static luaL_Reg r_luagltexture_method_registry_xl[] = {
+    {"__gc", r_luagltexture_method_gc_xl},
+    {"__index", r_luagltexture_index_xl},
     {NULL, NULL},
 };
 
@@ -656,9 +781,12 @@ int R_lua_gl_init(lua_State *L)
 {
     XL_initmetatable(L, "R_LuaGlBuffer", r_luaglbuffer_method_registry_xl);
     XL_initmetatable(L, "R_LuaGlProgram", r_luaglprogram_method_registry_xl);
+    XL_initmetatable(L, "R_LuaGlTexture", r_luagltexture_method_registry_xl);
+    XL_initindextable(L, &r_luagltexture_index_anchor_xl, r_luagltexture_index_registry_xl);
     XL_initfunctions(L, r_gl_function_registry_xl, "R", "GL", (const char *)NULL);
     XL_initfunctions(L, r_gl_buffer_function_registry_xl, "R", "GL", "Buffer", (const char *)NULL);
     XL_initfunctions(L, r_gl_program_function_registry_xl, "R", "GL", "Program", (const char *)NULL);
+    XL_initfunctions(L, r_gl_texture_function_registry_xl, "R", "GL", "Texture", (const char *)NULL);
     XL_initenum(L, _gl_enum_xl, "GL", (const char *)NULL);
     return 0;
 }

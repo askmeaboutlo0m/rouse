@@ -161,7 +161,9 @@ function PreloadScene:get_bitmap_image_flags(path)
 end
 
 
-PreloadScene.load_type_lua = false
+PreloadScene.load_type_lua  = false
+PreloadScene.load_type_frag = false
+PreloadScene.load_type_vert = false
 
 function PreloadScene:load_type_json(key, path)
     return "json", R.Json.parse_file(path)

@@ -26,14 +26,16 @@ function FpsCounter:init(nvg, font_id, len)
     self.last   = SDL.ticks
     self.sum    = 0
     self.frames = {}
-    self.text_field = R.TextField.new {
-        font   = font_id,
-        size   = 32.0,
-        align  = R.Nvg.Align.LEFT | R.Nvg.Align.TOP,
-        string = "you need to call my on_frame in your on_render method",
-    }
-    self.sprite         = R.Sprite.new("fps")
-    self.sprite.content = self.text_field
+    if nvg then
+        self.text_field = R.TextField.new {
+            font   = font_id,
+            size   = 32.0,
+            align  = R.Nvg.Align.LEFT | R.Nvg.Align.TOP,
+            string = "you need to call my on_frame in your on_render method",
+        }
+        self.sprite         = R.Sprite.new("fps")
+        self.sprite.content = self.text_field
+    end
 end
 
 function FpsCounter:update()
@@ -47,15 +49,23 @@ function FpsCounter:update()
     self.index         = index % self.len
 end
 
-function FpsCounter:on_frame()
-    self:update()
+function FpsCounter:calculate()
     local div = self.sum / #self.frames
     if div == 0.0 then
-        self.text_field.string = "inf fps"
+        return nil
     else
-        local fps = math.floor(1000.0 / div + 0.5)
-        self.text_field.string = string.format("%d fps", fps)
+        return math.floor(1000.0 / div + 0.5)
     end
+end
+
+function FpsCounter:get_fps_string()
+    local fps = self:calculate()
+    return fps and string.format("%d fps", fps) or "inf fps"
+end
+
+function FpsCounter:on_frame()
+    self:update()
+    self.text_field.string = self:get_fps_string()
 end
 
 return FpsCounter

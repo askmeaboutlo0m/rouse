@@ -118,6 +118,8 @@ typedef struct R_MainArgs {
     void             *user;
 } R_MainArgs;
 
+typedef void (*R_QuitHandler)(void *);
+
 /*
  * A scene, the base unit of measurement. When you set a scene, it'll be
  * responsible for handling events, doing logic on every tick and rendering
@@ -196,6 +198,10 @@ void  R_tickrate_set(float ticks_per_second);
 
 float R_framerate_get(void);
 void  R_framerate_set(float frames_per_second);
+
+
+int  R_quit_handler_add(R_QuitHandler handler, void *arg, int priority);
+bool R_quit_handler_remove(int handler_id, void **out_arg);
 
 
 R_MainArgs R_main_args(R_SceneFn on_scene, void *user);

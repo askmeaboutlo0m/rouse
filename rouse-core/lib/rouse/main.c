@@ -55,6 +55,16 @@
 #include <assert.h>
 #include "sanity.h"
 
+typedef struct R_QuitHandlerEntry R_QuitHandlerEntry;
+struct R_QuitHandlerEntry {
+    R_MAGIC_FIELD
+    int                id;
+    int                priority;
+    R_QuitHandler      handler;
+    void               *arg;
+    R_QuitHandlerEntry *next;
+};
+
 
 SDL_Window    *R_window;
 SDL_GLContext R_glcontext;
@@ -70,6 +80,9 @@ bool  R_al_enabled   = false;
 static R_Scene   *current_scene  = NULL;
 static R_SceneFn next_scene_fn   = NULL;
 static void      *next_scene_arg = NULL;
+
+static int                quit_handler_id = 0;
+static R_QuitHandlerEntry *quit_handlers  = NULL;
 
 
 float R_tickrate_get(void)
@@ -90,6 +103,55 @@ float R_framerate_get(void)
 void R_framerate_set(float frames_per_second)
 {
     R_frame_length = 1000.0f / frames_per_second;
+}
+
+
+int R_quit_handler_add(R_QuitHandler handler, void *arg, int priority)
+{
+    R_QuitHandlerEntry **pp = &quit_handlers;
+    while (*pp && (*pp)->priority > priority) {
+        pp = &(*pp)->next;
+    }
+
+    int                id     = ++quit_handler_id;
+    R_QuitHandlerEntry *next  = *pp ? (*pp)->next : NULL;
+    R_QuitHandlerEntry *entry = R_NEW_INIT_STRUCT(entry, R_QuitHandlerEntry,
+            R_MAGIC_INIT(R_QuitHandlerEntry) id, priority, handler, arg, next);
+    *pp = entry;
+
+    return id;
+}
+
+bool R_quit_handler_remove(int handler_id, void **out_arg)
+{
+    R_QuitHandlerEntry **pp = &quit_handlers;
+    while ((*pp) && (*pp)->id != handler_id) {
+        pp = &(*pp)->next;
+    }
+
+    if (*pp) {
+        if (out_arg) {
+            *out_arg = (*pp)->arg;
+        }
+        R_QuitHandlerEntry *next = (*pp)->next;
+        free(*pp);
+        *pp = next;
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+static void run_quit_handlers(void)
+{
+    R_QuitHandlerEntry *entry = quit_handlers;
+    while (entry) {
+        R_QuitHandlerEntry *next = entry->next;
+        entry->handler(entry->arg);
+        free(entry);
+        entry = next;
+    }
 }
 
 
@@ -327,6 +389,7 @@ static void init(const R_MainArgs *args)
 static void deinit(void)
 {
     R_scene_free(current_scene);
+    run_quit_handlers();
 #ifdef ROUSE_AL_ENABLED
     R_al_deinit();
 #endif

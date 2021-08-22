@@ -895,6 +895,59 @@ static int r_m4_method_rotate_xyz_xl(lua_State *L)
     return 1;
 }
 
+static int r_m4_method_scale_x_xl(lua_State *L)
+{
+    R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
+    float scale = XL_checkfloat(L, 2);
+    R_M4 RETVAL;
+    RETVAL = R_m4_scale_x(*self, scale);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_M4), "R_M4", 0);
+    return 1;
+}
+
+static int r_m4_method_scale_y_xl(lua_State *L)
+{
+    R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
+    float scale = XL_checkfloat(L, 2);
+    R_M4 RETVAL;
+    RETVAL = R_m4_scale_y(*self, scale);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_M4), "R_M4", 0);
+    return 1;
+}
+
+static int r_m4_method_scale_z_xl(lua_State *L)
+{
+    R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
+    float scale = XL_checkfloat(L, 2);
+    R_M4 RETVAL;
+    RETVAL = R_m4_scale_z(*self, scale);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_M4), "R_M4", 0);
+    return 1;
+}
+
+static int r_m4_method_scale_xyz_xl(lua_State *L)
+{
+    R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
+    R_M4 RETVAL;
+    int argc = lua_gettop(L);
+    if (argc == 2) {
+        R_V3 *ps = R_CPPCAST(R_V3 *, XL_checkutype(L, 2, "R_V3"));
+        RETVAL   = R_m4_scale_xyz(*self, *ps);
+    }
+    else if (argc == 4) {
+        R_V3 s;
+        s.x    = XL_checkfloat(L, 2);
+        s.y    = XL_checkfloat(L, 3);
+        s.z    = XL_checkfloat(L, 4);
+        RETVAL = R_m4_scale_xyz(*self, s);
+    }
+    else {
+        R_LUA_DIE(L, "Expected 1 or 3 arguments, got %d", argc);
+    }
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_M4), "R_M4", 0);
+    return 1;
+}
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -1022,6 +1075,10 @@ static luaL_Reg r_m4_method_registry_xl[] = {
     {"rotate_xyz", r_m4_method_rotate_xyz_xl},
     {"rotate_y", r_m4_method_rotate_y_xl},
     {"rotate_z", r_m4_method_rotate_z_xl},
+    {"scale_x", r_m4_method_scale_x_xl},
+    {"scale_xyz", r_m4_method_scale_xyz_xl},
+    {"scale_y", r_m4_method_scale_y_xl},
+    {"scale_z", r_m4_method_scale_z_xl},
     {"unpack", r_m4_method_unpack_xl},
     {NULL, NULL},
 };

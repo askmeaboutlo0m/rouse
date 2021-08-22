@@ -347,5 +347,35 @@ METHOD R_M4 rotate_xyz()
     }
 END
 
+METHOD R_M4 scale_x(float scale)
+    RETVAL = R_m4_scale_x(*self, scale);
+END
+
+METHOD R_M4 scale_y(float scale)
+    RETVAL = R_m4_scale_y(*self, scale);
+END
+
+METHOD R_M4 scale_z(float scale)
+    RETVAL = R_m4_scale_z(*self, scale);
+END
+
+METHOD R_M4 scale_xyz()
+    int argc = lua_gettop(L);
+    if (argc == 2) {
+        R_V3 *ps = R_CPPCAST(R_V3 *, XL_checkutype(L, 2, "R_V3"));
+        RETVAL   = R_m4_scale_xyz(*self, *ps);
+    }
+    else if (argc == 4) {
+        R_V3 s;
+        s.x    = XL_checkfloat(L, 2);
+        s.y    = XL_checkfloat(L, 3);
+        s.z    = XL_checkfloat(L, 4);
+        RETVAL = R_m4_scale_xyz(*self, s);
+    }
+    else {
+        R_LUA_DIE(L, "Expected 1 or 3 arguments, got %d", argc);
+    }
+END
+
 
 INIT extern R_lua_geom_init

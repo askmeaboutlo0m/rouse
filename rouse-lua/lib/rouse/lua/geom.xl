@@ -329,5 +329,23 @@ METHOD R_M4 rotate_z(float angle)
     RETVAL = R_m4_rotate_z(*self, angle);
 END
 
+METHOD R_M4 rotate_xyz()
+    int argc = lua_gettop(L);
+    if (argc == 2) {
+        R_V3 *pa = R_CPPCAST(R_V3 *, XL_checkutype(L, 2, "R_V3"));
+        RETVAL   = R_m4_rotate_xyz(*self, *pa);
+    }
+    else if (argc == 4) {
+        R_V3 a;
+        a.x    = XL_checkfloat(L, 2);
+        a.y    = XL_checkfloat(L, 3);
+        a.z    = XL_checkfloat(L, 4);
+        RETVAL = R_m4_rotate_xyz(*self, a);
+    }
+    else {
+        R_LUA_DIE(L, "Expected 1 or 3 arguments, got %d", argc);
+    }
+END
+
 
 INIT extern R_lua_geom_init

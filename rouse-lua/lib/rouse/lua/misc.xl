@@ -83,6 +83,14 @@ STATICINDEX const char *R.platform
     RETVAL = ROUSE_PLATFORM;
 END
 
+STATICINDEX float R.width
+    RETVAL = R_width;
+END
+
+STATICINDEX float R.height
+    RETVAL = R_height;
+END
+
 
 STATICINDEX    float R.tickrate = R_tickrate_get
 STATICNEWINDEX float R.tickrate = R_tickrate_set

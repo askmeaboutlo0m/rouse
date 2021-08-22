@@ -103,6 +103,22 @@ static int r_platform_staticindex_xl(lua_State *L)
     return 1;
 }
 
+static int r_width_staticindex_xl(lua_State *L)
+{
+    float RETVAL;
+    RETVAL = R_width;
+    XL_pushfloat(L, RETVAL);
+    return 1;
+}
+
+static int r_height_staticindex_xl(lua_State *L)
+{
+    float RETVAL;
+    RETVAL = R_height;
+    XL_pushfloat(L, RETVAL);
+    return 1;
+}
+
 static int r_tickrate_staticindex_xl(lua_State *L)
 {
     float RETVAL;
@@ -313,11 +329,13 @@ static luaL_Reg r_staticindex_registry_xl[] = {
     {"al_enabled", r_al_enabled_staticindex_xl},
     {"frame_length", r_frame_length_staticindex_xl},
     {"framerate", r_framerate_staticindex_xl},
+    {"height", r_height_staticindex_xl},
     {"max_delta_ms", r_max_delta_ms_staticindex_xl},
     {"platform", r_platform_staticindex_xl},
     {"skip_frames", r_skip_frames_staticindex_xl},
     {"tick_length", r_tick_length_staticindex_xl},
     {"tickrate", r_tickrate_staticindex_xl},
+    {"width", r_width_staticindex_xl},
     {NULL, NULL},
 };
 

@@ -397,6 +397,35 @@ R_DEF_MESH_BUFFER_BY_FNS(float,          floats,  R_BUFFER_TYPE_FLOAT)
 
 
 
+R_MeshBuffer *R_mesh_buffer_new(R_BufferType type, const char *name, int count,
+                                int divisor)
+{
+    R_assert(type == R_BUFFER_TYPE_FLOAT || type == R_BUFFER_TYPE_USHORT,
+             "Mesh buffer type must be valid");
+    R_assert(count > 0, "Mesh buffer count must be greater than zero");
+    R_assert(divisor > 0, "Mesh buffer divisor must be greater than zero");
+    R_assert(count % divisor == 0, "Mesh buffer divisor must divide count");
+
+    R_MeshBufferValues values;
+    size_t size = R_int2size(count);
+    switch (type) {
+        case R_BUFFER_TYPE_FLOAT:
+            values.floats = R_malloc(sizeof(*values.floats) * size);
+            break;
+        case R_BUFFER_TYPE_USHORT:
+            values.ushorts = R_malloc(sizeof(*values.ushorts) * size);
+            break;
+        default:
+            R_die("Impossible mesh buffer type '%d'", (int) type);
+    }
+
+    R_MeshBuffer *mbuf = R_NEW_INIT_STRUCT(mbuf, R_MeshBuffer,
+        R_MAGIC_INIT(R_MeshBuffer) 1, type, R_strdup(name), count, divisor,
+        {values});
+    check_mesh_buffer(mbuf);
+    return mbuf;
+}
+
 static void free_mesh_buffer(R_MeshBuffer *mbuf)
 {
     free(mbuf->name);

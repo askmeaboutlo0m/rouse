@@ -30,6 +30,40 @@
 #include "util.h"
 
 
+static int r_meshbuffer_new_xl(lua_State *L)
+{
+    const char *type_name = luaL_checkstring(L, 1);
+    const char *name = luaL_checkstring(L, 2);
+    int count = XL_checkint(L, 3);
+    int divisor = XL_checkint(L, 4);
+    R_MeshBuffer *RETVAL;
+    R_BufferType type;
+    if (R_str_equal(type_name, "float")) {
+        type = R_BUFFER_TYPE_FLOAT;
+    }
+    else if (R_str_equal(type_name, "ushort")) {
+        type = R_BUFFER_TYPE_USHORT;
+    }
+    else {
+        R_LUA_DIE(L, "Unknown mesh buffer type '%s'", type_name);
+    }
+
+    if (count <= 0) {
+        R_LUA_DIE(L, "Invalid mesh buffer count %d", count);
+    }
+    if (divisor <= 0) {
+        R_LUA_DIE(L, "Invalid mesh buffer divisor %d", divisor);
+    }
+    if (count % divisor != 0) {
+        R_LUA_DIE(L, "Mesh buffer count %d is not divisible by %d",
+                  count, divisor);
+    }
+
+    RETVAL = R_mesh_buffer_new(type, name, count, divisor);
+    XL_pushnewpptypeuv(L, RETVAL, "R_MeshBuffer", 0);
+    return 1;
+}
+
 static int r_meshbuffer_method_gc_xl(lua_State *L)
 {
     R_MeshBuffer *self = R_CPPCAST(R_MeshBuffer *, XL_checkpptype_nullable(L, 1, "R_MeshBuffer"));
@@ -99,6 +133,114 @@ static int r_meshbuffer_type_name_index_xl(lua_State *L)
     }
     lua_pushstring(L, RETVAL);
     return 1;
+}
+
+
+#define INDEX_VALUES(L, MBUF, PUSH, TYPE, FIELD) do { \
+        int _count = (MBUF)->count; \
+        lua_createtable(L, _count, 0); \
+        TYPE *FIELD = (MBUF)->values.FIELD; \
+        for (int _i = 0; _i < _count; ++_i) { \
+            PUSH(L, FIELD[_i]); \
+            lua_seti(L, -2, _i + 1); \
+        } \
+    } while (0)
+
+#define NEWINDEX_VALUES(L, MBUF, TABLE, COUNT, CHECK, TYPE, FIELD) do { \
+        TYPE *FIELD = (MBUF)->values.FIELD; \
+        for (int _i = 0; _i < (COUNT); ++_i) { \
+            lua_geti(L, TABLE, _i + 1); \
+            FIELD[_i] = CHECK(L, -1); \
+            lua_pop(L, 1); \
+        } \
+    } while (0)
+
+
+static int r_meshbuffer_values_index_xl(lua_State *L)
+{
+    R_MeshBuffer *self = R_CPPCAST(R_MeshBuffer *, XL_checkpptype(L, 1, "R_MeshBuffer"));
+    switch (self->type) {
+        case R_BUFFER_TYPE_USHORT:
+            INDEX_VALUES(L, self, XL_pushushort, unsigned short, ushorts);
+            break;
+        case R_BUFFER_TYPE_FLOAT:
+            INDEX_VALUES(L, self, XL_pushfloat, float, floats);
+            break;
+        default:
+            R_LUA_DIE(L, "Unknown mesh buffer type '%d'", (int) self->type);
+    }
+    return 1;
+}
+
+static int r_meshbuffer_values_newindex_xl(lua_State *L)
+{
+    R_MeshBuffer *self = R_CPPCAST(R_MeshBuffer *, XL_checkpptype(L, 1, "R_MeshBuffer"));
+    luaL_checktype(L, 2, LUA_TTABLE);
+    int VALUE = 2;
+    int len = (int) luaL_len(L, VALUE);
+    if (len != self->count) {
+        R_LUA_DIE(L, "Got %d values, but need %d", len, self->count);
+    }
+    switch (self->type) {
+        case R_BUFFER_TYPE_USHORT:
+            NEWINDEX_VALUES(L, self, VALUE, len, XL_checkushort,
+                            unsigned short, ushorts);
+            break;
+        case R_BUFFER_TYPE_FLOAT:
+            NEWINDEX_VALUES(L, self, VALUE, len, XL_checkfloat,
+                            float, floats);
+            break;
+        default:
+            R_LUA_DIE(L, "Unknown mesh buffer type '%d'", (int) self->type);
+    }
+    return 0;
+}
+
+
+static void check_mesh_buffer_index(lua_State *L, R_MeshBuffer *mbuf, int index)
+{
+    if (index < 1 || index > mbuf->count) {
+        R_LUA_DIE(L, "Mesh buffer index %d out of range", index);
+    }
+}
+
+
+static int r_meshbuffer_intindex_xl(lua_State *L)
+{
+    R_MeshBuffer *self = R_CPPCAST(R_MeshBuffer *, XL_checkpptype(L, 1, "R_MeshBuffer"));
+    lua_Integer INDEX = luaL_checkinteger(L, 2);
+    check_mesh_buffer_index(L, self, INDEX);
+    switch (self->type) {
+        case R_BUFFER_TYPE_USHORT:
+            XL_pushushort(L, self->values.ushorts[INDEX - 1]);
+            break;
+        case R_BUFFER_TYPE_FLOAT:
+            XL_pushfloat(L, self->values.floats[INDEX - 1]);
+            break;
+        default:
+            R_LUA_DIE(L, "Unknown mesh buffer type '%d'", (int) self->type);
+    }
+    return 1;
+}
+
+static int r_meshbuffer_intnewindex_xl(lua_State *L)
+{
+    R_MeshBuffer *self = R_CPPCAST(R_MeshBuffer *, XL_checkpptype(L, 1, "R_MeshBuffer"));
+    lua_Integer INDEX = luaL_checkinteger(L, 2);
+    luaL_checkany(L, 3);
+    int VALUE = 3;
+    check_mesh_buffer_index(L, self, INDEX);
+    switch (self->type) {
+        case R_BUFFER_TYPE_USHORT:
+            self->values.ushorts[INDEX - 1] = XL_checkushort(L, VALUE);
+            break;
+        case R_BUFFER_TYPE_FLOAT:
+            self->values.floats[INDEX - 1] = XL_checkfloat(L, VALUE);
+            break;
+        default:
+            R_LUA_DIE(L, "Unknown mesh buffer type '%d'", (int) self->type);
+    }
+    return 0;
 }
 
 static int r_mesh_method_gc_xl(lua_State *L)
@@ -231,6 +373,9 @@ static int r_mesh_index_xl(lua_State *L)
 static int r_meshbuffer_index_anchor_xl;
 static int r_meshbuffer_index_xl(lua_State *L)
 {
+    if (lua_isinteger(L, 2)) {
+        return r_meshbuffer_intindex_xl(L);
+    }
     return XL_index(L, "R_MeshBuffer", &r_meshbuffer_index_anchor_xl, 1, 2);
 }
 
@@ -239,6 +384,20 @@ static int r_model_index_xl(lua_State *L)
 {
     return XL_index(L, "R_Model", &r_model_index_anchor_xl, 1, 2);
 }
+
+int r_meshbuffer_newindex_anchor_xl;
+static int r_meshbuffer_newindex_xl(lua_State *L)
+{
+    if (lua_isinteger(L, 2)) {
+        return r_meshbuffer_intnewindex_xl(L);
+    }
+    return XL_newindex(L, "R_MeshBuffer", &r_meshbuffer_newindex_anchor_xl, 1, 2, 3);
+}
+
+static luaL_Reg r_meshbuffer_function_registry_xl[] = {
+    {"new", r_meshbuffer_new_xl},
+    {NULL, NULL},
+};
 
 static luaL_Reg r_model_function_registry_xl[] = {
     {"from_file", r_model_from_file_xl},
@@ -258,6 +417,7 @@ static luaL_Reg r_meshbuffer_index_registry_xl[] = {
     {"refs", r_meshbuffer_refs_index_xl},
     {"type", r_meshbuffer_type_index_xl},
     {"type_name", r_meshbuffer_type_name_index_xl},
+    {"values", r_meshbuffer_values_index_xl},
     {NULL, NULL},
 };
 
@@ -277,6 +437,7 @@ static luaL_Reg r_mesh_method_registry_xl[] = {
 static luaL_Reg r_meshbuffer_method_registry_xl[] = {
     {"__gc", r_meshbuffer_method_gc_xl},
     {"__index", r_meshbuffer_index_xl},
+    {"__newindex", r_meshbuffer_newindex_xl},
     {NULL, NULL},
 };
 
@@ -288,6 +449,11 @@ static luaL_Reg r_model_method_registry_xl[] = {
     {NULL, NULL},
 };
 
+static luaL_Reg r_meshbuffer_newindex_registry_xl[] = {
+    {"values", r_meshbuffer_values_newindex_xl},
+    {NULL, NULL},
+};
+
 int R_lua_model_init(lua_State *L)
 {
     XL_initmetatable(L, "R_Mesh", r_mesh_method_registry_xl);
@@ -296,6 +462,8 @@ int R_lua_model_init(lua_State *L)
     XL_initindextable(L, &r_mesh_index_anchor_xl, r_mesh_index_registry_xl);
     XL_initindextable(L, &r_meshbuffer_index_anchor_xl, r_meshbuffer_index_registry_xl);
     XL_initindextable(L, &r_model_index_anchor_xl, r_model_index_registry_xl);
+    XL_initnewindextable(L, &r_meshbuffer_newindex_anchor_xl, r_meshbuffer_newindex_registry_xl);
+    XL_initfunctions(L, r_meshbuffer_function_registry_xl, "R", "MeshBuffer", (const char *)NULL);
     XL_initfunctions(L, r_model_function_registry_xl, "R", "Model", (const char *)NULL);
     return 0;
 }

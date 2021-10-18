@@ -140,6 +140,9 @@ float *R_mesh_floats_by_index(R_Mesh *mesh, int index, int *out_count);
 float *R_mesh_floats_by_name(R_Mesh *mesh, const char *name, int *out_count);
 
 
+R_MeshBuffer *R_mesh_buffer_new(R_BufferType type, const char *name, int count,
+                                int divisor);
+
 R_MeshBuffer *R_mesh_buffer_decref(R_MeshBuffer *mbuf);
 R_MeshBuffer *R_mesh_buffer_incref(R_MeshBuffer *mbuf);
 

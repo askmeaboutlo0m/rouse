@@ -26,6 +26,8 @@
 
 @xl
 
+UTYPE R_V2
+
 UTYPE R_FrameBufferOptions
 
 NEWINDEXFIELD int width
@@ -134,6 +136,8 @@ INDEXFIELD unsigned int handle
 INDEXFIELD unsigned int color
 INDEXFIELD unsigned int depth
 INDEXFIELD unsigned int stencil
+
+INDEX R_V2 ratio = R_frame_buffer_ratio
 
 METHOD void bind() = R_frame_buffer_bind
 

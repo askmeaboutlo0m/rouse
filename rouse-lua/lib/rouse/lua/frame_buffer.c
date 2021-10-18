@@ -254,6 +254,15 @@ static int r_framebuffer_stencil_index_xl(lua_State *L)
     return 1;
 }
 
+static int r_framebuffer_ratio_index_xl(lua_State *L)
+{
+    R_FrameBuffer *self = R_CPPCAST(R_FrameBuffer *, XL_checkpptype(L, 1, "R_FrameBuffer"));
+    R_V2 RETVAL;
+    RETVAL = R_frame_buffer_ratio(self);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
+    return 1;
+}
+
 static int r_framebuffer_method_bind_xl(lua_State *L)
 {
     R_FrameBuffer *self = R_CPPCAST(R_FrameBuffer *, XL_checkpptype(L, 1, "R_FrameBuffer"));
@@ -322,6 +331,7 @@ static luaL_Reg r_framebuffer_index_registry_xl[] = {
     {"depth", r_framebuffer_depth_index_xl},
     {"handle", r_framebuffer_handle_index_xl},
     {"height", r_framebuffer_height_index_xl},
+    {"ratio", r_framebuffer_ratio_index_xl},
     {"real_height", r_framebuffer_real_height_index_xl},
     {"real_width", r_framebuffer_real_width_index_xl},
     {"stencil", r_framebuffer_stencil_index_xl},

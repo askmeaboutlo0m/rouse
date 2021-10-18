@@ -65,6 +65,16 @@ static int r_gl_uniform_1f_xl(lua_State *L)
     return 0;
 }
 
+static int r_gl_uniform_2f_xl(lua_State *L)
+{
+    int location = XL_checkint(L, 1);
+    float f = XL_checkfloat(L, 2);
+    float g = XL_checkfloat(L, 3);
+    R_GL_CLEAR_ERROR();
+    R_GL(glUniform2f, location, f, g);
+    return 0;
+}
+
 static int r_gl_uniform_m4_xl(lua_State *L)
 {
     int location = XL_checkint(L, 1);
@@ -422,6 +432,7 @@ static luaL_Reg r_gl_function_registry_xl[] = {
     {"enable_vertex_attrib_arrays", r_gl_enable_vertex_attrib_arrays_xl},
     {"uniform_1f", r_gl_uniform_1f_xl},
     {"uniform_1i", r_gl_uniform_1i_xl},
+    {"uniform_2f", r_gl_uniform_2f_xl},
     {"uniform_m4", r_gl_uniform_m4_xl},
     {"vertex_attrib_pointer", r_gl_vertex_attrib_pointer_xl},
     {NULL, NULL},

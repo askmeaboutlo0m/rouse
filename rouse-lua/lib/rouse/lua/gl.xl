@@ -49,6 +49,11 @@ FUNCTION void R.GL.uniform_1f(int location, float f)
     R_GL(glUniform1f, location, f);
 END
 
+FUNCTION void R.GL.uniform_2f(int location, float f, float g)
+    R_GL_CLEAR_ERROR();
+    R_GL(glUniform2f, location, f, g);
+END
+
 FUNCTION void R.GL.uniform_m4(int location, R_M4 *m4)
     R_GL_CLEAR_ERROR();
     R_GL(glUniformMatrix4fv, location, 1, GL_FALSE, R_M4_GL(*m4));

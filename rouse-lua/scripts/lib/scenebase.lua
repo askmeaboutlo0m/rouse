@@ -289,20 +289,28 @@ function SceneBase:add(spec)
     if scale_x then sprite.scale_x = scale_x end
     if scale_y then sprite.scale_y = scale_y end
 
-    if spec.pivot_x then
-        local origin_x  = content.width * spec.pivot_x
+    local function set_origin_x(origin_x)
         sprite.origin_x = origin_x
         if spec.pos_from_origin or spec.x_from_origin then
             x = x + origin_x
         end
     end
+    if spec.origin_x then
+        set_origin_x(spec.origin_x)
+    elseif spec.pivot_x then
+        set_origin_x(content.width * spec.pivot_x)
+    end
 
-    if spec.pivot_y then
-        local origin_y  = content.height * spec.pivot_y
+    local function set_origin_y(origin_y)
         sprite.origin_y = origin_y
         if spec.pos_from_origin or spec.y_from_origin then
             y = y + origin_y
         end
+    end
+    if spec.origin_y then
+        set_origin_y(spec.origin_y)
+    elseif spec.pivot_y then
+        set_origin_y(content.height * spec.pivot_y)
     end
 
     sprite.x = x

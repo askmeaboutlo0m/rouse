@@ -486,13 +486,17 @@ end
 
 local ErrorScene = class(SceneBase)
 
-function ErrorScene:init(scene, nvg, assets, next_scene_fn)
+function ErrorScene:init(scene, nvg, assets, sources, frame_renderer,
+                         frame_buffer, next_scene_fn)
     self.super.init(self, {
-        scene  = scene,
-        nvg    = nvg,
-        assets = assets,
-        width  = 1280,
-        height = 720,
+        scene          = scene,
+        nvg            = nvg,
+        assets         = assets,
+        sources        = sources,
+        frame_renderer = frame_renderer,
+        frame_buffer   = frame_buffer,
+        width          = 1280,
+        height         = 720,
     })
     self.clear_color       = R.Nvg.rgbaf(1.0, 0.0, 0.0, 1.0)
     self.next_scene_fn     = next_scene_fn
@@ -542,7 +546,9 @@ function SceneBase:next_scene(next_or_path)
             return result
         else
             R.warn("Error setting scene: %s", result)
-            return ErrorScene.new(scene, self.nvg, self.assets, next_scene_fn)
+            return ErrorScene.new(scene, self.nvg, self.assets, self.sources,
+                                  self.frame_renderer, self.frame_buffer,
+                                  next_scene_fn)
         end
     end)
 end

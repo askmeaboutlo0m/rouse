@@ -100,9 +100,9 @@ generate_sources_and_headers('lua', '.c', 'lib/3rdparty/lua');
 generate_sources_and_headers('imgui', '.cpp', 'lib/3rdparty/imgui');
 generate_sources_and_headers('rouse_lua', '.c', 'lib/rouse', sub {
     my ($headers, $sources, $xls) = @_;
-    return ([grep { !/box2d|imgui/ } @$headers],
-            [grep { !/box2d|imgui/ } @$sources],
-            [grep { !/box2d|imgui/ } @$xls]);
+    return ([grep { !/box2d|imgui|lipsync/ } @$headers],
+            [grep { !/box2d|imgui|lipsync/ } @$sources],
+            [grep { !/box2d|imgui|lipsync/ } @$xls]);
 });
 generate_sources_and_headers('rouse_lua_box2d', '.cpp', 'lib/rouse', sub {
     my ($headers, $sources, $xls) = @_;
@@ -115,4 +115,10 @@ generate_sources_and_headers('rouse_lua_imgui', '.cpp', 'lib/rouse', sub {
     return ([grep { /imgui/ } @$headers],
             [grep { /imgui/ } @$sources],
             [grep { /imgui/ } @$xls]);
+});
+generate_sources_and_headers('rouse_lua_pocketsphinx', '.c', 'lib/rouse', sub {
+    my ($headers, $sources, $xls) = @_;
+    return ([grep { /lipsync/ } @$headers],
+            [grep { /lipsync/ } @$sources],
+            [grep { /lipsync/ } @$xls]);
 });

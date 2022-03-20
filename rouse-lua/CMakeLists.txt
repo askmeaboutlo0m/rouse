@@ -40,5 +40,9 @@ if(BUILD_WITH_IMGUI)
     list(APPEND rouse_lua_export_targets imgui rouse_lua_imgui)
 endif()
 
+if(BUILD_WITH_POCKETSPHINX)
+    list(APPEND rouse_lua_export_targets pocketsphinx rouse_lua_pocketsphinx)
+endif()
+
 export(TARGETS ${rouse_lua_export_targets}
        NAMESPACE RouseLua:: FILE RouseLua.cmake)

@@ -66,3 +66,7 @@ int R_lua_box2d_init(lua_State *L);
 #ifdef ROUSE_LUA_IMGUI_ENABLED
 int R_lua_imgui_init(lua_State *L);
 #endif
+
+#ifdef ROUSE_LUA_POCKETSPHINX_ENABLED
+int R_lua_lipsync_init(lua_State *L);
+#endif

@@ -35,16 +35,23 @@ add_asan_if_available(rouse_lua)
 add_clang_tidy_if_available(rouse_lua)
 
 
-function(add_rouse_lua_library name)
+function(add_rouse_lua_library name cxx)
     string(TOUPPER "${name}" capitalized_name)
+    if(cxx)
+        set(ext ".cpp")
+        set(flags "${rouse_cxxflags}")
+    else()
+        set(ext ".c")
+        set(flags "${rouse_cflags}")
+    endif()
 
-    process_xls("rouse_lua_${name}_xls" ".cpp" "rouse_lua_${name}_gen_sources")
+    process_xls("rouse_lua_${name}_xls" "${ext}" "rouse_lua_${name}_gen_sources")
 
     add_library("rouse_lua_${name}" STATIC "${rouse_lua_${name}_sources}"
                                            "${rouse_lua_${name}_gen_sources}"
                                            "${rouse_lua_${name}_headers}")
     set_language_standards("rouse_lua_${name}")
-    target_compile_options("rouse_lua_${name}" PRIVATE ${rouse_cxxflags})
+    target_compile_options("rouse_lua_${name}" PRIVATE ${flags})
     target_link_libraries("rouse_lua_${name}" PUBLIC Rouse::rouse lua "${name}")
     add_asan_if_available("rouse_lua_${name}")
     add_clang_tidy_if_available("rouse_lua_${name}")
@@ -56,10 +63,15 @@ endfunction()
 
 if(BUILD_WITH_BOX2D)
     add_rouse_library_raw(box2d "${BOX2D_CFLAGS}" "${BOX2D_LDFLAGS}" "${BOX2D_LIBS}")
-    add_rouse_lua_library(box2d)
+    add_rouse_lua_library(box2d ON)
 endif()
 
 if(BUILD_WITH_IMGUI)
     add_subdirectory(3rdparty/imgui)
-    add_rouse_lua_library(imgui)
+    add_rouse_lua_library(imgui ON)
+endif()
+
+if(BUILD_WITH_POCKETSPHINX)
+    add_rouse_library_pc(pocketsphinx shared pocketsphinx)
+    add_rouse_lua_library(pocketsphinx OFF)
 endif()

@@ -132,3 +132,10 @@ set(rouse_lua_imgui_sources
 
 set(rouse_lua_imgui_xls
     "${CMAKE_SOURCE_DIR}/lib/rouse/lua/imgui.xl")
+
+unset(rouse_lua_pocketsphinx_headers)
+
+unset(rouse_lua_pocketsphinx_sources)
+
+set(rouse_lua_pocketsphinx_xls
+    "${CMAKE_SOURCE_DIR}/lib/rouse/lua/lipsync.xl")

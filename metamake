@@ -79,7 +79,8 @@ build_debug() {
     builddir='build'
     cmake_common_args '-DCMAKE_BUILD_TYPE=Debug' \
                       '-DCMAKE_EXPORT_COMPILE_COMMANDS=1'
-    cmake_rouse_lua_args '-DBOX2D_LIBS=-l:libbox2d.a'
+    cmake_rouse_lua_args '-DBOX2D_LIBS=-l:libbox2d.a' \
+                         '-DBUILD_WITH_POCKETSPHINX=ON'
     build_all
 }
 
@@ -95,7 +96,8 @@ build_release() {
     cmake_rouse_core_args '-DBUILD_WITH_GL_CHECKS=OFF' \
                           '-DBUILD_WITH_AL_CHECKS=OFF'
 
-    cmake_rouse_lua_args '-DBOX2D_LIBS=-l:libbox2d.a'
+    cmake_rouse_lua_args '-DBOX2D_LIBS=-l:libbox2d.a' \
+                         '-DBUILD_WITH_POCKETSPHINX=ON'
 
     build_all
 }

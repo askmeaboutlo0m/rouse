@@ -203,13 +203,16 @@ sub generate_utype ($self, $name, $packages, $nuvalue) {
     my $ndie  = sprintf '" . die("A new %s* can\'t be an argument\n") . "', $name;
     my %type  = (decl => $decl, check => $check, metatable => $name);
 
-    $self->{types}{"$name*"}      = {%type, push => $die};
+    $self->{types}{"$name*"}           = {%type, push => $die};
+    $self->{types}{"<NULLABLE>$name*"} = {%type, push => $die};
+
     $self->{types}{"<NEW>$name*"} = {
         %type,
         decl  => $ndecl,
         check => $ndie,
         push  => $nnew,
     };
+
     $self->{types}{$name} = {
         metatable => $name,
         decl      => $ndecl,

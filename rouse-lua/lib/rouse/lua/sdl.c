@@ -133,6 +133,16 @@ static int sdl_clipboard_text_staticnewindex_xl(lua_State *L)
     return 0;
 }
 
+static int sdl_get_mouse_state_xl(lua_State *L)
+{
+    int x, y;
+    Uint32 buttons = SDL_GetMouseState(&x, &y);
+    lua_pushinteger(L, (lua_Integer)buttons);
+    lua_pushinteger(L, x);
+    lua_pushinteger(L, y);
+    return 3;
+}
+
 static int sdl_mouse_pos_staticindex_xl(lua_State *L)
 {
     R_V2 RETVAL;
@@ -155,6 +165,42 @@ static int sdl_mouse_y_staticindex_xl(lua_State *L)
 {
     int RETVAL;
     SDL_GetMouseState(NULL, &RETVAL);
+    XL_pushint(L, RETVAL);
+    return 1;
+}
+
+static int sdl_get_global_mouse_state_xl(lua_State *L)
+{
+    int x, y;
+    Uint32 buttons = SDL_GetGlobalMouseState(&x, &y);
+    lua_pushinteger(L, (lua_Integer)buttons);
+    lua_pushinteger(L, x);
+    lua_pushinteger(L, y);
+    return 3;
+}
+
+static int sdl_global_mouse_pos_staticindex_xl(lua_State *L)
+{
+    R_V2 RETVAL;
+    int x, y;
+    SDL_GetGlobalMouseState(&x, &y);
+    RETVAL = R_v2(R_int2float(x), R_int2float(y));
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
+    return 1;
+}
+
+static int sdl_global_mouse_x_staticindex_xl(lua_State *L)
+{
+    int RETVAL;
+    SDL_GetGlobalMouseState(&RETVAL, NULL);
+    XL_pushint(L, RETVAL);
+    return 1;
+}
+
+static int sdl_global_mouse_y_staticindex_xl(lua_State *L)
+{
+    int RETVAL;
+    SDL_GetGlobalMouseState(&RETVAL, NULL);
     XL_pushint(L, RETVAL);
     return 1;
 }
@@ -1028,6 +1074,8 @@ static int sdl_staticnewindex_xl(lua_State *L)
 static luaL_Reg sdl_function_registry_xl[] = {
     {"__index", sdl_staticindex_xl},
     {"__newindex", sdl_staticnewindex_xl},
+    {"get_global_mouse_state", sdl_get_global_mouse_state_xl},
+    {"get_mouse_state", sdl_get_mouse_state_xl},
     {"set_fullscreen", sdl_set_fullscreen_xl},
     {"set_fullscreen_desktop", sdl_set_fullscreen_desktop_xl},
     {"set_windowed", sdl_set_windowed_xl},
@@ -1173,6 +1221,9 @@ static luaL_Reg sdl_staticindex_registry_xl[] = {
     {"clipboard_text", sdl_clipboard_text_staticindex_xl},
     {"cursor", sdl_cursor_staticindex_xl},
     {"gl_swap_interval", sdl_gl_swap_interval_staticindex_xl},
+    {"global_mouse_pos", sdl_global_mouse_pos_staticindex_xl},
+    {"global_mouse_x", sdl_global_mouse_x_staticindex_xl},
+    {"global_mouse_y", sdl_global_mouse_y_staticindex_xl},
     {"mouse_pos", sdl_mouse_pos_staticindex_xl},
     {"mouse_x", sdl_mouse_x_staticindex_xl},
     {"mouse_y", sdl_mouse_y_staticindex_xl},

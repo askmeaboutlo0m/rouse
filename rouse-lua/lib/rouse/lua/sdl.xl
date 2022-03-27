@@ -103,6 +103,15 @@ STATICNEWINDEX const char *SDL.clipboard_text
 END
 
 
+FUNCTION ... SDL.get_mouse_state()
+    int x, y;
+    Uint32 buttons = SDL_GetMouseState(&x, &y);
+    lua_pushinteger(L, (lua_Integer)buttons);
+    lua_pushinteger(L, x);
+    lua_pushinteger(L, y);
+    return 3;
+END
+
 STATICINDEX R_V2 SDL.mouse_pos
     int x, y;
     SDL_GetMouseState(&x, &y);
@@ -115,6 +124,30 @@ END
 
 STATICINDEX int SDL.mouse_y
     SDL_GetMouseState(NULL, &RETVAL);
+END
+
+
+FUNCTION ... SDL.get_global_mouse_state()
+    int x, y;
+    Uint32 buttons = SDL_GetGlobalMouseState(&x, &y);
+    lua_pushinteger(L, (lua_Integer)buttons);
+    lua_pushinteger(L, x);
+    lua_pushinteger(L, y);
+    return 3;
+END
+
+STATICINDEX R_V2 SDL.global_mouse_pos
+    int x, y;
+    SDL_GetGlobalMouseState(&x, &y);
+    RETVAL = R_v2(R_int2float(x), R_int2float(y));
+END
+
+STATICINDEX int SDL.global_mouse_x
+    SDL_GetGlobalMouseState(&RETVAL, NULL);
+END
+
+STATICINDEX int SDL.global_mouse_y
+    SDL_GetGlobalMouseState(&RETVAL, NULL);
 END
 
 

@@ -1013,6 +1013,46 @@ static int sdl_window_grab_staticnewindex_xl(lua_State *L)
     return 0;
 }
 
+
+static int get_audio_devices(lua_State *L, int capture)
+{
+    if (!SDL_WasInit(SDL_INIT_AUDIO) && SDL_Init(SDL_INIT_AUDIO) != 0) {
+        R_LUA_DIE(L, "Error initializing SDL audio: %s", SDL_GetError());
+    }
+
+    int count = SDL_GetNumAudioDevices(capture);
+    lua_createtable(L, count, 0);
+    for (int i = 0; i < count; ++i) {
+        lua_createtable(L, 0, 2);
+        lua_pushinteger(L, i);
+        lua_setfield(L, -2, "index");
+
+        const char *name = SDL_GetAudioDeviceName(i, capture);
+        if (name) {
+            lua_pushstring(L, name);
+            lua_setfield(L, -2, "name");
+        }
+        else {
+            R_warn("Error getting name for %s audio device %d: %s",
+                   capture ? "capture" : "playback", i, SDL_GetError());
+        }
+
+        lua_seti(L, -2, i + 1);
+    }
+    return 1;
+}
+
+
+static int sdl_audio_playback_devices_staticindex_xl(lua_State *L)
+{
+    return get_audio_devices(L, 0);
+}
+
+static int sdl_audio_capture_devices_staticindex_xl(lua_State *L)
+{
+    return get_audio_devices(L, 1);
+}
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -1217,6 +1257,8 @@ static luaL_Reg sdl_windowevent_method_registry_xl[] = {
 };
 
 static luaL_Reg sdl_staticindex_registry_xl[] = {
+    {"audio_capture_devices", sdl_audio_capture_devices_staticindex_xl},
+    {"audio_playback_devices", sdl_audio_playback_devices_staticindex_xl},
     {"capture_mouse", sdl_capture_mouse_staticindex_xl},
     {"clipboard_text", sdl_clipboard_text_staticindex_xl},
     {"cursor", sdl_cursor_staticindex_xl},

@@ -72,6 +72,11 @@ if(BUILD_WITH_IMGUI)
 endif()
 
 if(BUILD_WITH_POCKETSPHINX)
-    add_rouse_library_pc(pocketsphinx shared pocketsphinx)
+    if(USE_PKGCONFIG)
+        add_rouse_library_pc(pocketsphinx shared pocketsphinx)
+    else()
+        add_rouse_library_raw(pocketsphinx "${POCKETSPHINX_CFLAGS}"
+                              "${POCKETSPHINX_LDFLAGS}" "${POCKETSPHINX_LIBS}")
+    endif()
     add_rouse_lua_library(pocketsphinx OFF)
 endif()

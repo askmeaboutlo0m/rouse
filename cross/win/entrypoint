@@ -38,15 +38,21 @@ echo 'Building rouse-core for Windows' && \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF \
         -DUSE_ASAN=OFF \
+        -DUSE_PKGCONFIG=OFF \
         -DBUILD_WITH_STATIC_CXXLIBS=ON \
+        -DBUILD_WITH_POCKETSPHINX=ON \
         -DBOX2D_CFLAGS="-I/deps/prefix/include" \
         -DBOX2D_LDFLAGS="-L/deps/prefix/lib" \
         -DBOX2D_LIBS="-l:libbox2d.a" \
+        -DPOCKETSPHINX_CFLAGS="-I/deps/prefix/include -I/deps/prefix/include/sphinxbase -I/deps/prefix/include/pocketsphinx" \
+        -DPOCKETSPHINX_LDFLAGS="-L/deps/prefix/lib" \
+        -DPOCKETSPHINX_LIBS="-lpocketsphinx -lsphinxbase -lsphinxad -lm" \
         -DCMAKE_C_COMPILER="$(which x86_64-w64-mingw32-gcc)" \
         -DCMAKE_C_COMPILER_AR="$(which x86_64-w64-mingw32-gcc-ar)" \
         -DCMAKE_C_COMPILER_RANLIB="$(which x86_64-w64-mingw32-gcc-ranlib)" \
         -DCMAKE_AR="$(which x86_64-w64-mingw32-ar)" && \
     cmake --build buildwin && \
-    mkdir buildwin/dlls && \
+    mkdir buildwin/dlls buildwin/pocketsphinx-model && \
     cp -vr /deps/prefix/bin/* buildwin/dlls && \
+    cp -vr /deps/prefix/share/pocketsphinx/model/en-us buildwin/pocketsphinx-model && \
     cp -v /usr/x86_64-w64-mingw32/bin/libwinpthread-1.dll buildwin/dlls

@@ -1,8 +1,22 @@
 FROM alpine:3.12
 
 RUN apk update && \
-    apk add autoconf automake cmake git libtool make mingw-w64-gcc ninja openal-soft-dev && \
+    apk add autoconf automake cmake git libtool make mingw-w64-gcc ninja openal-soft-dev bison && \
     mkdir -p /deps /deps/prefix /deps/prefix/bin /deps/prefix/include /deps/prefix/lib
+
+RUN cd /deps && \
+    git clone https://github.com/cmusphinx/sphinxbase.git && \
+    cd sphinxbase && \
+    ./autogen.sh --host=x86_64-w64-mingw32 --prefix=/deps/prefix --with-python=no --without-lapack && \
+    make && \
+    make install
+
+RUN cd /deps && \
+    git clone https://github.com/cmusphinx/pocketsphinx.git && \
+    cd pocketsphinx && \
+    ./autogen.sh --host=x86_64-w64-mingw32 --prefix=/deps/prefix --with-python=no && \
+    make && \
+    make install
 
 RUN cd /deps && \
     git clone https://github.com/recp/cglm && \

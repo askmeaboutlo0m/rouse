@@ -33,6 +33,7 @@
 
 typedef struct R_LuaLipSync {
     ps_decoder_t      *ps;
+    FILE              *fp;
     SDL_AudioDeviceID dev;
     int               silence_delay;
     int               silences;
@@ -150,6 +151,9 @@ static void free_lua_lip_sync(R_LuaLipSync *lls)
     if (lls->dev != 0) {
         SDL_CloseAudioDevice(lls->dev);
     }
+    if (lls->fp) {
+        fclose(lls->fp);
+    }
     if (lls->ps) {
         ps_free(lls->ps);
     }
@@ -193,6 +197,25 @@ static int set_up_ps(lua_State *L)
     }
 
     return 0;
+}
+
+
+static int open_fp(lua_State *L)
+{
+    FILE *fp;
+    if (lua_getfield(L, 1, "dump_audio_path")) {
+        const char *dump_audio_path = luaL_checkstring(L, -1);
+        fp = fopen(dump_audio_path, "wb");
+        if (!fp) {
+            R_LUA_DIE(L, "Can't open '%s': %s", dump_audio_path,
+                      strerror(errno));
+        }
+    }
+    else {
+        fp = NULL;
+    }
+    lua_pushlightuserdata(L, fp);
+    return 1;
 }
 
 
@@ -282,6 +305,11 @@ static void on_capture(void *user, Uint8 *stream, int len)
         }
         else {
             SDL_AtomicSet(&lls->phone, R_LUA_PHONE_NONE);
+        }
+
+        FILE *fp = lls->fp;
+        if (fp) {
+            fwrite(stream, 1, R_int2size(len), fp);
         }
     }
 }
@@ -376,6 +404,12 @@ static int make_lua_lip_sync(lua_State *L)
     lua_pushvalue(L, 2);
     lua_call(L, 2, 0);
 
+    lua_pushcfunction(L, open_fp);
+    lua_pushvalue(L, 3);
+    lua_call(L, 1, 1);
+    lls->fp = lua_touserdata(L, -1);
+    lua_pop(L, 1);
+
     lua_pushcfunction(L, open_dev);
     lua_pushvalue(L, 1);
     lua_pushvalue(L, 3);
@@ -397,7 +431,7 @@ static int r_lipsync_new_xl(lua_State *L)
     int dev_args = 2;
     R_LuaLipSync *RETVAL;
     RETVAL = R_NEW_INIT_STRUCT(RETVAL, R_LuaLipSync,
-                               NULL, 0, 0, 0, {R_LUA_PHONE_NONE});
+                               NULL, NULL, 0, 0, 0, {R_LUA_PHONE_NONE});
     lua_pushcfunction(L, make_lua_lip_sync);
     lua_pushlightuserdata(L, RETVAL);
     lua_pushvalue(L, ps_args);

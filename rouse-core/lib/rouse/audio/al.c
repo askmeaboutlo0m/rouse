@@ -289,7 +289,7 @@ float R_al_listener_velocity_z(void)
 R_AlOrientation R_al_listener_orientation(void)
 {
     float orientation[6];
-    R_AL_CHECK_VOID(alListenerfv, AL_ORIENTATION, orientation);
+    R_AL_CHECK_VOID(alGetListenerfv, AL_ORIENTATION, orientation);
     return (R_AlOrientation){
         R_v3(orientation[0], orientation[1], orientation[2]),
         R_v3(orientation[3], orientation[4], orientation[5])};

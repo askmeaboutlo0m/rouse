@@ -28,11 +28,15 @@
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
+#include <cglm/struct.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <rouse_config.h>
 #include "../common.h"
 #include "../dl.h"
+#include "../geom.h"
+#include "../parse.h"
+#include "../model.h"
 #include "gl.h"
 
 #define R_GL_DEFINE_FALLBACKS
@@ -401,4 +405,55 @@ int R_gl_uniform_location(unsigned int program, const char *name)
         R_die("No uniform location for '%s'", name);
     }
     return location;
+}
+
+
+void R_gl_mesh_buffer_data(R_MeshBuffer *mbuf, unsigned int target,
+                           unsigned int usage)
+{
+    R_MAGIC_CHECK(R_MeshBuffer, mbuf);
+    R_assert(mbuf->refs > 0, "refcount must always be positive");
+
+    R_BufferType type = mbuf->type;
+    size_t elem_size;
+    void *data;
+    switch (type) {
+        case R_BUFFER_TYPE_USHORT:
+            elem_size = sizeof(*mbuf->ushorts);
+            data = mbuf->ushorts;
+            break;
+        case R_BUFFER_TYPE_FLOAT:
+            elem_size = sizeof(*mbuf->floats);
+            data = mbuf->floats;
+            break;
+        default:
+            R_die("Unknown buffer type '%d'", (int) type);
+    }
+
+    size_t size = elem_size * R_int2size(mbuf->count);
+    R_GL_CLEAR_ERROR();
+    R_GL(glBufferData, target, R_size2ptrdiff(size), data, usage);
+}
+
+void R_gl_mesh_buffer_vertex_attrib_pointer(R_MeshBuffer *mbuf,
+                                            unsigned int index,
+                                            unsigned char normalized,
+                                            int stride, void *pointer)
+{
+    R_MAGIC_CHECK(R_MeshBuffer, mbuf);
+    R_assert(mbuf->refs > 0, "refcount must always be positive");
+    R_BufferType type = mbuf->type;
+    unsigned int gltype;
+    switch (type) {
+        case R_BUFFER_TYPE_USHORT:
+            gltype = GL_UNSIGNED_SHORT;
+            break;
+        case R_BUFFER_TYPE_FLOAT:
+            gltype = GL_FLOAT;
+            break;
+        default:
+            R_die("Unknown buffer type '%d'", (int) type);
+    }
+    R_GL(glVertexAttribPointer, index, mbuf->divisor, gltype, normalized,
+                                stride, pointer);
 }

@@ -26,6 +26,8 @@
 #   error "Missing #include of rouse_config.h, must come before gl.h"
 #endif
 
+typedef struct R_MeshBuffer R_MeshBuffer;
+
 /*
  * Macros for OpenGL error checking, which has a rather annoying interface. In
  * a release build, you probably want to disable this.
@@ -219,3 +221,22 @@ void R_gl_texture_bind(int index, unsigned int texture, int location);
  * clearly does in the source code, that might be the reason why.
  */
 int R_gl_uniform_location(unsigned int program, const char *name);
+
+
+/*
+ * Call `glBufferData` forwarding the given `target` (e.g. `GL_ARRAY_BUFFER`)
+ * and `usage` (e.g. `GL_STATIC_DRAW`) while using `mbuf`'s contents as the
+ * `data` and `size` parameters.
+ */
+void R_gl_mesh_buffer_data(R_MeshBuffer *mbuf, unsigned int target,
+                           unsigned int usage);
+
+/*
+ * Call `glVertexAttribuPointer`, forwarding the given `index`, `normalized`,
+ * `stride` and `pointer` while using `mbuf`'s attributes as the `size` and
+ * `type` parameters.
+ */
+void R_gl_mesh_buffer_vertex_attrib_pointer(R_MeshBuffer *mbuf,
+                                            unsigned int index,
+                                            unsigned char normalized,
+                                            int stride, void *pointer);

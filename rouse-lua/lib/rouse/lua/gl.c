@@ -178,23 +178,9 @@ static int r_gl_buffer_data_xl(lua_State *L)
 {
     R_MeshBuffer *mbuf = R_CPPCAST(R_MeshBuffer *, XL_checkpptype(L, 1, "R_MeshBuffer"));
     unsigned int target = XL_checkuint(L, 2);
-    unsigned int usage = XL_checkuint(L, 3);
-    R_BufferType buftype = mbuf->type;
-    size_t       size;
-    void         *data;
-    if (buftype == R_BUFFER_TYPE_USHORT) {
-        size = sizeof(*mbuf->ushorts) * R_int2size(mbuf->count);
-        data = mbuf->ushorts;
-    }
-    else if (buftype == R_BUFFER_TYPE_FLOAT) {
-        size = sizeof(*mbuf->floats) * R_int2size(mbuf->count);
-        data = mbuf->floats;
-    }
-    else {
-        R_LUA_DIE(L, "Unknown buffer type: %d", (int) buftype);
-    }
-    R_GL_CLEAR_ERROR();
-    R_GL(glBufferData, target, R_size2ptrdiff(size), data, usage);
+    int argc = lua_gettop(L);
+    unsigned int usage = argc < 3 ? GL_STATIC_DRAW : XL_checkuint(L, 3);
+    R_gl_mesh_buffer_data(mbuf, target, usage);
     return 0;
 }
 
@@ -202,19 +188,11 @@ static int r_gl_vertex_attrib_pointer_xl(lua_State *L)
 {
     R_MeshBuffer *mbuf = R_CPPCAST(R_MeshBuffer *, XL_checkpptype(L, 1, "R_MeshBuffer"));
     unsigned int index = XL_checkuint(L, 2);
-    R_BufferType buftype = mbuf->type;
-    unsigned int type;
-    if (buftype == R_BUFFER_TYPE_USHORT) {
-        type = GL_UNSIGNED_SHORT;
-    }
-    else if (buftype == R_BUFFER_TYPE_FLOAT) {
-        type = GL_FLOAT;
-    }
-    else {
-        R_LUA_DIE(L, "Unknown buffer type: %d", (int) buftype);
-    }
-    R_GL_CLEAR_ERROR();
-    R_GL(glVertexAttribPointer, index, mbuf->divisor, type, GL_FALSE, 0, NULL);
+    int argc       = lua_gettop(L);
+    int normalized = argc >= 3 && XL_checkbool(L, 3);
+    int stride     = argc < 4 ? 0 : XL_checkint(L, 4);
+    R_gl_mesh_buffer_vertex_attrib_pointer(
+        mbuf, index, normalized ? GL_TRUE : GL_FALSE, stride, NULL);
     return 0;
 }
 

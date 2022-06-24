@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, 2021 askmeaboutloom
+ * Copyright (c) 2019 - 2022 askmeaboutloom
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,8 +28,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <cglm/struct.h>
 #include <rouse_config.h>
 #include "common.h"
+#include "geom.h"
 #include "parse.h"
 #include "model.h"
 #include "refcount.h"
@@ -38,7 +40,7 @@
 
 static void check_file_magic(R_Parse *parse)
 {
-    static const char FILE_MAGIC[] = "rmodel1";
+    static const char FILE_MAGIC[] = "rmodel2";
     R_parse_read_bytes(parse, sizeof(FILE_MAGIC));
     if (memcmp(parse->buffer, FILE_MAGIC, sizeof(FILE_MAGIC)) != 0) {
         R_PARSE_DIE(parse, "bad file magic, want \"%s\"", FILE_MAGIC);
@@ -56,6 +58,47 @@ static void check_file_magic(R_Parse *parse)
 
 DEF_READ_VALUES(read_ushorts, R_parse_read_ushort, unsigned short)
 DEF_READ_VALUES(read_floats,  R_parse_read_float,  float)
+
+static R_V3 read_v3(R_Parse *parse)
+{
+    R_V3 v;
+    v.x = R_parse_read_float(parse);
+    v.y = R_parse_read_float(parse);
+    v.z = R_parse_read_float(parse);
+    return v;
+}
+
+static R_Qn read_qn(R_Parse *parse)
+{
+    R_Qn qn;
+    qn.x = R_parse_read_float(parse);
+    qn.y = R_parse_read_float(parse);
+    qn.z = R_parse_read_float(parse);
+    qn.w = R_parse_read_float(parse);
+    return qn;
+}
+
+static R_M4 read_m4(R_Parse *parse)
+{
+    R_M4 m;
+    m.m00 = R_parse_read_float(parse);
+    m.m01 = R_parse_read_float(parse);
+    m.m02 = R_parse_read_float(parse);
+    m.m03 = R_parse_read_float(parse);
+    m.m10 = R_parse_read_float(parse);
+    m.m11 = R_parse_read_float(parse);
+    m.m12 = R_parse_read_float(parse);
+    m.m13 = R_parse_read_float(parse);
+    m.m20 = R_parse_read_float(parse);
+    m.m21 = R_parse_read_float(parse);
+    m.m22 = R_parse_read_float(parse);
+    m.m23 = R_parse_read_float(parse);
+    m.m30 = R_parse_read_float(parse);
+    m.m31 = R_parse_read_float(parse);
+    m.m32 = R_parse_read_float(parse);
+    m.m33 = R_parse_read_float(parse);
+    return m;
+}
 
 
 static R_MeshBuffer *read_buffer(R_Parse *parse)
@@ -100,18 +143,46 @@ static R_MeshBuffer *read_buffer(R_Parse *parse)
     return mbuf;
 }
 
-static R_Mesh *read_buffers(R_Parse *parse)
+static R_Bone *read_bone(R_Parse *parse)
 {
-    int bufcount = R_parse_read_ushort(parse);
-    R_PARSE_DEBUG(parse, "  buffer count: %d", bufcount);
-    R_MeshBuffer **values = R_ANEW(values, R_int2size(bufcount));
-    for (int i = 0; i < bufcount; ++i) {
-        R_PARSE_DEBUG(parse, "  buffer %d/%d", i + 1, bufcount);
-        values[i] = read_buffer(parse);
+    char *name = R_parse_read_string(parse);
+    R_PARSE_DEBUG(parse, "   bone name \"%s\"", name ? name : "");
+
+    R_M4 offset = read_m4(parse);
+    R_PARSE_DEBUG(parse, "   bone offset (%f, %f, %f, %f,",
+                  offset.m00, offset.m01, offset.m02, offset.m03);
+    R_PARSE_DEBUG(parse, "                %f, %f, %f, %f,",
+                  offset.m10, offset.m11, offset.m12, offset.m13);
+    R_PARSE_DEBUG(parse, "                %f, %f, %f, %f,",
+                  offset.m20, offset.m21, offset.m22, offset.m23);
+    R_PARSE_DEBUG(parse, "                %f, %f, %f, %f)",
+                  offset.m30, offset.m31, offset.m32, offset.m33);
+
+    R_Bone *bone = R_NEW_INIT_STRUCT(bone, R_Bone,
+        R_MAGIC_INIT(R_Bone) 1, name, offset, -1, -1);
+    return bone;
+}
+
+static R_Mesh *read_buffers(R_Parse *parse, int id)
+{
+    int mbuf_count = R_parse_read_ushort(parse);
+    R_PARSE_DEBUG(parse, "  buffer count: %d", mbuf_count);
+    R_MeshBuffer **mbufs = R_ANEW(mbufs, R_int2size(mbuf_count));
+    for (int i = 0; i < mbuf_count; ++i) {
+        R_PARSE_DEBUG(parse, "  buffer %d/%d", i + 1, mbuf_count);
+        mbufs[i] = read_buffer(parse);
+    }
+
+    int bone_count = R_parse_read_ushort(parse);
+    R_PARSE_DEBUG(parse, "  bone count: %d", bone_count);
+    R_Bone **bones = R_ANEW(bones, R_int2size(bone_count));
+    for (int i = 0; i < bone_count; ++i) {
+        R_PARSE_DEBUG(parse, "  bone %d/%d", i + 1, bone_count);
+        bones[i] = read_bone(parse);
     }
 
     R_Mesh *mesh = R_NEW_INIT_STRUCT(mesh, R_Mesh,
-        R_MAGIC_INIT(R_Mesh) 1, {bufcount, values});
+        R_MAGIC_INIT(R_Mesh) 1, id, {mbuf_count, mbufs}, {bone_count, bones});
     return mesh;
 }
 
@@ -123,43 +194,305 @@ static void read_meshes(R_Parse *parse, R_Model *model)
     model->mesh.values = R_ANEW(model->mesh.values, R_int2size(mcount));
     for (int i = 0; i < mcount; ++i) {
         R_PARSE_DEBUG(parse, " mesh %d/%d", i + 1, mcount);
-        model->mesh.values[i] = read_buffers(parse);
+        model->mesh.values[i] = read_buffers(parse, i);
     }
 }
 
 
+static void resolve_bone_refs(R_Parse *parse, R_Model *model, R_Node *node)
+{
+    int type;
+    while ((type = R_parse_read_uchar(parse)) != 0) {
+        R_PARSE_DEBUG(parse, "  ref type %d", type);
 
-static inline void check_mesh_buffer(R_UNUSED_UNLESS_DEBUG R_MeshBuffer *mbuf)
+        int mesh_index = R_parse_read_ushort(parse);
+        R_PARSE_DEBUG(parse, "  ref mesh index %d", mesh_index);
+        if (mesh_index >= model->mesh.count) {
+            R_PARSE_DIE(parse, "Ref mesh index %d out of bounds (0 ... %d)",
+                        mesh_index, model->mesh.count);
+        }
+        R_Mesh *mesh = model->mesh.values[mesh_index];
+
+        int bone_index = R_parse_read_ushort(parse);
+        R_PARSE_DEBUG(parse, "  ref bone index %d", bone_index);
+        if (bone_index >= mesh->bone.count) {
+            R_PARSE_DIE(parse, "Ref bone index %d out of bounds (0 ... %d)",
+                        bone_index, mesh->bone.count);
+        }
+        R_Bone *bone = mesh->bone.values[bone_index];
+
+        switch (type) {
+            case 97: /* 'a' in ASCII */
+                if (bone->armature_id == -1) {
+                    bone->armature_id = node->id;
+                }
+                else {
+                    R_PARSE_DIE(parse,
+                                "Duplicate armature ref for mesh %d, bone %d",
+                                mesh_index, bone_index);
+                }
+                break;
+            case 110: /* 'n' in ASCII */
+                if (bone->node_id == -1) {
+                    bone->node_id = node->id;
+                }
+                else {
+                    R_PARSE_DIE(parse,
+                                "Duplicate node ref for mesh %d, bone %d",
+                                mesh_index, bone_index);
+                }
+                break;
+            default:
+                R_PARSE_DIE(parse, "Unknown ref type %d", type);
+        }
+    }
+}
+
+static int read_node(R_Parse *parse, R_Model *model, int parent_id)
+{
+    int  id        = R_parse_read_ushort(parse);
+    char *name     = R_parse_read_string(parse);
+    R_V3 position  = read_v3(parse);
+    R_Qn rotation  = read_qn(parse);
+    R_V3 scaling   = read_v3(parse);
+    R_M4 transform = glms_scale(glms_quat_rotate(glms_translate_make(position),
+                                                 rotation), scaling);
+
+    int mesh_id_count    = R_parse_read_ushort(parse);
+    int *mesh_ids        = R_ANEW(mesh_ids, R_int2size(mesh_id_count));
+    int model_mesh_count = model->mesh.count;
+    for (int i = 0; i < mesh_id_count; ++i) {
+        int mesh_id = R_parse_read_ushort(parse);
+        if (mesh_id < model_mesh_count) {
+            mesh_ids[i] = mesh_id;
+        }
+        else {
+            R_PARSE_DIE(parse, "Node mesh id %d beyond mesh count %d",
+                        mesh_id, model_mesh_count);
+        }
+    }
+
+    R_Node *node = R_NEW_INIT_STRUCT(node, R_Node,
+        R_MAGIC_INIT(R_Node) 1, id, parent_id, name, position, rotation,
+        scaling, transform, {mesh_id_count, mesh_ids}, {0, NULL});
+
+    if (id < model->node.count) {
+        if (!model->node.values[id]) {
+            model->node.values[id] = node;
+        }
+        else {
+            R_PARSE_DIE(parse, "Duplicate node id %d", id);
+        }
+    }
+    else {
+        R_PARSE_DIE(parse, "Node id %d out of bounds", id);
+    }
+
+    resolve_bone_refs(parse, model, node);
+
+    int child_id_count = R_parse_read_ushort(parse);
+    int *child_ids     = R_ANEW(child_ids, R_int2size(child_id_count));
+    for (int i = 0; i < child_id_count; ++i) {
+        child_ids[i] = read_node(parse, model, id);
+    }
+    node->child_id.count  = child_id_count;
+    node->child_id.values = child_ids;
+
+    return id;
+}
+
+static void read_nodes(R_Parse *parse, R_Model *model)
+{
+    int    count   = R_parse_read_ushort(parse);
+    R_Node **nodes = R_ANEW(nodes, R_int2size(count));
+    for (int i = 0; i < count; ++i) {
+        nodes[i] = NULL;
+    }
+    model->node.count  = count;
+    model->node.values = nodes;
+    read_node(parse, model, -1);
+    if (count < 1 || !nodes[0]) {
+        R_PARSE_DIE(parse, "Model has no root node (%d nodes)", count);
+    }
+}
+
+
+static R_NodeChannel read_node_channel(R_Parse *parse)
+{
+    int node_id = R_parse_read_ushort(parse);
+
+    int                pkf_count = R_parse_read_ushort(parse);
+    R_PositionKeyFrame *pkfs     = R_ANEW(pkfs, R_int2size(pkf_count));
+    for (int i = 0; i < pkf_count; ++i) {
+        R_PositionKeyFrame *pkf = &pkfs[i];
+        pkf->ticks              = R_parse_read_double(parse);
+        pkf->value              = read_v3(parse);
+    }
+
+    int                rkf_count = R_parse_read_ushort(parse);
+    R_RotationKeyFrame *rkfs     = R_ANEW(rkfs, R_int2size(rkf_count));
+    for (int i = 0; i < rkf_count; ++i) {
+        R_RotationKeyFrame *rkf = &rkfs[i];
+        rkf->ticks              = R_parse_read_double(parse);
+        rkf->value              = read_qn(parse);
+    }
+
+    int                skf_count = R_parse_read_ushort(parse);
+    R_ScalingKeyFrame *skfs      = R_ANEW(skfs, R_int2size(skf_count));
+    for (int i = 0; i < skf_count; ++i) {
+        R_ScalingKeyFrame *skf = &skfs[i];
+        skf->ticks             = R_parse_read_double(parse);
+        skf->value             = read_v3(parse);
+    }
+
+    return (R_NodeChannel){
+        node_id, {pkf_count, pkfs}, {rkf_count, rkfs}, {skf_count, skfs}};
+}
+
+static R_Animation *read_animation(R_Parse *parse)
+{
+    char   *name              = R_parse_read_string(parse);
+    double duration           = R_parse_read_double(parse);
+    double ticks_per_second   = R_parse_read_double(parse);
+
+    int           nc_count = R_parse_read_ushort(parse);
+    R_NodeChannel *ncs     = R_ANEW(ncs, R_int2size(nc_count));
+    for (int i = 0; i < nc_count; ++i) {
+        ncs[i] = read_node_channel(parse);
+    }
+
+    R_Animation *anim = R_NEW_INIT_STRUCT(anim, R_Animation,
+        R_MAGIC_INIT(R_Animation) 1, name, duration, ticks_per_second,
+        {nc_count, ncs});
+    return anim;
+}
+
+static void read_animations(R_Parse *parse, R_Model *model)
+{
+    int         count   = R_parse_read_ushort(parse);
+    R_Animation **anims = R_ANEW(anims, R_int2size(count));
+    for (int i = 0; i < count; ++i) {
+        anims[i] = read_animation(parse);
+    }
+    model->animation.count  = count;
+    model->animation.values = anims;
+}
+
+
+static inline void check_mesh_buffer(
+    R_UNUSED_UNLESS_DEBUG_OR_MAGIC R_MeshBuffer *mbuf)
 {
     R_MAGIC_CHECK(R_MeshBuffer, mbuf);
     R_assert(mbuf->refs > 0, "refcount must always be positive");
 }
 
-static inline void check_mesh(R_UNUSED_UNLESS_DEBUG R_Mesh *mesh)
+static inline void check_bone(R_UNUSED_UNLESS_DEBUG_OR_MAGIC R_Bone *bone)
+{
+    R_MAGIC_CHECK(R_Bone, bone);
+    R_assert(bone->refs > 0, "refcount must always be positive");
+}
+
+static inline void check_mesh(R_UNUSED_UNLESS_DEBUG_OR_MAGIC R_Mesh *mesh)
 {
     R_MAGIC_CHECK(R_Mesh, mesh);
     R_assert(mesh->refs > 0, "refcount must always be positive");
 }
 
-static inline void check_model(R_UNUSED_UNLESS_DEBUG R_Model *model)
+static inline void check_node(R_UNUSED_UNLESS_DEBUG_OR_MAGIC R_Node *node)
+{
+    R_MAGIC_CHECK(R_Node, node);
+    R_assert(node->refs > 0, "refcount must always be positive");
+}
+
+static inline void check_animation(
+    R_UNUSED_UNLESS_DEBUG_OR_MAGIC R_Animation *anim)
+{
+    R_MAGIC_CHECK(R_Animation, anim);
+    R_assert(anim->refs > 0, "refcount must always be positive");
+}
+
+static inline void check_model(R_UNUSED_UNLESS_DEBUG_OR_MAGIC R_Model *model)
 {
     R_MAGIC_CHECK(R_Model, model);
     R_assert(model->refs > 0, "refcount must always be positive");
 }
 
 
-static void check_tree(R_Model *model)
+#ifdef ROUSE_DEBUG
+
+static int count_node_refs(R_Model *model, R_Node *node, int id)
 {
-    check_model(model);
-    for (int i = 0; i < model->mesh.count; ++i) {
-        R_Mesh *mesh = model->mesh.values[i];
+    int refs = node->id == id ? 1 : 0;
+    for (int i = 0; i < node->child_id.count; ++i) {
+        int child_id = node->child_id.values[i];
+        refs += count_node_refs(model, model->node.values[child_id], id);
+    }
+    return refs;
+}
+
+static void check_mesh_tree(R_Model *model, int count,
+                            R_Mesh *meshes[static count])
+{
+    R_Node *root = model->node.values[0];
+    for (int i = 0; i < count; ++i) {
+        R_Mesh *mesh = meshes[i];
         check_mesh(mesh);
         for (int j = 0; j < mesh->buffer.count; ++j) {
             R_MeshBuffer *mbuf = mesh->buffer.values[j];
             check_mesh_buffer(mbuf);
         }
+        for (int j = 0; j < mesh->bone.count; ++j) {
+            R_Bone *bone = mesh->bone.values[j];
+            check_bone(bone);
+            if (bone->armature_id != -1) {
+                R_assert(count_node_refs(model, root, bone->armature_id) == 1,
+                         "armature ref must point to exactly one node");
+            }
+            if (bone->node_id != -1) {
+                R_assert(count_node_refs(model, root, bone->node_id) == 1,
+                         "node ref must point to exactly one node");
+            }
+        }
     }
 }
+
+static void check_node_tree(R_Model *model)
+{
+    R_Node *root = model->node.values[0];
+    for (int i = 0; i < model->node.count; ++i) {
+        R_Node *node = model->node.values[i];
+        check_node(node);
+        for (int j = 0; j < node->child_id.count; ++j) {
+            int child_id = node->child_id.values[j];
+            R_assert(count_node_refs(model, root, child_id) == 1,
+                        "node child ref must point to exactly one node");
+        }
+    }
+}
+
+static void check_animation_tree(R_Model *model)
+{
+    R_Node *root = model->node.values[0];
+    for (int i = 0; i < model->animation.count; ++i) {
+        R_Animation *anim = model->animation.values[i];
+        check_animation(anim);
+        for (int j = 0; j < anim->node_channel.count; ++j) {
+            R_NodeChannel *nc = &anim->node_channel.values[j];
+            R_assert(count_node_refs(model, root, nc->node_id) == 1,
+                     "node channel ref must point to exactly one node");
+        }
+    }
+}
+
+static void check_tree(R_Model *model)
+{
+    check_model(model);
+    check_mesh_tree(model, model->mesh.count, model->mesh.values);
+    check_node_tree(model);
+    check_animation_tree(model);
+}
+
+#endif
 
 
 R_Model *R_model_new(const char *title, R_ParseReadFn read, R_UserData user,
@@ -173,9 +506,13 @@ R_Model *R_model_new(const char *title, R_ParseReadFn read, R_UserData user,
     model->refs = 1;
     R_PARSE_DEBUG(&parse, "parsing model with bufsize %d", bufsize);
     read_meshes(&parse, model);
+    read_nodes(&parse, model);
+    read_animations(&parse, model);
 
     R_parse_die_unless_eof(&parse);
+#ifdef ROUSE_DEBUG
     check_tree(model);
+#endif
     return model;
 }
 
@@ -199,13 +536,35 @@ R_Model *R_model_from_file(const char *path)
 }
 
 
+static void free_animations(int acount, R_Animation *anims[R_STATIC(acount)])
+{
+    for (int i = 0; i < acount; ++i) {
+        R_animation_decref(anims[i]);
+    }
+    free(anims);
+}
+
+static void free_nodes(int ncount, R_Node *nodes[R_STATIC(ncount)])
+{
+    for (int i = 0; i < ncount; ++i) {
+        R_node_decref(nodes[i]);
+    }
+    free(nodes);
+}
+
+static void free_meshes(int mcount, R_Mesh *meshes[R_STATIC(mcount)])
+{
+    for (int i = 0; i < mcount; ++i) {
+        R_mesh_decref(meshes[i]);
+    }
+    free(meshes);
+}
+
 static void free_model(R_Model *model)
 {
-    int mcount = model->mesh.count;
-    for (int i = 0; i < mcount; ++i) {
-        R_mesh_decref(model->mesh.values[i]);
-    }
-    free(model->mesh.values);
+    free_animations(model->animation.count, model->animation.values);
+    free_nodes(model->node.count, model->node.values);
+    free_meshes(model->mesh.count, model->mesh.values);
     R_MAGIC_POISON(R_Model, model);
     free(model);
 }
@@ -294,23 +653,56 @@ char *R_model_dump(R_Model *model)
 }
 
 
-R_Mesh *R_model_mesh_by_index(R_Model *model, int index)
+R_Mesh *R_model_mesh_by_id(R_Model *model, int id)
 {
     check_model(model);
-    if (index < 0 || index >= model->mesh.count) {
-        R_die("Model mesh index %d out of bounds (0 ... %d)",
-              index, model->mesh.count);
+    if (id < 0 || id >= model->mesh.count) {
+        R_die("Model mesh id %d out of bounds (0 ... %d)",
+              id, model->mesh.count);
     }
-    return model->mesh.values[index];
+    return model->mesh.values[id];
+}
+
+R_Node *R_model_root_node(R_Model *model)
+{
+    check_model(model);
+    return model->node.values[0];
+}
+
+R_Node *R_model_node_by_id(R_Model *model, int id)
+{
+    check_model(model);
+    if (id < 0 || id > model->node.count) {
+        R_die("Model node id %d out of bounds (0 ... %d)",
+              id, model->node.count);
+    }
+    return model->node.values[id];
+}
+
+R_Node *R_model_node_child(R_Model *model, R_Node *node, int child_index)
+{
+    check_node(node);
+    if (child_index < 0 || child_index > node->child_id.count) {
+        R_die("Node child index %d out of bounds (0 ... %d)",
+              child_index, node->child_id.count);
+    }
+    return R_model_node_by_id(model, node->child_id.values[child_index]);
 }
 
 
 static void free_mesh(R_Mesh *mesh)
 {
+    int bonecount = mesh->bone.count;
+    for (int i = 0; i < bonecount; ++i) {
+        R_bone_decref(mesh->bone.values[i]);
+    }
+    free(mesh->bone.values);
+
     int bufcount = mesh->buffer.count;
     for (int i = 0; i < bufcount; ++i) {
         R_mesh_buffer_decref(mesh->buffer.values[i]);
     }
+
     free(mesh->buffer.values);
     R_MAGIC_POISON(R_Mesh, mesh);
     free(mesh);
@@ -445,3 +837,43 @@ static void free_mesh_buffer(R_MeshBuffer *mbuf)
 }
 
 R_DEFINE_REFCOUNT_FUNCS(R_MeshBuffer, mesh_buffer, refs)
+
+
+static void free_bone(R_Bone *bone)
+{
+    free(bone->name);
+    R_MAGIC_POISON(R_Bone, bone);
+    free(bone);
+}
+
+R_DEFINE_REFCOUNT_FUNCS(R_Bone, bone, refs)
+
+
+static void free_node(R_Node *node)
+{
+    free(node->mesh_id.values);
+    free(node->child_id.values);
+    free(node->name);
+    R_MAGIC_POISON(R_Node, node);
+    free(node);
+}
+
+R_DEFINE_REFCOUNT_FUNCS(R_Node, node, refs)
+
+
+static void free_animation(R_Animation *anim)
+{
+    int node_animation_count = anim->node_channel.count;
+    for (int i = 0; i < node_animation_count; ++i) {
+        R_NodeChannel *nc = &anim->node_channel.values[i];
+        free(nc->scaling_key_frame.values);
+        free(nc->rotation_key_frame.values);
+        free(nc->position_key_frame.values);
+    }
+    free(anim->node_channel.values);
+    free(anim->name);
+    R_MAGIC_POISON(R_Animation, anim);
+    free(anim);
+}
+
+R_DEFINE_REFCOUNT_FUNCS(R_Animation, animation, refs)

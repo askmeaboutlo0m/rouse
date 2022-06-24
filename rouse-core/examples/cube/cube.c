@@ -26,7 +26,7 @@ typedef struct SceneData {
     R_Model  *cube;
     R_Binder *binder;
     float    rotation_x, rotation_y;
-    int      u_model, u_view, u_proj;
+    int      u_m, u_view, u_proj;
 } SceneData;
 
 
@@ -47,11 +47,11 @@ static void on_render(void *data, R_Camera *camera)
     R_M4 model = R_m4_rotate_x(
             R_m4_rotate_y(R_m4_identity(), sd->rotation_y), sd->rotation_x);
 
-    R_GL(glUniformMatrix4fv, sd->u_model, 1, GL_FALSE, R_M4_GL(model));
+    R_GL(glUniformMatrix4fv, sd->u_m, 1, GL_FALSE, R_M4_GL(model));
     R_camera_bind(camera, sd->u_proj, sd->u_view);
 
     for (int i = 0; i < sd->cube->mesh.count; ++i) {
-        R_Mesh *mesh = R_model_mesh_by_index(sd->cube, i);
+        R_Mesh *mesh = R_model_mesh_by_id(sd->cube, i);
         R_binder_draw(sd->binder, mesh);
     }
 
@@ -88,10 +88,10 @@ static void *on_init(R_UNUSED void *user)
 {
     SceneData *sd   = R_NEW(sd);
     sd->cube        = R_model_from_file("test/data/cube.rmodel");
-    sd->binder      = init_binder(R_model_mesh_by_index(sd->cube, 0));
+    sd->binder      = init_binder(R_model_mesh_by_id(sd->cube, 0));
     sd->rotation_x  = 0.0f;
     sd->rotation_y  = 0.0f;
-    sd->u_model     = R_binder_uniform_location(sd->binder, "u_model");
+    sd->u_m     = R_binder_uniform_location(sd->binder, "u_model");
     sd->u_view      = R_binder_uniform_location(sd->binder, "u_view");
     sd->u_proj      = R_binder_uniform_location(sd->binder, "u_proj");
     return sd;

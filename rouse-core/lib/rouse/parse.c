@@ -130,6 +130,28 @@ float R_parse_read_float(R_Parse *parse)
     }
 }
 
+double R_parse_read_double(R_Parse *parse)
+{
+    R_MAGIC_CHECK(R_Parse, parse);
+    unsigned char len = R_parse_read_uchar(parse);
+    int           at  = parse->pos;
+    R_parse_read_bytes_with_extra_space(parse, len, 1);
+    parse->buffer[len] = '\0';
+
+    errno = 0;
+    char  *end;
+    char  *buffer = (char *)parse->buffer;
+    double value  = strtod(buffer, &end);
+    if (end == buffer + len && !isnan(value) && !isinf(value)) {
+        return value;
+    }
+    else {
+        const char *error = errno == 0 ? "invalid input" : strerror(errno);
+        R_PARSE_DIE_AT(parse, at, "can't parse '%s' into a double: %s",
+                       buffer, error);
+    }
+}
+
 
 char *R_parse_read_string(R_Parse *parse)
 {

@@ -63,7 +63,7 @@ static void test_cube(void)
     R_Model *cube = R_model_from_file("test/data/cube.rmodel");
     int_eq_ok(cube->mesh.count, 1, "cube has 1 mesh");
 
-    R_Mesh *mesh = R_model_mesh_by_index(cube, 0);
+    R_Mesh *mesh = R_model_mesh_by_id(cube, 0);
     int_eq_ok(mesh->buffer.count, 3, "cube has 3 buffers");
 
     ushort_buffer_ok(R_mesh_buffer_by_index(mesh, 0), "indices",

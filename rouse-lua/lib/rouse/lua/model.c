@@ -4,7 +4,7 @@
 /* Modify the matching .xl file and rebuild.     */
 /*************************************************/
 /*
- * Copyright (c) 2021 askmeaboutloom
+ * Copyright (c) 2021 - 2022 askmeaboutloom
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -280,7 +280,7 @@ static int r_mesh_method_buffer_xl(lua_State *L)
         }
         else {
             R_LUA_DIE(L, "Mesh buffer index %d out of bounds [1, %d]",
-                      self->buffer.count);
+                      index, self->buffer.count);
         }
     }
     else if (type == LUA_TSTRING) {
@@ -297,6 +297,90 @@ static int r_mesh_method_buffer_xl(lua_State *L)
         R_LUA_DIE(L, "Can't get a mesh buffer by a %s", lua_typename(L, type));
     }
     XL_pushnewpptypeuv(L, RETVAL, "R_MeshBuffer", 0);
+    return 1;
+}
+
+static int r_node_method_gc_xl(lua_State *L)
+{
+    R_Node *self = R_CPPCAST(R_Node *, XL_checkpptype_nullable(L, 1, "R_Node"));
+    R_node_decref(self);
+    return 0;
+}
+
+static int r_node_refs_index_xl(lua_State *L)
+{
+    R_Node *self = R_CPPCAST(R_Node *, XL_checkpptype(L, 1, "R_Node"));
+    int RETVAL;
+    RETVAL = self->refs;
+    XL_pushint(L, RETVAL);
+    return 1;
+}
+
+static int r_node_name_index_xl(lua_State *L)
+{
+    R_Node *self = R_CPPCAST(R_Node *, XL_checkpptype(L, 1, "R_Node"));
+    const char *RETVAL;
+    RETVAL = self->name;
+    lua_pushstring(L, RETVAL);
+    return 1;
+}
+
+static int r_node_transform_index_xl(lua_State *L)
+{
+    R_Node *self = R_CPPCAST(R_Node *, XL_checkpptype(L, 1, "R_Node"));
+    R_M4 RETVAL;
+    RETVAL = self->transform;
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_M4), "R_M4", 0);
+    return 1;
+}
+
+static int r_node_child_count_index_xl(lua_State *L)
+{
+    R_Node *self = R_CPPCAST(R_Node *, XL_checkpptype(L, 1, "R_Node"));
+    int RETVAL;
+    RETVAL = self->child.count;
+    XL_pushint(L, RETVAL);
+    return 1;
+}
+
+static int r_node_mesh_count_index_xl(lua_State *L)
+{
+    R_Node *self = R_CPPCAST(R_Node *, XL_checkpptype(L, 1, "R_Node"));
+    int RETVAL;
+    RETVAL = self->mesh.count;
+    XL_pushint(L, RETVAL);
+    return 1;
+}
+
+static int r_node_method_child_xl(lua_State *L)
+{
+    R_Node *self = R_CPPCAST(R_Node *, XL_checkpptype(L, 1, "R_Node"));
+    int index = XL_checkint(L, 2);
+    R_Node *RETVAL;
+    if (index > 0 && index <= self->child.count) {
+        RETVAL = R_node_incref(self->child.values[index - 1]);
+    }
+    else {
+        R_LUA_DIE(L, "Node child index %d out of bounds [1, %d]",
+                  index, self->mesh.count);
+    }
+    XL_pushnewpptypeuv(L, RETVAL, "R_Node", 0);
+    return 1;
+}
+
+static int r_node_method_mesh_xl(lua_State *L)
+{
+    R_Node *self = R_CPPCAST(R_Node *, XL_checkpptype(L, 1, "R_Node"));
+    int index = XL_checkint(L, 2);
+    R_Mesh *RETVAL;
+    if (index > 0 && index <= self->mesh.count) {
+        RETVAL = R_mesh_incref(self->mesh.values[index - 1]);
+    }
+    else {
+        R_LUA_DIE(L, "Node mesh index %d out of bounds [1, %d]",
+                  index, self->mesh.count);
+    }
+    XL_pushnewpptypeuv(L, RETVAL, "R_Mesh", 0);
     return 1;
 }
 
@@ -334,6 +418,15 @@ static int r_model_mesh_count_index_xl(lua_State *L)
     return 1;
 }
 
+static int r_model_root_node_index_xl(lua_State *L)
+{
+    R_Model *self = R_CPPCAST(R_Model *, XL_checkpptype(L, 1, "R_Model"));
+    R_Node *RETVAL;
+    RETVAL = R_node_incref(self->root_node);
+    XL_pushnewpptypeuv(L, RETVAL, "R_Node", 0);
+    return 1;
+}
+
 static int r_model_method_mesh_xl(lua_State *L)
 {
     R_Model *self = R_CPPCAST(R_Model *, XL_checkpptype(L, 1, "R_Model"));
@@ -343,7 +436,8 @@ static int r_model_method_mesh_xl(lua_State *L)
         RETVAL = R_mesh_incref(self->mesh.values[index - 1]);
     }
     else {
-        R_LUA_DIE(L, "Mesh index %d out of bounds [1, %d]", self->mesh.count);
+        R_LUA_DIE(L, "Model mesh index %d out of bounds [1, %d]",
+                  index, self->mesh.count);
     }
     XL_pushnewpptypeuv(L, RETVAL, "R_Mesh", 0);
     return 1;
@@ -385,6 +479,12 @@ static int r_model_index_xl(lua_State *L)
     return XL_index(L, "R_Model", &r_model_index_anchor_xl, 1, 2);
 }
 
+static int r_node_index_anchor_xl;
+static int r_node_index_xl(lua_State *L)
+{
+    return XL_index(L, "R_Node", &r_node_index_anchor_xl, 1, 2);
+}
+
 int r_meshbuffer_newindex_anchor_xl;
 static int r_meshbuffer_newindex_xl(lua_State *L)
 {
@@ -424,6 +524,16 @@ static luaL_Reg r_meshbuffer_index_registry_xl[] = {
 static luaL_Reg r_model_index_registry_xl[] = {
     {"mesh_count", r_model_mesh_count_index_xl},
     {"refs", r_model_refs_index_xl},
+    {"root_node", r_model_root_node_index_xl},
+    {NULL, NULL},
+};
+
+static luaL_Reg r_node_index_registry_xl[] = {
+    {"child_count", r_node_child_count_index_xl},
+    {"mesh_count", r_node_mesh_count_index_xl},
+    {"name", r_node_name_index_xl},
+    {"refs", r_node_refs_index_xl},
+    {"transform", r_node_transform_index_xl},
     {NULL, NULL},
 };
 
@@ -449,6 +559,14 @@ static luaL_Reg r_model_method_registry_xl[] = {
     {NULL, NULL},
 };
 
+static luaL_Reg r_node_method_registry_xl[] = {
+    {"__gc", r_node_method_gc_xl},
+    {"__index", r_node_index_xl},
+    {"child", r_node_method_child_xl},
+    {"mesh", r_node_method_mesh_xl},
+    {NULL, NULL},
+};
+
 static luaL_Reg r_meshbuffer_newindex_registry_xl[] = {
     {"values", r_meshbuffer_values_newindex_xl},
     {NULL, NULL},
@@ -459,9 +577,11 @@ int R_lua_model_init(lua_State *L)
     XL_initmetatable(L, "R_Mesh", r_mesh_method_registry_xl);
     XL_initmetatable(L, "R_MeshBuffer", r_meshbuffer_method_registry_xl);
     XL_initmetatable(L, "R_Model", r_model_method_registry_xl);
+    XL_initmetatable(L, "R_Node", r_node_method_registry_xl);
     XL_initindextable(L, &r_mesh_index_anchor_xl, r_mesh_index_registry_xl);
     XL_initindextable(L, &r_meshbuffer_index_anchor_xl, r_meshbuffer_index_registry_xl);
     XL_initindextable(L, &r_model_index_anchor_xl, r_model_index_registry_xl);
+    XL_initindextable(L, &r_node_index_anchor_xl, r_node_index_registry_xl);
     XL_initnewindextable(L, &r_meshbuffer_newindex_anchor_xl, r_meshbuffer_newindex_registry_xl);
     XL_initfunctions(L, r_meshbuffer_function_registry_xl, "R", "MeshBuffer", (const char *)NULL);
     XL_initfunctions(L, r_model_function_registry_xl, "R", "Model", (const char *)NULL);

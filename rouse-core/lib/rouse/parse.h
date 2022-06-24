@@ -1,7 +1,7 @@
 /*
  * parse.h - parsing of binary streams.
  *
- * Copyright (c) 2019 askmeaboutloom
+ * Copyright (c) 2019 - 2022 askmeaboutloom
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -99,6 +99,11 @@ unsigned int R_parse_read_uint(R_Parse *parse);
  * `R_die`, as will any infinite or NaN value.
  */
 float R_parse_read_float(R_Parse *parse);
+
+/*
+ * Same as `R_parse_float`, except for double-precision floats.
+ */
+double R_parse_read_double(R_Parse *parse);
 
 
 /*

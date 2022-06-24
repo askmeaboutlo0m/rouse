@@ -1,7 +1,7 @@
 /*
  * geom.h - mostly a wrapper for cglm, generated from geom.pl
  *
- * Copyright (c) 2019 askmeaboutloom
+ * Copyright (c) 2019 - 2022 askmeaboutloom
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -68,6 +68,11 @@ static inline R_V3 R_v3(float a, float b, float c)
 static inline R_V4 R_v4(float a, float b, float c, float d)
 {
     return (R_V4){{a, b, c, d}};
+}
+
+static inline R_Qn R_qn(float x, float y, float z, float w)
+{
+    return (R_Qn){{x, y, z, w}};
 }
 
 static inline float R_lerp(float a, float b, float ratio)
@@ -332,6 +337,13 @@ static inline R_V3 R_v3_ortho(R_V3 v)
 static inline void R_v3_clamp(R_V3 v, float min_val, float max_val)
 {
     glm_vec3_clamp(v.raw, min_val, max_val);
+}
+
+static inline R_V3 R_v3_lerp(R_V3 from, R_V3 to, float t)
+{
+    R_V3 dest;
+    glm_vec3_lerp(from.raw, to.raw, t, dest.raw);
+    return dest;
 }
 
 
@@ -630,6 +642,204 @@ static inline float R_v4_min(R_V4 v)
 }
 
 
+/* cglm/quat.h */
+static inline R_Qn R_qn_identity(void)
+{
+    return (R_Qn){.raw = GLM_QUAT_IDENTITY_INIT};
+}
+
+static inline R_Qn R_qn_copy(R_Qn q)
+{
+    R_Qn dest;
+    glm_quat_copy(q.raw, dest.raw);
+    return dest;
+}
+
+static inline float R_qn_norm(R_Qn q)
+{
+    return glm_quat_norm(q.raw);
+}
+
+static inline void R_qn_normalize(R_Qn q)
+{
+    glm_quat_normalize(q.raw);
+}
+
+static inline R_Qn R_qn_normalize_to(R_Qn q)
+{
+    R_Qn dest;
+    glm_quat_normalize_to(q.raw, dest.raw);
+    return dest;
+}
+
+static inline float R_qn_dot(R_Qn p, R_Qn q)
+{
+    return glm_quat_dot(p.raw, q.raw);
+}
+
+static inline R_Qn R_qn_conjugate(R_Qn q)
+{
+    R_Qn dest;
+    glm_quat_conjugate(q.raw, dest.raw);
+    return dest;
+}
+
+static inline R_Qn R_qn_inv(R_Qn q)
+{
+    R_Qn dest;
+    glm_quat_inv(q.raw, dest.raw);
+    return dest;
+}
+
+static inline R_Qn R_qn_add(R_Qn p, R_Qn q)
+{
+    R_Qn dest;
+    glm_quat_add(p.raw, q.raw, dest.raw);
+    return dest;
+}
+
+static inline R_Qn R_qn_sub(R_Qn p, R_Qn q)
+{
+    R_Qn dest;
+    glm_quat_sub(p.raw, q.raw, dest.raw);
+    return dest;
+}
+
+static inline float R_qn_real(R_Qn q)
+{
+    return glm_quat_real(q.raw);
+}
+
+static inline R_V3 R_qn_imag(R_Qn q)
+{
+    R_V3 dest;
+    glm_quat_imag(q.raw, dest.raw);
+    return dest;
+}
+
+static inline R_V3 R_qn_imagn(R_Qn q)
+{
+    R_V3 dest;
+    glm_quat_imagn(q.raw, dest.raw);
+    return dest;
+}
+
+static inline float R_qn_imaglen(R_Qn q)
+{
+    return glm_quat_imaglen(q.raw);
+}
+
+static inline float R_qn_angle(R_Qn q)
+{
+    return glm_quat_angle(q.raw);
+}
+
+static inline R_V3 R_qn_axis(R_Qn q)
+{
+    R_V3 dest;
+    glm_quat_axis(q.raw, dest.raw);
+    return dest;
+}
+
+static inline R_Qn R_qn_mul(R_Qn p, R_Qn q)
+{
+    R_Qn dest;
+    glm_quat_mul(p.raw, q.raw, dest.raw);
+    return dest;
+}
+
+static inline R_M4 R_qn_mat4(R_Qn q)
+{
+    R_M4 dest;
+    glm_quat_mat4(q.raw, dest.raw);
+    return dest;
+}
+
+static inline R_M4 R_qn_mat4t(R_Qn q)
+{
+    R_M4 dest;
+    glm_quat_mat4t(q.raw, dest.raw);
+    return dest;
+}
+
+static inline R_M3 R_qn_mat3(R_Qn q)
+{
+    R_M3 dest;
+    glm_quat_mat3(q.raw, dest.raw);
+    return dest;
+}
+
+static inline R_M3 R_qn_mat3t(R_Qn q)
+{
+    R_M3 dest;
+    glm_quat_mat3t(q.raw, dest.raw);
+    return dest;
+}
+
+static inline R_Qn R_qn_lerp(R_Qn from, R_Qn to, float t)
+{
+    R_Qn dest;
+    glm_quat_lerp(from.raw, to.raw, t, dest.raw);
+    return dest;
+}
+
+static inline R_Qn R_qn_lerpc(R_Qn from, R_Qn to, float t)
+{
+    R_Qn dest;
+    glm_quat_lerpc(from.raw, to.raw, t, dest.raw);
+    return dest;
+}
+
+static inline R_Qn R_qn_slerp(R_Qn q, R_Qn r, float t)
+{
+    R_Qn dest;
+    glm_quat_slerp(q.raw, r.raw, t, dest.raw);
+    return dest;
+}
+
+static inline R_Qn R_qn_nlerp(R_Qn q, R_Qn r, float t)
+{
+    R_Qn dest;
+    glm_quat_nlerp(q.raw, r.raw, t, dest.raw);
+    return dest;
+}
+
+static inline R_M4 R_qn_look(R_V3 eye, R_Qn ori)
+{
+    R_M4 dest;
+    glm_quat_look(eye.raw, ori.raw, dest.raw);
+    return dest;
+}
+
+static inline R_Qn R_qn_for(R_V3 dir, R_V3 up)
+{
+    R_Qn dest;
+    glm_quat_for(dir.raw, up.raw, dest.raw);
+    return dest;
+}
+
+static inline R_Qn R_qn_forp(R_V3 from, R_V3 to, R_V3 up)
+{
+    R_Qn dest;
+    glm_quat_forp(from.raw, to.raw, up.raw, dest.raw);
+    return dest;
+}
+
+static inline R_V3 R_qn_rotatev(R_Qn q, R_V3 v)
+{
+    R_V3 dest;
+    glm_quat_rotatev(q.raw, v.raw, dest.raw);
+    return dest;
+}
+
+static inline R_M4 R_qn_rotate(R_M4 m, R_Qn q)
+{
+    R_M4 dest;
+    glm_quat_rotate(m.raw, q.raw, dest.raw);
+    return dest;
+}
+
+
 /* cglm/mat3.h */
 static inline R_M3 R_m3_identity(void)
 {
@@ -818,6 +1028,13 @@ static inline void R_m4_swap_col(R_M4 mat, int col1, int col2)
 static inline void R_m4_swap_row(R_M4 mat, int row1, int row2)
 {
     glm_mat4_swap_row(mat.raw, row1, row2);
+}
+
+static inline R_Qn R_m4_quat(R_M4 m)
+{
+    R_Qn dest;
+    glm_mat4_quat(m.raw, dest.raw);
+    return dest;
 }
 
 

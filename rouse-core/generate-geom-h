@@ -2,7 +2,7 @@
 #
 # generate-geom-h - generates geom.h by wrapping cglm functions
 #
-# Copyright (c) 2019 askmeaboutloom
+# Copyright (c) 2019 - 2022 askmeaboutloom
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -35,6 +35,7 @@ open my $out, '>', $path or die "Can't open '$path': $!\n";
 my %name_types = (
     vec3        => 'v3',
     vec4        => 'v4',
+    quat        => 'qn',
     mat3        => 'm3',
     mat4        => 'm4',
     perspective => 'm4_perspective',
@@ -46,12 +47,13 @@ my %name_types = (
 );
 
 my %arg_types = (
-    float => 'float',
-    int   => 'int',
-    vec3  => 'R_V3',
-    vec4  => 'R_V4',
-    mat3  => 'R_M3',
-    mat4  => 'R_M4',
+    float  => 'float',
+    int    => 'int',
+    vec3   => 'R_V3',
+    vec4   => 'R_V4',
+    versor => 'R_Qn',
+    mat3   => 'R_M3',
+    mat4   => 'R_M4',
 );
 
 my %arg_unwrap = (
@@ -202,7 +204,7 @@ __DATA__
 /*
  * geom.h - mostly a wrapper for cglm, generated from geom.pl
  *
- * Copyright (c) 2019 askmeaboutloom
+ * Copyright (c) 2019 - 2022 askmeaboutloom
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -269,6 +271,11 @@ static inline R_V3 R_v3(float a, float b, float c)
 static inline R_V4 R_v4(float a, float b, float c, float d)
 {
     return (R_V4){{a, b, c, d}};
+}
+
+static inline R_Qn R_qn(float x, float y, float z, float w)
+{
+    return (R_Qn){{x, y, z, w}};
 }
 
 static inline float R_lerp(float a, float b, float ratio)
@@ -355,6 +362,7 @@ static inline float R_v2_distance(R_V2 a, R_V2 b)
 @ void  glm_vec3_minv(vec3 v1, vec3 v2, vec3 dest)
 @ void  glm_vec3_ortho(vec3 v, vec3 dest)
 @ void  glm_vec3_clamp(vec3 v, float minVal, float maxVal)
+@ void  glm_vec3_lerp(vec3 from, vec3 to, float t, vec3 dest)
 
 /* cglm/vec3-ext.h */
 @ void  glm_vec3_broadcast(float val, vec3 dest)
@@ -419,6 +427,38 @@ static inline R_V3 R_v3_right(float hrad)
 @ float glm_vec4_max(vec4 v)
 @ float glm_vec4_min(vec4 v)
 
+/* cglm/quat.h */
+@ value R_Qn identity GLM_QUAT_IDENTITY_INIT
+@ void glm_quat_copy(versor q, versor dest)
+@ float glm_quat_norm(versor q)
+@ void glm_quat_normalize(versor q)
+@ void glm_quat_normalize_to(versor q, versor dest)
+@ float glm_quat_dot(versor p, versor q)
+@ void glm_quat_conjugate(versor q, versor dest)
+@ void glm_quat_inv(versor q, versor dest)
+@ void glm_quat_add(versor p, versor q, versor dest)
+@ void glm_quat_sub(versor p, versor q, versor dest)
+@ float glm_quat_real(versor q)
+@ void glm_quat_imag(versor q, vec3 dest)
+@ void glm_quat_imagn(versor q, vec3 dest)
+@ float glm_quat_imaglen(versor q)
+@ float glm_quat_angle(versor q)
+@ void glm_quat_axis(versor q, vec3 dest)
+@ void glm_quat_mul(versor p, versor q, versor dest)
+@ void glm_quat_mat4(versor q, mat4 dest)
+@ void glm_quat_mat4t(versor q, mat4 dest)
+@ void glm_quat_mat3(versor q, mat3 dest)
+@ void glm_quat_mat3t(versor q, mat3 dest)
+@ void glm_quat_lerp(versor from, versor to, float t, versor dest)
+@ void glm_quat_lerpc(versor from, versor to, float t, versor dest)
+@ void glm_quat_slerp(versor q, versor r, float t, versor dest)
+@ void glm_quat_nlerp(versor q, versor r, float t, versor dest)
+@ void glm_quat_look(vec3 eye, versor ori, mat4 dest)
+@ void glm_quat_for(vec3 dir, vec3 up, versor dest)
+@ void glm_quat_forp(vec3 from, vec3 to, vec3 up, versor dest)
+@ void glm_quat_rotatev(versor q, vec3 v, vec3 dest)
+@ void glm_quat_rotate(mat4 m, versor q, mat4 dest)
+
 /* cglm/mat3.h */
 @ value R_M3 identity GLM_MAT3_IDENTITY_INIT
 @ value R_M3 zero     GLM_MAT3_ZERO_INIT
@@ -453,6 +493,7 @@ static inline R_V3 R_v3_right(float hrad)
 @ void  glm_mat4_inv_fast(mat4 mat, mat4 dest)
 @ void  glm_mat4_swap_col(mat4 mat, int col1, int col2)
 @ void  glm_mat4_swap_row(mat4 mat, int row1, int row2)
+@ void  glm_mat4_quat(mat4 m, versor dest)
 
 /* cglm/cam.h */
 @ void glm_perspective(float fovy, float aspect, float nearVal, float farVal, mat4 dest)

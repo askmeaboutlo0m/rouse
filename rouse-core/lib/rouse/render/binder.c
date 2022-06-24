@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, 2020 askmeaboutloom
+ * Copyright (c) 2019 - 2022 askmeaboutloom
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,8 +27,10 @@
 #include <assert.h>
 #include <stdio.h>
 #include "../3rdparty/gles2_inc.h"
+#include <cglm/struct.h>
 #include <rouse_config.h>
 #include "../common.h"
+#include "../geom.h"
 #include "../parse.h"
 #include "../model.h"
 #include "gl.h"

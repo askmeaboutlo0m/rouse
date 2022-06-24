@@ -842,6 +842,16 @@ static int r_m4_method_unpack_xl(lua_State *L)
     return 16;
 }
 
+static int r_m4_method_mul_xl(lua_State *L)
+{
+    R_M4 a = *((R_M4 *)luaL_checkudata(L, 1, "R_M4"));
+    R_M4 b = *((R_M4 *)luaL_checkudata(L, 2, "R_M4"));
+    R_M4 RETVAL;
+    RETVAL = R_m4_mul(a, b);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_M4), "R_M4", 0);
+    return 1;
+}
+
 static int r_m4_method_rotate_x_xl(lua_State *L)
 {
     R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
@@ -1069,6 +1079,7 @@ static luaL_Reg r_v4_index_registry_xl[] = {
 
 static luaL_Reg r_m4_method_registry_xl[] = {
     {"__index", r_m4_index_xl},
+    {"__mul", r_m4_method_mul_xl},
     {"__newindex", r_m4_newindex_xl},
     {"__tostring", r_m4_method_tostring_xl},
     {"rotate_x", r_m4_method_rotate_x_xl},

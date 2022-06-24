@@ -317,6 +317,10 @@ METHOD ... unpack()
     return 16;
 END
 
+FUNCTION R_M4 R_M4:__mul(R_M4 a, R_M4 b)
+    RETVAL = R_m4_mul(a, b);
+END
+
 METHOD R_M4 rotate_x(float angle)
     RETVAL = R_m4_rotate_x(*self, angle);
 END

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 askmeaboutloom
+ * Copyright (c) 2021 - 2022 askmeaboutloom
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,9 @@
 #include "util.h"
 
 @xl
+
+UTYPE R_M4
+
 
 PPTYPE R_MeshBuffer R.MeshBuffer
 
@@ -192,7 +195,7 @@ METHOD <NEW>R_MeshBuffer *buffer()
         }
         else {
             R_LUA_DIE(L, "Mesh buffer index %d out of bounds [1, %d]",
-                      self->buffer.count);
+                      index, self->buffer.count);
         }
     }
     else if (type == LUA_TSTRING) {
@@ -211,6 +214,37 @@ METHOD <NEW>R_MeshBuffer *buffer()
 END
 
 
+PPTYPE R_Node
+
+DESTRUCTOR = R_node_decref
+
+INDEXFIELD int        refs
+INDEXFIELD const char *name
+INDEXFIELD R_M4       transform
+INDEXFIELD int        child_count = child.count
+INDEXFIELD int        mesh_count  = mesh.count
+
+METHOD <NEW>R_Node *child(int index)
+    if (index > 0 && index <= self->child.count) {
+        RETVAL = R_node_incref(self->child.values[index - 1]);
+    }
+    else {
+        R_LUA_DIE(L, "Node child index %d out of bounds [1, %d]",
+                  index, self->mesh.count);
+    }
+END
+
+METHOD <NEW>R_Mesh *mesh(int index)
+    if (index > 0 && index <= self->mesh.count) {
+        RETVAL = R_mesh_incref(self->mesh.values[index - 1]);
+    }
+    else {
+        R_LUA_DIE(L, "Node mesh index %d out of bounds [1, %d]",
+                  index, self->mesh.count);
+    }
+END
+
+
 PPTYPE R_Model R.Model
 
 CONSTRUCTOR from_file(const char *path) = R_model_from_file
@@ -220,12 +254,17 @@ DESTRUCTOR = R_model_decref
 INDEXFIELD int refs
 INDEXFIELD int mesh_count = mesh.count
 
+INDEX <NEW>R_Node *root_node
+    RETVAL = R_node_incref(self->root_node);
+END
+
 METHOD <NEW>R_Mesh *mesh(int index)
     if (index > 0 && index <= self->mesh.count) {
         RETVAL = R_mesh_incref(self->mesh.values[index - 1]);
     }
     else {
-        R_LUA_DIE(L, "Mesh index %d out of bounds [1, %d]", self->mesh.count);
+        R_LUA_DIE(L, "Model mesh index %d out of bounds [1, %d]",
+                  index, self->mesh.count);
     }
 END
 

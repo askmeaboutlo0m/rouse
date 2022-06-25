@@ -22,156 +22,18 @@
  * SOFTWARE.
  */
 
-/*
- * What kind of data is in a `R_MeshBuffer`. OpenGL ES 2.0 only supports float
- * and unsigned short buffers, so that's what's currently available here.
- */
-typedef enum R_BufferType {
-    R_BUFFER_TYPE_USHORT = 117, /* 'u' in ASCII */
-    R_BUFFER_TYPE_FLOAT  = 102, /* 'f' in ASCII */
-} R_BufferType;
+typedef enum R_AttributeType {
+    R_ATTRIBUTE_TYPE_USHORT = 117, /* 'u' in ASCII */
+    R_ATTRIBUTE_TYPE_FLOAT  = 102, /* 'f' in ASCII */
+} R_AttributeType;
 
-typedef union R_MeshBufferValues {
-    unsigned short *ushorts; /* R_BUFFER_TYPE_USHORT */
-    float          *floats;  /* R_BUFFER_TYPE_FLOAT  */
-} R_MeshBufferValues;
-
-/* A buffer in a mesh. Usually some kind of index or vertex buffer. */
-typedef struct R_MeshBuffer {
-    R_MAGIC_FIELD
-    int refs;
-    /* The data type of the buffer, from `R_BufferType`. */
-    R_BufferType type;
-    /*
-     * Some name to refer to the buffer by. For example "indices", "vertices",
-     * "normals", "uv0" etc., if you're using rouse-model. May be NULL!
-     */
-    char *name;
-    /* The length of the buffer, i.e. how many numbers are in it. */
-    int count;
-    /*
-     * Size of a single "logical" element in the buffer. For triangles or
-     * normals, this will usually be 3, for UVs this will be 2 etc. It's
-     * called `divisor` because when you divide `count` by it, you get the
-     * number of logical elements. A divisor that doesn't cleanly divide
-     * `count` is invalid.
-     */
-    int divisor;
-    /*
-     * The actual buffer with the data in it. Which field in this union you
-     * need depends on the `type` of this mesh buffer.
-     */
-    union {
-        R_MeshBufferValues values;
-        unsigned short     *ushorts;
-        float              *floats;
-    };
-} R_MeshBuffer;
-
+typedef struct R_Model R_Model;
+typedef struct R_Mesh R_Mesh;
+typedef struct R_Attribute R_Attribute;
+typedef struct R_Bone R_Bone;
 typedef struct R_Node R_Node;
-
-typedef struct R_Bone {
-    R_MAGIC_FIELD
-    int    refs;
-    char   *name;
-    R_M4   offset;
-    int    armature_id; /* -1 means none */
-    int    node_id;     /* -1 means none */
-} R_Bone;
-
-typedef struct R_Mesh {
-    R_MAGIC_FIELD
-    int refs;
-    int id;
-    struct {
-        int          count;
-        R_MeshBuffer **values;
-    } buffer;
-    struct {
-        int    count;
-        R_Bone **values;
-    } bone;
-} R_Mesh;
-
-struct R_Node {
-    R_MAGIC_FIELD
-    int  refs;
-    int  id;
-    int  parent_id;
-    char *name;
-    R_V3 position;
-    R_Qn rotation;
-    R_V3 scaling;
-    R_M4 transform;
-    struct {
-        int count;
-        int *values;
-    } mesh_id;
-    struct {
-        int count;
-        int *values;
-    } child_id;
-};
-
-typedef struct R_PositionKeyFrame {
-    double ticks;
-    R_V3   value;
-} R_PositionKeyFrame;
-
-typedef struct R_RotationKeyFrame {
-    double ticks;
-    R_Qn   value;
-} R_RotationKeyFrame;
-
-typedef struct R_ScalingKeyFrame {
-    double ticks;
-    R_V3   value;
-} R_ScalingKeyFrame;
-
-typedef struct R_NodeChannel {
-    int node_id;
-    struct {
-        int                count;
-        R_PositionKeyFrame *values;
-    } position_key_frame;
-    struct {
-        int                count;
-        R_RotationKeyFrame *values;
-    } rotation_key_frame;
-    struct {
-        int               count;
-        R_ScalingKeyFrame *values;
-    } scaling_key_frame;
-} R_NodeChannel;
-
-typedef struct R_Animation {
-    R_MAGIC_FIELD
-    int    refs;
-    char   *name;
-    double duration;
-    double ticks_per_second;
-    struct {
-        int           count;
-        R_NodeChannel *values;
-    } node_channel;
-} R_Animation;
-
-typedef struct R_Model {
-    R_MAGIC_FIELD
-    int refs;
-    struct {
-        int    count;
-        R_Mesh **values;
-    } mesh;
-    struct {
-        int    count;
-        R_Node **values;
-    } node;
-    struct {
-        int         count;
-        R_Animation **values;
-    } animation;
-} R_Model;
+typedef struct R_Animation R_Animation;
+typedef struct R_NodeChannel R_NodeChannel;
 
 
 /*
@@ -202,57 +64,113 @@ R_Model *R_model_incref(R_Model *model);
 
 int R_model_refs(R_Model *model);
 
-char *R_model_dump(R_Model *model);
-
+int R_model_mesh_count(R_Model *model);
 R_Mesh *R_model_mesh_by_id(R_Model *model, int id);
 
-R_Node *R_model_root_node(R_Model *model);
+int R_model_node_count(R_Model *model);
+int R_model_node_id_by_name(R_Model *model, const char *name);
 R_Node *R_model_node_by_id(R_Model *model, int id);
-R_Node *R_model_node_child(R_Model *model, R_Node *node, int child_index);
+R_Node *R_model_node_by_name (R_Model *model, const char *name);
+R_Node *R_model_root_node(R_Model *model);
+
+int R_model_animation_count(R_Model *model);
+int R_model_animation_id_by_name(R_Model *model, const char *name);
+R_Animation *R_model_animation_by_id(R_Model *model, int id);
+R_Animation *R_model_animation_by_name(R_Model *model, const char *name);
 
 
-R_Mesh *R_mesh_decref(R_Mesh *mesh);
-R_Mesh *R_mesh_incref(R_Mesh *mesh);
+R_Model *R_mesh_model(R_Mesh *mesh);
+int R_mesh_id(R_Mesh *mesh);
 
-int R_mesh_refs(R_Mesh *mesh);
+int R_mesh_attribute_count(R_Mesh *mesh);
+int R_mesh_attribute_index_by_name(R_Mesh *mesh, const char *name);
+R_Attribute *R_mesh_attribute_at(R_Mesh *mesh, int index);
+R_Attribute *R_mesh_attribute_by_name(R_Mesh *mesh, const char *name);
 
-
-int R_mesh_buffer_index_by_name(R_Mesh *mesh, const char *name);
-
-R_MeshBuffer *R_mesh_buffer_by_index(R_Mesh *mesh, int index);
-R_MeshBuffer *R_mesh_buffer_by_name (R_Mesh *mesh, const char *name);
-
-unsigned short *R_mesh_ushorts_by_index(R_Mesh *mesh, int index,
-                                        int *out_count);
-unsigned short *R_mesh_ushorts_by_name(R_Mesh *mesh, const char *name,
-                                       int *out_count);
-
-float *R_mesh_floats_by_index(R_Mesh *mesh, int index, int *out_count);
-float *R_mesh_floats_by_name(R_Mesh *mesh, const char *name, int *out_count);
+int R_mesh_bone_count(R_Mesh *mesh);
+R_Bone *R_mesh_bone_at(R_Mesh *mesh, int index);
 
 
-R_MeshBuffer *R_mesh_buffer_new(R_BufferType type, const char *name, int count,
-                                int divisor);
+R_Model *R_attribute_model(R_Attribute *attr);
+R_AttributeType R_attribute_type(R_Attribute *attr);
+const char *R_attribute_name(R_Attribute *attr);
+int R_attribute_count(R_Attribute *attr);
+int R_attribute_divisor(R_Attribute *attr);
 
-R_MeshBuffer *R_mesh_buffer_decref(R_MeshBuffer *mbuf);
-R_MeshBuffer *R_mesh_buffer_incref(R_MeshBuffer *mbuf);
+size_t R_attribute_element_size(R_Attribute *attr);
+size_t R_attribute_size(R_Attribute *attr);
+void *R_attribute_data(R_Attribute *attr);
+unsigned int R_attribute_gl_type(R_Attribute *attr);
 
-int R_mesh_buffer_refs(R_MeshBuffer *mbuf);
+/*
+ * Call `glBufferData` forwarding the given `target` (e.g. `GL_ARRAY_BUFFER`)
+ * and `usage` (e.g. `GL_STATIC_DRAW`) while using `attr`'s contents as the
+ * `data` and `size` parameters.
+ */
+void R_attribute_gl_buffer_data(R_Attribute *attr, unsigned int target,
+                                unsigned int usage);
+
+/*
+ * Call `glVertexAttribuPointer`, forwarding the given `index`, `normalized`,
+ * `stride` and `pointer` while using `attr`'s properties as the `size` and
+ * `type` parameters.
+ */
+void R_attribute_gl_vertex_attrib_pointer(R_Attribute *attr,
+                                                 unsigned int index,
+                                                 unsigned char normalized,
+                                                 int stride, void *pointer);
 
 
-R_Bone *R_bone_incref(R_Bone *bone);
-R_Bone *R_bone_decref(R_Bone *bone);
-
-int R_bone_refs(R_Bone *bone);
-
-
-R_Node *R_node_decref(R_Node *node);
-R_Node *R_node_incref(R_Node *node);
-
-int R_node_refs(R_Node *node);
+R_Model *R_bone_model(R_Bone *bone);
+const char *R_bone_name(R_Bone *bone);
+R_M4 R_bone_offset(R_Bone *bone);
+int R_bone_armature_id(R_Bone *bone);
+int R_bone_node_id(R_Bone *bone);
+R_Node *R_bone_armature(R_Bone *bone);
+R_Node *R_bone_node(R_Bone *bone);
 
 
-R_Animation *R_animation_decref(R_Animation *anim);
-R_Animation *R_animation_incref(R_Animation *anim);
+R_Model *R_node_model(R_Node *node);
+int R_node_id(R_Node *node);
+const char *R_node_name(R_Node *node);
+R_V3 R_node_position(R_Node *node);
+R_Qn R_node_rotation(R_Node *node);
+R_V3 R_node_scaling(R_Node *node);
+R_M4 R_node_transform(R_Node *node);
 
-int R_animation_refs(R_Animation *anim);
+int R_node_mesh_count(R_Node *node);
+int R_node_mesh_id_at(R_Node *node, int index);
+R_Mesh *R_node_mesh_at(R_Node *node, int index);
+
+int R_node_child_count(R_Node *node);
+int R_node_child_id_at(R_Node *node, int index);
+R_Node *R_node_child_at(R_Node *node, int index);
+
+
+R_Model *R_animation_model(R_Animation *anim);
+const char *R_animation_name(R_Animation *anim);
+double R_animation_duration_ticks(R_Animation *anim);
+double R_animation_ticks_per_second(R_Animation *anim);
+
+int R_animation_node_channel_count(R_Animation *anim);
+R_NodeChannel *R_animation_node_channel_at(R_Animation *anim, int index);
+R_NodeChannel *R_animation_search_node_channel_by_node_id(R_Animation *anim,
+                                                          int node_id);
+
+double R_animation_seconds_to_ticks(R_Animation *anim, double seconds);
+double R_animation_ticks_to_seconds(R_Animation *anim, double ticks);
+double R_animation_duration_seconds(R_Animation *anim);
+
+
+R_Model *R_node_channel_model(R_NodeChannel *nc);
+int R_node_channel_node_id(R_NodeChannel *nc);
+R_Node *R_node_channel_node(R_NodeChannel *nc);
+
+R_V3 R_node_channel_position_at(R_NodeChannel *nc, double ticks, R_EaseFn ease,
+                                R_UserData user);
+
+R_Qn R_node_channel_rotation_at(R_NodeChannel *nc, double ticks, R_EaseFn ease,
+                                R_UserData user);
+
+R_V3 R_node_channel_scaling_at(R_NodeChannel *nc, double ticks, R_EaseFn ease,
+                               R_UserData user);

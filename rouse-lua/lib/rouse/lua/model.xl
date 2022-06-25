@@ -26,54 +26,35 @@
 
 @xl
 
+UTYPE R_V3
+UTYPE R_Qn
 UTYPE R_M4
 
 
-PPTYPE R_MeshBuffer R.MeshBuffer
+PPTYPE R_Attribute R.Attribute
 
-CONSTRUCTOR new(const char *type_name, const char *name, int count, int divisor)
-    R_BufferType type;
-    if (R_str_equal(type_name, "float")) {
-        type = R_BUFFER_TYPE_FLOAT;
-    }
-    else if (R_str_equal(type_name, "ushort")) {
-        type = R_BUFFER_TYPE_USHORT;
-    }
-    else {
-        R_LUA_DIE(L, "Unknown mesh buffer type '%s'", type_name);
-    }
-
-    if (count <= 0) {
-        R_LUA_DIE(L, "Invalid mesh buffer count %d", count);
-    }
-    if (divisor <= 0) {
-        R_LUA_DIE(L, "Invalid mesh buffer divisor %d", divisor);
-    }
-    if (count % divisor != 0) {
-        R_LUA_DIE(L, "Mesh buffer count %d is not divisible by %d",
-                  count, divisor);
-    }
-
-    RETVAL = R_mesh_buffer_new(type, name, count, divisor);
+DESTRUCTOR
+    R_model_decref(R_attribute_model(self));
 END
 
-DESTRUCTOR = R_mesh_buffer_decref
+INDEX <NEW>R_Model *model
+    RETVAL = R_model_incref(R_attribute_model(self));
+END
 
-INDEXFIELD int        refs
-INDEXFIELD const char *name
-INDEXFIELD int        count
-INDEXFIELD int        divisor
+INDEX const char *name   = R_attribute_name
+INDEX int        count   = R_attribute_count
+INDEX int        divisor = R_attribute_divisor
 
 INDEX lua_Integer type
-    RETVAL = (lua_Integer) self->type;
+    RETVAL = (lua_Integer) R_attribute_type(self);
 END
 
 INDEX const char *type_name
-    switch (self->type) {
-        case R_BUFFER_TYPE_USHORT:
+    switch (R_attribute_type(self)) {
+        case R_ATTRIBUTE_TYPE_USHORT:
             RETVAL = "ushort";
             break;
-        case R_BUFFER_TYPE_FLOAT:
+        case R_ATTRIBUTE_TYPE_FLOAT:
             RETVAL = "float";
             break;
         default:
@@ -82,165 +63,164 @@ INDEX const char *type_name
     }
 END
 
-@c
-
-#define INDEX_VALUES(L, MBUF, PUSH, TYPE, FIELD) do { \
-        int _count = (MBUF)->count; \
-        lua_createtable(L, _count, 0); \
-        TYPE *FIELD = (MBUF)->values.FIELD; \
-        for (int _i = 0; _i < _count; ++_i) { \
-            PUSH(L, FIELD[_i]); \
-            lua_seti(L, -2, _i + 1); \
-        } \
-    } while (0)
-
-#define NEWINDEX_VALUES(L, MBUF, TABLE, COUNT, CHECK, TYPE, FIELD) do { \
-        TYPE *FIELD = (MBUF)->values.FIELD; \
-        for (int _i = 0; _i < (COUNT); ++_i) { \
-            lua_geti(L, TABLE, _i + 1); \
-            FIELD[_i] = CHECK(L, -1); \
-            lua_pop(L, 1); \
-        } \
-    } while (0)
-
-@xl
-
-INDEX ... values
-    switch (self->type) {
-        case R_BUFFER_TYPE_USHORT:
-            INDEX_VALUES(L, self, XL_pushushort, unsigned short, ushorts);
-            break;
-        case R_BUFFER_TYPE_FLOAT:
-            INDEX_VALUES(L, self, XL_pushfloat, float, floats);
-            break;
-        default:
-            R_LUA_DIE(L, "Unknown mesh buffer type '%d'", (int) self->type);
-    }
-    return 1;
+METHOD void gl_buffer_data(unsigned int target)
+    int argc = lua_gettop(L);
+    unsigned int usage = argc < 3 ? GL_STATIC_DRAW : XL_checkuint(L, 3);
+    R_attribute_gl_buffer_data(self, target, usage);
 END
 
-NEWINDEX table values
-    int len = (int) luaL_len(L, VALUE);
-    if (len != self->count) {
-        R_LUA_DIE(L, "Got %d values, but need %d", len, self->count);
+METHOD void gl_vertex_attrib_pointer(unsigned int index)
+    int argc       = lua_gettop(L);
+    int normalized = argc >= 3 && XL_checkbool(L, 3);
+    int stride     = argc < 4 ? 0 : XL_checkint(L, 4);
+    R_attribute_gl_vertex_attrib_pointer(
+        self, index, normalized ? GL_TRUE : GL_FALSE, stride, NULL);
+END
+
+
+PPTYPE R_Bone
+
+DESTRUCTOR
+    R_model_decref(R_bone_model(self));
+END
+
+INDEX const char *name       = R_bone_name
+INDEX R_M4       offset      = R_bone_offset
+INDEX int        armature_id = R_bone_armature_id
+INDEX int        node_id     = R_bone_node_id
+
+INDEX <NEW>R_Node *armature
+    RETVAL = R_bone_armature(self);
+    if (RETVAL) {
+        R_model_incref(R_bone_model(self));
     }
-    switch (self->type) {
-        case R_BUFFER_TYPE_USHORT:
-            NEWINDEX_VALUES(L, self, VALUE, len, XL_checkushort,
-                            unsigned short, ushorts);
-            break;
-        case R_BUFFER_TYPE_FLOAT:
-            NEWINDEX_VALUES(L, self, VALUE, len, XL_checkfloat,
-                            float, floats);
-            break;
-        default:
-            R_LUA_DIE(L, "Unknown mesh buffer type '%d'", (int) self->type);
+    else {
+        lua_pushnil(L);
+        return 1;
     }
 END
 
-@c
-
-static void check_mesh_buffer_index(lua_State *L, R_MeshBuffer *mbuf, int index)
-{
-    if (index < 1 || index > mbuf->count) {
-        R_LUA_DIE(L, "Mesh buffer index %d out of range", index);
+INDEX <NEW>R_Node *node
+    RETVAL = R_bone_node(self);
+    if (RETVAL) {
+        R_model_incref(R_bone_model(self));
     }
-}
-
-@xl
-
-INTINDEX ...
-    check_mesh_buffer_index(L, self, INDEX);
-    switch (self->type) {
-        case R_BUFFER_TYPE_USHORT:
-            XL_pushushort(L, self->values.ushorts[INDEX - 1]);
-            break;
-        case R_BUFFER_TYPE_FLOAT:
-            XL_pushfloat(L, self->values.floats[INDEX - 1]);
-            break;
-        default:
-            R_LUA_DIE(L, "Unknown mesh buffer type '%d'", (int) self->type);
-    }
-    return 1;
-END
-
-INTNEWINDEX any
-    check_mesh_buffer_index(L, self, INDEX);
-    switch (self->type) {
-        case R_BUFFER_TYPE_USHORT:
-            self->values.ushorts[INDEX - 1] = XL_checkushort(L, VALUE);
-            break;
-        case R_BUFFER_TYPE_FLOAT:
-            self->values.floats[INDEX - 1] = XL_checkfloat(L, VALUE);
-            break;
-        default:
-            R_LUA_DIE(L, "Unknown mesh buffer type '%d'", (int) self->type);
+    else {
+        lua_pushnil(L);
+        return 1;
     }
 END
 
 
 PPTYPE R_Mesh
 
-DESTRUCTOR = R_mesh_decref
+DESTRUCTOR
+    R_model_decref(R_mesh_model(self));
+END
 
-INDEXFIELD int refs
-INDEXFIELD int buffer_count = buffer.count
+INDEX <NEW>R_Model *model
+    RETVAL = R_model_incref(R_mesh_model(self));
+END
 
-METHOD <NEW>R_MeshBuffer *buffer()
+INDEX int id              = R_mesh_id
+INDEX int attribute_count = R_mesh_attribute_count
+INDEX int bone_count      = R_mesh_bone_count
+
+METHOD <NEW>R_Attribute *attribute()
     int type = lua_type(L, 2);
+    int index;
     if (type == LUA_TNUMBER) {
-        int index = XL_checkint(L, 2);
-        if (index > 0 && index <= self->buffer.count) {
-            RETVAL = R_mesh_buffer_incref(self->buffer.values[index - 1]);
+        int i     = XL_checkint(L, 2);
+        int count = R_mesh_attribute_count(self);
+        if (i < 1 || i > count) {
+            R_LUA_DIE(L, "Attribute index %d out of bounds [1, %d]", i, count);
         }
-        else {
-            R_LUA_DIE(L, "Mesh buffer index %d out of bounds [1, %d]",
-                      index, self->buffer.count);
-        }
+        index = i - 1;
     }
     else if (type == LUA_TSTRING) {
         const char *name = lua_tostring(L, 2);
-        int index = R_mesh_buffer_index_by_name(self, name);
-        if (index >= 0) {
-            RETVAL = R_mesh_buffer_incref(self->buffer.values[index]);
-        }
-        else {
-            R_LUA_DIE(L, "Mesh buffer with name '%s' not found", name);
+        index = R_mesh_attribute_index_by_name(self, name);
+        if (index == -1) {
+            R_LUA_DIE(L, "Attribute with name '%s' not found", name);
         }
     }
     else {
-        R_LUA_DIE(L, "Can't get a mesh buffer by a %s", lua_typename(L, type));
+        R_LUA_DIE(L, "Can't get a attribute by a %s", lua_typename(L, type));
+    }
+    RETVAL = R_mesh_attribute_at(self, index);
+    R_model_incref(R_attribute_model(RETVAL));
+END
+
+METHOD <NEW>R_Bone *bone(int index)
+    int count = R_mesh_bone_count(self);
+    if (index > 0 && index <= count) {
+        RETVAL = R_mesh_bone_at(self, index - 1);
+        R_model_incref(R_bone_model(RETVAL));
+    }
+    else {
+        R_LUA_DIE(L, "Mesh bone index %d out of bounds [1, %d]", index, count);
     }
 END
 
 
 PPTYPE R_Node
 
-DESTRUCTOR = R_node_decref
+DESTRUCTOR
+    R_model_decref(R_node_model(self));
+END
 
-INDEXFIELD int        refs
-INDEXFIELD const char *name
-INDEXFIELD R_M4       transform
-INDEXFIELD int        child_count = child.count
-INDEXFIELD int        mesh_count  = mesh.count
+INDEX <NEW>R_Model *model
+    RETVAL = R_model_incref(R_node_model(self));
+END
 
-METHOD <NEW>R_Node *child(int index)
-    if (index > 0 && index <= self->child.count) {
-        RETVAL = R_node_incref(self->child.values[index - 1]);
+INDEX int        id          = R_node_id
+INDEX const char *name       = R_node_name
+INDEX R_V3       position    = R_node_position
+INDEX R_Qn       rotation    = R_node_rotation
+INDEX R_V3       scaling     = R_node_scaling
+INDEX R_M4       transform   = R_node_transform
+INDEX int        mesh_count  = R_node_mesh_count
+INDEX int        child_count = R_node_child_count
+
+METHOD int mesh_id(int index)
+    int count = R_node_mesh_count(self);
+    if (index > 0 && index <= count) {
+        RETVAL = R_node_mesh_id_at(self, index - 1);
     }
     else {
-        R_LUA_DIE(L, "Node child index %d out of bounds [1, %d]",
-                  index, self->mesh.count);
+        R_LUA_DIE(L, "Node mesh index %d out of bounds [1, %d]", index, count);
     }
 END
 
 METHOD <NEW>R_Mesh *mesh(int index)
-    if (index > 0 && index <= self->mesh.count) {
-        RETVAL = R_mesh_incref(self->mesh.values[index - 1]);
+    int count = R_node_mesh_count(self);
+    if (index > 0 && index <= count) {
+        RETVAL = R_node_mesh_at(self, index - 1);
+        R_model_incref(R_mesh_model(RETVAL));
     }
     else {
-        R_LUA_DIE(L, "Node mesh index %d out of bounds [1, %d]",
-                  index, self->mesh.count);
+        R_LUA_DIE(L, "Node mesh index %d out of bounds [1, %d]", index, count);
+    }
+END
+
+METHOD int child_id(int index)
+    int count = R_node_child_count(self);
+    if (index > 0 && index <= count) {
+        RETVAL = R_node_child_id_at(self, index - 1);
+    }
+    else {
+        R_LUA_DIE(L, "Node child index %d out of bounds [1, %d]", index, count);
+    }
+END
+
+METHOD <NEW>R_Node *child(int index)
+    int count = R_node_child_count(self);
+    if (index > 0 && index <= count) {
+        RETVAL = R_node_child_at(self, index - 1);
+        R_model_incref(R_node_model(RETVAL));
+    }
+    else {
+        R_LUA_DIE(L, "Node child index %d out of bounds [1, %d]", index, count);
     }
 END
 
@@ -251,28 +231,38 @@ CONSTRUCTOR from_file(const char *path) = R_model_from_file
 
 DESTRUCTOR = R_model_decref
 
-INDEXFIELD int refs
-INDEXFIELD int mesh_count = mesh.count
-
-INDEX <NEW>R_Node *root_node
-    RETVAL = R_node_incref(self->root_node);
-END
+INDEX int refs            = R_model_refs
+INDEX int mesh_count      = R_model_mesh_count
+INDEX int node_count      = R_model_node_count
+INDEX int animation_count = R_model_animation_count
 
 METHOD <NEW>R_Mesh *mesh(int index)
-    if (index > 0 && index <= self->mesh.count) {
-        RETVAL = R_mesh_incref(self->mesh.values[index - 1]);
+    int count = R_model_mesh_count(self);
+    if (index > 0 && index <= count) {
+        RETVAL = R_model_mesh_by_id(self, index - 1);
+        R_model_incref(R_mesh_model(RETVAL));
     }
     else {
         R_LUA_DIE(L, "Model mesh index %d out of bounds [1, %d]",
-                  index, self->mesh.count);
+                  index, count);
     }
 END
 
-METHOD const char *dump()
-    char *s = R_model_dump(self);
-    RETVAL = s;
-LEAVE
-    free(s);
+METHOD <NEW>R_Node *node(int index)
+    int count = R_model_node_count(self);
+    if (index > 0 && index <= count) {
+        RETVAL = R_model_node_by_id(self, index - 1);
+        R_model_incref(R_node_model(RETVAL));
+    }
+    else {
+        R_LUA_DIE(L, "Model node index %d out of bounds [1, %d]",
+                  index, count);
+    }
+END
+
+INDEX <NEW>R_Node *root_node
+    RETVAL = R_model_root_node(self);
+    R_model_incref(R_node_model(RETVAL));
 END
 
 

@@ -50,7 +50,7 @@ static void on_render(void *data, R_Camera *camera)
     R_GL(glUniformMatrix4fv, sd->u_m, 1, GL_FALSE, R_M4_GL(model));
     R_camera_bind(camera, sd->u_proj, sd->u_view);
 
-    for (int i = 0; i < sd->cube->mesh.count; ++i) {
+    for (int i = 0; i < R_model_mesh_count(sd->cube); ++i) {
         R_Mesh *mesh = R_model_mesh_by_id(sd->cube, i);
         R_binder_draw(sd->binder, mesh);
     }
@@ -70,9 +70,9 @@ static void on_free(void *data)
 
 static R_Binder *init_binder(R_Mesh *mesh)
 {
-    int indices  = R_mesh_buffer_index_by_name(mesh, "indices");
-    int vertices = R_mesh_buffer_index_by_name(mesh, "vertices");
-    int normals  = R_mesh_buffer_index_by_name(mesh, "normals");
+    int indices  = R_mesh_attribute_index_by_name(mesh, "indices");
+    int vertices = R_mesh_attribute_index_by_name(mesh, "vertices");
+    int normals  = R_mesh_attribute_index_by_name(mesh, "normals");
     R_Binder *binder = R_binder_new(
             R_BINDER_INDEXED | R_BINDER_DEPTH_TEST | R_BINDER_CULLING,
             R_binder_draw_mesh_by_index, R_user_int(indices),

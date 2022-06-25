@@ -30,101 +30,67 @@
 #include "util.h"
 
 
-static int r_meshbuffer_new_xl(lua_State *L)
+static int r_attribute_method_gc_xl(lua_State *L)
 {
-    const char *type_name = luaL_checkstring(L, 1);
-    const char *name = luaL_checkstring(L, 2);
-    int count = XL_checkint(L, 3);
-    int divisor = XL_checkint(L, 4);
-    R_MeshBuffer *RETVAL;
-    R_BufferType type;
-    if (R_str_equal(type_name, "float")) {
-        type = R_BUFFER_TYPE_FLOAT;
-    }
-    else if (R_str_equal(type_name, "ushort")) {
-        type = R_BUFFER_TYPE_USHORT;
-    }
-    else {
-        R_LUA_DIE(L, "Unknown mesh buffer type '%s'", type_name);
-    }
-
-    if (count <= 0) {
-        R_LUA_DIE(L, "Invalid mesh buffer count %d", count);
-    }
-    if (divisor <= 0) {
-        R_LUA_DIE(L, "Invalid mesh buffer divisor %d", divisor);
-    }
-    if (count % divisor != 0) {
-        R_LUA_DIE(L, "Mesh buffer count %d is not divisible by %d",
-                  count, divisor);
-    }
-
-    RETVAL = R_mesh_buffer_new(type, name, count, divisor);
-    XL_pushnewpptypeuv(L, RETVAL, "R_MeshBuffer", 0);
-    return 1;
-}
-
-static int r_meshbuffer_method_gc_xl(lua_State *L)
-{
-    R_MeshBuffer *self = R_CPPCAST(R_MeshBuffer *, XL_checkpptype_nullable(L, 1, "R_MeshBuffer"));
-    R_mesh_buffer_decref(self);
+    R_Attribute *self = R_CPPCAST(R_Attribute *, XL_checkpptype_nullable(L, 1, "R_Attribute"));
+    R_model_decref(R_attribute_model(self));
     return 0;
 }
 
-static int r_meshbuffer_refs_index_xl(lua_State *L)
+static int r_attribute_model_index_xl(lua_State *L)
 {
-    R_MeshBuffer *self = R_CPPCAST(R_MeshBuffer *, XL_checkpptype(L, 1, "R_MeshBuffer"));
-    int RETVAL;
-    RETVAL = self->refs;
-    XL_pushint(L, RETVAL);
+    R_Attribute *self = R_CPPCAST(R_Attribute *, XL_checkpptype(L, 1, "R_Attribute"));
+    R_Model *RETVAL;
+    RETVAL = R_model_incref(R_attribute_model(self));
+    XL_pushnewpptypeuv(L, RETVAL, "R_Model", 0);
     return 1;
 }
 
-static int r_meshbuffer_name_index_xl(lua_State *L)
+static int r_attribute_name_index_xl(lua_State *L)
 {
-    R_MeshBuffer *self = R_CPPCAST(R_MeshBuffer *, XL_checkpptype(L, 1, "R_MeshBuffer"));
+    R_Attribute *self = R_CPPCAST(R_Attribute *, XL_checkpptype(L, 1, "R_Attribute"));
     const char *RETVAL;
-    RETVAL = self->name;
+    RETVAL = R_attribute_name(self);
     lua_pushstring(L, RETVAL);
     return 1;
 }
 
-static int r_meshbuffer_count_index_xl(lua_State *L)
+static int r_attribute_count_index_xl(lua_State *L)
 {
-    R_MeshBuffer *self = R_CPPCAST(R_MeshBuffer *, XL_checkpptype(L, 1, "R_MeshBuffer"));
+    R_Attribute *self = R_CPPCAST(R_Attribute *, XL_checkpptype(L, 1, "R_Attribute"));
     int RETVAL;
-    RETVAL = self->count;
+    RETVAL = R_attribute_count(self);
     XL_pushint(L, RETVAL);
     return 1;
 }
 
-static int r_meshbuffer_divisor_index_xl(lua_State *L)
+static int r_attribute_divisor_index_xl(lua_State *L)
 {
-    R_MeshBuffer *self = R_CPPCAST(R_MeshBuffer *, XL_checkpptype(L, 1, "R_MeshBuffer"));
+    R_Attribute *self = R_CPPCAST(R_Attribute *, XL_checkpptype(L, 1, "R_Attribute"));
     int RETVAL;
-    RETVAL = self->divisor;
+    RETVAL = R_attribute_divisor(self);
     XL_pushint(L, RETVAL);
     return 1;
 }
 
-static int r_meshbuffer_type_index_xl(lua_State *L)
+static int r_attribute_type_index_xl(lua_State *L)
 {
-    R_MeshBuffer *self = R_CPPCAST(R_MeshBuffer *, XL_checkpptype(L, 1, "R_MeshBuffer"));
+    R_Attribute *self = R_CPPCAST(R_Attribute *, XL_checkpptype(L, 1, "R_Attribute"));
     lua_Integer RETVAL;
-    RETVAL = (lua_Integer) self->type;
+    RETVAL = (lua_Integer) R_attribute_type(self);
     lua_pushinteger(L, RETVAL);
     return 1;
 }
 
-static int r_meshbuffer_type_name_index_xl(lua_State *L)
+static int r_attribute_type_name_index_xl(lua_State *L)
 {
-    R_MeshBuffer *self = R_CPPCAST(R_MeshBuffer *, XL_checkpptype(L, 1, "R_MeshBuffer"));
+    R_Attribute *self = R_CPPCAST(R_Attribute *, XL_checkpptype(L, 1, "R_Attribute"));
     const char *RETVAL;
-    switch (self->type) {
-        case R_BUFFER_TYPE_USHORT:
+    switch (R_attribute_type(self)) {
+        case R_ATTRIBUTE_TYPE_USHORT:
             RETVAL = "ushort";
             break;
-        case R_BUFFER_TYPE_FLOAT:
+        case R_ATTRIBUTE_TYPE_FLOAT:
             RETVAL = "float";
             break;
         default:
@@ -135,183 +101,214 @@ static int r_meshbuffer_type_name_index_xl(lua_State *L)
     return 1;
 }
 
-
-#define INDEX_VALUES(L, MBUF, PUSH, TYPE, FIELD) do { \
-        int _count = (MBUF)->count; \
-        lua_createtable(L, _count, 0); \
-        TYPE *FIELD = (MBUF)->values.FIELD; \
-        for (int _i = 0; _i < _count; ++_i) { \
-            PUSH(L, FIELD[_i]); \
-            lua_seti(L, -2, _i + 1); \
-        } \
-    } while (0)
-
-#define NEWINDEX_VALUES(L, MBUF, TABLE, COUNT, CHECK, TYPE, FIELD) do { \
-        TYPE *FIELD = (MBUF)->values.FIELD; \
-        for (int _i = 0; _i < (COUNT); ++_i) { \
-            lua_geti(L, TABLE, _i + 1); \
-            FIELD[_i] = CHECK(L, -1); \
-            lua_pop(L, 1); \
-        } \
-    } while (0)
-
-
-static int r_meshbuffer_values_index_xl(lua_State *L)
+static int r_attribute_method_gl_buffer_data_xl(lua_State *L)
 {
-    R_MeshBuffer *self = R_CPPCAST(R_MeshBuffer *, XL_checkpptype(L, 1, "R_MeshBuffer"));
-    switch (self->type) {
-        case R_BUFFER_TYPE_USHORT:
-            INDEX_VALUES(L, self, XL_pushushort, unsigned short, ushorts);
-            break;
-        case R_BUFFER_TYPE_FLOAT:
-            INDEX_VALUES(L, self, XL_pushfloat, float, floats);
-            break;
-        default:
-            R_LUA_DIE(L, "Unknown mesh buffer type '%d'", (int) self->type);
-    }
-    return 1;
-}
-
-static int r_meshbuffer_values_newindex_xl(lua_State *L)
-{
-    R_MeshBuffer *self = R_CPPCAST(R_MeshBuffer *, XL_checkpptype(L, 1, "R_MeshBuffer"));
-    luaL_checktype(L, 2, LUA_TTABLE);
-    int VALUE = 2;
-    int len = (int) luaL_len(L, VALUE);
-    if (len != self->count) {
-        R_LUA_DIE(L, "Got %d values, but need %d", len, self->count);
-    }
-    switch (self->type) {
-        case R_BUFFER_TYPE_USHORT:
-            NEWINDEX_VALUES(L, self, VALUE, len, XL_checkushort,
-                            unsigned short, ushorts);
-            break;
-        case R_BUFFER_TYPE_FLOAT:
-            NEWINDEX_VALUES(L, self, VALUE, len, XL_checkfloat,
-                            float, floats);
-            break;
-        default:
-            R_LUA_DIE(L, "Unknown mesh buffer type '%d'", (int) self->type);
-    }
+    R_Attribute *self = R_CPPCAST(R_Attribute *, XL_checkpptype(L, 1, "R_Attribute"));
+    unsigned int target = XL_checkuint(L, 2);
+    int argc = lua_gettop(L);
+    unsigned int usage = argc < 3 ? GL_STATIC_DRAW : XL_checkuint(L, 3);
+    R_attribute_gl_buffer_data(self, target, usage);
     return 0;
 }
 
-
-static void check_mesh_buffer_index(lua_State *L, R_MeshBuffer *mbuf, int index)
+static int r_attribute_method_gl_vertex_attrib_pointer_xl(lua_State *L)
 {
-    if (index < 1 || index > mbuf->count) {
-        R_LUA_DIE(L, "Mesh buffer index %d out of range", index);
-    }
+    R_Attribute *self = R_CPPCAST(R_Attribute *, XL_checkpptype(L, 1, "R_Attribute"));
+    unsigned int index = XL_checkuint(L, 2);
+    int argc       = lua_gettop(L);
+    int normalized = argc >= 3 && XL_checkbool(L, 3);
+    int stride     = argc < 4 ? 0 : XL_checkint(L, 4);
+    R_attribute_gl_vertex_attrib_pointer(
+        self, index, normalized ? GL_TRUE : GL_FALSE, stride, NULL);
+    return 0;
 }
 
-
-static int r_meshbuffer_intindex_xl(lua_State *L)
+static int r_bone_method_gc_xl(lua_State *L)
 {
-    R_MeshBuffer *self = R_CPPCAST(R_MeshBuffer *, XL_checkpptype(L, 1, "R_MeshBuffer"));
-    lua_Integer INDEX = luaL_checkinteger(L, 2);
-    check_mesh_buffer_index(L, self, INDEX);
-    switch (self->type) {
-        case R_BUFFER_TYPE_USHORT:
-            XL_pushushort(L, self->values.ushorts[INDEX - 1]);
-            break;
-        case R_BUFFER_TYPE_FLOAT:
-            XL_pushfloat(L, self->values.floats[INDEX - 1]);
-            break;
-        default:
-            R_LUA_DIE(L, "Unknown mesh buffer type '%d'", (int) self->type);
-    }
+    R_Bone *self = R_CPPCAST(R_Bone *, XL_checkpptype_nullable(L, 1, "R_Bone"));
+    R_model_decref(R_bone_model(self));
+    return 0;
+}
+
+static int r_bone_name_index_xl(lua_State *L)
+{
+    R_Bone *self = R_CPPCAST(R_Bone *, XL_checkpptype(L, 1, "R_Bone"));
+    const char *RETVAL;
+    RETVAL = R_bone_name(self);
+    lua_pushstring(L, RETVAL);
     return 1;
 }
 
-static int r_meshbuffer_intnewindex_xl(lua_State *L)
+static int r_bone_offset_index_xl(lua_State *L)
 {
-    R_MeshBuffer *self = R_CPPCAST(R_MeshBuffer *, XL_checkpptype(L, 1, "R_MeshBuffer"));
-    lua_Integer INDEX = luaL_checkinteger(L, 2);
-    luaL_checkany(L, 3);
-    int VALUE = 3;
-    check_mesh_buffer_index(L, self, INDEX);
-    switch (self->type) {
-        case R_BUFFER_TYPE_USHORT:
-            self->values.ushorts[INDEX - 1] = XL_checkushort(L, VALUE);
-            break;
-        case R_BUFFER_TYPE_FLOAT:
-            self->values.floats[INDEX - 1] = XL_checkfloat(L, VALUE);
-            break;
-        default:
-            R_LUA_DIE(L, "Unknown mesh buffer type '%d'", (int) self->type);
+    R_Bone *self = R_CPPCAST(R_Bone *, XL_checkpptype(L, 1, "R_Bone"));
+    R_M4 RETVAL;
+    RETVAL = R_bone_offset(self);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_M4), "R_M4", 0);
+    return 1;
+}
+
+static int r_bone_armature_id_index_xl(lua_State *L)
+{
+    R_Bone *self = R_CPPCAST(R_Bone *, XL_checkpptype(L, 1, "R_Bone"));
+    int RETVAL;
+    RETVAL = R_bone_armature_id(self);
+    XL_pushint(L, RETVAL);
+    return 1;
+}
+
+static int r_bone_node_id_index_xl(lua_State *L)
+{
+    R_Bone *self = R_CPPCAST(R_Bone *, XL_checkpptype(L, 1, "R_Bone"));
+    int RETVAL;
+    RETVAL = R_bone_node_id(self);
+    XL_pushint(L, RETVAL);
+    return 1;
+}
+
+static int r_bone_armature_index_xl(lua_State *L)
+{
+    R_Bone *self = R_CPPCAST(R_Bone *, XL_checkpptype(L, 1, "R_Bone"));
+    R_Node *RETVAL;
+    RETVAL = R_bone_armature(self);
+    if (RETVAL) {
+        R_model_incref(R_bone_model(self));
     }
-    return 0;
+    else {
+        lua_pushnil(L);
+        return 1;
+    }
+    XL_pushnewpptypeuv(L, RETVAL, "R_Node", 0);
+    return 1;
+}
+
+static int r_bone_node_index_xl(lua_State *L)
+{
+    R_Bone *self = R_CPPCAST(R_Bone *, XL_checkpptype(L, 1, "R_Bone"));
+    R_Node *RETVAL;
+    RETVAL = R_bone_node(self);
+    if (RETVAL) {
+        R_model_incref(R_bone_model(self));
+    }
+    else {
+        lua_pushnil(L);
+        return 1;
+    }
+    XL_pushnewpptypeuv(L, RETVAL, "R_Node", 0);
+    return 1;
 }
 
 static int r_mesh_method_gc_xl(lua_State *L)
 {
     R_Mesh *self = R_CPPCAST(R_Mesh *, XL_checkpptype_nullable(L, 1, "R_Mesh"));
-    R_mesh_decref(self);
+    R_model_decref(R_mesh_model(self));
     return 0;
 }
 
-static int r_mesh_refs_index_xl(lua_State *L)
+static int r_mesh_model_index_xl(lua_State *L)
+{
+    R_Mesh *self = R_CPPCAST(R_Mesh *, XL_checkpptype(L, 1, "R_Mesh"));
+    R_Model *RETVAL;
+    RETVAL = R_model_incref(R_mesh_model(self));
+    XL_pushnewpptypeuv(L, RETVAL, "R_Model", 0);
+    return 1;
+}
+
+static int r_mesh_id_index_xl(lua_State *L)
 {
     R_Mesh *self = R_CPPCAST(R_Mesh *, XL_checkpptype(L, 1, "R_Mesh"));
     int RETVAL;
-    RETVAL = self->refs;
+    RETVAL = R_mesh_id(self);
     XL_pushint(L, RETVAL);
     return 1;
 }
 
-static int r_mesh_buffer_count_index_xl(lua_State *L)
+static int r_mesh_attribute_count_index_xl(lua_State *L)
 {
     R_Mesh *self = R_CPPCAST(R_Mesh *, XL_checkpptype(L, 1, "R_Mesh"));
     int RETVAL;
-    RETVAL = self->buffer.count;
+    RETVAL = R_mesh_attribute_count(self);
     XL_pushint(L, RETVAL);
     return 1;
 }
 
-static int r_mesh_method_buffer_xl(lua_State *L)
+static int r_mesh_bone_count_index_xl(lua_State *L)
 {
     R_Mesh *self = R_CPPCAST(R_Mesh *, XL_checkpptype(L, 1, "R_Mesh"));
-    R_MeshBuffer *RETVAL;
+    int RETVAL;
+    RETVAL = R_mesh_bone_count(self);
+    XL_pushint(L, RETVAL);
+    return 1;
+}
+
+static int r_mesh_method_attribute_xl(lua_State *L)
+{
+    R_Mesh *self = R_CPPCAST(R_Mesh *, XL_checkpptype(L, 1, "R_Mesh"));
+    R_Attribute *RETVAL;
     int type = lua_type(L, 2);
+    int index;
     if (type == LUA_TNUMBER) {
-        int index = XL_checkint(L, 2);
-        if (index > 0 && index <= self->buffer.count) {
-            RETVAL = R_mesh_buffer_incref(self->buffer.values[index - 1]);
+        int i     = XL_checkint(L, 2);
+        int count = R_mesh_attribute_count(self);
+        if (i < 1 || i > count) {
+            R_LUA_DIE(L, "Attribute index %d out of bounds [1, %d]", i, count);
         }
-        else {
-            R_LUA_DIE(L, "Mesh buffer index %d out of bounds [1, %d]",
-                      index, self->buffer.count);
-        }
+        index = i - 1;
     }
     else if (type == LUA_TSTRING) {
         const char *name = lua_tostring(L, 2);
-        int index = R_mesh_buffer_index_by_name(self, name);
-        if (index >= 0) {
-            RETVAL = R_mesh_buffer_incref(self->buffer.values[index]);
-        }
-        else {
-            R_LUA_DIE(L, "Mesh buffer with name '%s' not found", name);
+        index = R_mesh_attribute_index_by_name(self, name);
+        if (index == -1) {
+            R_LUA_DIE(L, "Attribute with name '%s' not found", name);
         }
     }
     else {
-        R_LUA_DIE(L, "Can't get a mesh buffer by a %s", lua_typename(L, type));
+        R_LUA_DIE(L, "Can't get a attribute by a %s", lua_typename(L, type));
     }
-    XL_pushnewpptypeuv(L, RETVAL, "R_MeshBuffer", 0);
+    RETVAL = R_mesh_attribute_at(self, index);
+    R_model_incref(R_attribute_model(RETVAL));
+    XL_pushnewpptypeuv(L, RETVAL, "R_Attribute", 0);
+    return 1;
+}
+
+static int r_mesh_method_bone_xl(lua_State *L)
+{
+    R_Mesh *self = R_CPPCAST(R_Mesh *, XL_checkpptype(L, 1, "R_Mesh"));
+    int index = XL_checkint(L, 2);
+    R_Bone *RETVAL;
+    int count = R_mesh_bone_count(self);
+    if (index > 0 && index <= count) {
+        RETVAL = R_mesh_bone_at(self, index - 1);
+        R_model_incref(R_bone_model(RETVAL));
+    }
+    else {
+        R_LUA_DIE(L, "Mesh bone index %d out of bounds [1, %d]", index, count);
+    }
+    XL_pushnewpptypeuv(L, RETVAL, "R_Bone", 0);
     return 1;
 }
 
 static int r_node_method_gc_xl(lua_State *L)
 {
     R_Node *self = R_CPPCAST(R_Node *, XL_checkpptype_nullable(L, 1, "R_Node"));
-    R_node_decref(self);
+    R_model_decref(R_node_model(self));
     return 0;
 }
 
-static int r_node_refs_index_xl(lua_State *L)
+static int r_node_model_index_xl(lua_State *L)
+{
+    R_Node *self = R_CPPCAST(R_Node *, XL_checkpptype(L, 1, "R_Node"));
+    R_Model *RETVAL;
+    RETVAL = R_model_incref(R_node_model(self));
+    XL_pushnewpptypeuv(L, RETVAL, "R_Model", 0);
+    return 1;
+}
+
+static int r_node_id_index_xl(lua_State *L)
 {
     R_Node *self = R_CPPCAST(R_Node *, XL_checkpptype(L, 1, "R_Node"));
     int RETVAL;
-    RETVAL = self->refs;
+    RETVAL = R_node_id(self);
     XL_pushint(L, RETVAL);
     return 1;
 }
@@ -320,8 +317,35 @@ static int r_node_name_index_xl(lua_State *L)
 {
     R_Node *self = R_CPPCAST(R_Node *, XL_checkpptype(L, 1, "R_Node"));
     const char *RETVAL;
-    RETVAL = self->name;
+    RETVAL = R_node_name(self);
     lua_pushstring(L, RETVAL);
+    return 1;
+}
+
+static int r_node_position_index_xl(lua_State *L)
+{
+    R_Node *self = R_CPPCAST(R_Node *, XL_checkpptype(L, 1, "R_Node"));
+    R_V3 RETVAL;
+    RETVAL = R_node_position(self);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_node_rotation_index_xl(lua_State *L)
+{
+    R_Node *self = R_CPPCAST(R_Node *, XL_checkpptype(L, 1, "R_Node"));
+    R_Qn RETVAL;
+    RETVAL = R_node_rotation(self);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_Qn), "R_Qn", 0);
+    return 1;
+}
+
+static int r_node_scaling_index_xl(lua_State *L)
+{
+    R_Node *self = R_CPPCAST(R_Node *, XL_checkpptype(L, 1, "R_Node"));
+    R_V3 RETVAL;
+    RETVAL = R_node_scaling(self);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
     return 1;
 }
 
@@ -329,17 +353,8 @@ static int r_node_transform_index_xl(lua_State *L)
 {
     R_Node *self = R_CPPCAST(R_Node *, XL_checkpptype(L, 1, "R_Node"));
     R_M4 RETVAL;
-    RETVAL = self->transform;
+    RETVAL = R_node_transform(self);
     XL_pushnewutypeuv(L, &RETVAL, sizeof(R_M4), "R_M4", 0);
-    return 1;
-}
-
-static int r_node_child_count_index_xl(lua_State *L)
-{
-    R_Node *self = R_CPPCAST(R_Node *, XL_checkpptype(L, 1, "R_Node"));
-    int RETVAL;
-    RETVAL = self->child.count;
-    XL_pushint(L, RETVAL);
     return 1;
 }
 
@@ -347,7 +362,65 @@ static int r_node_mesh_count_index_xl(lua_State *L)
 {
     R_Node *self = R_CPPCAST(R_Node *, XL_checkpptype(L, 1, "R_Node"));
     int RETVAL;
-    RETVAL = self->mesh.count;
+    RETVAL = R_node_mesh_count(self);
+    XL_pushint(L, RETVAL);
+    return 1;
+}
+
+static int r_node_child_count_index_xl(lua_State *L)
+{
+    R_Node *self = R_CPPCAST(R_Node *, XL_checkpptype(L, 1, "R_Node"));
+    int RETVAL;
+    RETVAL = R_node_child_count(self);
+    XL_pushint(L, RETVAL);
+    return 1;
+}
+
+static int r_node_method_mesh_id_xl(lua_State *L)
+{
+    R_Node *self = R_CPPCAST(R_Node *, XL_checkpptype(L, 1, "R_Node"));
+    int index = XL_checkint(L, 2);
+    int RETVAL;
+    int count = R_node_mesh_count(self);
+    if (index > 0 && index <= count) {
+        RETVAL = R_node_mesh_id_at(self, index - 1);
+    }
+    else {
+        R_LUA_DIE(L, "Node mesh index %d out of bounds [1, %d]", index, count);
+    }
+    XL_pushint(L, RETVAL);
+    return 1;
+}
+
+static int r_node_method_mesh_xl(lua_State *L)
+{
+    R_Node *self = R_CPPCAST(R_Node *, XL_checkpptype(L, 1, "R_Node"));
+    int index = XL_checkint(L, 2);
+    R_Mesh *RETVAL;
+    int count = R_node_mesh_count(self);
+    if (index > 0 && index <= count) {
+        RETVAL = R_node_mesh_at(self, index - 1);
+        R_model_incref(R_mesh_model(RETVAL));
+    }
+    else {
+        R_LUA_DIE(L, "Node mesh index %d out of bounds [1, %d]", index, count);
+    }
+    XL_pushnewpptypeuv(L, RETVAL, "R_Mesh", 0);
+    return 1;
+}
+
+static int r_node_method_child_id_xl(lua_State *L)
+{
+    R_Node *self = R_CPPCAST(R_Node *, XL_checkpptype(L, 1, "R_Node"));
+    int index = XL_checkint(L, 2);
+    int RETVAL;
+    int count = R_node_child_count(self);
+    if (index > 0 && index <= count) {
+        RETVAL = R_node_child_id_at(self, index - 1);
+    }
+    else {
+        R_LUA_DIE(L, "Node child index %d out of bounds [1, %d]", index, count);
+    }
     XL_pushint(L, RETVAL);
     return 1;
 }
@@ -357,30 +430,15 @@ static int r_node_method_child_xl(lua_State *L)
     R_Node *self = R_CPPCAST(R_Node *, XL_checkpptype(L, 1, "R_Node"));
     int index = XL_checkint(L, 2);
     R_Node *RETVAL;
-    if (index > 0 && index <= self->child.count) {
-        RETVAL = R_node_incref(self->child.values[index - 1]);
+    int count = R_node_child_count(self);
+    if (index > 0 && index <= count) {
+        RETVAL = R_node_child_at(self, index - 1);
+        R_model_incref(R_node_model(RETVAL));
     }
     else {
-        R_LUA_DIE(L, "Node child index %d out of bounds [1, %d]",
-                  index, self->mesh.count);
+        R_LUA_DIE(L, "Node child index %d out of bounds [1, %d]", index, count);
     }
     XL_pushnewpptypeuv(L, RETVAL, "R_Node", 0);
-    return 1;
-}
-
-static int r_node_method_mesh_xl(lua_State *L)
-{
-    R_Node *self = R_CPPCAST(R_Node *, XL_checkpptype(L, 1, "R_Node"));
-    int index = XL_checkint(L, 2);
-    R_Mesh *RETVAL;
-    if (index > 0 && index <= self->mesh.count) {
-        RETVAL = R_mesh_incref(self->mesh.values[index - 1]);
-    }
-    else {
-        R_LUA_DIE(L, "Node mesh index %d out of bounds [1, %d]",
-                  index, self->mesh.count);
-    }
-    XL_pushnewpptypeuv(L, RETVAL, "R_Mesh", 0);
     return 1;
 }
 
@@ -404,7 +462,7 @@ static int r_model_refs_index_xl(lua_State *L)
 {
     R_Model *self = R_CPPCAST(R_Model *, XL_checkpptype(L, 1, "R_Model"));
     int RETVAL;
-    RETVAL = self->refs;
+    RETVAL = R_model_refs(self);
     XL_pushint(L, RETVAL);
     return 1;
 }
@@ -413,17 +471,26 @@ static int r_model_mesh_count_index_xl(lua_State *L)
 {
     R_Model *self = R_CPPCAST(R_Model *, XL_checkpptype(L, 1, "R_Model"));
     int RETVAL;
-    RETVAL = self->mesh.count;
+    RETVAL = R_model_mesh_count(self);
     XL_pushint(L, RETVAL);
     return 1;
 }
 
-static int r_model_root_node_index_xl(lua_State *L)
+static int r_model_node_count_index_xl(lua_State *L)
 {
     R_Model *self = R_CPPCAST(R_Model *, XL_checkpptype(L, 1, "R_Model"));
-    R_Node *RETVAL;
-    RETVAL = R_node_incref(self->root_node);
-    XL_pushnewpptypeuv(L, RETVAL, "R_Node", 0);
+    int RETVAL;
+    RETVAL = R_model_node_count(self);
+    XL_pushint(L, RETVAL);
+    return 1;
+}
+
+static int r_model_animation_count_index_xl(lua_State *L)
+{
+    R_Model *self = R_CPPCAST(R_Model *, XL_checkpptype(L, 1, "R_Model"));
+    int RETVAL;
+    RETVAL = R_model_animation_count(self);
+    XL_pushint(L, RETVAL);
     return 1;
 }
 
@@ -432,25 +499,44 @@ static int r_model_method_mesh_xl(lua_State *L)
     R_Model *self = R_CPPCAST(R_Model *, XL_checkpptype(L, 1, "R_Model"));
     int index = XL_checkint(L, 2);
     R_Mesh *RETVAL;
-    if (index > 0 && index <= self->mesh.count) {
-        RETVAL = R_mesh_incref(self->mesh.values[index - 1]);
+    int count = R_model_mesh_count(self);
+    if (index > 0 && index <= count) {
+        RETVAL = R_model_mesh_by_id(self, index - 1);
+        R_model_incref(R_mesh_model(RETVAL));
     }
     else {
         R_LUA_DIE(L, "Model mesh index %d out of bounds [1, %d]",
-                  index, self->mesh.count);
+                  index, count);
     }
     XL_pushnewpptypeuv(L, RETVAL, "R_Mesh", 0);
     return 1;
 }
 
-static int r_model_method_dump_xl(lua_State *L)
+static int r_model_method_node_xl(lua_State *L)
 {
     R_Model *self = R_CPPCAST(R_Model *, XL_checkpptype(L, 1, "R_Model"));
-    const char *RETVAL;
-    char *s = R_model_dump(self);
-    RETVAL = s;
-    lua_pushstring(L, RETVAL);
-    free(s);
+    int index = XL_checkint(L, 2);
+    R_Node *RETVAL;
+    int count = R_model_node_count(self);
+    if (index > 0 && index <= count) {
+        RETVAL = R_model_node_by_id(self, index - 1);
+        R_model_incref(R_node_model(RETVAL));
+    }
+    else {
+        R_LUA_DIE(L, "Model node index %d out of bounds [1, %d]",
+                  index, count);
+    }
+    XL_pushnewpptypeuv(L, RETVAL, "R_Node", 0);
+    return 1;
+}
+
+static int r_model_root_node_index_xl(lua_State *L)
+{
+    R_Model *self = R_CPPCAST(R_Model *, XL_checkpptype(L, 1, "R_Model"));
+    R_Node *RETVAL;
+    RETVAL = R_model_root_node(self);
+    R_model_incref(R_node_model(RETVAL));
+    XL_pushnewpptypeuv(L, RETVAL, "R_Node", 0);
     return 1;
 }
 
@@ -458,19 +544,22 @@ static int r_model_method_dump_xl(lua_State *L)
 extern "C" {
 #endif
 
+static int r_attribute_index_anchor_xl;
+static int r_attribute_index_xl(lua_State *L)
+{
+    return XL_index(L, "R_Attribute", &r_attribute_index_anchor_xl, 1, 2);
+}
+
+static int r_bone_index_anchor_xl;
+static int r_bone_index_xl(lua_State *L)
+{
+    return XL_index(L, "R_Bone", &r_bone_index_anchor_xl, 1, 2);
+}
+
 static int r_mesh_index_anchor_xl;
 static int r_mesh_index_xl(lua_State *L)
 {
     return XL_index(L, "R_Mesh", &r_mesh_index_anchor_xl, 1, 2);
-}
-
-static int r_meshbuffer_index_anchor_xl;
-static int r_meshbuffer_index_xl(lua_State *L)
-{
-    if (lua_isinteger(L, 2)) {
-        return r_meshbuffer_intindex_xl(L);
-    }
-    return XL_index(L, "R_MeshBuffer", &r_meshbuffer_index_anchor_xl, 1, 2);
 }
 
 static int r_model_index_anchor_xl;
@@ -485,44 +574,43 @@ static int r_node_index_xl(lua_State *L)
     return XL_index(L, "R_Node", &r_node_index_anchor_xl, 1, 2);
 }
 
-int r_meshbuffer_newindex_anchor_xl;
-static int r_meshbuffer_newindex_xl(lua_State *L)
-{
-    if (lua_isinteger(L, 2)) {
-        return r_meshbuffer_intnewindex_xl(L);
-    }
-    return XL_newindex(L, "R_MeshBuffer", &r_meshbuffer_newindex_anchor_xl, 1, 2, 3);
-}
-
-static luaL_Reg r_meshbuffer_function_registry_xl[] = {
-    {"new", r_meshbuffer_new_xl},
-    {NULL, NULL},
-};
-
 static luaL_Reg r_model_function_registry_xl[] = {
     {"from_file", r_model_from_file_xl},
     {NULL, NULL},
 };
 
-static luaL_Reg r_mesh_index_registry_xl[] = {
-    {"buffer_count", r_mesh_buffer_count_index_xl},
-    {"refs", r_mesh_refs_index_xl},
+static luaL_Reg r_attribute_index_registry_xl[] = {
+    {"count", r_attribute_count_index_xl},
+    {"divisor", r_attribute_divisor_index_xl},
+    {"model", r_attribute_model_index_xl},
+    {"name", r_attribute_name_index_xl},
+    {"type", r_attribute_type_index_xl},
+    {"type_name", r_attribute_type_name_index_xl},
     {NULL, NULL},
 };
 
-static luaL_Reg r_meshbuffer_index_registry_xl[] = {
-    {"count", r_meshbuffer_count_index_xl},
-    {"divisor", r_meshbuffer_divisor_index_xl},
-    {"name", r_meshbuffer_name_index_xl},
-    {"refs", r_meshbuffer_refs_index_xl},
-    {"type", r_meshbuffer_type_index_xl},
-    {"type_name", r_meshbuffer_type_name_index_xl},
-    {"values", r_meshbuffer_values_index_xl},
+static luaL_Reg r_bone_index_registry_xl[] = {
+    {"armature", r_bone_armature_index_xl},
+    {"armature_id", r_bone_armature_id_index_xl},
+    {"name", r_bone_name_index_xl},
+    {"node", r_bone_node_index_xl},
+    {"node_id", r_bone_node_id_index_xl},
+    {"offset", r_bone_offset_index_xl},
+    {NULL, NULL},
+};
+
+static luaL_Reg r_mesh_index_registry_xl[] = {
+    {"attribute_count", r_mesh_attribute_count_index_xl},
+    {"bone_count", r_mesh_bone_count_index_xl},
+    {"id", r_mesh_id_index_xl},
+    {"model", r_mesh_model_index_xl},
     {NULL, NULL},
 };
 
 static luaL_Reg r_model_index_registry_xl[] = {
+    {"animation_count", r_model_animation_count_index_xl},
     {"mesh_count", r_model_mesh_count_index_xl},
+    {"node_count", r_model_node_count_index_xl},
     {"refs", r_model_refs_index_xl},
     {"root_node", r_model_root_node_index_xl},
     {NULL, NULL},
@@ -530,32 +618,44 @@ static luaL_Reg r_model_index_registry_xl[] = {
 
 static luaL_Reg r_node_index_registry_xl[] = {
     {"child_count", r_node_child_count_index_xl},
+    {"id", r_node_id_index_xl},
     {"mesh_count", r_node_mesh_count_index_xl},
+    {"model", r_node_model_index_xl},
     {"name", r_node_name_index_xl},
-    {"refs", r_node_refs_index_xl},
+    {"position", r_node_position_index_xl},
+    {"rotation", r_node_rotation_index_xl},
+    {"scaling", r_node_scaling_index_xl},
     {"transform", r_node_transform_index_xl},
+    {NULL, NULL},
+};
+
+static luaL_Reg r_attribute_method_registry_xl[] = {
+    {"__gc", r_attribute_method_gc_xl},
+    {"__index", r_attribute_index_xl},
+    {"gl_buffer_data", r_attribute_method_gl_buffer_data_xl},
+    {"gl_vertex_attrib_pointer", r_attribute_method_gl_vertex_attrib_pointer_xl},
+    {NULL, NULL},
+};
+
+static luaL_Reg r_bone_method_registry_xl[] = {
+    {"__gc", r_bone_method_gc_xl},
+    {"__index", r_bone_index_xl},
     {NULL, NULL},
 };
 
 static luaL_Reg r_mesh_method_registry_xl[] = {
     {"__gc", r_mesh_method_gc_xl},
     {"__index", r_mesh_index_xl},
-    {"buffer", r_mesh_method_buffer_xl},
-    {NULL, NULL},
-};
-
-static luaL_Reg r_meshbuffer_method_registry_xl[] = {
-    {"__gc", r_meshbuffer_method_gc_xl},
-    {"__index", r_meshbuffer_index_xl},
-    {"__newindex", r_meshbuffer_newindex_xl},
+    {"attribute", r_mesh_method_attribute_xl},
+    {"bone", r_mesh_method_bone_xl},
     {NULL, NULL},
 };
 
 static luaL_Reg r_model_method_registry_xl[] = {
     {"__gc", r_model_method_gc_xl},
     {"__index", r_model_index_xl},
-    {"dump", r_model_method_dump_xl},
     {"mesh", r_model_method_mesh_xl},
+    {"node", r_model_method_node_xl},
     {NULL, NULL},
 };
 
@@ -563,27 +663,24 @@ static luaL_Reg r_node_method_registry_xl[] = {
     {"__gc", r_node_method_gc_xl},
     {"__index", r_node_index_xl},
     {"child", r_node_method_child_xl},
+    {"child_id", r_node_method_child_id_xl},
     {"mesh", r_node_method_mesh_xl},
-    {NULL, NULL},
-};
-
-static luaL_Reg r_meshbuffer_newindex_registry_xl[] = {
-    {"values", r_meshbuffer_values_newindex_xl},
+    {"mesh_id", r_node_method_mesh_id_xl},
     {NULL, NULL},
 };
 
 int R_lua_model_init(lua_State *L)
 {
+    XL_initmetatable(L, "R_Attribute", r_attribute_method_registry_xl);
+    XL_initmetatable(L, "R_Bone", r_bone_method_registry_xl);
     XL_initmetatable(L, "R_Mesh", r_mesh_method_registry_xl);
-    XL_initmetatable(L, "R_MeshBuffer", r_meshbuffer_method_registry_xl);
     XL_initmetatable(L, "R_Model", r_model_method_registry_xl);
     XL_initmetatable(L, "R_Node", r_node_method_registry_xl);
+    XL_initindextable(L, &r_attribute_index_anchor_xl, r_attribute_index_registry_xl);
+    XL_initindextable(L, &r_bone_index_anchor_xl, r_bone_index_registry_xl);
     XL_initindextable(L, &r_mesh_index_anchor_xl, r_mesh_index_registry_xl);
-    XL_initindextable(L, &r_meshbuffer_index_anchor_xl, r_meshbuffer_index_registry_xl);
     XL_initindextable(L, &r_model_index_anchor_xl, r_model_index_registry_xl);
     XL_initindextable(L, &r_node_index_anchor_xl, r_node_index_registry_xl);
-    XL_initnewindextable(L, &r_meshbuffer_newindex_anchor_xl, r_meshbuffer_newindex_registry_xl);
-    XL_initfunctions(L, r_meshbuffer_function_registry_xl, "R", "MeshBuffer", (const char *)NULL);
     XL_initfunctions(L, r_model_function_registry_xl, "R", "Model", (const char *)NULL);
     return 0;
 }

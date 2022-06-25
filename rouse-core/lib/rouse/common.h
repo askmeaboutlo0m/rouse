@@ -123,6 +123,8 @@ uint32_t R_magic_hash(const char *type);
 
 #   define R_MAGIC_POISONED_NUMBER 0xdeaddeadu
 
+#   define R_MAGIC_INIT_POISON R_MAGIC_POISONED_NUMBER,
+
 #   define R_MAGIC_POISON(TYPE, EXPR) do { \
         R_MAGIC_CHECK(TYPE, EXPR); \
         (EXPR)->MAGIC = R_MAGIC_POISONED_NUMBER; \
@@ -135,6 +137,7 @@ uint32_t R_magic_hash(const char *type);
 #   define R_MAGIC_INIT(TYPE)         /* nothing */
 #   define R_MAGIC_SET(TYPE, EXPR)    R_NOOP()
 #   define R_MAGIC_CHECK(TYPE, EXPR)  R_NOOP()
+#   define R_MAGIC_INIT_POISON        /* nothing */
 #   define R_MAGIC_POISON(TYPE, EXPR) R_NOOP()
 #   define R_UNUSED_UNLESS_MAGIC      R_UNUSED
 #endif

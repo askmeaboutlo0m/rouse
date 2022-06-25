@@ -32,6 +32,7 @@
 #include "../common.h"
 #include "../geom.h"
 #include "../parse.h"
+#include "../anim/ease.h"
 #include "../model.h"
 #include "gl.h"
 #include "binder.h"
@@ -201,75 +202,46 @@ void R_binder_draw(R_Binder *binder, void *subject)
     binder->draw(subject, binder->arg);
 }
 
-static void draw_mesh(R_MeshBuffer *mb)
+static void draw_mesh(R_Attribute *attr)
 {
-    R_MAGIC_CHECK(R_MeshBuffer, mb);
-    R_debug("draw %d indexed triangles", mb->count);
+    int count = R_attribute_count(attr);
+    R_debug("draw %d indexed triangles", count);
     R_GL_CLEAR_ERROR();
-    R_GL(glDrawElements, GL_TRIANGLES, mb->count, GL_UNSIGNED_SHORT, NULL);
+    R_GL(glDrawElements, GL_TRIANGLES, count, GL_UNSIGNED_SHORT, NULL);
 }
 
 void R_binder_draw_mesh_by_index(void *subject, R_UserData arg)
 {
-    draw_mesh(R_mesh_buffer_by_index(subject, arg.i));
+    draw_mesh(R_mesh_attribute_at(subject, arg.i));
 }
 
 void R_binder_draw_mesh_by_name(void *subject, R_UserData arg)
 {
-    draw_mesh(R_mesh_buffer_by_name(subject, arg.data));
+    draw_mesh(R_mesh_attribute_by_name(subject, arg.data));
 }
 
 
-static void bind_index_buffer(R_MeshBuffer *mb, unsigned int buffer)
+static void bind_index_buffer(R_Attribute *attr, unsigned int buffer)
 {
-    R_MAGIC_CHECK(R_MeshBuffer, mb);
-    if (mb->type != R_BUFFER_TYPE_USHORT) {
-        R_die("index mesh buffer '%s' type %d (ushort) != %d",
-              mb->name ? mb->name : "", R_BUFFER_TYPE_USHORT, mb->type);
-    }
-    R_debug("bind index buffer '%s'", mb->name ? mb->name : "");
+    R_AttributeType type = R_attribute_type(attr);
+    R_assert(type == R_ATTRIBUTE_TYPE_USHORT, "index buffer must be ushort");
+    R_debug("bind index buffer '%s'",
+            R_attribute_name(attr) ? R_attribute_name(attr) : "");
     R_GL_CLEAR_ERROR();
     R_GL(glBindBuffer, GL_ELEMENT_ARRAY_BUFFER, buffer);
-    size_t bufsize = sizeof(*mb->ushorts) * R_int2size(mb->count);
-    R_GL(glBufferData, GL_ELEMENT_ARRAY_BUFFER, R_size2ptrdiff(bufsize),
-                       mb->ushorts, GL_STATIC_DRAW);
+    R_attribute_gl_buffer_data(attr, GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
 }
 
-static void bind_vertex_buffer(R_MeshBuffer *mb, unsigned int buffer, int index)
+static void bind_vertex_buffer(R_Attribute *attr, unsigned int buffer,
+                               int index)
 {
-    R_MAGIC_CHECK(R_MeshBuffer, mb);
-    unsigned int type;
-    void         *values;
-    size_t       size;
-
-    switch (mb->type) {
-        case R_BUFFER_TYPE_USHORT:
-            R_debug("bind ushort buffer '%s' to vertex attribute %d",
-                    mb->name ? mb->name : "", index);
-            type   = GL_UNSIGNED_SHORT;
-            values = mb->ushorts;
-            size   = sizeof(*mb->ushorts);
-            break;
-        case R_BUFFER_TYPE_FLOAT:
-            R_debug("bind float buffer '%s' to vertex attribute %d",
-                    mb->name ? mb->name : "", index);
-            type   = GL_FLOAT;
-            values = mb->floats;
-            size   = sizeof(*mb->floats);
-            break;
-        default:
-            R_die("Unknown buffer type: %d", mb->type);
-    }
-
     R_GL(glBindBuffer, GL_ARRAY_BUFFER, buffer);
-    size_t bufsize = size * R_int2size(mb->count);
-    R_GL(glBufferData, GL_ARRAY_BUFFER, R_size2ptrdiff(bufsize),
-                       values, GL_STATIC_DRAW);
-    R_GL(glVertexAttribPointer, R_int2uint(index), mb->divisor,
-                                type, GL_FALSE, 0, NULL);
+    R_attribute_gl_buffer_data(attr, GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
+    R_attribute_gl_vertex_attrib_pointer(
+        attr, R_int2uint(index), GL_FALSE, 0, NULL);
 }
 
-static void bind_mesh_buffer(R_MeshBuffer *mb, unsigned int buffer, int index)
+static void bind_mesh_buffer(R_Attribute *mb, unsigned int buffer, int index)
 {
     if (index < 0) {
         bind_index_buffer(mb, buffer);
@@ -282,11 +254,12 @@ static void bind_mesh_buffer(R_MeshBuffer *mb, unsigned int buffer, int index)
 void R_bind_mesh_buffer_by_index(void *subject, R_UserData user,
                                  unsigned int buffer, int index)
 {
-    bind_mesh_buffer(R_mesh_buffer_by_index(subject, user.i), buffer, index);
+    bind_mesh_buffer(R_mesh_attribute_at(subject, user.i), buffer, index);
 }
 
 void R_bind_mesh_buffer_by_name(void *subject, R_UserData user,
                                 unsigned int buffer, int index)
 {
-    bind_mesh_buffer(R_mesh_buffer_by_name(subject, user.data), buffer, index);
+    bind_mesh_buffer(R_mesh_attribute_by_name(subject, user.data),
+                     buffer, index);
 }

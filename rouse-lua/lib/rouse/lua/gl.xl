@@ -124,21 +124,6 @@ FUNCTION void R.GL.disable_all_vertex_attrib_arrays()
 END
 
 
-FUNCTION void R.GL.buffer_data(R_MeshBuffer *mbuf, unsigned int target)
-    int argc = lua_gettop(L);
-    unsigned int usage = argc < 3 ? GL_STATIC_DRAW : XL_checkuint(L, 3);
-    R_gl_mesh_buffer_data(mbuf, target, usage);
-END
-
-FUNCTION void R.GL.vertex_attrib_pointer(R_MeshBuffer *mbuf, unsigned int index)
-    int argc       = lua_gettop(L);
-    int normalized = argc >= 3 && XL_checkbool(L, 3);
-    int stride     = argc < 4 ? 0 : XL_checkint(L, 4);
-    R_gl_mesh_buffer_vertex_attrib_pointer(
-        mbuf, index, normalized ? GL_TRUE : GL_FALSE, stride, NULL);
-END
-
-
 FUNCTION void R.GL.draw_arrays(unsigned int mode, int first, int count)
     R_GL_CLEAR_ERROR();
     R_GL(glDrawArrays, mode, first, count);

@@ -58,7 +58,6 @@ typedef struct SceneData {
     unsigned int    texture;
     double          seconds;
     R_Model         *model;
-    R_M4            global_inverse_transform;
     SceneNode       *nodes;
     unsigned int    program;
     int             u_pv, u_sampler, u_bones;
@@ -143,16 +142,6 @@ static void on_tick(R_Scene *scene, R_UNUSED bool rendered)
 }
 
 
-static void dump_m4(const char *title, R_M4 m)
-{
-    R_info("%s (%f, %f, %f, %f,", title, m.m00, m.m01, m.m02, m.m03);
-    R_info("%s  %f, %f, %f, %f,", title, m.m10, m.m11, m.m12, m.m13);
-    R_info("%s  %f, %f, %f, %f,", title, m.m20, m.m21, m.m22, m.m23);
-    R_info("%s  %f, %f, %f, %f)", title, m.m30, m.m31, m.m32, m.m33);
-}
-
-static bool d;
-
 static R_M4 m4_lerp(R_M4 from, R_M4 to, float t)
 {
     R_V4 from_position;
@@ -175,212 +164,121 @@ static R_M4 m4_lerp(R_M4 from, R_M4 to, float t)
     return m;
 }
 
-static R_V3 get_position_key_frame(R_NodeChannel *nc, double t)
-{
-    int count = nc->position_key_frame.count;
-    R_PositionKeyFrame *pkfs = nc->position_key_frame.values;
-    for (int i = count - 1; i >= 0; --i) {
-        R_PositionKeyFrame *pkf  = &pkfs[i];
-        double             ticks = pkf->ticks;
-        if (ticks <= t) {
-            int next = i + 1;
-            if (next < count) {
-                R_PositionKeyFrame *next_pkf = &pkfs[next];
-                double t1 = t - ticks;
-                double t2 = next_pkf->ticks - ticks;
-                return R_v3_lerp(pkf->value, next_pkf->value,
-                                 R_double2float(t1 / t2));
-            }
-            else {
-                return pkf->value;
-            }
-        }
-    }
-    return count == 0 ? R_v3_zero() : pkfs[0].value;
-}
-
-static R_Qn get_rotation_key_frame(R_NodeChannel *nc, double t)
-{
-    int count = nc->rotation_key_frame.count;
-    R_RotationKeyFrame *rkfs = nc->rotation_key_frame.values;
-    for (int i = count - 1; i >= 0; --i) {
-        R_RotationKeyFrame *rkf  = &rkfs[i];
-        double             ticks = rkf->ticks;
-        if (ticks <= t) {
-            int next = i + 1;
-            if (next < count) {
-                R_RotationKeyFrame *next_rkf = &rkfs[next];
-                double t1 = t - ticks;
-                double t2 = next_rkf->ticks - ticks;
-                return R_qn_slerp(rkf->value, next_rkf->value,
-                                  R_double2float(t1 / t2));
-            }
-            else {
-                return rkf->value;
-            }
-        }
-    }
-    return count == 0 ? R_qn_identity() : rkfs[0].value;
-}
-
-static R_V3 get_scaling_key_frame(R_NodeChannel *nc, double t)
-{
-    int count = nc->scaling_key_frame.count;
-    R_ScalingKeyFrame *skfs = nc->scaling_key_frame.values;
-    for (int i = count - 1; i >= 0; --i) {
-        R_ScalingKeyFrame *skf  = &skfs[i];
-        double             ticks = skf->ticks;
-        if (ticks <= t) {
-            int next = i + 1;
-            if (next < count) {
-                R_ScalingKeyFrame *next_skf = &skfs[next];
-                double t1 = t - ticks;
-                double t2 = next_skf->ticks - ticks;
-                return R_v3_lerp(skf->value, next_skf->value,
-                                 R_double2float(t1 / t2));
-            }
-            else {
-                return skf->value;
-            }
-        }
-    }
-    return count == 0 ? R_v3_zero() : skfs[0].value;
-}
-
 static R_M4 get_animation_transform(R_Animation *anim, R_Node *node, double seconds)
 {
-    double t = fmod(seconds * anim->ticks_per_second, anim->duration);
-    for (int i = 0; i < anim->node_channel.count; ++i) {
-        R_NodeChannel *nc = &anim->node_channel.values[i];
-        if (nc->node_id == node->id) {
-            if (!d) R_info("Node %d '%s'", node->id, node->name);
-            R_V3 position = get_position_key_frame(nc, t);
-            R_Qn rotation = get_rotation_key_frame(nc, t);
-            R_V3 scaling  = get_scaling_key_frame(nc, t);
-            if (!d) R_info("position %f %f %f", position.x, position.y, position.z);
-            if (!d) R_info("rotation %f %f %f %f", rotation.x, rotation.y, rotation.z, rotation.w);
-            if (!d) R_info("scaling  %f %f %f", scaling.x, scaling.y, scaling.z);
-            R_M4 m = R_m4_identity();
-            m = R_m4_translate_to(m, position);
-            m = R_qn_rotate(m, rotation);
-            m = R_m4_scale_xyz(m, scaling);
-            return m;
-        }
+
+    R_NodeChannel *nc =
+        R_animation_search_node_channel_by_node_id(anim, R_node_id(node));
+    if (nc) {
+        double ticks = fmod(R_animation_seconds_to_ticks(anim, seconds),
+                            R_animation_duration_ticks(anim));
+        R_V3 position = R_node_channel_position_at(nc, ticks, NULL, R_user_null());
+        R_Qn rotation = R_node_channel_rotation_at(nc, ticks, NULL, R_user_null());
+        R_V3 scaling  = R_node_channel_scaling_at (nc, ticks, NULL, R_user_null());
+        R_M4 m = R_m4_identity();
+        m = R_m4_translate_to(m, position);
+        m = R_qn_rotate(m, rotation);
+        m = R_m4_scale_xyz(m, scaling);
+        return m;
     }
-    if (!d) R_info("Node %d '%s' no aanim", node->id, node->name);
-    return node->transform;
+    else {
+        return R_node_transform(node);
+    }
 }
 
 static void apply_bone_pose(SceneData *sd, int node_id, R_M4 parent_transform)
 {
     R_Node *node = R_model_node_by_id(sd->model, node_id);
-    R_assert(node->id == node_id, "node id equal");
-    if (!d) {
-        R_info("Node %d %s", node->id, node->name);
-    }
+    R_assert(R_node_id(node) == node_id, "node id equal");
     // R_M4 current_local_transform = sd->model->animation.count == 0
     //                              ? node->transform
     //                              : get_animation_transform(
     //                                     sd->model->animation.values[1],
     //                                     node, sd->seconds);
     R_M4 current_local_transform = m4_lerp(
-        get_animation_transform(sd->model->animation.values[0], node, sd->seconds),
-        get_animation_transform(sd->model->animation.values[1], node, sd->seconds),
+        get_animation_transform(R_model_animation_by_id(sd->model, 0), node, sd->seconds),
+        get_animation_transform(R_model_animation_by_id(sd->model, 1), node, sd->seconds),
         0.5f);
     R_M4 current_transform = R_m4_mul(parent_transform, current_local_transform);
     R_M4 animated_transform = R_m4_mul(current_transform, sd->nodes[node_id].offset);
     sd->nodes[node_id].animated_transform = animated_transform;
-    for (int i = 0; i < node->child_id.count; ++i) {
-        apply_bone_pose(sd, node->child_id.values[i], current_transform);
+    for (int i = 0; i < R_node_child_count(node); ++i) {
+        apply_bone_pose(sd, R_node_child_id_at(node, i), current_transform);
     }
 }
 
-static void bind_bones(SceneData *sd, int bone_count,
-                       R_Bone *bones[R_STATIC(bone_count)], R_M4 c)
+static void bind_bones(SceneData *sd, R_Mesh *mesh, R_M4 c)
 {
     int armature_id = -1;
+    int bone_count  = R_mesh_bone_count(mesh);
     for (int i = 0; i < bone_count; ++i) {
-        SceneNode *sn = &sd->nodes[bones[i]->node_id];
-        sn->offset = bones[i]->offset;
+        R_Bone *bone = R_mesh_bone_at(mesh, i);
+        SceneNode *sn = &sd->nodes[R_bone_node_id(bone)];
+        sn->offset = R_bone_offset(bone);
         sn->animated_transform = c;
+        int bone_armature_id = R_bone_armature_id(bone);
         if (armature_id == -1) {
-            armature_id = bones[i]->armature_id;
+            armature_id = bone_armature_id;
         }
-        else if (armature_id != bones[i]->armature_id){
-            R_die("Multiple armatures: %d != %d", armature_id, bones[i]->armature_id);
+        else if (armature_id != bone_armature_id){
+            R_die("Bone armature %d != %d", armature_id, bone_armature_id);
         }
-    }
-
-    if (!d) {
-        dump_m4("c", c);
     }
 
     apply_bone_pose(sd, armature_id, R_m4_identity());
 
-    if (!d) {
-        R_M4 a = sd->nodes[bones[0]->node_id].animated_transform;
-        dump_m4("a", a);
-    }
-
     for (int i = 0; i < bone_count; ++i) {
-        // R_Node *node = sd->nodes[bone->node_id].node;
-        // R_M4   a     = sd->nodes[bone->armature_id].bind_transform;
-        // R_M4   m     = sd->nodes[bone->node_id].bind_transform;
-        //R_M4   m     = R_m4_mul(a, c);
-        // R_M4 m = R_m4_mul(c, sd->nodes[bone->node_id].animated_transform);
-        R_M4 m = sd->nodes[bones[i]->node_id].animated_transform;
+        R_Bone *bone = R_mesh_bone_at(mesh, i);
+        R_M4 m = sd->nodes[R_bone_node_id(bone)].animated_transform;
         memcpy(&sd->bones[i * 16], m.raw, sizeof(float[16]));
     }
     R_GL(glUniformMatrix4fv, sd->u_bones, NBONES, GL_FALSE, sd->bones);
-    d = true;
 }
 
-static int bind_index(unsigned int glbuf, R_MeshBuffer *mbuf)
+static int bind_index(unsigned int glbuf, R_Attribute *attr)
 {
     R_GL(glBindBuffer, GL_ELEMENT_ARRAY_BUFFER, glbuf);
-    R_gl_mesh_buffer_data(mbuf, GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
-    return mbuf->count;
+    R_attribute_gl_buffer_data(attr, GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
+    return R_attribute_count(attr);
 }
 
-static void bind_vertex(unsigned int glbuf, R_MeshBuffer *mbuf,
+static void bind_vertex(unsigned int glbuf, R_Attribute *attr,
                         unsigned int index)
 {
     R_GL(glBindBuffer, GL_ARRAY_BUFFER, glbuf);
-    R_gl_mesh_buffer_data(mbuf, GL_ARRAY_BUFFER, GL_STATIC_DRAW);
-    R_gl_mesh_buffer_vertex_attrib_pointer(mbuf, index, GL_FALSE, 0, NULL);
+    R_attribute_gl_buffer_data(attr, GL_ARRAY_BUFFER, GL_STATIC_DRAW);
+    R_attribute_gl_vertex_attrib_pointer(attr, index, GL_FALSE, 0, NULL);
 }
 
 static void render_node(SceneData *sd, R_Node *node, R_M4 parent_transform)
 {
-    R_M4 transform = R_m4_mul(parent_transform, node->transform);
+    R_M4 transform = R_m4_mul(parent_transform, R_node_transform(node));
 
-    int mesh_count = node->mesh_id.count;
+    int mesh_count = R_node_mesh_count(node);
     if (mesh_count > 0) {
         // R_GL(glUniformMatrix4fv, sd->u_m, 1, GL_FALSE, R_M4_GL(model));
-        int *mesh_ids = node->mesh_id.values;
         for (int i = 0; i < mesh_count; ++i) {
-            R_Mesh *mesh = R_model_mesh_by_id(sd->model, mesh_ids[i]);
-            bind_bones(sd, mesh->bone.count, mesh->bone.values, transform);
+            R_Mesh *mesh = R_node_mesh_at(node, i);
+            bind_bones(sd, mesh, transform);
             int count = bind_index(sd->buffers[BUFFER_INDEX_INDICES],
-                                   R_mesh_buffer_by_name(mesh, "indices"));
+                                   R_mesh_attribute_by_name(mesh, "indices"));
             bind_vertex(sd->buffers[BUFFER_INDEX_VERTICES],
-                        R_mesh_buffer_by_name(mesh, "vertices"), 0);
+                        R_mesh_attribute_by_name(mesh, "vertices"), 0);
             bind_vertex(sd->buffers[BUFFER_INDEX_NORMALS],
-                        R_mesh_buffer_by_name(mesh, "normals"), 1);
+                        R_mesh_attribute_by_name(mesh, "normals"), 1);
             bind_vertex(sd->buffers[BUFFER_INDEX_UVS],
-                        R_mesh_buffer_by_name(mesh, "uv0"), 2);
+                        R_mesh_attribute_by_name(mesh, "uv0"), 2);
             bind_vertex(sd->buffers[BUFFER_INDEX_BONES],
-                        R_mesh_buffer_by_name(mesh, "bones"), 3);
+                        R_mesh_attribute_by_name(mesh, "bones"), 3);
             bind_vertex(sd->buffers[BUFFER_INDEX_WEIGHTS],
-                        R_mesh_buffer_by_name(mesh, "weights"), 4);
+                        R_mesh_attribute_by_name(mesh, "weights"), 4);
             R_GL(glDrawElements, GL_TRIANGLES, count, GL_UNSIGNED_SHORT, NULL);
         }
     }
 
-    R_Model *model         = sd->model;
-    int     child_id_count = node->child_id.count;
+    int child_id_count = R_node_child_count(node);
     for (int i = 0; i < child_id_count; ++i) {
-        render_node(sd, R_model_node_child(model, node, i), transform);
+        render_node(sd, R_node_child_at(node, i), transform);
     }
 }
 
@@ -423,6 +321,7 @@ static void on_free(R_Scene *scene)
     R_GL(glDeleteBuffers, BUFFER_INDEX_COUNT, sd->buffers);
     R_gl_program_free(sd->program);
     R_gl_texture_free(sd->texture);
+    free(sd->nodes);
     R_model_decref(sd->model);
     R_first_person_free(sd->fp);
     R_camera_free(sd->camera);
@@ -451,16 +350,14 @@ static R_Scene *init_scene(R_UNUSED void *user)
     R_TextureOptions texture_options = R_texture_options();
     sd->texture   = R_gl_texture_new("test/data/cuboid.png", &texture_options);
     sd->model     = R_model_from_file("test/data/cuboid.rmodel");
+    sd->seconds   = 0.0;
 
-    sd->seconds                  = 0.0;
-    sd->global_inverse_transform = R_m4_inv(sd->model->node.values[0]->transform);
-
-    sd->nodes = R_ANEW(sd->nodes, R_int2size(sd->model->node.count));
-    for (int i = 0; i < sd->model->node.count; ++i) {
+    int node_count = R_model_node_count(sd->model);
+    sd->nodes      = R_ANEW(sd->nodes, R_int2size(node_count));
+    for (int i = 0; i < node_count; ++i) {
         sd->nodes[i].offset             = R_m4_identity();
         sd->nodes[i].animated_transform = R_m4_identity();
     }
-    // char *c = R_model_dump(sd->model); puts(c); free(c);
 
     sd->program   = R_gl_program_new("<glsl/skel.vert", "<glsl/skel.frag");
     // sd->u_m       = R_gl_uniform_location(sd->program, "u_m");

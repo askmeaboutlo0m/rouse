@@ -12,12 +12,18 @@
 
 #define NWEIGHTS 3
 
-#define DEBUG(...)                    \
-    do {                              \
-        fputs("DEBUG: ", stderr);     \
-        fprintf(stderr, __VA_ARGS__); \
-        fputc('\n', stderr);          \
-    } while (0)
+#ifdef NDEBUG
+#    define DEBUG(...) \
+        do {           \
+        } while (0)
+#else
+#    define DEBUG(...)                    \
+        do {                              \
+            fputs("DEBUG: ", stderr);     \
+            fprintf(stderr, __VA_ARGS__); \
+            fputc('\n', stderr);          \
+        } while (0)
+#endif
 
 #define WARN(...)                     \
     do {                              \
@@ -340,6 +346,9 @@ struct Context {
         if (mesh->mNumBones > 0) {
             pack_bone_buffers(mesh);
             pack_bones(mesh);
+        }
+        else {
+            pack_ushort(mesh->mNumBones);
         }
     }
 

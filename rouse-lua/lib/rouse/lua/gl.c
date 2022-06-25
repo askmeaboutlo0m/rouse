@@ -174,28 +174,6 @@ static int r_gl_disable_all_vertex_attrib_arrays_xl(lua_State *L)
     return 0;
 }
 
-static int r_gl_buffer_data_xl(lua_State *L)
-{
-    R_MeshBuffer *mbuf = R_CPPCAST(R_MeshBuffer *, XL_checkpptype(L, 1, "R_MeshBuffer"));
-    unsigned int target = XL_checkuint(L, 2);
-    int argc = lua_gettop(L);
-    unsigned int usage = argc < 3 ? GL_STATIC_DRAW : XL_checkuint(L, 3);
-    R_gl_mesh_buffer_data(mbuf, target, usage);
-    return 0;
-}
-
-static int r_gl_vertex_attrib_pointer_xl(lua_State *L)
-{
-    R_MeshBuffer *mbuf = R_CPPCAST(R_MeshBuffer *, XL_checkpptype(L, 1, "R_MeshBuffer"));
-    unsigned int index = XL_checkuint(L, 2);
-    int argc       = lua_gettop(L);
-    int normalized = argc >= 3 && XL_checkbool(L, 3);
-    int stride     = argc < 4 ? 0 : XL_checkint(L, 4);
-    R_gl_mesh_buffer_vertex_attrib_pointer(
-        mbuf, index, normalized ? GL_TRUE : GL_FALSE, stride, NULL);
-    return 0;
-}
-
 static int r_gl_draw_arrays_xl(lua_State *L)
 {
     unsigned int mode = XL_checkuint(L, 1);
@@ -395,7 +373,6 @@ static luaL_Reg r_gl_function_registry_xl[] = {
     {"bind_texture", r_gl_bind_texture_xl},
     {"bind_texture2d", r_gl_bind_texture2d_xl},
     {"blend_func", r_gl_blend_func_xl},
-    {"buffer_data", r_gl_buffer_data_xl},
     {"clear", r_gl_clear_xl},
     {"cull_face", r_gl_cull_face_xl},
     {"depth_func", r_gl_depth_func_xl},
@@ -412,7 +389,6 @@ static luaL_Reg r_gl_function_registry_xl[] = {
     {"uniform_1i", r_gl_uniform_1i_xl},
     {"uniform_2f", r_gl_uniform_2f_xl},
     {"uniform_m4", r_gl_uniform_m4_xl},
-    {"vertex_attrib_pointer", r_gl_vertex_attrib_pointer_xl},
     {NULL, NULL},
 };
 

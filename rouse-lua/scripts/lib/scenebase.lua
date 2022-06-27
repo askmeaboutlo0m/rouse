@@ -31,7 +31,7 @@ function SceneBase:init(args)
     self.frame_renderer = args.frame_renderer
     self.frame_buffer   = args.frame_buffer
     self.root           = R.Sprite.new("root")
-    self.clear_color    = R.Nvg.rgbaf(1.0, 1.0, 1.0, 1.0)
+    self.clear_color    = args.clear_color or R.Nvg.rgbaf(1.0, 1.0, 1.0, 1.0)
     self.sprites        = {}
     R.Viewport.set_window(self.width, self.height)
     self:init_render_function()

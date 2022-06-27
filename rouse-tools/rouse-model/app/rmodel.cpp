@@ -1,3 +1,4 @@
+#include <climits>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -10,6 +11,7 @@
 
 #define RMODEL_MAGIC "rmodel2"
 
+#define NBONES   20
 #define NWEIGHTS 3
 
 #ifdef NDEBUG
@@ -98,14 +100,24 @@ struct Context {
 
     void pack_uchar(unsigned int value)
     {
-        unsigned char uchar = value & 0xffu;
-        fwrite(&uchar, 1, 1, m_fp);
+        if (value <= UINT8_MAX) {
+            unsigned char uchar = static_cast<unsigned char>(value & 0xffu);
+            fwrite(&uchar, 1, 1, m_fp);
+        }
+        else {
+            DIE("Value %u too large for 8 bit byte", value);
+        }
     }
 
     void pack_ushort(unsigned int value)
     {
-        pack_uchar(value);
-        pack_uchar(value >> 8);
+        if (value <= UINT16_MAX) {
+            pack_uchar(value & 0xffu);
+            pack_uchar(value >> 8);
+        }
+        else {
+            DIE("Value %u too large for 16 bit unsigned short", value);
+        }
     }
 
     void pack_lstring(const char *value, size_t length)
@@ -555,6 +567,8 @@ int main(int argc, char **argv)
                        | aiProcess_PopulateArmatureData  //
                        | aiProcess_RemoveComponent       //
                        | aiProcess_SortByPType           //
+                       | aiProcess_SplitByBoneCount      //
+                       | aiProcess_SplitLargeMeshes      //
                        | aiProcess_ValidateDataStructure;
 
     Assimp::Importer importer;
@@ -569,6 +583,11 @@ int main(int argc, char **argv)
 
     importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE,
                                 aiPrimitiveType_POINT | aiPrimitiveType_LINE);
+
+    importer.SetPropertyInteger(AI_CONFIG_PP_SBBC_MAX_BONES, NBONES);
+
+    importer.SetPropertyInteger(AI_CONFIG_PP_SLM_VERTEX_LIMIT, UINT16_MAX);
+    importer.SetPropertyInteger(AI_CONFIG_PP_SLM_TRIANGLE_LIMIT, UINT16_MAX);
 
     const char *path = argv[1];
     DEBUG("Path '%s'", path);

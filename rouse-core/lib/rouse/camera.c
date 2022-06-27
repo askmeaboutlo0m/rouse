@@ -155,3 +155,35 @@ void R_first_person_apply(R_FirstPerson *fp, R_Camera *camera)
     R_first_person_directions(fp, &fv, NULL, &uv);
     camera->view = R_m4_look_at(fp->pos, R_v3_add(fp->pos, fv), uv);
 }
+
+
+R_ThirdPerson *R_third_person_new(R_V3 pos, float yaw, float pitch, float roll)
+{
+    R_ThirdPerson *tp = R_NEW_INIT_STRUCT(tp, R_ThirdPerson,
+            R_MAGIC_INIT(R_ThirdPerson) pos, yaw, pitch, roll);
+    R_MAGIC_CHECK(R_ThirdPerson, tp);
+    return tp;
+}
+
+void R_third_person_free(R_ThirdPerson *tp)
+{
+    if (tp) {
+        R_MAGIC_POISON(R_ThirdPerson, tp);
+        free(tp);
+    }
+}
+
+void R_third_person_apply(R_ThirdPerson *tp, R_Camera *camera)
+{
+    static const R_V3 X = {{1.0f, 0.0f, 0.0}};
+    static const R_V3 Y = {{0.0f, 1.0f, 0.0}};
+    static const R_V3 Z = {{0.0f, 0.0f, 1.0}};
+    R_MAGIC_CHECK(R_ThirdPerson, tp);
+    R_MAGIC_CHECK(R_Camera, camera);
+    R_M4 view    = glms_mat4_identity();
+    view         = glms_rotate(view, tp->pitch, X);
+    view         = glms_rotate(view, tp->yaw,   Y);
+    view         = glms_rotate(view, tp->roll,  Z);
+    view         = glms_translate(view, glms_vec3_flipsign(tp->pos));
+    camera->view = view;
+}

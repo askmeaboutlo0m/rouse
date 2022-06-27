@@ -358,6 +358,15 @@ static int r_node_transform_index_xl(lua_State *L)
     return 1;
 }
 
+static int r_node_child_meshes_index_xl(lua_State *L)
+{
+    R_Node *self = R_CPPCAST(R_Node *, XL_checkpptype(L, 1, "R_Node"));
+    bool RETVAL;
+    RETVAL = R_node_child_meshes(self);
+    lua_pushboolean(L, RETVAL);
+    return 1;
+}
+
 static int r_node_mesh_count_index_xl(lua_State *L)
 {
     R_Node *self = R_CPPCAST(R_Node *, XL_checkpptype(L, 1, "R_Node"));
@@ -463,6 +472,15 @@ static int r_model_refs_index_xl(lua_State *L)
     R_Model *self = R_CPPCAST(R_Model *, XL_checkpptype(L, 1, "R_Model"));
     int RETVAL;
     RETVAL = R_model_refs(self);
+    XL_pushint(L, RETVAL);
+    return 1;
+}
+
+static int r_model_id_index_xl(lua_State *L)
+{
+    R_Model *self = R_CPPCAST(R_Model *, XL_checkpptype(L, 1, "R_Model"));
+    int RETVAL;
+    RETVAL = R_model_id(self);
     XL_pushint(L, RETVAL);
     return 1;
 }
@@ -609,6 +627,7 @@ static luaL_Reg r_mesh_index_registry_xl[] = {
 
 static luaL_Reg r_model_index_registry_xl[] = {
     {"animation_count", r_model_animation_count_index_xl},
+    {"id", r_model_id_index_xl},
     {"mesh_count", r_model_mesh_count_index_xl},
     {"node_count", r_model_node_count_index_xl},
     {"refs", r_model_refs_index_xl},
@@ -618,6 +637,7 @@ static luaL_Reg r_model_index_registry_xl[] = {
 
 static luaL_Reg r_node_index_registry_xl[] = {
     {"child_count", r_node_child_count_index_xl},
+    {"child_meshes", r_node_child_meshes_index_xl},
     {"id", r_node_id_index_xl},
     {"mesh_count", r_node_mesh_count_index_xl},
     {"model", r_node_model_index_xl},

@@ -173,14 +173,15 @@ INDEX <NEW>R_Model *model
     RETVAL = R_model_incref(R_node_model(self));
 END
 
-INDEX int        id          = R_node_id
-INDEX const char *name       = R_node_name
-INDEX R_V3       position    = R_node_position
-INDEX R_Qn       rotation    = R_node_rotation
-INDEX R_V3       scaling     = R_node_scaling
-INDEX R_M4       transform   = R_node_transform
-INDEX int        mesh_count  = R_node_mesh_count
-INDEX int        child_count = R_node_child_count
+INDEX int        id           = R_node_id
+INDEX const char *name        = R_node_name
+INDEX R_V3       position     = R_node_position
+INDEX R_Qn       rotation     = R_node_rotation
+INDEX R_V3       scaling      = R_node_scaling
+INDEX R_M4       transform    = R_node_transform
+INDEX bool       child_meshes = R_node_child_meshes
+INDEX int        mesh_count   = R_node_mesh_count
+INDEX int        child_count  = R_node_child_count
 
 METHOD int mesh_id(int index)
     int count = R_node_mesh_count(self);
@@ -232,6 +233,7 @@ CONSTRUCTOR from_file(const char *path) = R_model_from_file
 DESTRUCTOR = R_model_decref
 
 INDEX int refs            = R_model_refs
+INDEX int id              = R_model_id
 INDEX int mesh_count      = R_model_mesh_count
 INDEX int node_count      = R_model_node_count
 INDEX int animation_count = R_model_animation_count

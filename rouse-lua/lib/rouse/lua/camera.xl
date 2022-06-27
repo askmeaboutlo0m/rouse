@@ -54,6 +54,9 @@ PPTYPE R_FirstPerson R.FirstPerson
 FIELD R_V3  pos
 FIELD float h
 FIELD float v
+FIELD float x = pos.x
+FIELD float y = pos.y
+FIELD float z = pos.z
 
 CONSTRUCTOR new(R_V3 pos, float h, float v) = R_first_person_new
 
@@ -77,6 +80,23 @@ METHOD void look(float hd, float vd) = R_first_person_look
 METHOD void move(float forward, float right, float up) = R_first_person_move
 
 METHOD void apply(R_Camera *camera) = R_first_person_apply
+
+
+PPTYPE R_ThirdPerson R.ThirdPerson
+
+FIELD R_V3  pos
+FIELD float yaw
+FIELD float pitch
+FIELD float roll
+FIELD float x = pos.x
+FIELD float y = pos.y
+FIELD float z = pos.z
+
+CONSTRUCTOR new(R_V3 pos, float yaw, float pitch, float roll) = R_third_person_new
+
+DESTRUCTOR = R_third_person_free
+
+METHOD void apply(R_Camera *camera) = R_third_person_apply
 
 
 INIT extern R_lua_camera_init

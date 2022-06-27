@@ -75,6 +75,56 @@ static int r_gl_uniform_2f_xl(lua_State *L)
     return 0;
 }
 
+static int r_gl_uniform_3f_xl(lua_State *L)
+{
+    int location = XL_checkint(L, 1);
+    float f = XL_checkfloat(L, 2);
+    float g = XL_checkfloat(L, 3);
+    float h = XL_checkfloat(L, 4);
+    R_GL_CLEAR_ERROR();
+    R_GL(glUniform3f, location, f, g, h);
+    return 0;
+}
+
+static int r_gl_uniform_4f_xl(lua_State *L)
+{
+    int location = XL_checkint(L, 1);
+    float f = XL_checkfloat(L, 2);
+    float g = XL_checkfloat(L, 3);
+    float h = XL_checkfloat(L, 4);
+    float i = XL_checkfloat(L, 5);
+    R_GL_CLEAR_ERROR();
+    R_GL(glUniform4f, location, f, g, h, i);
+    return 0;
+}
+
+static int r_gl_uniform_v2_xl(lua_State *L)
+{
+    int location = XL_checkint(L, 1);
+    R_V2 v = *((R_V2 *)luaL_checkudata(L, 2, "R_V2"));
+    R_GL_CLEAR_ERROR();
+    R_GL(glUniform2f, location, v.x, v.y);
+    return 0;
+}
+
+static int r_gl_uniform_v3_xl(lua_State *L)
+{
+    int location = XL_checkint(L, 1);
+    R_V3 v = *((R_V3 *)luaL_checkudata(L, 2, "R_V3"));
+    R_GL_CLEAR_ERROR();
+    R_GL(glUniform3f, location, v.x, v.y, v.z);
+    return 0;
+}
+
+static int r_gl_uniform_v4_xl(lua_State *L)
+{
+    int location = XL_checkint(L, 1);
+    R_V4 v = *((R_V4 *)luaL_checkudata(L, 2, "R_V4"));
+    R_GL_CLEAR_ERROR();
+    R_GL(glUniform4f, location, v.x, v.y, v.z, v.w);
+    return 0;
+}
+
 static int r_gl_uniform_m4_xl(lua_State *L)
 {
     int location = XL_checkint(L, 1);
@@ -388,7 +438,12 @@ static luaL_Reg r_gl_function_registry_xl[] = {
     {"uniform_1f", r_gl_uniform_1f_xl},
     {"uniform_1i", r_gl_uniform_1i_xl},
     {"uniform_2f", r_gl_uniform_2f_xl},
+    {"uniform_3f", r_gl_uniform_3f_xl},
+    {"uniform_4f", r_gl_uniform_4f_xl},
     {"uniform_m4", r_gl_uniform_m4_xl},
+    {"uniform_v2", r_gl_uniform_v2_xl},
+    {"uniform_v3", r_gl_uniform_v3_xl},
+    {"uniform_v4", r_gl_uniform_v4_xl},
     {NULL, NULL},
 };
 

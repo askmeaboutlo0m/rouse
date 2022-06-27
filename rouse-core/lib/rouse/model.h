@@ -61,8 +61,9 @@ R_Model *R_model_from_file(const char *path);
 
 R_Model *R_model_decref(R_Model *model);
 R_Model *R_model_incref(R_Model *model);
-
 int R_model_refs(R_Model *model);
+
+int R_model_id(R_Model *model);
 
 int R_model_mesh_count(R_Model *model);
 R_Mesh *R_model_mesh_by_id(R_Model *model, int id);
@@ -137,6 +138,7 @@ R_V3 R_node_position(R_Node *node);
 R_Qn R_node_rotation(R_Node *node);
 R_V3 R_node_scaling(R_Node *node);
 R_M4 R_node_transform(R_Node *node);
+bool R_node_child_meshes(R_Node *node);
 
 int R_node_mesh_count(R_Node *node);
 int R_node_mesh_id_at(R_Node *node, int index);

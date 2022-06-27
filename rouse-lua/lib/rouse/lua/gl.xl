@@ -32,6 +32,9 @@ typedef unsigned int R_LuaGlTexture;
 @xl
 
 PPTYPE R_MeshBuffer
+UTYPE  R_V2
+UTYPE  R_V3
+UTYPE  R_V4
 UTYPE  R_M4
 
 
@@ -52,6 +55,31 @@ END
 FUNCTION void R.GL.uniform_2f(int location, float f, float g)
     R_GL_CLEAR_ERROR();
     R_GL(glUniform2f, location, f, g);
+END
+
+FUNCTION void R.GL.uniform_3f(int location, float f, float g, float h)
+    R_GL_CLEAR_ERROR();
+    R_GL(glUniform3f, location, f, g, h);
+END
+
+FUNCTION void R.GL.uniform_4f(int location, float f, float g, float h, float i)
+    R_GL_CLEAR_ERROR();
+    R_GL(glUniform4f, location, f, g, h, i);
+END
+
+FUNCTION void R.GL.uniform_v2(int location, R_V2 v)
+    R_GL_CLEAR_ERROR();
+    R_GL(glUniform2f, location, v.x, v.y);
+END
+
+FUNCTION void R.GL.uniform_v3(int location, R_V3 v)
+    R_GL_CLEAR_ERROR();
+    R_GL(glUniform3f, location, v.x, v.y, v.z);
+END
+
+FUNCTION void R.GL.uniform_v4(int location, R_V4 v)
+    R_GL_CLEAR_ERROR();
+    R_GL(glUniform4f, location, v.x, v.y, v.z, v.w);
 END
 
 FUNCTION void R.GL.uniform_m4(int location, R_M4 *m4)

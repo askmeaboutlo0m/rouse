@@ -29,6 +29,61 @@
 #include "intern.h"
 #include "util.h"
 
+#define TYPE_BAD   0
+#define TYPE_FLOAT (1 << 0)
+#define TYPE_V2    (1 << 1)
+#define TYPE_V3    (1 << 2)
+#define TYPE_V4    (1 << 3)
+#define TYPE_M4    (1 << 4)
+
+#define TYPES(A, B) ((A) | ((B) << 5))
+
+typedef struct R_LuaGeomType {
+    int type;
+    union {
+        float f;
+        R_V2  v2;
+        R_V3  v3;
+        R_V4  v4;
+        R_M4  m4;
+    };
+} R_LuaGeomType;
+
+static R_LuaGeomType deconstruct_type(lua_State *L, int arg)
+{
+    R_V2 *v2 = luaL_testudata(L, arg, "R_V2");
+    if (v2) {
+        return (R_LuaGeomType){TYPE_V2, {.v2 = *v2}};
+    }
+
+    R_V3 *v3 = luaL_testudata(L, arg, "R_V3");
+    if (v3) {
+        return (R_LuaGeomType){TYPE_V3, {.v3 = *v3}};
+    }
+
+    R_V4 *v4 = luaL_testudata(L, arg, "R_V4");
+    if (v4) {
+        return (R_LuaGeomType){TYPE_V4, {.v4 = *v4}};
+    }
+
+    R_M4 *m4 = luaL_testudata(L, arg, "R_M4");
+    if (m4) {
+        return (R_LuaGeomType){TYPE_M4, {.m4 = *m4}};
+    }
+
+    int success;
+    lua_Number number = lua_tonumberx(L, arg, &success);
+    if (success) {
+        return (R_LuaGeomType){TYPE_FLOAT, {.f = R_lua_n2float(number)}};
+    }
+
+    return (R_LuaGeomType){TYPE_BAD, {0}};
+}
+
+#define DIE_WITH_BAD_TYPES(L, TARGET, OP, A, B) \
+    R_LUA_DIE(L, TARGET " operation (%s " OP " %s) not applicable", \
+              lua_typename(L, lua_type(L, A)), lua_typename(L, lua_type(L, B)))
+
 
 static int r_v2_new_xl(lua_State *L)
 {
@@ -146,45 +201,6 @@ static int r_v2_method_unpack_xl(lua_State *L)
     return 2;
 }
 
-
-#define TYPE_BAD   0
-#define TYPE_V2    (1 << 0)
-#define TYPE_FLOAT (1 << 1)
-
-#define TYPES_V2_V2    (TYPE_V2    | (TYPE_V2    << 2))
-#define TYPES_V2_FLOAT (TYPE_V2    | (TYPE_FLOAT << 2))
-#define TYPES_FLOAT_V2 (TYPE_FLOAT | (TYPE_V2    << 2))
-
-#define DECONSTRUCT_V2_TYPE(L, ARG, T, V, F) \
-    V = luaL_testudata(L, ARG, "R_V2"); \
-    if (V) { \
-        T = TYPE_V2; \
-    } \
-    else { \
-        int _success; \
-        lua_Number _number = lua_tonumberx(L, ARG, &_success); \
-        if (_success) { \
-            T = TYPE_FLOAT; \
-            F = R_lua_n2float(_number); \
-        } \
-        else { \
-            T = TYPE_BAD; \
-        } \
-    }
-
-#define DECONSTRUCT_V2_TYPES(L, A, B) \
-    int    t1,  t2; \
-    R_V2  *v1, *v2; \
-    float  f1,  f2; \
-    DECONSTRUCT_V2_TYPE(L, A, t1, v1, f1); \
-    DECONSTRUCT_V2_TYPE(L, B, t2, v2, f2); \
-    int types = t1 | (t2 << 2)
-
-#define DIE_WITH_BAD_V2_TYPES(L, OP, A, B) \
-    R_LUA_DIE(L, "R_V2 operation (%s " OP " %s) not applicable", \
-              lua_typename(L, lua_type(L, A)), lua_typename(L, lua_type(L, B)))
-
-
 static int r_v2_method_add_xl(lua_State *L)
 {
     luaL_checkany(L, 1);
@@ -192,19 +208,20 @@ static int r_v2_method_add_xl(lua_State *L)
     luaL_checkany(L, 2);
     int b = 2;
     R_V2 RETVAL;
-    DECONSTRUCT_V2_TYPES(L, a, b);
-    switch (types) {
-        case TYPES_V2_V2:
-            RETVAL = R_v2_add(*v1, *v2);
+    R_LuaGeomType t1 = deconstruct_type(L, a);
+    R_LuaGeomType t2 = deconstruct_type(L, b);
+    switch (TYPES(t1.type, t2.type)) {
+        case TYPES(TYPE_V2, TYPE_V2):
+            RETVAL = R_v2_add(t1.v2, t2.v2);
             break;
-        case TYPES_V2_FLOAT:
-            RETVAL = R_v2_adds(*v1, f2);
+        case TYPES(TYPE_V2, TYPE_FLOAT):
+            RETVAL = R_v2_adds(t1.v2, t2.f);
             break;
-        case TYPES_FLOAT_V2:
-            RETVAL = R_v2_adds(*v2, f1);
+        case TYPES(TYPE_FLOAT, TYPE_V2):
+            RETVAL = R_v2_adds(t2.v2, t1.f);
             break;
         default:
-            DIE_WITH_BAD_V2_TYPES(L, "+", a, b);
+            DIE_WITH_BAD_TYPES(L, "R_V2", "+", a, b);
     }
     XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
     return 1;
@@ -217,17 +234,17 @@ static int r_v2_method_sub_xl(lua_State *L)
     luaL_checkany(L, 2);
     int b = 2;
     R_V2 RETVAL;
-    DECONSTRUCT_V2_TYPES(L, a, b);
-    XL_UNUSED(f1);
-    switch (types) {
-        case TYPES_V2_V2:
-            RETVAL = R_v2_sub(*v1, *v2);
+    R_LuaGeomType t1 = deconstruct_type(L, a);
+    R_LuaGeomType t2 = deconstruct_type(L, b);
+    switch (TYPES(t1.type, t2.type)) {
+        case TYPES(TYPE_V2, TYPE_V2):
+            RETVAL = R_v2_sub(t1.v2, t2.v2);
             break;
-        case TYPES_V2_FLOAT:
-            RETVAL = R_v2_subs(*v1, f2);
+        case TYPES(TYPE_V2, TYPE_FLOAT):
+            RETVAL = R_v2_subs(t1.v2, t2.f);
             break;
         default:
-            DIE_WITH_BAD_V2_TYPES(L, "-", a, b);
+            DIE_WITH_BAD_TYPES(L, "R_V2", "-", a, b);
     }
     XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
     return 1;
@@ -240,16 +257,17 @@ static int r_v2_method_mul_xl(lua_State *L)
     luaL_checkany(L, 2);
     int b = 2;
     R_V2 RETVAL;
-    DECONSTRUCT_V2_TYPES(L, a, b);
-    switch (types) {
-        case TYPES_V2_FLOAT:
-            RETVAL = R_v2_scale(*v1, f2);
+    R_LuaGeomType t1 = deconstruct_type(L, a);
+    R_LuaGeomType t2 = deconstruct_type(L, b);
+    switch (TYPES(t1.type, t2.type)) {
+        case TYPES(TYPE_V2, TYPE_FLOAT):
+            RETVAL = R_v2_scale(t1.v2, t2.f);
             break;
-        case TYPES_FLOAT_V2:
-            RETVAL = R_v2_scale(*v2, f1);
+        case TYPES(TYPE_FLOAT, TYPE_V2):
+            RETVAL = R_v2_scale(t2.v2, t1.f);
             break;
         default:
-            DIE_WITH_BAD_V2_TYPES(L, "*", a, b);
+            DIE_WITH_BAD_TYPES(L, "R_V2", "*", a, b);
     }
     XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
     return 1;
@@ -262,14 +280,14 @@ static int r_v2_method_div_xl(lua_State *L)
     luaL_checkany(L, 2);
     int b = 2;
     R_V2 RETVAL;
-    DECONSTRUCT_V2_TYPES(L, a, b);
-    (void) f1;
-    switch (types) {
-        case TYPES_V2_FLOAT:
-            RETVAL = R_v2_scale(*v1, 1.0f / f2);
+    R_LuaGeomType t1 = deconstruct_type(L, a);
+    R_LuaGeomType t2 = deconstruct_type(L, b);
+    switch (TYPES(t1.type, t2.type)) {
+        case TYPES(TYPE_V2, TYPE_FLOAT):
+            RETVAL = R_v2_scale(t1.v2, 1.0f / t2.f);
             break;
         default:
-            DIE_WITH_BAD_V2_TYPES(L, "*", a, b);
+            DIE_WITH_BAD_TYPES(L, "R_V2", "*", a, b);
     }
     XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
     return 1;
@@ -301,6 +319,17 @@ static int r_v2_method_distance_xl(lua_State *L)
     float RETVAL;
     RETVAL = R_v2_distance(*self, *b);
     XL_pushfloat(L, RETVAL);
+    return 1;
+}
+
+static int r_v2_method_lerp_xl(lua_State *L)
+{
+    R_V2 *self = R_CPPCAST(R_V2 *, XL_checkutype(L, 1, "R_V2"));
+    R_V2 b = *((R_V2 *)luaL_checkudata(L, 2, "R_V2"));
+    float t = XL_checkfloat(L, 3);
+    R_V2 RETVAL;
+    RETVAL = glms_vec2_lerp(*self, b, t);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
     return 1;
 }
 
@@ -844,12 +873,26 @@ static int r_m4_method_unpack_xl(lua_State *L)
 
 static int r_m4_method_mul_xl(lua_State *L)
 {
-    R_M4 a = *((R_M4 *)luaL_checkudata(L, 1, "R_M4"));
-    R_M4 b = *((R_M4 *)luaL_checkudata(L, 2, "R_M4"));
-    R_M4 RETVAL;
-    RETVAL = R_m4_mul(a, b);
-    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_M4), "R_M4", 0);
-    return 1;
+    luaL_checkany(L, 1);
+    int a = 1;
+    luaL_checkany(L, 2);
+    int b = 2;
+    R_LuaGeomType t1 = deconstruct_type(L, a);
+    R_LuaGeomType t2 = deconstruct_type(L, b);
+    switch (TYPES(t1.type, t2.type)) {
+        case TYPES(TYPE_M4, TYPE_M4): {
+            R_M4 RETVAL = R_m4_mul(t1.m4, t2.m4);
+            XL_pushnewutypeuv(L, &RETVAL, sizeof(RETVAL), "R_M4", 0);
+            return 1;
+        }
+        case TYPES(TYPE_M4, TYPE_V4): {
+            R_V4 RETVAL = R_m4_mulv(t1.m4, t2.v4);
+            XL_pushnewutypeuv(L, &RETVAL, sizeof(RETVAL), "R_V4", 0);
+            return 1;
+        }
+        default:
+            DIE_WITH_BAD_TYPES(L, "R_M4", "*", a, b);
+    }
 }
 
 static int r_m4_method_rotate_x_xl(lua_State *L)
@@ -958,6 +1001,3399 @@ static int r_m4_method_scale_xyz_xl(lua_State *L)
     return 1;
 }
 
+static int r_m4_method_inv_xl(lua_State *L)
+{
+    R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
+    R_M4 RETVAL;
+    RETVAL = R_m4_inv(*self);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_M4), "R_M4", 0);
+    return 1;
+}
+
+static int r_v2_xx_index_xl(lua_State *L)
+{
+    R_V2 *self = R_CPPCAST(R_V2 *, XL_checkutype(L, 1, "R_V2"));
+    R_V2 RETVAL;
+    RETVAL = R_v2(self->x, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
+    return 1;
+}
+
+static int r_v2_xy_index_xl(lua_State *L)
+{
+    R_V2 *self = R_CPPCAST(R_V2 *, XL_checkutype(L, 1, "R_V2"));
+    R_V2 RETVAL;
+    RETVAL = R_v2(self->x, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
+    return 1;
+}
+
+static int r_v2_yx_index_xl(lua_State *L)
+{
+    R_V2 *self = R_CPPCAST(R_V2 *, XL_checkutype(L, 1, "R_V2"));
+    R_V2 RETVAL;
+    RETVAL = R_v2(self->y, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
+    return 1;
+}
+
+static int r_v2_yy_index_xl(lua_State *L)
+{
+    R_V2 *self = R_CPPCAST(R_V2 *, XL_checkutype(L, 1, "R_V2"));
+    R_V2 RETVAL;
+    RETVAL = R_v2(self->y, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
+    return 1;
+}
+
+static int r_v3_xx_index_xl(lua_State *L)
+{
+    R_V3 *self = R_CPPCAST(R_V3 *, XL_checkutype(L, 1, "R_V3"));
+    R_V2 RETVAL;
+    RETVAL = R_v2(self->x, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
+    return 1;
+}
+
+static int r_v3_xy_index_xl(lua_State *L)
+{
+    R_V3 *self = R_CPPCAST(R_V3 *, XL_checkutype(L, 1, "R_V3"));
+    R_V2 RETVAL;
+    RETVAL = R_v2(self->x, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
+    return 1;
+}
+
+static int r_v3_xz_index_xl(lua_State *L)
+{
+    R_V3 *self = R_CPPCAST(R_V3 *, XL_checkutype(L, 1, "R_V3"));
+    R_V2 RETVAL;
+    RETVAL = R_v2(self->x, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
+    return 1;
+}
+
+static int r_v3_yx_index_xl(lua_State *L)
+{
+    R_V3 *self = R_CPPCAST(R_V3 *, XL_checkutype(L, 1, "R_V3"));
+    R_V2 RETVAL;
+    RETVAL = R_v2(self->y, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
+    return 1;
+}
+
+static int r_v3_yy_index_xl(lua_State *L)
+{
+    R_V3 *self = R_CPPCAST(R_V3 *, XL_checkutype(L, 1, "R_V3"));
+    R_V2 RETVAL;
+    RETVAL = R_v2(self->y, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
+    return 1;
+}
+
+static int r_v3_yz_index_xl(lua_State *L)
+{
+    R_V3 *self = R_CPPCAST(R_V3 *, XL_checkutype(L, 1, "R_V3"));
+    R_V2 RETVAL;
+    RETVAL = R_v2(self->y, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
+    return 1;
+}
+
+static int r_v3_zx_index_xl(lua_State *L)
+{
+    R_V3 *self = R_CPPCAST(R_V3 *, XL_checkutype(L, 1, "R_V3"));
+    R_V2 RETVAL;
+    RETVAL = R_v2(self->z, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
+    return 1;
+}
+
+static int r_v3_zy_index_xl(lua_State *L)
+{
+    R_V3 *self = R_CPPCAST(R_V3 *, XL_checkutype(L, 1, "R_V3"));
+    R_V2 RETVAL;
+    RETVAL = R_v2(self->z, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
+    return 1;
+}
+
+static int r_v3_zz_index_xl(lua_State *L)
+{
+    R_V3 *self = R_CPPCAST(R_V3 *, XL_checkutype(L, 1, "R_V3"));
+    R_V2 RETVAL;
+    RETVAL = R_v2(self->z, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
+    return 1;
+}
+
+static int r_v3_xxx_index_xl(lua_State *L)
+{
+    R_V3 *self = R_CPPCAST(R_V3 *, XL_checkutype(L, 1, "R_V3"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->x, self->x, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v3_xxy_index_xl(lua_State *L)
+{
+    R_V3 *self = R_CPPCAST(R_V3 *, XL_checkutype(L, 1, "R_V3"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->x, self->x, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v3_xxz_index_xl(lua_State *L)
+{
+    R_V3 *self = R_CPPCAST(R_V3 *, XL_checkutype(L, 1, "R_V3"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->x, self->x, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v3_xyx_index_xl(lua_State *L)
+{
+    R_V3 *self = R_CPPCAST(R_V3 *, XL_checkutype(L, 1, "R_V3"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->x, self->y, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v3_xyy_index_xl(lua_State *L)
+{
+    R_V3 *self = R_CPPCAST(R_V3 *, XL_checkutype(L, 1, "R_V3"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->x, self->y, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v3_xyz_index_xl(lua_State *L)
+{
+    R_V3 *self = R_CPPCAST(R_V3 *, XL_checkutype(L, 1, "R_V3"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->x, self->y, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v3_xzx_index_xl(lua_State *L)
+{
+    R_V3 *self = R_CPPCAST(R_V3 *, XL_checkutype(L, 1, "R_V3"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->x, self->z, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v3_xzy_index_xl(lua_State *L)
+{
+    R_V3 *self = R_CPPCAST(R_V3 *, XL_checkutype(L, 1, "R_V3"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->x, self->z, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v3_xzz_index_xl(lua_State *L)
+{
+    R_V3 *self = R_CPPCAST(R_V3 *, XL_checkutype(L, 1, "R_V3"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->x, self->z, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v3_yxx_index_xl(lua_State *L)
+{
+    R_V3 *self = R_CPPCAST(R_V3 *, XL_checkutype(L, 1, "R_V3"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->y, self->x, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v3_yxy_index_xl(lua_State *L)
+{
+    R_V3 *self = R_CPPCAST(R_V3 *, XL_checkutype(L, 1, "R_V3"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->y, self->x, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v3_yxz_index_xl(lua_State *L)
+{
+    R_V3 *self = R_CPPCAST(R_V3 *, XL_checkutype(L, 1, "R_V3"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->y, self->x, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v3_yyx_index_xl(lua_State *L)
+{
+    R_V3 *self = R_CPPCAST(R_V3 *, XL_checkutype(L, 1, "R_V3"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->y, self->y, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v3_yyy_index_xl(lua_State *L)
+{
+    R_V3 *self = R_CPPCAST(R_V3 *, XL_checkutype(L, 1, "R_V3"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->y, self->y, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v3_yyz_index_xl(lua_State *L)
+{
+    R_V3 *self = R_CPPCAST(R_V3 *, XL_checkutype(L, 1, "R_V3"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->y, self->y, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v3_yzx_index_xl(lua_State *L)
+{
+    R_V3 *self = R_CPPCAST(R_V3 *, XL_checkutype(L, 1, "R_V3"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->y, self->z, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v3_yzy_index_xl(lua_State *L)
+{
+    R_V3 *self = R_CPPCAST(R_V3 *, XL_checkutype(L, 1, "R_V3"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->y, self->z, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v3_yzz_index_xl(lua_State *L)
+{
+    R_V3 *self = R_CPPCAST(R_V3 *, XL_checkutype(L, 1, "R_V3"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->y, self->z, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v3_zxx_index_xl(lua_State *L)
+{
+    R_V3 *self = R_CPPCAST(R_V3 *, XL_checkutype(L, 1, "R_V3"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->z, self->x, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v3_zxy_index_xl(lua_State *L)
+{
+    R_V3 *self = R_CPPCAST(R_V3 *, XL_checkutype(L, 1, "R_V3"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->z, self->x, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v3_zxz_index_xl(lua_State *L)
+{
+    R_V3 *self = R_CPPCAST(R_V3 *, XL_checkutype(L, 1, "R_V3"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->z, self->x, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v3_zyx_index_xl(lua_State *L)
+{
+    R_V3 *self = R_CPPCAST(R_V3 *, XL_checkutype(L, 1, "R_V3"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->z, self->y, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v3_zyy_index_xl(lua_State *L)
+{
+    R_V3 *self = R_CPPCAST(R_V3 *, XL_checkutype(L, 1, "R_V3"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->z, self->y, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v3_zyz_index_xl(lua_State *L)
+{
+    R_V3 *self = R_CPPCAST(R_V3 *, XL_checkutype(L, 1, "R_V3"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->z, self->y, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v3_zzx_index_xl(lua_State *L)
+{
+    R_V3 *self = R_CPPCAST(R_V3 *, XL_checkutype(L, 1, "R_V3"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->z, self->z, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v3_zzy_index_xl(lua_State *L)
+{
+    R_V3 *self = R_CPPCAST(R_V3 *, XL_checkutype(L, 1, "R_V3"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->z, self->z, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v3_zzz_index_xl(lua_State *L)
+{
+    R_V3 *self = R_CPPCAST(R_V3 *, XL_checkutype(L, 1, "R_V3"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->z, self->z, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_xx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V2 RETVAL;
+    RETVAL = R_v2(self->x, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
+    return 1;
+}
+
+static int r_v4_xy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V2 RETVAL;
+    RETVAL = R_v2(self->x, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
+    return 1;
+}
+
+static int r_v4_xz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V2 RETVAL;
+    RETVAL = R_v2(self->x, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
+    return 1;
+}
+
+static int r_v4_xw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V2 RETVAL;
+    RETVAL = R_v2(self->x, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
+    return 1;
+}
+
+static int r_v4_yx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V2 RETVAL;
+    RETVAL = R_v2(self->y, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
+    return 1;
+}
+
+static int r_v4_yy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V2 RETVAL;
+    RETVAL = R_v2(self->y, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
+    return 1;
+}
+
+static int r_v4_yz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V2 RETVAL;
+    RETVAL = R_v2(self->y, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
+    return 1;
+}
+
+static int r_v4_yw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V2 RETVAL;
+    RETVAL = R_v2(self->y, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
+    return 1;
+}
+
+static int r_v4_zx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V2 RETVAL;
+    RETVAL = R_v2(self->z, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
+    return 1;
+}
+
+static int r_v4_zy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V2 RETVAL;
+    RETVAL = R_v2(self->z, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
+    return 1;
+}
+
+static int r_v4_zz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V2 RETVAL;
+    RETVAL = R_v2(self->z, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
+    return 1;
+}
+
+static int r_v4_zw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V2 RETVAL;
+    RETVAL = R_v2(self->z, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
+    return 1;
+}
+
+static int r_v4_wx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V2 RETVAL;
+    RETVAL = R_v2(self->w, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
+    return 1;
+}
+
+static int r_v4_wy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V2 RETVAL;
+    RETVAL = R_v2(self->w, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
+    return 1;
+}
+
+static int r_v4_wz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V2 RETVAL;
+    RETVAL = R_v2(self->w, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
+    return 1;
+}
+
+static int r_v4_ww_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V2 RETVAL;
+    RETVAL = R_v2(self->w, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
+    return 1;
+}
+
+static int r_v4_xxx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->x, self->x, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_xxy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->x, self->x, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_xxz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->x, self->x, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_xxw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->x, self->x, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_xyx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->x, self->y, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_xyy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->x, self->y, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_xyz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->x, self->y, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_xyw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->x, self->y, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_xzx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->x, self->z, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_xzy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->x, self->z, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_xzz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->x, self->z, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_xzw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->x, self->z, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_xwx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->x, self->w, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_xwy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->x, self->w, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_xwz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->x, self->w, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_xww_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->x, self->w, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_yxx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->y, self->x, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_yxy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->y, self->x, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_yxz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->y, self->x, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_yxw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->y, self->x, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_yyx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->y, self->y, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_yyy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->y, self->y, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_yyz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->y, self->y, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_yyw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->y, self->y, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_yzx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->y, self->z, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_yzy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->y, self->z, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_yzz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->y, self->z, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_yzw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->y, self->z, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_ywx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->y, self->w, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_ywy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->y, self->w, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_ywz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->y, self->w, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_yww_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->y, self->w, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_zxx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->z, self->x, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_zxy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->z, self->x, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_zxz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->z, self->x, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_zxw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->z, self->x, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_zyx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->z, self->y, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_zyy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->z, self->y, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_zyz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->z, self->y, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_zyw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->z, self->y, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_zzx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->z, self->z, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_zzy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->z, self->z, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_zzz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->z, self->z, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_zzw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->z, self->z, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_zwx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->z, self->w, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_zwy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->z, self->w, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_zwz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->z, self->w, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_zww_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->z, self->w, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_wxx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->w, self->x, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_wxy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->w, self->x, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_wxz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->w, self->x, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_wxw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->w, self->x, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_wyx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->w, self->y, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_wyy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->w, self->y, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_wyz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->w, self->y, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_wyw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->w, self->y, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_wzx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->w, self->z, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_wzy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->w, self->z, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_wzz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->w, self->z, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_wzw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->w, self->z, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_wwx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->w, self->w, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_wwy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->w, self->w, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_wwz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->w, self->w, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_www_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V3 RETVAL;
+    RETVAL = R_v3(self->w, self->w, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v4_xxxx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->x, self->x, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xxxy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->x, self->x, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xxxz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->x, self->x, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xxxw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->x, self->x, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xxyx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->x, self->y, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xxyy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->x, self->y, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xxyz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->x, self->y, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xxyw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->x, self->y, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xxzx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->x, self->z, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xxzy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->x, self->z, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xxzz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->x, self->z, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xxzw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->x, self->z, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xxwx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->x, self->w, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xxwy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->x, self->w, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xxwz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->x, self->w, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xxww_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->x, self->w, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xyxx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->y, self->x, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xyxy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->y, self->x, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xyxz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->y, self->x, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xyxw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->y, self->x, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xyyx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->y, self->y, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xyyy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->y, self->y, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xyyz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->y, self->y, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xyyw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->y, self->y, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xyzx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->y, self->z, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xyzy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->y, self->z, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xyzz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->y, self->z, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xyzw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->y, self->z, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xywx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->y, self->w, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xywy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->y, self->w, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xywz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->y, self->w, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xyww_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->y, self->w, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xzxx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->z, self->x, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xzxy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->z, self->x, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xzxz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->z, self->x, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xzxw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->z, self->x, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xzyx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->z, self->y, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xzyy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->z, self->y, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xzyz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->z, self->y, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xzyw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->z, self->y, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xzzx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->z, self->z, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xzzy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->z, self->z, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xzzz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->z, self->z, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xzzw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->z, self->z, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xzwx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->z, self->w, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xzwy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->z, self->w, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xzwz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->z, self->w, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xzww_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->z, self->w, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xwxx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->w, self->x, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xwxy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->w, self->x, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xwxz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->w, self->x, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xwxw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->w, self->x, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xwyx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->w, self->y, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xwyy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->w, self->y, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xwyz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->w, self->y, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xwyw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->w, self->y, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xwzx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->w, self->z, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xwzy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->w, self->z, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xwzz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->w, self->z, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xwzw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->w, self->z, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xwwx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->w, self->w, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xwwy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->w, self->w, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xwwz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->w, self->w, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_xwww_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->x, self->w, self->w, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_yxxx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->x, self->x, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_yxxy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->x, self->x, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_yxxz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->x, self->x, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_yxxw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->x, self->x, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_yxyx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->x, self->y, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_yxyy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->x, self->y, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_yxyz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->x, self->y, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_yxyw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->x, self->y, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_yxzx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->x, self->z, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_yxzy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->x, self->z, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_yxzz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->x, self->z, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_yxzw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->x, self->z, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_yxwx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->x, self->w, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_yxwy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->x, self->w, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_yxwz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->x, self->w, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_yxww_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->x, self->w, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_yyxx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->y, self->x, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_yyxy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->y, self->x, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_yyxz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->y, self->x, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_yyxw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->y, self->x, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_yyyx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->y, self->y, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_yyyy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->y, self->y, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_yyyz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->y, self->y, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_yyyw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->y, self->y, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_yyzx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->y, self->z, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_yyzy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->y, self->z, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_yyzz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->y, self->z, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_yyzw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->y, self->z, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_yywx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->y, self->w, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_yywy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->y, self->w, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_yywz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->y, self->w, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_yyww_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->y, self->w, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_yzxx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->z, self->x, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_yzxy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->z, self->x, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_yzxz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->z, self->x, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_yzxw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->z, self->x, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_yzyx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->z, self->y, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_yzyy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->z, self->y, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_yzyz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->z, self->y, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_yzyw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->z, self->y, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_yzzx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->z, self->z, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_yzzy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->z, self->z, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_yzzz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->z, self->z, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_yzzw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->z, self->z, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_yzwx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->z, self->w, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_yzwy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->z, self->w, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_yzwz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->z, self->w, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_yzww_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->z, self->w, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_ywxx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->w, self->x, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_ywxy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->w, self->x, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_ywxz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->w, self->x, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_ywxw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->w, self->x, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_ywyx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->w, self->y, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_ywyy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->w, self->y, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_ywyz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->w, self->y, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_ywyw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->w, self->y, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_ywzx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->w, self->z, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_ywzy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->w, self->z, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_ywzz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->w, self->z, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_ywzw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->w, self->z, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_ywwx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->w, self->w, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_ywwy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->w, self->w, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_ywwz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->w, self->w, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_ywww_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->y, self->w, self->w, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zxxx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->x, self->x, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zxxy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->x, self->x, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zxxz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->x, self->x, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zxxw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->x, self->x, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zxyx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->x, self->y, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zxyy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->x, self->y, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zxyz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->x, self->y, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zxyw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->x, self->y, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zxzx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->x, self->z, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zxzy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->x, self->z, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zxzz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->x, self->z, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zxzw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->x, self->z, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zxwx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->x, self->w, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zxwy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->x, self->w, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zxwz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->x, self->w, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zxww_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->x, self->w, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zyxx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->y, self->x, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zyxy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->y, self->x, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zyxz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->y, self->x, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zyxw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->y, self->x, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zyyx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->y, self->y, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zyyy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->y, self->y, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zyyz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->y, self->y, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zyyw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->y, self->y, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zyzx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->y, self->z, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zyzy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->y, self->z, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zyzz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->y, self->z, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zyzw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->y, self->z, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zywx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->y, self->w, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zywy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->y, self->w, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zywz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->y, self->w, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zyww_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->y, self->w, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zzxx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->z, self->x, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zzxy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->z, self->x, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zzxz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->z, self->x, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zzxw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->z, self->x, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zzyx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->z, self->y, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zzyy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->z, self->y, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zzyz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->z, self->y, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zzyw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->z, self->y, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zzzx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->z, self->z, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zzzy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->z, self->z, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zzzz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->z, self->z, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zzzw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->z, self->z, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zzwx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->z, self->w, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zzwy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->z, self->w, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zzwz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->z, self->w, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zzww_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->z, self->w, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zwxx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->w, self->x, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zwxy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->w, self->x, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zwxz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->w, self->x, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zwxw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->w, self->x, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zwyx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->w, self->y, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zwyy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->w, self->y, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zwyz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->w, self->y, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zwyw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->w, self->y, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zwzx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->w, self->z, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zwzy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->w, self->z, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zwzz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->w, self->z, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zwzw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->w, self->z, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zwwx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->w, self->w, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zwwy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->w, self->w, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zwwz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->w, self->w, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_zwww_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->z, self->w, self->w, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wxxx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->x, self->x, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wxxy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->x, self->x, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wxxz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->x, self->x, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wxxw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->x, self->x, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wxyx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->x, self->y, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wxyy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->x, self->y, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wxyz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->x, self->y, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wxyw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->x, self->y, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wxzx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->x, self->z, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wxzy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->x, self->z, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wxzz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->x, self->z, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wxzw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->x, self->z, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wxwx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->x, self->w, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wxwy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->x, self->w, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wxwz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->x, self->w, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wxww_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->x, self->w, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wyxx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->y, self->x, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wyxy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->y, self->x, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wyxz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->y, self->x, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wyxw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->y, self->x, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wyyx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->y, self->y, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wyyy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->y, self->y, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wyyz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->y, self->y, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wyyw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->y, self->y, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wyzx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->y, self->z, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wyzy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->y, self->z, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wyzz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->y, self->z, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wyzw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->y, self->z, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wywx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->y, self->w, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wywy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->y, self->w, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wywz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->y, self->w, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wyww_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->y, self->w, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wzxx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->z, self->x, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wzxy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->z, self->x, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wzxz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->z, self->x, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wzxw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->z, self->x, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wzyx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->z, self->y, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wzyy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->z, self->y, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wzyz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->z, self->y, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wzyw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->z, self->y, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wzzx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->z, self->z, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wzzy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->z, self->z, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wzzz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->z, self->z, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wzzw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->z, self->z, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wzwx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->z, self->w, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wzwy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->z, self->w, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wzwz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->z, self->w, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wzww_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->z, self->w, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wwxx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->w, self->x, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wwxy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->w, self->x, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wwxz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->w, self->x, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wwxw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->w, self->x, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wwyx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->w, self->y, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wwyy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->w, self->y, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wwyz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->w, self->y, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wwyw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->w, self->y, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wwzx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->w, self->z, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wwzy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->w, self->z, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wwzz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->w, self->z, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wwzw_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->w, self->z, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wwwx_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->w, self->w, self->x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wwwy_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->w, self->w, self->y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wwwz_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->w, self->w, self->z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_v4_wwww_index_xl(lua_State *L)
+{
+    R_V4 *self = R_CPPCAST(R_V4 *, XL_checkutype(L, 1, "R_V4"));
+    R_V4 RETVAL;
+    RETVAL = R_v4(self->w, self->w, self->w, self->w);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -1056,24 +4492,400 @@ static luaL_Reg r_v2_index_registry_xl[] = {
     {"length", r_v2_length_index_xl},
     {"normal", r_v2_normal_index_xl},
     {"x", r_v2_x_index_xl},
+    {"xx", r_v2_xx_index_xl},
+    {"xy", r_v2_xy_index_xl},
     {"y", r_v2_y_index_xl},
+    {"yx", r_v2_yx_index_xl},
+    {"yy", r_v2_yy_index_xl},
     {NULL, NULL},
 };
 
 static luaL_Reg r_v3_index_registry_xl[] = {
     {"length", r_v3_length_index_xl},
     {"x", r_v3_x_index_xl},
+    {"xx", r_v3_xx_index_xl},
+    {"xxx", r_v3_xxx_index_xl},
+    {"xxy", r_v3_xxy_index_xl},
+    {"xxz", r_v3_xxz_index_xl},
+    {"xy", r_v3_xy_index_xl},
+    {"xyx", r_v3_xyx_index_xl},
+    {"xyy", r_v3_xyy_index_xl},
+    {"xyz", r_v3_xyz_index_xl},
+    {"xz", r_v3_xz_index_xl},
+    {"xzx", r_v3_xzx_index_xl},
+    {"xzy", r_v3_xzy_index_xl},
+    {"xzz", r_v3_xzz_index_xl},
     {"y", r_v3_y_index_xl},
+    {"yx", r_v3_yx_index_xl},
+    {"yxx", r_v3_yxx_index_xl},
+    {"yxy", r_v3_yxy_index_xl},
+    {"yxz", r_v3_yxz_index_xl},
+    {"yy", r_v3_yy_index_xl},
+    {"yyx", r_v3_yyx_index_xl},
+    {"yyy", r_v3_yyy_index_xl},
+    {"yyz", r_v3_yyz_index_xl},
+    {"yz", r_v3_yz_index_xl},
+    {"yzx", r_v3_yzx_index_xl},
+    {"yzy", r_v3_yzy_index_xl},
+    {"yzz", r_v3_yzz_index_xl},
     {"z", r_v3_z_index_xl},
+    {"zx", r_v3_zx_index_xl},
+    {"zxx", r_v3_zxx_index_xl},
+    {"zxy", r_v3_zxy_index_xl},
+    {"zxz", r_v3_zxz_index_xl},
+    {"zy", r_v3_zy_index_xl},
+    {"zyx", r_v3_zyx_index_xl},
+    {"zyy", r_v3_zyy_index_xl},
+    {"zyz", r_v3_zyz_index_xl},
+    {"zz", r_v3_zz_index_xl},
+    {"zzx", r_v3_zzx_index_xl},
+    {"zzy", r_v3_zzy_index_xl},
+    {"zzz", r_v3_zzz_index_xl},
     {NULL, NULL},
 };
 
 static luaL_Reg r_v4_index_registry_xl[] = {
     {"length", r_v4_length_index_xl},
     {"w", r_v4_w_index_xl},
+    {"ww", r_v4_ww_index_xl},
+    {"www", r_v4_www_index_xl},
+    {"wwww", r_v4_wwww_index_xl},
+    {"wwwx", r_v4_wwwx_index_xl},
+    {"wwwy", r_v4_wwwy_index_xl},
+    {"wwwz", r_v4_wwwz_index_xl},
+    {"wwx", r_v4_wwx_index_xl},
+    {"wwxw", r_v4_wwxw_index_xl},
+    {"wwxx", r_v4_wwxx_index_xl},
+    {"wwxy", r_v4_wwxy_index_xl},
+    {"wwxz", r_v4_wwxz_index_xl},
+    {"wwy", r_v4_wwy_index_xl},
+    {"wwyw", r_v4_wwyw_index_xl},
+    {"wwyx", r_v4_wwyx_index_xl},
+    {"wwyy", r_v4_wwyy_index_xl},
+    {"wwyz", r_v4_wwyz_index_xl},
+    {"wwz", r_v4_wwz_index_xl},
+    {"wwzw", r_v4_wwzw_index_xl},
+    {"wwzx", r_v4_wwzx_index_xl},
+    {"wwzy", r_v4_wwzy_index_xl},
+    {"wwzz", r_v4_wwzz_index_xl},
+    {"wx", r_v4_wx_index_xl},
+    {"wxw", r_v4_wxw_index_xl},
+    {"wxww", r_v4_wxww_index_xl},
+    {"wxwx", r_v4_wxwx_index_xl},
+    {"wxwy", r_v4_wxwy_index_xl},
+    {"wxwz", r_v4_wxwz_index_xl},
+    {"wxx", r_v4_wxx_index_xl},
+    {"wxxw", r_v4_wxxw_index_xl},
+    {"wxxx", r_v4_wxxx_index_xl},
+    {"wxxy", r_v4_wxxy_index_xl},
+    {"wxxz", r_v4_wxxz_index_xl},
+    {"wxy", r_v4_wxy_index_xl},
+    {"wxyw", r_v4_wxyw_index_xl},
+    {"wxyx", r_v4_wxyx_index_xl},
+    {"wxyy", r_v4_wxyy_index_xl},
+    {"wxyz", r_v4_wxyz_index_xl},
+    {"wxz", r_v4_wxz_index_xl},
+    {"wxzw", r_v4_wxzw_index_xl},
+    {"wxzx", r_v4_wxzx_index_xl},
+    {"wxzy", r_v4_wxzy_index_xl},
+    {"wxzz", r_v4_wxzz_index_xl},
+    {"wy", r_v4_wy_index_xl},
+    {"wyw", r_v4_wyw_index_xl},
+    {"wyww", r_v4_wyww_index_xl},
+    {"wywx", r_v4_wywx_index_xl},
+    {"wywy", r_v4_wywy_index_xl},
+    {"wywz", r_v4_wywz_index_xl},
+    {"wyx", r_v4_wyx_index_xl},
+    {"wyxw", r_v4_wyxw_index_xl},
+    {"wyxx", r_v4_wyxx_index_xl},
+    {"wyxy", r_v4_wyxy_index_xl},
+    {"wyxz", r_v4_wyxz_index_xl},
+    {"wyy", r_v4_wyy_index_xl},
+    {"wyyw", r_v4_wyyw_index_xl},
+    {"wyyx", r_v4_wyyx_index_xl},
+    {"wyyy", r_v4_wyyy_index_xl},
+    {"wyyz", r_v4_wyyz_index_xl},
+    {"wyz", r_v4_wyz_index_xl},
+    {"wyzw", r_v4_wyzw_index_xl},
+    {"wyzx", r_v4_wyzx_index_xl},
+    {"wyzy", r_v4_wyzy_index_xl},
+    {"wyzz", r_v4_wyzz_index_xl},
+    {"wz", r_v4_wz_index_xl},
+    {"wzw", r_v4_wzw_index_xl},
+    {"wzww", r_v4_wzww_index_xl},
+    {"wzwx", r_v4_wzwx_index_xl},
+    {"wzwy", r_v4_wzwy_index_xl},
+    {"wzwz", r_v4_wzwz_index_xl},
+    {"wzx", r_v4_wzx_index_xl},
+    {"wzxw", r_v4_wzxw_index_xl},
+    {"wzxx", r_v4_wzxx_index_xl},
+    {"wzxy", r_v4_wzxy_index_xl},
+    {"wzxz", r_v4_wzxz_index_xl},
+    {"wzy", r_v4_wzy_index_xl},
+    {"wzyw", r_v4_wzyw_index_xl},
+    {"wzyx", r_v4_wzyx_index_xl},
+    {"wzyy", r_v4_wzyy_index_xl},
+    {"wzyz", r_v4_wzyz_index_xl},
+    {"wzz", r_v4_wzz_index_xl},
+    {"wzzw", r_v4_wzzw_index_xl},
+    {"wzzx", r_v4_wzzx_index_xl},
+    {"wzzy", r_v4_wzzy_index_xl},
+    {"wzzz", r_v4_wzzz_index_xl},
     {"x", r_v4_x_index_xl},
+    {"xw", r_v4_xw_index_xl},
+    {"xww", r_v4_xww_index_xl},
+    {"xwww", r_v4_xwww_index_xl},
+    {"xwwx", r_v4_xwwx_index_xl},
+    {"xwwy", r_v4_xwwy_index_xl},
+    {"xwwz", r_v4_xwwz_index_xl},
+    {"xwx", r_v4_xwx_index_xl},
+    {"xwxw", r_v4_xwxw_index_xl},
+    {"xwxx", r_v4_xwxx_index_xl},
+    {"xwxy", r_v4_xwxy_index_xl},
+    {"xwxz", r_v4_xwxz_index_xl},
+    {"xwy", r_v4_xwy_index_xl},
+    {"xwyw", r_v4_xwyw_index_xl},
+    {"xwyx", r_v4_xwyx_index_xl},
+    {"xwyy", r_v4_xwyy_index_xl},
+    {"xwyz", r_v4_xwyz_index_xl},
+    {"xwz", r_v4_xwz_index_xl},
+    {"xwzw", r_v4_xwzw_index_xl},
+    {"xwzx", r_v4_xwzx_index_xl},
+    {"xwzy", r_v4_xwzy_index_xl},
+    {"xwzz", r_v4_xwzz_index_xl},
+    {"xx", r_v4_xx_index_xl},
+    {"xxw", r_v4_xxw_index_xl},
+    {"xxww", r_v4_xxww_index_xl},
+    {"xxwx", r_v4_xxwx_index_xl},
+    {"xxwy", r_v4_xxwy_index_xl},
+    {"xxwz", r_v4_xxwz_index_xl},
+    {"xxx", r_v4_xxx_index_xl},
+    {"xxxw", r_v4_xxxw_index_xl},
+    {"xxxx", r_v4_xxxx_index_xl},
+    {"xxxy", r_v4_xxxy_index_xl},
+    {"xxxz", r_v4_xxxz_index_xl},
+    {"xxy", r_v4_xxy_index_xl},
+    {"xxyw", r_v4_xxyw_index_xl},
+    {"xxyx", r_v4_xxyx_index_xl},
+    {"xxyy", r_v4_xxyy_index_xl},
+    {"xxyz", r_v4_xxyz_index_xl},
+    {"xxz", r_v4_xxz_index_xl},
+    {"xxzw", r_v4_xxzw_index_xl},
+    {"xxzx", r_v4_xxzx_index_xl},
+    {"xxzy", r_v4_xxzy_index_xl},
+    {"xxzz", r_v4_xxzz_index_xl},
+    {"xy", r_v4_xy_index_xl},
+    {"xyw", r_v4_xyw_index_xl},
+    {"xyww", r_v4_xyww_index_xl},
+    {"xywx", r_v4_xywx_index_xl},
+    {"xywy", r_v4_xywy_index_xl},
+    {"xywz", r_v4_xywz_index_xl},
+    {"xyx", r_v4_xyx_index_xl},
+    {"xyxw", r_v4_xyxw_index_xl},
+    {"xyxx", r_v4_xyxx_index_xl},
+    {"xyxy", r_v4_xyxy_index_xl},
+    {"xyxz", r_v4_xyxz_index_xl},
+    {"xyy", r_v4_xyy_index_xl},
+    {"xyyw", r_v4_xyyw_index_xl},
+    {"xyyx", r_v4_xyyx_index_xl},
+    {"xyyy", r_v4_xyyy_index_xl},
+    {"xyyz", r_v4_xyyz_index_xl},
+    {"xyz", r_v4_xyz_index_xl},
+    {"xyzw", r_v4_xyzw_index_xl},
+    {"xyzx", r_v4_xyzx_index_xl},
+    {"xyzy", r_v4_xyzy_index_xl},
+    {"xyzz", r_v4_xyzz_index_xl},
+    {"xz", r_v4_xz_index_xl},
+    {"xzw", r_v4_xzw_index_xl},
+    {"xzww", r_v4_xzww_index_xl},
+    {"xzwx", r_v4_xzwx_index_xl},
+    {"xzwy", r_v4_xzwy_index_xl},
+    {"xzwz", r_v4_xzwz_index_xl},
+    {"xzx", r_v4_xzx_index_xl},
+    {"xzxw", r_v4_xzxw_index_xl},
+    {"xzxx", r_v4_xzxx_index_xl},
+    {"xzxy", r_v4_xzxy_index_xl},
+    {"xzxz", r_v4_xzxz_index_xl},
+    {"xzy", r_v4_xzy_index_xl},
+    {"xzyw", r_v4_xzyw_index_xl},
+    {"xzyx", r_v4_xzyx_index_xl},
+    {"xzyy", r_v4_xzyy_index_xl},
+    {"xzyz", r_v4_xzyz_index_xl},
+    {"xzz", r_v4_xzz_index_xl},
+    {"xzzw", r_v4_xzzw_index_xl},
+    {"xzzx", r_v4_xzzx_index_xl},
+    {"xzzy", r_v4_xzzy_index_xl},
+    {"xzzz", r_v4_xzzz_index_xl},
     {"y", r_v4_y_index_xl},
+    {"yw", r_v4_yw_index_xl},
+    {"yww", r_v4_yww_index_xl},
+    {"ywww", r_v4_ywww_index_xl},
+    {"ywwx", r_v4_ywwx_index_xl},
+    {"ywwy", r_v4_ywwy_index_xl},
+    {"ywwz", r_v4_ywwz_index_xl},
+    {"ywx", r_v4_ywx_index_xl},
+    {"ywxw", r_v4_ywxw_index_xl},
+    {"ywxx", r_v4_ywxx_index_xl},
+    {"ywxy", r_v4_ywxy_index_xl},
+    {"ywxz", r_v4_ywxz_index_xl},
+    {"ywy", r_v4_ywy_index_xl},
+    {"ywyw", r_v4_ywyw_index_xl},
+    {"ywyx", r_v4_ywyx_index_xl},
+    {"ywyy", r_v4_ywyy_index_xl},
+    {"ywyz", r_v4_ywyz_index_xl},
+    {"ywz", r_v4_ywz_index_xl},
+    {"ywzw", r_v4_ywzw_index_xl},
+    {"ywzx", r_v4_ywzx_index_xl},
+    {"ywzy", r_v4_ywzy_index_xl},
+    {"ywzz", r_v4_ywzz_index_xl},
+    {"yx", r_v4_yx_index_xl},
+    {"yxw", r_v4_yxw_index_xl},
+    {"yxww", r_v4_yxww_index_xl},
+    {"yxwx", r_v4_yxwx_index_xl},
+    {"yxwy", r_v4_yxwy_index_xl},
+    {"yxwz", r_v4_yxwz_index_xl},
+    {"yxx", r_v4_yxx_index_xl},
+    {"yxxw", r_v4_yxxw_index_xl},
+    {"yxxx", r_v4_yxxx_index_xl},
+    {"yxxy", r_v4_yxxy_index_xl},
+    {"yxxz", r_v4_yxxz_index_xl},
+    {"yxy", r_v4_yxy_index_xl},
+    {"yxyw", r_v4_yxyw_index_xl},
+    {"yxyx", r_v4_yxyx_index_xl},
+    {"yxyy", r_v4_yxyy_index_xl},
+    {"yxyz", r_v4_yxyz_index_xl},
+    {"yxz", r_v4_yxz_index_xl},
+    {"yxzw", r_v4_yxzw_index_xl},
+    {"yxzx", r_v4_yxzx_index_xl},
+    {"yxzy", r_v4_yxzy_index_xl},
+    {"yxzz", r_v4_yxzz_index_xl},
+    {"yy", r_v4_yy_index_xl},
+    {"yyw", r_v4_yyw_index_xl},
+    {"yyww", r_v4_yyww_index_xl},
+    {"yywx", r_v4_yywx_index_xl},
+    {"yywy", r_v4_yywy_index_xl},
+    {"yywz", r_v4_yywz_index_xl},
+    {"yyx", r_v4_yyx_index_xl},
+    {"yyxw", r_v4_yyxw_index_xl},
+    {"yyxx", r_v4_yyxx_index_xl},
+    {"yyxy", r_v4_yyxy_index_xl},
+    {"yyxz", r_v4_yyxz_index_xl},
+    {"yyy", r_v4_yyy_index_xl},
+    {"yyyw", r_v4_yyyw_index_xl},
+    {"yyyx", r_v4_yyyx_index_xl},
+    {"yyyy", r_v4_yyyy_index_xl},
+    {"yyyz", r_v4_yyyz_index_xl},
+    {"yyz", r_v4_yyz_index_xl},
+    {"yyzw", r_v4_yyzw_index_xl},
+    {"yyzx", r_v4_yyzx_index_xl},
+    {"yyzy", r_v4_yyzy_index_xl},
+    {"yyzz", r_v4_yyzz_index_xl},
+    {"yz", r_v4_yz_index_xl},
+    {"yzw", r_v4_yzw_index_xl},
+    {"yzww", r_v4_yzww_index_xl},
+    {"yzwx", r_v4_yzwx_index_xl},
+    {"yzwy", r_v4_yzwy_index_xl},
+    {"yzwz", r_v4_yzwz_index_xl},
+    {"yzx", r_v4_yzx_index_xl},
+    {"yzxw", r_v4_yzxw_index_xl},
+    {"yzxx", r_v4_yzxx_index_xl},
+    {"yzxy", r_v4_yzxy_index_xl},
+    {"yzxz", r_v4_yzxz_index_xl},
+    {"yzy", r_v4_yzy_index_xl},
+    {"yzyw", r_v4_yzyw_index_xl},
+    {"yzyx", r_v4_yzyx_index_xl},
+    {"yzyy", r_v4_yzyy_index_xl},
+    {"yzyz", r_v4_yzyz_index_xl},
+    {"yzz", r_v4_yzz_index_xl},
+    {"yzzw", r_v4_yzzw_index_xl},
+    {"yzzx", r_v4_yzzx_index_xl},
+    {"yzzy", r_v4_yzzy_index_xl},
+    {"yzzz", r_v4_yzzz_index_xl},
     {"z", r_v4_z_index_xl},
+    {"zw", r_v4_zw_index_xl},
+    {"zww", r_v4_zww_index_xl},
+    {"zwww", r_v4_zwww_index_xl},
+    {"zwwx", r_v4_zwwx_index_xl},
+    {"zwwy", r_v4_zwwy_index_xl},
+    {"zwwz", r_v4_zwwz_index_xl},
+    {"zwx", r_v4_zwx_index_xl},
+    {"zwxw", r_v4_zwxw_index_xl},
+    {"zwxx", r_v4_zwxx_index_xl},
+    {"zwxy", r_v4_zwxy_index_xl},
+    {"zwxz", r_v4_zwxz_index_xl},
+    {"zwy", r_v4_zwy_index_xl},
+    {"zwyw", r_v4_zwyw_index_xl},
+    {"zwyx", r_v4_zwyx_index_xl},
+    {"zwyy", r_v4_zwyy_index_xl},
+    {"zwyz", r_v4_zwyz_index_xl},
+    {"zwz", r_v4_zwz_index_xl},
+    {"zwzw", r_v4_zwzw_index_xl},
+    {"zwzx", r_v4_zwzx_index_xl},
+    {"zwzy", r_v4_zwzy_index_xl},
+    {"zwzz", r_v4_zwzz_index_xl},
+    {"zx", r_v4_zx_index_xl},
+    {"zxw", r_v4_zxw_index_xl},
+    {"zxww", r_v4_zxww_index_xl},
+    {"zxwx", r_v4_zxwx_index_xl},
+    {"zxwy", r_v4_zxwy_index_xl},
+    {"zxwz", r_v4_zxwz_index_xl},
+    {"zxx", r_v4_zxx_index_xl},
+    {"zxxw", r_v4_zxxw_index_xl},
+    {"zxxx", r_v4_zxxx_index_xl},
+    {"zxxy", r_v4_zxxy_index_xl},
+    {"zxxz", r_v4_zxxz_index_xl},
+    {"zxy", r_v4_zxy_index_xl},
+    {"zxyw", r_v4_zxyw_index_xl},
+    {"zxyx", r_v4_zxyx_index_xl},
+    {"zxyy", r_v4_zxyy_index_xl},
+    {"zxyz", r_v4_zxyz_index_xl},
+    {"zxz", r_v4_zxz_index_xl},
+    {"zxzw", r_v4_zxzw_index_xl},
+    {"zxzx", r_v4_zxzx_index_xl},
+    {"zxzy", r_v4_zxzy_index_xl},
+    {"zxzz", r_v4_zxzz_index_xl},
+    {"zy", r_v4_zy_index_xl},
+    {"zyw", r_v4_zyw_index_xl},
+    {"zyww", r_v4_zyww_index_xl},
+    {"zywx", r_v4_zywx_index_xl},
+    {"zywy", r_v4_zywy_index_xl},
+    {"zywz", r_v4_zywz_index_xl},
+    {"zyx", r_v4_zyx_index_xl},
+    {"zyxw", r_v4_zyxw_index_xl},
+    {"zyxx", r_v4_zyxx_index_xl},
+    {"zyxy", r_v4_zyxy_index_xl},
+    {"zyxz", r_v4_zyxz_index_xl},
+    {"zyy", r_v4_zyy_index_xl},
+    {"zyyw", r_v4_zyyw_index_xl},
+    {"zyyx", r_v4_zyyx_index_xl},
+    {"zyyy", r_v4_zyyy_index_xl},
+    {"zyyz", r_v4_zyyz_index_xl},
+    {"zyz", r_v4_zyz_index_xl},
+    {"zyzw", r_v4_zyzw_index_xl},
+    {"zyzx", r_v4_zyzx_index_xl},
+    {"zyzy", r_v4_zyzy_index_xl},
+    {"zyzz", r_v4_zyzz_index_xl},
+    {"zz", r_v4_zz_index_xl},
+    {"zzw", r_v4_zzw_index_xl},
+    {"zzww", r_v4_zzww_index_xl},
+    {"zzwx", r_v4_zzwx_index_xl},
+    {"zzwy", r_v4_zzwy_index_xl},
+    {"zzwz", r_v4_zzwz_index_xl},
+    {"zzx", r_v4_zzx_index_xl},
+    {"zzxw", r_v4_zzxw_index_xl},
+    {"zzxx", r_v4_zzxx_index_xl},
+    {"zzxy", r_v4_zzxy_index_xl},
+    {"zzxz", r_v4_zzxz_index_xl},
+    {"zzy", r_v4_zzy_index_xl},
+    {"zzyw", r_v4_zzyw_index_xl},
+    {"zzyx", r_v4_zzyx_index_xl},
+    {"zzyy", r_v4_zzyy_index_xl},
+    {"zzyz", r_v4_zzyz_index_xl},
+    {"zzz", r_v4_zzz_index_xl},
+    {"zzzw", r_v4_zzzw_index_xl},
+    {"zzzx", r_v4_zzzx_index_xl},
+    {"zzzy", r_v4_zzzy_index_xl},
+    {"zzzz", r_v4_zzzz_index_xl},
     {NULL, NULL},
 };
 
@@ -1082,6 +4894,7 @@ static luaL_Reg r_m4_method_registry_xl[] = {
     {"__mul", r_m4_method_mul_xl},
     {"__newindex", r_m4_newindex_xl},
     {"__tostring", r_m4_method_tostring_xl},
+    {"inv", r_m4_method_inv_xl},
     {"rotate_x", r_m4_method_rotate_x_xl},
     {"rotate_xyz", r_m4_method_rotate_xyz_xl},
     {"rotate_y", r_m4_method_rotate_y_xl},
@@ -1105,6 +4918,7 @@ static luaL_Reg r_v2_method_registry_xl[] = {
     {"__unm", r_v2_method_unm_xl},
     {"distance", r_v2_method_distance_xl},
     {"distance2", r_v2_method_distance2_xl},
+    {"lerp", r_v2_method_lerp_xl},
     {"set", r_v2_method_set_xl},
     {"unpack", r_v2_method_unpack_xl},
     {NULL, NULL},

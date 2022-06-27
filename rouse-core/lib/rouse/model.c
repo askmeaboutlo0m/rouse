@@ -44,6 +44,7 @@
 struct R_Model {
     R_MAGIC_FIELD
     int refs;
+    int id;
     struct {
         int    count;
         R_Mesh *values;
@@ -110,6 +111,7 @@ struct R_Node {
     R_Qn    rotation;
     R_V3    scaling;
     R_M4    transform;
+    bool    child_meshes;
     struct {
         int count;
         int *values;
@@ -398,7 +400,7 @@ static void resolve_bone_refs(R_Parse *parse, R_Model *model, R_Node *node)
     }
 }
 
-static int read_node(R_Parse *parse, R_Model *model, int parent_id)
+static R_Node *read_node(R_Parse *parse, R_Model *model, int parent_id)
 {
     int id = R_parse_read_ushort(parse);
     R_PARSE_DEBUG(parse, "id %d", id);
@@ -443,22 +445,28 @@ static int read_node(R_Parse *parse, R_Model *model, int parent_id)
     }
 
     *node = (R_Node){R_MAGIC_INIT(R_Node) model, id, parent_id, name, position,
-                     rotation, scaling, transform, {mesh_id_count, mesh_ids},
-                     {0, NULL}};
+                     rotation, scaling, transform, false,
+                     {mesh_id_count, mesh_ids}, {0, NULL}};
     resolve_bone_refs(parse, model, node);
 
     int child_id_count = R_parse_read_ushort(parse);
     R_PARSE_DEBUG(parse, "%d child ids", child_id_count);
 
-    int *child_ids = R_ANEW(child_ids, R_int2size(child_id_count));
+    int  *child_ids   = R_ANEW(child_ids, R_int2size(child_id_count));
+    bool child_meshes = false;
     for (int i = 0; i < child_id_count; ++i) {
         R_PARSE_DEBUG(parse, "child %d", i);
-        child_ids[i] = read_node(parse, model, id);
+        R_Node *child = read_node(parse, model, id);
+        child_ids[i] = child->id;
+        if (!child_meshes && (child->mesh_id.count || child->child_meshes)) {
+            child_meshes = true;
+        }
     }
+    node->child_meshes    = child_meshes;
     node->child_id.count  = child_id_count;
     node->child_id.values = child_ids;
 
-    return id;
+    return node;
 }
 
 static void read_nodes(R_Parse *parse, R_Model *model)
@@ -470,7 +478,7 @@ static void read_nodes(R_Parse *parse, R_Model *model)
     for (int i = 0; i < count; ++i) {
         nodes[i] = (R_Node){R_MAGIC_INIT_POISON NULL, -1, -1, NULL, R_v3_zero(),
                             R_qn_identity(), R_v3_zero(), R_m4_identity(),
-                            {0, NULL},  {0, NULL}};
+                            false, {0, NULL},  {0, NULL}};
     }
     model->node.count  = count;
     model->node.values = nodes;
@@ -728,6 +736,9 @@ R_Model *R_model_new(const char *title, R_ParseReadFn read, R_UserData user,
 #ifdef ROUSE_DEBUG
     check_tree(model);
 #endif
+
+    static int last_model_id = 0;
+    model->id = ++last_model_id;
     return model;
 }
 
@@ -848,6 +859,12 @@ static void free_model(R_Model *model)
 }
 
 R_DEFINE_REFCOUNT_FUNCS(R_Model, model, refs)
+
+int R_model_id(R_Model *model)
+{
+    check_model(model);
+    return model->id;
+}
 
 int R_model_mesh_count(R_Model *model)
 {
@@ -1189,6 +1206,12 @@ R_M4 R_node_transform(R_Node *node)
 {
     R_MAGIC_CHECK(R_Node, node);
     return node->transform;
+}
+
+bool R_node_child_meshes(R_Node *node)
+{
+    R_MAGIC_CHECK(R_Node, node);
+    return node->child_meshes;
 }
 
 int R_node_mesh_count(R_Node *node)

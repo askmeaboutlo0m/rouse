@@ -35,6 +35,16 @@ typedef struct R_FirstPerson {
     float v;
 } R_FirstPerson;
 
+typedef struct R_ThirdPerson {
+    R_MAGIC_FIELD
+    R_V3  pos;
+    float yaw;
+    float pitch;
+    float roll;
+} R_ThirdPerson;
+
+
+
 
 R_Camera *R_camera_new(void);
 R_Camera *R_camera_new_perspective(float fov, float aspect_ratio,
@@ -58,3 +68,10 @@ void R_first_person_directions(R_FirstPerson *fp, R_V3 *out_forward,
 void R_first_person_look(R_FirstPerson *fp, float hd, float vd);
 void R_first_person_move(R_FirstPerson *fp, float forward, float right, float up);
 void R_first_person_apply(R_FirstPerson *fp, R_Camera *camera);
+
+
+R_ThirdPerson *R_third_person_new(R_V3 pos, float yaw, float pitch, float roll);
+
+void R_third_person_free(R_ThirdPerson *tp);
+
+void R_third_person_apply(R_ThirdPerson *tp, R_Camera *camera);

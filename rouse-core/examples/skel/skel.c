@@ -54,7 +54,9 @@ typedef struct SceneData {
     R_FrameBuffer   *fb;
     R_FrameRenderer *fr;
     R_FirstPerson   *fp;
+    R_ThirdPerson   *tp;
     R_Camera        *camera;
+    R_Animator      *animator;
     unsigned int    texture;
     double          seconds;
     R_Model         *model;
@@ -133,12 +135,14 @@ static void look(R_FirstPerson *fp, unsigned int input_flags)
     R_first_person_look(fp, h * 0.02f, v * 0.02f);
 }
 
-static void on_tick(R_Scene *scene, R_UNUSED bool rendered)
+static void on_tick(R_Scene *scene, bool rendered)
 {
     SceneData *sd = scene->user.data;
     move(sd->fp, &sd->speed, sd->input_flags);
     look(sd->fp, sd->input_flags);
-    sd->seconds += R_tick_length / 1000.0;
+    double seconds = R_tick_length / 1000.0;
+    sd->seconds += seconds;
+    R_animator_tick(sd->animator, rendered, R_double2float(seconds));
 }
 
 
@@ -298,7 +302,8 @@ static void on_render(R_Scene *scene)
     }
 
     SceneData *sd = scene->user.data;
-    R_first_person_apply(sd->fp, sd->camera);
+    // R_first_person_apply(sd->fp, sd->camera);
+    R_third_person_apply(sd->tp, sd->camera);
     R_frame_buffer_bind(sd->fb);
 
     R_gl_clear(0.5f, 0.5f, 0.5f, 1.0f, 1.0f, 0);
@@ -323,6 +328,8 @@ static void on_free(R_Scene *scene)
     R_gl_texture_free(sd->texture);
     free(sd->nodes);
     R_model_decref(sd->model);
+    R_animator_free(sd->animator);
+    R_third_person_free(sd->tp);
     R_first_person_free(sd->fp);
     R_camera_free(sd->camera);
     R_frame_renderer_free(sd->fr);
@@ -330,6 +337,42 @@ static void on_free(R_Scene *scene)
     free(sd);
 }
 
+
+static float get_yaw(R_UserData user)
+{
+    SceneData *sd = user.data;
+    return sd->tp->yaw;
+}
+
+static void set_yaw(R_UserData user, float value)
+{
+    SceneData *sd = user.data;
+    sd->tp->yaw = value;
+}
+
+static float get_pitch(R_UserData user)
+{
+    SceneData *sd = user.data;
+    return sd->tp->pitch;
+}
+
+static void set_pitch(R_UserData user, float value)
+{
+    SceneData *sd = user.data;
+    sd->tp->pitch = value;
+}
+
+static float get_roll(R_UserData user)
+{
+    SceneData *sd = user.data;
+    return sd->tp->roll;
+}
+
+static void set_roll(R_UserData user, float value)
+{
+    SceneData *sd = user.data;
+    sd->tp->roll = value;
+}
 
 static R_Scene *init_scene(R_UNUSED void *user)
 {
@@ -344,8 +387,32 @@ static R_Scene *init_scene(R_UNUSED void *user)
     sd->fb          = R_frame_buffer_new(&fbo);
     sd->fr          = R_frame_renderer_new(false);
     sd->fp          = R_first_person_new(R_v3(0.0f, 5.0f, 20.0f), R_PI, 0.0f);
+    sd->tp          = R_third_person_new(R_v3(0.0f, 5.0f, 20.0f), 0.0f, 0.0f, 0.0f);
     sd->camera      = R_camera_new_perspective(R_to_rad(60.0f), 16.0f / 9.0f,
                                                0.1f, 1000.0f);
+
+    sd->animator = R_animator_new();
+    {
+        R_Sequence *seq = R_sequence_new();
+        R_Step *step = R_tween_new_between(1.0f, 3.0f, R_ease_quad_in_out, NULL, R_user_null());
+        R_tween_add_float(step, R_tween_float_between(-CGLM_PI_4, CGLM_PI_4), R_user_data(sd), get_yaw, set_yaw, NULL, NULL);
+        R_sequence_add(seq, step);
+        R_animator_add(sd->animator, seq, R_SEQUENCE_RUN_FOREVER, NULL, NULL, R_user_null());
+    }
+    {
+        R_Sequence *seq = R_sequence_new();
+        R_Step *step = R_tween_new_between(1.0f, 3.0f, R_ease_quad_in_out, NULL, R_user_null());
+        R_tween_add_float(step, R_tween_float_between(-CGLM_PI / 8.0f, CGLM_PI / 8.0f), R_user_data(sd), get_pitch, set_pitch, NULL, NULL);
+        R_sequence_add(seq, step);
+        R_animator_add(sd->animator, seq, R_SEQUENCE_RUN_FOREVER, NULL, NULL, R_user_null());
+    }
+    {
+        R_Sequence *seq = R_sequence_new();
+        R_Step *step = R_tween_new_between(1.0f, 3.0f, R_ease_quad_in_out, NULL, R_user_null());
+        R_tween_add_float(step, R_tween_float_between(-CGLM_PI / 8.0f, CGLM_PI / 8.0f), R_user_data(sd), get_roll, set_roll, NULL, NULL);
+        R_sequence_add(seq, step);
+        R_animator_add(sd->animator, seq, R_SEQUENCE_RUN_FOREVER, NULL, NULL, R_user_null());
+    }
 
     R_TextureOptions texture_options = R_texture_options();
     sd->texture   = R_gl_texture_new("test/data/cuboid.png", &texture_options);

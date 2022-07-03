@@ -51,13 +51,13 @@ static void gen_buffer(unsigned int *buf, unsigned int component,
 }
 
 static void gen_texture(unsigned int *tex, int internal_format,
-                        unsigned int format, int width, int height,
-                        int min_filter, int mag_filter)
+                        unsigned int format, unsigned int type, int width,
+                        int height, int min_filter, int mag_filter)
 {
     R_GL(glGenTextures, 1, tex);
     R_GL(glBindTexture, GL_TEXTURE_2D, *tex);
-    R_GL(glTexImage2D, GL_TEXTURE_2D, 0, internal_format, width, height,
-                       0, format, GL_UNSIGNED_BYTE, NULL);
+    R_GL(glTexImage2D, GL_TEXTURE_2D, 0, internal_format, width, height, 0,
+                       format, type, NULL);
     R_GL(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag_filter);
     R_GL(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min_filter);
     R_GL(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -73,12 +73,13 @@ static void gen_color_buffer(R_FrameBuffer *fb,
         case R_FRAME_BUFFER_ATTACHMENT_NONE:
             break;
         case R_FRAME_BUFFER_ATTACHMENT_BUFFER:
-            gen_buffer(&fb->color, GL_RGBA, fb->real_width, fb->real_height,
+            gen_buffer(&fb->color, GL_RGBA4, fb->real_width, fb->real_height,
                        fb->samples);
             break;
         case R_FRAME_BUFFER_ATTACHMENT_TEXTURE:
-            gen_texture(&fb->color, GL_RGBA, GL_RGBA, fb->real_width,
-                        fb->real_height, min_filter, mag_filter);
+            gen_texture(&fb->color, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE,
+                        fb->real_width, fb->real_height, min_filter,
+                        mag_filter);
             break;
         default:
             R_die("Unknown frame buffer color type: %d", type);
@@ -98,7 +99,8 @@ static void gen_depth_buffer(R_FrameBuffer *fb,
             break;
         case R_FRAME_BUFFER_ATTACHMENT_TEXTURE:
             gen_texture(&fb->depth, GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT,
-                        fb->real_width, fb->real_height, min_filter, mag_filter);
+                        GL_UNSIGNED_SHORT, fb->real_width, fb->real_height,
+                        min_filter, mag_filter);
             break;
         default:
             R_die("Unknown frame buffer depth type: %d", type);

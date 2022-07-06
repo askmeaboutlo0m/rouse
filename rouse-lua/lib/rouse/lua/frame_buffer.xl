@@ -62,6 +62,9 @@ static R_FrameBufferAttachmentType get_attachment_type(
     else if (R_str_equal(value, "texture")) {
         return R_FRAME_BUFFER_ATTACHMENT_TEXTURE;
     }
+    else if (R_str_equal(value, "cubemap")) {
+        return R_FRAME_BUFFER_ATTACHMENT_CUBEMAP;
+    }
     else {
         R_LUA_DIE(L, "Unknown frame buffer %s attachment type '%s'", what, value);
     }
@@ -149,6 +152,10 @@ END
 FUNCTION void R.FrameBuffer.unbind()
     XL_UNUSED(L);
     R_frame_buffer_unbind();
+END
+
+METHOD void attach_cubemap_side(unsigned int side)
+    R_frame_buffer_attach_cubemap_side(self, side);
 END
 
 METHOD void write_to_stdout()

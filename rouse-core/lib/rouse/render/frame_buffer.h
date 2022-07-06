@@ -26,6 +26,7 @@ typedef enum R_FrameBufferAttachmentType {
     R_FRAME_BUFFER_ATTACHMENT_NONE,
     R_FRAME_BUFFER_ATTACHMENT_BUFFER,
     R_FRAME_BUFFER_ATTACHMENT_TEXTURE,
+    R_FRAME_BUFFER_ATTACHMENT_CUBEMAP,
 } R_FrameBufferAttachmentType;
 
 typedef struct R_FrameBufferOptions {
@@ -54,6 +55,8 @@ void R_frame_buffer_free(R_FrameBuffer *fb);
 
 void R_frame_buffer_bind(R_FrameBuffer *fb);
 void R_frame_buffer_unbind(void);
+
+void R_frame_buffer_attach_cubemap_side(R_FrameBuffer *fb, unsigned int side);
 
 R_V2 R_frame_buffer_ratio(R_FrameBuffer *fb);
 

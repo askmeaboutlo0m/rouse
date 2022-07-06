@@ -65,6 +65,26 @@ static void gen_texture(unsigned int *tex, int internal_format,
     R_GL(glBindTexture, GL_TEXTURE_2D, 0);
 }
 
+static void gen_cubemap(unsigned int *tex, int internal_format,
+                        unsigned int format, unsigned int type, int width,
+                        int height, int min_filter, int mag_filter)
+{
+    R_GL(glGenTextures, 1, tex);
+    R_GL(glBindTexture, GL_TEXTURE_CUBE_MAP, *tex);
+
+    for (unsigned int i = 0; i < 6; ++i) {
+        unsigned int side = GL_TEXTURE_CUBE_MAP_POSITIVE_X + i;
+        R_GL(glTexImage2D, side, 0, internal_format, width, height, 0, format,
+                           type, NULL);
+    }
+
+    R_GL(glTexParameteri, GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, mag_filter);
+    R_GL(glTexParameteri, GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, min_filter);
+    R_GL(glTexParameteri, GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    R_GL(glTexParameteri, GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    R_GL(glBindTexture, GL_TEXTURE_CUBE_MAP, 0);
+}
+
 static void gen_color_buffer(R_FrameBuffer *fb,
                              R_FrameBufferAttachmentType type,
                              int min_filter, int mag_filter)
@@ -78,6 +98,11 @@ static void gen_color_buffer(R_FrameBuffer *fb,
             break;
         case R_FRAME_BUFFER_ATTACHMENT_TEXTURE:
             gen_texture(&fb->color, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE,
+                        fb->real_width, fb->real_height, min_filter,
+                        mag_filter);
+            break;
+        case R_FRAME_BUFFER_ATTACHMENT_CUBEMAP:
+            gen_cubemap(&fb->color, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE,
                         fb->real_width, fb->real_height, min_filter,
                         mag_filter);
             break;
@@ -102,6 +127,11 @@ static void gen_depth_buffer(R_FrameBuffer *fb,
                         GL_UNSIGNED_SHORT, fb->real_width, fb->real_height,
                         min_filter, mag_filter);
             break;
+        case R_FRAME_BUFFER_ATTACHMENT_CUBEMAP:
+            gen_cubemap(&fb->depth, GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT,
+                        GL_UNSIGNED_SHORT, fb->real_width, fb->real_height,
+                        min_filter, mag_filter);
+            break;
         default:
             R_die("Unknown frame buffer depth type: %d", type);
     }
@@ -118,6 +148,7 @@ static void gen_stencil_buffer(R_FrameBuffer *fb,
                        fb->real_height, fb->samples);
             break;
         case R_FRAME_BUFFER_ATTACHMENT_TEXTURE:
+        case R_FRAME_BUFFER_ATTACHMENT_CUBEMAP:
             R_die("Frame buffer stencil textures unsupported in OpenGL ES 2.0");
         default:
             R_die("Unknown frame buffer stencil type: %d", type);
@@ -145,6 +176,19 @@ static void attach_texture(unsigned int attachment, unsigned int tex,
     }
 }
 
+static void attach_cubemap(unsigned int attachment, unsigned int side,
+                           unsigned int tex, int samples)
+{
+    if (samples > 1) {
+        R_GL(glFramebufferTexture2DMultisampleEXT, GL_FRAMEBUFFER, attachment,
+                                                   GL_TEXTURE_CUBE_MAP, tex, 0,
+                                                   samples);
+    }
+    else {
+        R_GL(glFramebufferTexture2D, GL_FRAMEBUFFER, attachment, side, tex, 0);
+    }
+}
+
 static void attach(R_FrameBuffer *fb, R_FrameBufferAttachmentType type,
                    unsigned int handle, unsigned int attachment)
 {
@@ -156,6 +200,11 @@ static void attach(R_FrameBuffer *fb, R_FrameBufferAttachmentType type,
             break;
         case R_FRAME_BUFFER_ATTACHMENT_TEXTURE:
             attach_texture(attachment, handle, fb->samples);
+            break;
+        case R_FRAME_BUFFER_ATTACHMENT_CUBEMAP:
+            /* Attach an arbitrary side for error checking. */
+            attach_cubemap(attachment, GL_TEXTURE_CUBE_MAP_POSITIVE_X, handle,
+                           fb->samples);
             break;
         default:
             R_die("Unknown attachment type: %d", type);
@@ -197,7 +246,7 @@ static void check_status(void)
     }
 
     if (error) {
-        R_die("Constructing frame buffer failed: %s (%u)", error, status);
+        R_die("Bad frame buffer status: %s (%u)", error, status);
     }
 }
 
@@ -336,6 +385,48 @@ void R_frame_buffer_bind(R_FrameBuffer *fb)
 void R_frame_buffer_unbind(void)
 {
     R_frame_buffer_bind(NULL);
+}
+
+
+void R_frame_buffer_attach_cubemap_side(R_FrameBuffer *fb, unsigned int side)
+{
+    R_MAGIC_CHECK(R_FrameBuffer, fb);
+    R_assert(side == GL_TEXTURE_CUBE_MAP_POSITIVE_X
+          || side == GL_TEXTURE_CUBE_MAP_NEGATIVE_X
+          || side == GL_TEXTURE_CUBE_MAP_POSITIVE_Y
+          || side == GL_TEXTURE_CUBE_MAP_NEGATIVE_Y
+          || side == GL_TEXTURE_CUBE_MAP_POSITIVE_Z
+          || side == GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
+          "side must be valid cubemap side constant");
+    R_assert(fb->color_type   == R_FRAME_BUFFER_ATTACHMENT_CUBEMAP
+          || fb->depth_type   == R_FRAME_BUFFER_ATTACHMENT_CUBEMAP
+          || fb->stencil_type == R_FRAME_BUFFER_ATTACHMENT_CUBEMAP,
+          "frame buffer must have at least one cubemap attachment");
+
+    R_GL_CLEAR_ERROR();
+
+#ifdef ROUSE_DEBUG
+    int current_binding;
+    R_GL(glGetIntegerv, GL_FRAMEBUFFER_BINDING, &current_binding);
+    R_assert(fb->handle == R_int2uint(current_binding),
+             "frame buffer is currently bound");
+#endif
+
+    if (fb->color_type == R_FRAME_BUFFER_ATTACHMENT_CUBEMAP) {
+        attach_cubemap(GL_COLOR_ATTACHMENT0, side, fb->color, fb->samples);
+    }
+
+    if (fb->depth_type == R_FRAME_BUFFER_ATTACHMENT_CUBEMAP) {
+        attach_cubemap(GL_DEPTH_ATTACHMENT, side, fb->depth, fb->samples);
+    }
+
+    if (fb->stencil_type == R_FRAME_BUFFER_ATTACHMENT_CUBEMAP) {
+        attach_cubemap(GL_STENCIL_ATTACHMENT, side, fb->stencil, fb->samples);
+    }
+
+#ifdef ROUSE_DEBUG
+    check_status();
+#endif
 }
 
 

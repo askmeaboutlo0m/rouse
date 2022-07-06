@@ -85,6 +85,9 @@ static R_FrameBufferAttachmentType get_attachment_type(
     else if (R_str_equal(value, "texture")) {
         return R_FRAME_BUFFER_ATTACHMENT_TEXTURE;
     }
+    else if (R_str_equal(value, "cubemap")) {
+        return R_FRAME_BUFFER_ATTACHMENT_CUBEMAP;
+    }
     else {
         R_LUA_DIE(L, "Unknown frame buffer %s attachment type '%s'", what, value);
     }
@@ -285,6 +288,14 @@ static int r_framebuffer_unbind_xl(lua_State *L)
     return 0;
 }
 
+static int r_framebuffer_method_attach_cubemap_side_xl(lua_State *L)
+{
+    R_FrameBuffer *self = R_CPPCAST(R_FrameBuffer *, XL_checkpptype(L, 1, "R_FrameBuffer"));
+    unsigned int side = XL_checkuint(L, 2);
+    R_frame_buffer_attach_cubemap_side(self, side);
+    return 0;
+}
+
 static int r_framebuffer_method_write_to_stdout_xl(lua_State *L)
 {
     R_FrameBuffer *self = R_CPPCAST(R_FrameBuffer *, XL_checkpptype(L, 1, "R_FrameBuffer"));
@@ -342,6 +353,7 @@ static luaL_Reg r_framebuffer_index_registry_xl[] = {
 static luaL_Reg r_framebuffer_method_registry_xl[] = {
     {"__gc", r_framebuffer_method_gc_xl},
     {"__index", r_framebuffer_index_xl},
+    {"attach_cubemap_side", r_framebuffer_method_attach_cubemap_side_xl},
     {"bind", r_framebuffer_method_bind_xl},
     {"unbind", r_framebuffer_method_unbind_xl},
     {"write_to_stdout", r_framebuffer_method_write_to_stdout_xl},

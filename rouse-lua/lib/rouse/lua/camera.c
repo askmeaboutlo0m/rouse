@@ -84,6 +84,20 @@ static int r_camera_new_perspective_xl(lua_State *L)
     return 1;
 }
 
+static int r_camera_new_orthographic_xl(lua_State *L)
+{
+    float left = XL_checkfloat(L, 1);
+    float right = XL_checkfloat(L, 2);
+    float bottom = XL_checkfloat(L, 3);
+    float top = XL_checkfloat(L, 4);
+    float near = XL_checkfloat(L, 5);
+    float far = XL_checkfloat(L, 6);
+    R_Camera *RETVAL;
+    RETVAL = R_camera_new_orthographic(left, right, bottom, top, near, far);
+    XL_pushnewpptypeuv(L, RETVAL, "R_Camera", 0);
+    return 1;
+}
+
 static int r_camera_method_gc_xl(lua_State *L)
 {
     R_Camera *self = R_CPPCAST(R_Camera *, XL_checkpptype_nullable(L, 1, "R_Camera"));
@@ -99,6 +113,19 @@ static int r_camera_method_set_perspective_xl(lua_State *L)
     float near = XL_checkfloat(L, 4);
     float far = XL_checkfloat(L, 5);
     R_camera_perspective_set(self, fov, aspect_ratio, near, far);
+    return 0;
+}
+
+static int r_camera_method_set_orthographic_xl(lua_State *L)
+{
+    R_Camera *self = R_CPPCAST(R_Camera *, XL_checkpptype(L, 1, "R_Camera"));
+    float left = XL_checkfloat(L, 2);
+    float right = XL_checkfloat(L, 3);
+    float bottom = XL_checkfloat(L, 4);
+    float top = XL_checkfloat(L, 5);
+    float near = XL_checkfloat(L, 6);
+    float far = XL_checkfloat(L, 7);
+    R_camera_orthographic_set(self, left, right, bottom, top, near, far);
     return 0;
 }
 
@@ -461,6 +488,7 @@ static int r_thirdperson_newindex_xl(lua_State *L)
 
 static luaL_Reg r_camera_function_registry_xl[] = {
     {"new", r_camera_new_xl},
+    {"new_orthographic", r_camera_new_orthographic_xl},
     {"new_perspective", r_camera_new_perspective_xl},
     {NULL, NULL},
 };
@@ -508,6 +536,7 @@ static luaL_Reg r_camera_method_registry_xl[] = {
     {"__index", r_camera_index_xl},
     {"__newindex", r_camera_newindex_xl},
     {"bind", r_camera_method_bind_xl},
+    {"set_orthographic", r_camera_method_set_orthographic_xl},
     {"set_perspective", r_camera_method_set_perspective_xl},
     {NULL, NULL},
 };

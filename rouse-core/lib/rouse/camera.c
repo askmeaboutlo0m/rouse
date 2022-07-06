@@ -50,6 +50,14 @@ R_Camera *R_camera_new_perspective(float fov, float aspect_ratio,
     return camera;
 }
 
+R_Camera * R_camera_new_orthographic(float left, float right, float bottom,
+                                     float top, float near, float far)
+{
+    R_Camera *camera = R_camera_new();
+    R_camera_orthographic_set(camera, left, right, bottom, top, near, far);
+    return camera;
+}
+
 void R_camera_free(R_Camera *camera)
 {
     if (camera) {
@@ -63,6 +71,13 @@ void R_camera_perspective_set(R_Camera *camera, float fov, float aspect_ratio,
 {
     R_MAGIC_CHECK(R_Camera, camera);
     camera->proj = R_m4_perspective(fov, aspect_ratio, near, far);
+}
+
+void R_camera_orthographic_set(R_Camera *camera, float left, float right,
+                               float bottom, float top, float near, float far)
+{
+    R_MAGIC_CHECK(R_Camera, camera);
+    camera->proj = glms_ortho(left, right, bottom, top, near, far);
 }
 
 static void bind_matrix(R_M4 *matrix, int location)

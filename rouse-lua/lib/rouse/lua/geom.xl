@@ -286,6 +286,10 @@ UTYPE R_M4 R.M4
 
 CONSTRUCTOR identity() = R_m4_identity
 
+CONSTRUCTOR translation(float x, float y, float z)
+    RETVAL = glms_translate_make(R_v3(x, y, z));
+END
+
 FIELD float m00
 FIELD float m01
 FIELD float m02
@@ -354,6 +358,22 @@ FUNCTION ... R_M4:__mul(any a, any b)
         default:
             DIE_WITH_BAD_TYPES(L, "R_M4", "*", a, b);
     }
+END
+
+METHOD R_M4 translate_x(float x)
+    RETVAL = glms_translate_x(*self, x);
+END
+
+METHOD R_M4 translate_y(float y)
+    RETVAL = glms_translate_y(*self, y);
+END
+
+METHOD R_M4 translate_z(float z)
+    RETVAL = glms_translate_y(*self, z);
+END
+
+METHOD R_M4 translate_xyz(float x, float y, float z)
+    RETVAL = glms_translate(*self, R_v3(x, y, z));
 END
 
 METHOD R_M4 rotate_x(float angle)

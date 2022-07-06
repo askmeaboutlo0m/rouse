@@ -561,6 +561,17 @@ static int r_m4_identity_xl(lua_State *L)
     return 1;
 }
 
+static int r_m4_translation_xl(lua_State *L)
+{
+    float x = XL_checkfloat(L, 1);
+    float y = XL_checkfloat(L, 2);
+    float z = XL_checkfloat(L, 3);
+    R_M4 RETVAL;
+    RETVAL = glms_translate_make(R_v3(x, y, z));
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_M4), "R_M4", 0);
+    return 1;
+}
+
 static int r_m4_m00_index_xl(lua_State *L)
 {
     R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
@@ -893,6 +904,48 @@ static int r_m4_method_mul_xl(lua_State *L)
         default:
             DIE_WITH_BAD_TYPES(L, "R_M4", "*", a, b);
     }
+}
+
+static int r_m4_method_translate_x_xl(lua_State *L)
+{
+    R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
+    float x = XL_checkfloat(L, 2);
+    R_M4 RETVAL;
+    RETVAL = glms_translate_x(*self, x);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_M4), "R_M4", 0);
+    return 1;
+}
+
+static int r_m4_method_translate_y_xl(lua_State *L)
+{
+    R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
+    float y = XL_checkfloat(L, 2);
+    R_M4 RETVAL;
+    RETVAL = glms_translate_y(*self, y);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_M4), "R_M4", 0);
+    return 1;
+}
+
+static int r_m4_method_translate_z_xl(lua_State *L)
+{
+    R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
+    float z = XL_checkfloat(L, 2);
+    R_M4 RETVAL;
+    RETVAL = glms_translate_y(*self, z);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_M4), "R_M4", 0);
+    return 1;
+}
+
+static int r_m4_method_translate_xyz_xl(lua_State *L)
+{
+    R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
+    float x = XL_checkfloat(L, 2);
+    float y = XL_checkfloat(L, 3);
+    float z = XL_checkfloat(L, 4);
+    R_M4 RETVAL;
+    RETVAL = glms_translate(*self, R_v3(x, y, z));
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_M4), "R_M4", 0);
+    return 1;
 }
 
 static int r_m4_method_rotate_x_xl(lua_State *L)
@@ -4448,6 +4501,7 @@ static int r_v4_newindex_xl(lua_State *L)
 
 static luaL_Reg r_m4_function_registry_xl[] = {
     {"identity", r_m4_identity_xl},
+    {"translation", r_m4_translation_xl},
     {NULL, NULL},
 };
 
@@ -4903,6 +4957,10 @@ static luaL_Reg r_m4_method_registry_xl[] = {
     {"scale_xyz", r_m4_method_scale_xyz_xl},
     {"scale_y", r_m4_method_scale_y_xl},
     {"scale_z", r_m4_method_scale_z_xl},
+    {"translate_x", r_m4_method_translate_x_xl},
+    {"translate_xyz", r_m4_method_translate_xyz_xl},
+    {"translate_y", r_m4_method_translate_y_xl},
+    {"translate_z", r_m4_method_translate_z_xl},
     {"unpack", r_m4_method_unpack_xl},
     {NULL, NULL},
 };

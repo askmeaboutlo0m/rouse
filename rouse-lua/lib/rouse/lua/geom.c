@@ -572,6 +572,32 @@ static int r_m4_translation_xl(lua_State *L)
     return 1;
 }
 
+static int r_m4_perspective_xl(lua_State *L)
+{
+    float fov = XL_checkfloat(L, 1);
+    float aspect_ratio = XL_checkfloat(L, 2);
+    float near = XL_checkfloat(L, 3);
+    float far = XL_checkfloat(L, 4);
+    R_M4 RETVAL;
+    RETVAL = glms_perspective(fov, aspect_ratio, near, far);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_M4), "R_M4", 0);
+    return 1;
+}
+
+static int r_m4_ortho_xl(lua_State *L)
+{
+    float left = XL_checkfloat(L, 1);
+    float right = XL_checkfloat(L, 2);
+    float bottom = XL_checkfloat(L, 3);
+    float top = XL_checkfloat(L, 4);
+    float near = XL_checkfloat(L, 5);
+    float far = XL_checkfloat(L, 6);
+    R_M4 RETVAL;
+    RETVAL = glms_ortho(left, right, bottom, top, near, far);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_M4), "R_M4", 0);
+    return 1;
+}
+
 static int r_m4_m00_index_xl(lua_State *L)
 {
     R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
@@ -4501,6 +4527,8 @@ static int r_v4_newindex_xl(lua_State *L)
 
 static luaL_Reg r_m4_function_registry_xl[] = {
     {"identity", r_m4_identity_xl},
+    {"ortho", r_m4_ortho_xl},
+    {"perspective", r_m4_perspective_xl},
     {"translation", r_m4_translation_xl},
     {NULL, NULL},
 };

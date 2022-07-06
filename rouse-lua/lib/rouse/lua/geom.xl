@@ -290,6 +290,12 @@ CONSTRUCTOR translation(float x, float y, float z)
     RETVAL = glms_translate_make(R_v3(x, y, z));
 END
 
+CONSTRUCTOR perspective(float fov, float aspect_ratio, float near,
+                        float far) = glms_perspective
+
+CONSTRUCTOR ortho(float left, float right, float bottom, float top, float near,
+                  float far) = glms_ortho
+
 FIELD float m00
 FIELD float m01
 FIELD float m02

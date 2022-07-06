@@ -1,7 +1,7 @@
 /*
  * render/frame_buffer.h - OpenGL frame buffer handleage.
  *
- * Copyright (c) 2019, 2021 askmeaboutloom
+ * Copyright (c) 2019 - 2022 askmeaboutloom
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal

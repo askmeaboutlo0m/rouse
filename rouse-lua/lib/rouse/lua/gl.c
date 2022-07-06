@@ -35,15 +35,54 @@ typedef unsigned int R_LuaGlProgram;
 typedef unsigned int R_LuaGlTexture;
 
 
-static int r_gl_clear_xl(lua_State *L)
+static int r_gl_clear_color_xl(lua_State *L)
 {
     float r = XL_checkfloat(L, 1);
     float g = XL_checkfloat(L, 2);
     float b = XL_checkfloat(L, 3);
     float a = XL_checkfloat(L, 4);
-    float depth = XL_checkfloat(L, 5);
-    int stencil = XL_checkint(L, 6);
-    R_gl_clear(r, g, b, a, depth, stencil);
+    R_GL_CLEAR_ERROR();
+    R_GL(glClearColor, r, g, b, a);
+    return 0;
+}
+
+static int r_gl_clear_depthf_xl(lua_State *L)
+{
+    float depth = XL_checkfloat(L, 1);
+    R_GL_CLEAR_ERROR();
+    R_GL(glClearDepthf, depth);
+    return 0;
+}
+
+static int r_gl_clear_stencil_xl(lua_State *L)
+{
+    int stencil = XL_checkint(L, 1);
+    R_GL_CLEAR_ERROR();
+    R_GL(glClearStencil, stencil);
+    return 0;
+}
+
+static int r_gl_clear_xl(lua_State *L)
+{
+    int argc = lua_gettop(L);
+    if (argc == 1) {
+        unsigned int bits = XL_checkuint(L, 1);
+        R_GL_CLEAR_ERROR();
+        R_GL(glClear, bits);
+    }
+    else if (argc == 6) {
+        float r       = XL_checkfloat(L, 1);
+        float g       = XL_checkfloat(L, 2);
+        float b       = XL_checkfloat(L, 3);
+        float a       = XL_checkfloat(L, 4);
+        float depth   = XL_checkfloat(L, 5);
+        int   stencil = XL_checkint(  L, 6);
+        R_gl_clear(r, g, b, a, depth, stencil);
+    }
+    else {
+        R_LUA_DIE(L, "R.GL.clear takes either 1 or 6 arguments, but got %d",
+                  argc);
+    }
     return 0;
 }
 
@@ -424,6 +463,9 @@ static luaL_Reg r_gl_function_registry_xl[] = {
     {"bind_texture2d", r_gl_bind_texture2d_xl},
     {"blend_func", r_gl_blend_func_xl},
     {"clear", r_gl_clear_xl},
+    {"clear_color", r_gl_clear_color_xl},
+    {"clear_depthf", r_gl_clear_depthf_xl},
+    {"clear_stencil", r_gl_clear_stencil_xl},
     {"cull_face", r_gl_cull_face_xl},
     {"depth_func", r_gl_depth_func_xl},
     {"disable", r_gl_disable_xl},

@@ -307,6 +307,14 @@ static int r_gl_bind_texture2d_xl(lua_State *L)
     return 0;
 }
 
+static int r_gl_bind_texture_cube_xl(lua_State *L)
+{
+    unsigned int texture = XL_checkuint(L, 1);
+    R_GL_CLEAR_ERROR();
+    R_GL(glBindTexture, GL_TEXTURE_CUBE_MAP, texture);
+    return 0;
+}
+
 static int r_gl_buffer_new_xl(lua_State *L)
 {
     R_LuaGlBuffer *RETVAL;
@@ -461,6 +469,7 @@ static luaL_Reg r_gl_function_registry_xl[] = {
     {"active_texture", r_gl_active_texture_xl},
     {"bind_texture", r_gl_bind_texture_xl},
     {"bind_texture2d", r_gl_bind_texture2d_xl},
+    {"bind_texture_cube", r_gl_bind_texture_cube_xl},
     {"blend_func", r_gl_blend_func_xl},
     {"clear", r_gl_clear_xl},
     {"clear_color", r_gl_clear_color_xl},

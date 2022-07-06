@@ -212,6 +212,11 @@ FUNCTION void R.GL.bind_texture2d(unsigned int texture)
     R_GL(glBindTexture, GL_TEXTURE_2D, texture);
 END
 
+FUNCTION void R.GL.bind_texture_cube(unsigned int texture)
+    R_GL_CLEAR_ERROR();
+    R_GL(glBindTexture, GL_TEXTURE_CUBE_MAP, texture);
+END
+
 
 PPTYPE R_LuaGlBuffer R.GL.Buffer
 

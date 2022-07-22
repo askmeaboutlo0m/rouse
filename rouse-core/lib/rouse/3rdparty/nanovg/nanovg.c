@@ -1,7 +1,8 @@
 //
 // Copyright (c) 2013 Mikko Mononen memon@inside.org
 //
-// Copyright 2020 askmeaboutloom for color tint patches.
+// Copyright 2020 - 2022 askmeaboutloom for color tint and font blur
+// softness patches.
 //
 // This software is provided 'as-is', without any express or implied
 // warranty.  In no event will the authors be held liable for any damages
@@ -84,6 +85,7 @@ struct NVGstate {
 	float letterSpacing;
 	float lineHeight;
 	float fontBlur;
+	float fontBlurSoftness;
 	int textAlign;
 	int fontId;
 };
@@ -665,6 +667,7 @@ void nvgReset(NVGcontext* ctx)
 	state->letterSpacing = 0.0f;
 	state->lineHeight = 1.0f;
 	state->fontBlur = 0.0f;
+	state->fontBlurSoftness = 1.0f;
 	state->textAlign = NVG_ALIGN_LEFT | NVG_ALIGN_BASELINE;
 	state->fontId = 0;
 }
@@ -2387,6 +2390,12 @@ void nvgFontBlur(NVGcontext* ctx, float blur)
 	state->fontBlur = blur;
 }
 
+void nvgFontBlurSoftness(NVGcontext* ctx, float softness)
+{
+	NVGstate* state = nvg__getState(ctx);
+	state->fontBlurSoftness = softness;
+}
+
 void nvgTextLetterSpacing(NVGcontext* ctx, float spacing)
 {
 	NVGstate* state = nvg__getState(ctx);
@@ -2509,6 +2518,7 @@ float nvgText(NVGcontext* ctx, float x, float y, const char* string, const char*
 	fonsSetSize(ctx->fs, state->fontSize*scale);
 	fonsSetSpacing(ctx->fs, state->letterSpacing*scale);
 	fonsSetBlur(ctx->fs, state->fontBlur*scale);
+	fonsSetSoftness(ctx->fs, state->fontBlurSoftness);
 	fonsSetAlign(ctx->fs, state->textAlign);
 	fonsSetFont(ctx->fs, state->fontId);
 

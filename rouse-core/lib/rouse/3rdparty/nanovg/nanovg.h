@@ -1,7 +1,8 @@
 //
 // Copyright (c) 2013 Mikko Mononen memon@inside.org
 //
-// Copyright 2020 askmeaboutloom for color tint and get global alpha patches.
+// Copyright 2020 - 2022 askmeaboutloom for color tint, get global alpha
+// and font blur softness patches.
 //
 // This software is provided 'as-is', without any express or implied
 // warranty.  In no event will the authors be held liable for any damages
@@ -582,6 +583,9 @@ void nvgFontSize(NVGcontext* ctx, float size);
 
 // Sets the blur of current text style.
 void nvgFontBlur(NVGcontext* ctx, float blur);
+
+// Sets the blur softness of the current text style. 1.0 is the softest blur (default), 0.0 the hardest.
+void nvgFontBlurSoftness(NVGcontext* ctx, float softness);
 
 // Sets the letter spacing of current text style.
 void nvgTextLetterSpacing(NVGcontext* ctx, float spacing);

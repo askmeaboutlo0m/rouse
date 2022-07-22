@@ -1,6 +1,8 @@
 //
 // Copyright (c) 2009-2013 Mikko Mononen memon@inside.org
 //
+// Copyright 2022 askmeaboutloom for font blur softness patches.
+//
 // This software is provided 'as-is', without any express or implied
 // warranty.  In no event will the authors be held liable for any damages
 // arising from the use of this software.
@@ -77,6 +79,7 @@ struct FONStextIter {
 	float x, y, nextx, nexty, scale, spacing;
 	unsigned int codepoint;
 	short isize, iblur;
+	unsigned char isoftness;
 	struct FONSfont* font;
 	int prevGlyphIndex;
 	const char* str;
@@ -116,6 +119,7 @@ void fonsSetSize(FONScontext* s, float size);
 void fonsSetColor(FONScontext* s, unsigned int color);
 void fonsSetSpacing(FONScontext* s, float spacing);
 void fonsSetBlur(FONScontext* s, float blur);
+void fonsSetBlurSoftness(FONScontext* s, float softness);
 void fonsSetAlign(FONScontext* s, int align);
 void fonsSetFont(FONScontext* s, int font);
 
@@ -379,6 +383,7 @@ struct FONSglyph
 	short size, blur;
 	short x0,y0,x1,y1;
 	short xadv,xoff,yoff;
+	unsigned char softness;
 };
 typedef struct FONSglyph FONSglyph;
 
@@ -408,6 +413,7 @@ struct FONSstate
 	float size;
 	unsigned int color;
 	float blur;
+	float softness;
 	float spacing;
 };
 typedef struct FONSstate FONSstate;
@@ -812,6 +818,11 @@ void fonsSetBlur(FONScontext* stash, float blur)
 	fons__getState(stash)->blur = blur;
 }
 
+void fonsSetSoftness(FONScontext* stash, float softness)
+{
+	fons__getState(stash)->softness = softness;
+}
+
 void fonsSetAlign(FONScontext* stash, int align)
 {
 	fons__getState(stash)->align = align;
@@ -1029,8 +1040,30 @@ static void fons__blurRows(unsigned char* dst, int w, int h, int dstStride, int 
 	}
 }
 
+static unsigned char fons__blurScaleValue(unsigned char value, unsigned char softness)
+{
+	if (value == 0) {
+		return 0;
+	} else if (value < softness) {
+		return value * 255 / softness;
+	} else {
+		return 255;
+	}
+}
 
-static void fons__blur(FONScontext* stash, unsigned char* dst, int w, int h, int dstStride, int blur)
+static void fons__blurScale(unsigned char* dst, int w, int h, int dstStride, unsigned char softness)
+{
+	int x, y;
+	for (y = 0; y < h; y++) {
+		for (x = 0; x < w; ++x) {
+			dst[x] = fons__blurScaleValue(dst[x], softness);
+		}
+		dst += dstStride;
+	}
+}
+
+static void fons__blur(FONScontext* stash, unsigned char* dst, int w, int h, int dstStride, int blur,
+					   unsigned char softness)
 {
 	int alpha;
 	float sigma;
@@ -1045,12 +1078,15 @@ static void fons__blur(FONScontext* stash, unsigned char* dst, int w, int h, int
 	fons__blurCols(dst, w, h, dstStride, alpha);
 	fons__blurRows(dst, w, h, dstStride, alpha);
 	fons__blurCols(dst, w, h, dstStride, alpha);
+	if (softness < 255) {
+		fons__blurScale(dst, w, h, dstStride, softness);
+	}
 //	fons__blurrows(dst, w, h, dstStride, alpha);
 //	fons__blurcols(dst, w, h, dstStride, alpha);
 }
 
 static FONSglyph* fons__getGlyph(FONScontext* stash, FONSfont* font, unsigned int codepoint,
-								 short isize, short iblur, int bitmapOption)
+								 short isize, short iblur, unsigned char isoftness, int bitmapOption)
 {
 	int i, g, advance, lsb, x0, y0, x1, y1, gw, gh, gx, gy, x, y;
 	float scale;
@@ -1073,7 +1109,8 @@ static FONSglyph* fons__getGlyph(FONScontext* stash, FONSfont* font, unsigned in
 	h = fons__hashint(codepoint) & (FONS_HASH_LUT_SIZE-1);
 	i = font->lut[h];
 	while (i != -1) {
-		if (font->glyphs[i].codepoint == codepoint && font->glyphs[i].size == isize && font->glyphs[i].blur == iblur) {
+		if (font->glyphs[i].codepoint == codepoint && font->glyphs[i].size == isize &&
+				font->glyphs[i].blur == iblur && font->glyphs[i].softness == isoftness) {
 			glyph = &font->glyphs[i];
 			if (bitmapOption == FONS_GLYPH_BITMAP_OPTIONAL || (glyph->x0 >= 0 && glyph->y0 >= 0)) {
 			  return glyph;
@@ -1127,6 +1164,7 @@ static FONSglyph* fons__getGlyph(FONScontext* stash, FONSfont* font, unsigned in
 		glyph->codepoint = codepoint;
 		glyph->size = isize;
 		glyph->blur = iblur;
+		glyph->softness = isoftness;
 		glyph->next = 0;
 
 		// Insert char to hash lookup.
@@ -1175,7 +1213,7 @@ static FONSglyph* fons__getGlyph(FONScontext* stash, FONSfont* font, unsigned in
 	if (iblur > 0) {
 		stash->nscratch = 0;
 		bdst = &stash->texData[glyph->x0 + glyph->y0 * stash->params.width];
-		fons__blur(stash, bdst, gw, gh, stash->params.width, iblur);
+		fons__blur(stash, bdst, gw, gh, stash->params.width, iblur, isoftness);
 	}
 
 	stash->dirtyRect[0] = fons__mini(stash->dirtyRect[0], glyph->x0);
@@ -1295,6 +1333,17 @@ static float fons__getVertAlign(FONScontext* stash, FONSfont* font, int align, s
 	return 0.0;
 }
 
+static unsigned char fons__getSoftness(FONSstate* state)
+{
+	if (state->softness <= 0.0f) {
+		return 0;
+	} else if (state->softness >= 1.0f) {
+		return 255;
+	} else {
+		return (unsigned char)(state->softness * 255.0f + 0.5f);
+	}
+}
+
 float fonsDrawText(FONScontext* stash,
 				   float x, float y,
 				   const char* str, const char* end)
@@ -1307,6 +1356,7 @@ float fonsDrawText(FONScontext* stash,
 	int prevGlyphIndex = -1;
 	short isize = (short)(state->size*10.0f);
 	short iblur = (short)state->blur;
+	unsigned char isoftness = fons__getSoftness(state);
 	float scale;
 	FONSfont* font;
 	float width;
@@ -1337,7 +1387,7 @@ float fonsDrawText(FONScontext* stash,
 	for (; str != end; ++str) {
 		if (fons__decutf8(&utf8state, &codepoint, *(const unsigned char*)str))
 			continue;
-		glyph = fons__getGlyph(stash, font, codepoint, isize, iblur, FONS_GLYPH_BITMAP_REQUIRED);
+		glyph = fons__getGlyph(stash, font, codepoint, isize, iblur, isoftness, FONS_GLYPH_BITMAP_REQUIRED);
 		if (glyph != NULL) {
 			fons__getQuad(stash, font, prevGlyphIndex, glyph, scale, state->spacing, &x, &y, &q);
 
@@ -1374,6 +1424,7 @@ int fonsTextIterInit(FONScontext* stash, FONStextIter* iter,
 
 	iter->isize = (short)(state->size*10.0f);
 	iter->iblur = (short)state->blur;
+	iter->isoftness = fons__getSoftness(state);
 	iter->scale = fons__tt_getPixelHeightScale(&iter->font->font, (float)iter->isize/10.0f);
 
 	// Align horizontally
@@ -1421,7 +1472,7 @@ int fonsTextIterNext(FONScontext* stash, FONStextIter* iter, FONSquad* quad)
 		// Get glyph and quad
 		iter->x = iter->nextx;
 		iter->y = iter->nexty;
-		glyph = fons__getGlyph(stash, iter->font, iter->codepoint, iter->isize, iter->iblur, iter->bitmapOption);
+		glyph = fons__getGlyph(stash, iter->font, iter->codepoint, iter->isize, iter->iblur, iter->isoftness, iter->bitmapOption);
 		// If the iterator was initialized with FONS_GLYPH_BITMAP_OPTIONAL, then the UV coordinates of the quad will be invalid.
 		if (glyph != NULL)
 			fons__getQuad(stash, iter->font, iter->prevGlyphIndex, glyph, iter->scale, iter->spacing, &iter->nextx, &iter->nexty, quad);
@@ -1494,6 +1545,7 @@ float fonsTextBounds(FONScontext* stash,
 	int prevGlyphIndex = -1;
 	short isize = (short)(state->size*10.0f);
 	short iblur = (short)state->blur;
+	unsigned char isoftness = fons__getSoftness(state);
 	float scale;
 	FONSfont* font;
 	float startx, advance;
@@ -1519,7 +1571,7 @@ float fonsTextBounds(FONScontext* stash,
 	for (; str != end; ++str) {
 		if (fons__decutf8(&utf8state, &codepoint, *(const unsigned char*)str))
 			continue;
-		glyph = fons__getGlyph(stash, font, codepoint, isize, iblur, FONS_GLYPH_BITMAP_OPTIONAL);
+		glyph = fons__getGlyph(stash, font, codepoint, isize, iblur, isoftness, FONS_GLYPH_BITMAP_OPTIONAL);
 		if (glyph != NULL) {
 			fons__getQuad(stash, font, prevGlyphIndex, glyph, scale, state->spacing, &x, &y, &q);
 			if (q.x0 < minx) minx = q.x0;

@@ -47,8 +47,9 @@ R_TextField *R_text_field_new(void)
 {
     R_TextField *field = R_NEW_INIT_STRUCT(field, R_TextField,
             R_MAGIC_INIT(R_TextField) 1, R_string_new(0), nvgRGB(0, 0, 0),
-            -1, R_TEXT_FIELD_SIZE_DEFAULT, 0.0f, 0.0f, 1.0f,
-            R_TEXT_FIELD_ALIGN_DEFAULT, 0.0f, 0.0f, 0.0f);
+            -1, R_TEXT_FIELD_SIZE_DEFAULT, 0.0f, 1.0f, 0.0f, 1.0f,
+            R_TEXT_FIELD_ALIGN_DEFAULT, 0.0f, 0.0f, 0.0f, nvgRGB(0, 0, 0),
+            0.0f, 1.0f);
     check_text_field(field);
     return field;
 }
@@ -65,10 +66,8 @@ R_DEFINE_REFCOUNT_FUNCS(R_TextField, text_field, refs)
 
 static void set_nvg_state(R_TextField *field, NVGcontext *ctx)
 {
-    nvgFillColor(ctx, field->color);
     nvgFontFaceId(ctx, field->font);
     nvgFontSize(ctx, field->size);
-    nvgFontBlur(ctx, field->blur);
     nvgTextLetterSpacing(ctx, field->spacing);
     nvgTextLineHeight(ctx, field->line_height);
     nvgTextAlign(ctx, field->align);

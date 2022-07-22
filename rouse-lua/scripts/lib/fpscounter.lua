@@ -1,4 +1,4 @@
--- Copyright (c) 2019 askmeaboutloom
+-- Copyright (c) 2019 - 2022 askmeaboutloom
 --
 -- Permission is hereby granted, free of charge, to any person obtaining a copy
 -- of this software and associated documentation files (the "Software"), to deal
@@ -28,10 +28,14 @@ function FpsCounter:init(nvg, font_id, len)
     self.frames = {}
     if nvg then
         self.text_field = R.TextField.new {
-            font   = font_id,
-            size   = 32.0,
-            align  = R.Nvg.Align.LEFT | R.Nvg.Align.TOP,
-            string = "you need to call my on_frame in your on_render method",
+            font             = font_id,
+            size             = 32.0,
+            color            = R.Nvg.color(0xffffff),
+            align            = R.Nvg.Align.LEFT | R.Nvg.Align.TOP,
+            outline_blur     = 2.0,
+            outline_softness = 0.2,
+            string           =
+                "you need to call my on_frame in your on_render method",
         }
         self.sprite         = R.Sprite.new("fps")
         self.sprite.content = self.text_field

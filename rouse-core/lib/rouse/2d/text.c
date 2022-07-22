@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 askmeaboutloom
+ * Copyright (c) 2019 - 2022 askmeaboutloom
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -102,19 +102,39 @@ R_V4 R_text_field_bounds(R_TextField *field, NVGcontext *ctx)
 }
 
 
-static void draw_text(NVGcontext *vg, R_String *string,
-                      float x, float y, float width)
+static void draw_text(NVGcontext *ctx, R_String *string,
+                      float x, float y, float width, NVGcolor color, float blur,
+                      float softness, NVGcolor outline_color,
+                      float outline_blur, float outline_softness)
 {
     const char *start = R_string_body(string);
     const char *end   = start + R_string_len(string);
-    nvgBeginPath(vg);
+    nvgBeginPath(ctx);
     if (width > 0.0f) {
-        nvgTextBox(vg, x, y, width, start, end);
+        if (outline_blur > 0.0f) {
+            nvgFillColor(ctx, outline_color);
+            nvgFontBlur(ctx, outline_blur);
+            nvgFontBlurSoftness(ctx, outline_softness);
+            nvgTextBox(ctx, x, y, width, start, end);
+        }
+        nvgFillColor(ctx, color);
+        nvgFontBlur(ctx, blur);
+        nvgFontBlurSoftness(ctx, softness);
+        nvgTextBox(ctx, x, y, width, start, end);
     }
     else {
-        nvgText(vg, x, y, start, end);
+        if (outline_blur > 0.0f) {
+            nvgFillColor(ctx, outline_color);
+            nvgFontBlur(ctx, outline_blur);
+            nvgFontBlurSoftness(ctx, outline_softness);
+            nvgText(ctx, x, y, start, end);
+        }
+        nvgFillColor(ctx, color);
+        nvgFontBlur(ctx, blur);
+        nvgFontBlurSoftness(ctx, softness);
+        nvgText(ctx, x, y, start, end);
     }
-    nvgFill(vg);
+    nvgFill(ctx);
 }
 
 void R_text_field_draw(R_TextField *field, NVGcontext *ctx,
@@ -125,6 +145,8 @@ void R_text_field_draw(R_TextField *field, NVGcontext *ctx,
     if (field->font != -1 && string && R_string_len(string) > 0) {
         R_nvg_transform_set(ctx, matrix);
         set_nvg_state(field, ctx);
-        draw_text(ctx, string, field->x, field->y, field->width);
+        draw_text(ctx, string, field->x, field->y, field->width, field->color,
+                  field->blur, field->softness, field->outline_color,
+                  field->outline_blur, field->outline_softness);
     }
 }

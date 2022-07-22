@@ -4,7 +4,7 @@
 /* Modify the matching .xl file and rebuild.     */
 /*************************************************/
 /*
- * Copyright (c) 2019 askmeaboutloom
+ * Copyright (c) 2019 - 2022 askmeaboutloom
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -156,6 +156,23 @@ static int r_textfield_blur_newindex_xl(lua_State *L)
     return 0;
 }
 
+static int r_textfield_softness_index_xl(lua_State *L)
+{
+    R_TextField *self = R_CPPCAST(R_TextField *, XL_checkpptype(L, 1, "R_TextField"));
+    float RETVAL;
+    RETVAL = self->softness;
+    XL_pushfloat(L, RETVAL);
+    return 1;
+}
+
+static int r_textfield_softness_newindex_xl(lua_State *L)
+{
+    R_TextField *self = R_CPPCAST(R_TextField *, XL_checkpptype(L, 1, "R_TextField"));
+    float VALUE = XL_checkfloat(L, 2);
+    self->softness = VALUE;
+    return 0;
+}
+
 static int r_textfield_spacing_index_xl(lua_State *L)
 {
     R_TextField *self = R_CPPCAST(R_TextField *, XL_checkpptype(L, 1, "R_TextField"));
@@ -258,6 +275,57 @@ static int r_textfield_width_newindex_xl(lua_State *L)
     return 0;
 }
 
+static int r_textfield_outline_color_index_xl(lua_State *L)
+{
+    R_TextField *self = R_CPPCAST(R_TextField *, XL_checkpptype(L, 1, "R_TextField"));
+    NVGcolor RETVAL;
+    RETVAL = self->outline_color;
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(NVGcolor), "NVGcolor", 0);
+    return 1;
+}
+
+static int r_textfield_outline_color_newindex_xl(lua_State *L)
+{
+    R_TextField *self = R_CPPCAST(R_TextField *, XL_checkpptype(L, 1, "R_TextField"));
+    NVGcolor VALUE = *((NVGcolor *)luaL_checkudata(L, 2, "NVGcolor"));
+    self->outline_color = VALUE;
+    return 0;
+}
+
+static int r_textfield_outline_blur_index_xl(lua_State *L)
+{
+    R_TextField *self = R_CPPCAST(R_TextField *, XL_checkpptype(L, 1, "R_TextField"));
+    float RETVAL;
+    RETVAL = self->outline_blur;
+    XL_pushfloat(L, RETVAL);
+    return 1;
+}
+
+static int r_textfield_outline_blur_newindex_xl(lua_State *L)
+{
+    R_TextField *self = R_CPPCAST(R_TextField *, XL_checkpptype(L, 1, "R_TextField"));
+    float VALUE = XL_checkfloat(L, 2);
+    self->outline_blur = VALUE;
+    return 0;
+}
+
+static int r_textfield_outline_softness_index_xl(lua_State *L)
+{
+    R_TextField *self = R_CPPCAST(R_TextField *, XL_checkpptype(L, 1, "R_TextField"));
+    float RETVAL;
+    RETVAL = self->outline_softness;
+    XL_pushfloat(L, RETVAL);
+    return 1;
+}
+
+static int r_textfield_outline_softness_newindex_xl(lua_State *L)
+{
+    R_TextField *self = R_CPPCAST(R_TextField *, XL_checkpptype(L, 1, "R_TextField"));
+    float VALUE = XL_checkfloat(L, 2);
+    self->outline_softness = VALUE;
+    return 0;
+}
+
 static int r_textfield_method_set_xl(lua_State *L)
 {
     return XL_setfromtable(L, "R_TextField", 1, 2);
@@ -311,8 +379,12 @@ static luaL_Reg r_textfield_index_registry_xl[] = {
     {"color", r_textfield_color_index_xl},
     {"font", r_textfield_font_index_xl},
     {"line_height", r_textfield_line_height_index_xl},
+    {"outline_blur", r_textfield_outline_blur_index_xl},
+    {"outline_color", r_textfield_outline_color_index_xl},
+    {"outline_softness", r_textfield_outline_softness_index_xl},
     {"refs", r_textfield_refs_index_xl},
     {"size", r_textfield_size_index_xl},
+    {"softness", r_textfield_softness_index_xl},
     {"spacing", r_textfield_spacing_index_xl},
     {"string", r_textfield_string_index_xl},
     {"width", r_textfield_width_index_xl},
@@ -337,7 +409,11 @@ static luaL_Reg r_textfield_newindex_registry_xl[] = {
     {"color", r_textfield_color_newindex_xl},
     {"font", r_textfield_font_newindex_xl},
     {"line_height", r_textfield_line_height_newindex_xl},
+    {"outline_blur", r_textfield_outline_blur_newindex_xl},
+    {"outline_color", r_textfield_outline_color_newindex_xl},
+    {"outline_softness", r_textfield_outline_softness_newindex_xl},
     {"size", r_textfield_size_newindex_xl},
+    {"softness", r_textfield_softness_newindex_xl},
     {"spacing", r_textfield_spacing_newindex_xl},
     {"string", r_textfield_string_newindex_xl},
     {"width", r_textfield_width_newindex_xl},

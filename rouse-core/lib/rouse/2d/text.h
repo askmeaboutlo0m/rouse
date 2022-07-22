@@ -1,7 +1,7 @@
 /*
  * text.h - text field for 2D text rendering in sprites
  *
- * Copyright (c) 2019 askmeaboutloom
+ * Copyright (c) 2019 - 2022 askmeaboutloom
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,11 +33,15 @@ typedef struct R_TextField {
     int       font;
     float     size;
     float     blur;
+    float     softness;
     float     spacing;
     float     line_height;
     int       align;
     float     x, y;
     float     width;
+    NVGcolor  outline_color;
+    float     outline_blur;
+    float     outline_softness;
 } R_TextField;
 
 R_TextField *R_text_field_new(void);

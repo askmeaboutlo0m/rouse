@@ -1,4 +1,4 @@
--- Copyright (c) 2020 askmeaboutloom
+-- Copyright (c) 2020 - 2022 askmeaboutloom
 --
 -- Permission is hereby granted, free of charge, to any person obtaining a copy
 -- of this software and associated documentation files (the "Software"), to deal
@@ -18,8 +18,9 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-local Debuggery     = class()
-local DEFAULT_COLOR = R.Nvg.rgb(220, 0, 0)
+local Debuggery             = class()
+local DEFAULT_COLOR         = R.Nvg.rgb(220, 0, 0)
+local DEFAULT_OUTLINE_COLOR = R.Nvg.rgb(255, 255, 255)
 
 function Debuggery:init(args)
     self.scene    = args.scene   or error("no scene given")
@@ -28,10 +29,13 @@ function Debuggery:init(args)
     self.mark_pos = args.mark_pos
 
     self.field = R.TextField.new {
-        font  = args.font       or -1,
-        size  = args.text_size  or 32.0,
-        color = args.text_color or DEFAULT_COLOR,
-        align = R.Nvg.Align.LEFT | R.Nvg.Align.MIDDLE,
+        font             = args.font       or -1,
+        size             = args.text_size  or 32.0,
+        color            = args.text_color or DEFAULT_COLOR,
+        align            = R.Nvg.Align.LEFT | R.Nvg.Align.MIDDLE,
+        outline_blur     = args.text_outline_blur     or 2.0,
+        outline_softness = args.text_outline_softness or 0.2,
+        outline_color    = args.text_outline_color    or DEFAULT_OUTLINE_COLOR,
     }
 
     self.stroke_color   = args.stroke_color or DEFAULT_COLOR

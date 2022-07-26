@@ -146,7 +146,7 @@ function SceneBase.register_event_handlers(class, reg)
 
     if not rawget(class, "on_event") then
         class.on_event = function (self, event)
-            self.super.on_event(self, event)
+            class.super.on_event(self, event)
 
             local any_handler = event_handlers["ANY"]
             if any_handler then

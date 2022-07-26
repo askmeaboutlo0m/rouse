@@ -37,7 +37,7 @@ if(BUILD_WITH_BOX2D)
 endif()
 
 if(BUILD_WITH_IMGUI)
-    list(APPEND rouse_lua_export_targets imgui imnodes rouse_lua_imgui )
+    list(APPEND rouse_lua_export_targets imgui rouse_lua_imgui)
 endif()
 
 export(TARGETS ${rouse_lua_export_targets}

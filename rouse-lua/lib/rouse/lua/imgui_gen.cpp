@@ -1,15 +1,15 @@
 /*
- * This file is auto-generated.
+ * This file is generated generated automatically.
  *
- * The generator is Copyright (c) 2021 askmeaboutloom.
+ * The generator is Copyright (c) 2022 askmeaboutloom.
  *
  * That generator is based on cimgui <https://github.com/cimgui/cimgui>,
  * which is Copyright (c) 2015 Stephan Dilly.
  *
  * That is based on Dear Imgui <https://github.com/ocornut/imgui>, which is
- * Copyright (c) 2014-2021 Omar Cornut.
+ * Copyright (c) 2014-2022 Omar Cornut.
  *
- * They are all licensed under the terms of the MIT license:
+ * They and this code are all licensed under the terms of the MIT license:
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,9 +38,6 @@ extern "C" {
 #include "util.h"
 }
 
-#define IMGUILUA_SETUP(L) do { \
-        /* put your custom setup code here */ \
-    } while (0)
 
 extern "C" void R_lua_imgui_begin(const char *begin_name, int end_id, void (*end_fn)(void));
 
@@ -54,34 +51,63 @@ extern "C" void R_lua_imgui_end(lua_State *L, const char *end_name, int end_id);
         R_lua_imgui_end(L, #END, END_ID); \
     } while (0)
 
+
 static ImVec2 ImGuiLua_ToImVec2(lua_State *L, int index)
 {
-    R_V2 rouse_v2 = *static_cast<R_V2 *>(luaL_checkudata(L, index, "R_V2"));
-    return ImVec2(rouse_v2.x, rouse_v2.y);
+    R_V2 r = *static_cast<R_V2 *>(luaL_checkudata(L, index, "R_V2"));
+    return ImVec2(r.x, r.y);
 }
 
 static void ImGuiLua_PushImVec2(lua_State *L, const ImVec2 &im_vec2)
 {
-    R_V2 rouse_v2 = R_v2(im_vec2.x, im_vec2.y);
-    XL_pushnewutypeuv(L, &rouse_v2, sizeof(R_V2), "R_V2", 0);
+    R_V2 r = R_v2(im_vec2.x, im_vec2.y);
+    XL_pushnewutypeuv(L, &r, sizeof(R_V2), "R_V2", 0);
 }
 
 static ImVec4 ImGuiLua_ToImVec4(lua_State *L, int index)
 {
-    R_V4 rouse_v4 = *static_cast<R_V4 *>(luaL_checkudata(L, index, "R_V4"));
-    return ImVec4(rouse_v4.x, rouse_v4.y, rouse_v4.z, rouse_v4.w);
+    R_V4 r = *static_cast<R_V4 *>(luaL_checkudata(L, index, "R_V4"));
+    return ImVec4(r.x, r.y, r.z, r.w);
 }
 
 static void ImGuiLua_PushImVec4(lua_State *L, const ImVec4 &im_vec4)
 {
-    R_V4 rouse_v4 = R_v4(im_vec4.x, im_vec4.y, im_vec4.z, im_vec4.w);
-    XL_pushnewutypeuv(L, &rouse_v4, sizeof(R_V4), "R_V4", 0);
+    R_V4 r = R_v4(im_vec4.x, im_vec4.y, im_vec4.z, im_vec4.w);
+    XL_pushnewutypeuv(L, &r, sizeof(R_V4), "R_V4", 0);
 }
 
-// ----------------------------------------------------------------------------
+extern "C" int ImGuiLua_NewImVec2(lua_State *L)
+{
+    float x = static_cast<float>(luaL_checknumber(L, 2));
+    float y = static_cast<float>(luaL_checknumber(L, 3));
+    ImGuiLua_PushImVec2(L, ImVec2(x, y));
+    return 1;
+}
+
 
 #define IMGUILUA_ENUM(X)     /* nothing, just a marker for the generator */
 #define IMGUILUA_FUNCTION(X) /* nothing, just a marker for the generator */
+#define IMGUILUA_METHOD(X)   /* nothing, just a marker for the generator */
+#define IMGUILUA_STRUCT(X)   /* nothing, just a marker for the generator */
+
+#define IMGUILUA_CHECK_ARGC(WANT) \
+    int ARGC = lua_gettop(L); \
+    if (ARGC != WANT) { \
+        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, WANT); \
+    }
+
+#define IMGUILUA_CHECK_ARGC_MAX(MAX) \
+    int ARGC = lua_gettop(L); \
+    if (ARGC > MAX) { \
+        return luaL_error(L, "Wrong number of arguments: got %d, wanted between 0 and %d", ARGC, MAX); \
+    }
+
+#define IMGUILUA_CHECK_ARGC_BETWEEN(MIN, MAX) \
+    int ARGC = lua_gettop(L); \
+    if (ARGC < MIN || ARGC > MAX) { \
+        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, MIN, MAX); \
+    }
+
 
 static void ImGuiLua_SetEnumValue(lua_State *L, const char *name, int value)
 {
@@ -111,168 +137,57 @@ static void ImGuiLua_GetOrCreateTable(lua_State *L, const char *name)
     }
 }
 
-static void ImGuiLua_InitMetaTable(lua_State *L, const char *tname, luaL_Reg *methods)
-{
-    luaL_newmetatable(L, tname);
-    if (methods) {
-        luaL_setfuncs(L, methods, 0);
-    }
-    lua_pop(L, 1);
-}
-
-
-static int ImGuiLua_BoolRefIndex(lua_State *L)
-{
-    bool *ref = static_cast<bool *>(luaL_checkudata(L, 1, "ImGuiLua_BoolRef"));
-    lua_pushliteral(L, "value");
-    if (lua_rawequal(L, 2, -1)) {
-        lua_pushboolean(L, *ref);
-    }
-    else {
-        lua_pushnil(L);
-    }
-    return 1;
-}
-
-static int ImGuiLua_BoolRefNewindex(lua_State *L)
-{
-    bool *ref = static_cast<bool *>(luaL_checkudata(L, 1, "ImGuiLua_BoolRef"));
-    lua_pushliteral(L, "value");
-    if (lua_rawequal(L, 2, -1)) {
-        bool value = lua_toboolean(L, 3);
-        *ref = value;
-        return 0;
-    }
-    else {
-        const char *key = lua_tostring(L, 2);
-        return luaL_error(L, "Attempt to assign to nonexistent field '%s'", key);
-    }
-}
-
-static luaL_Reg ImGuiLua_BoolRefMethods[] = {
-    {"__index", ImGuiLua_BoolRefIndex},
-    {"__newindex", ImGuiLua_BoolRefNewindex},
-    {NULL, NULL},
-};
 
 IMGUILUA_FUNCTION(ImGui::Bool)
 static int ImGuiLua_Bool(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC > 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 0, 1);
-    }
+    IMGUILUA_CHECK_ARGC_MAX(1);
     bool value = ARGC == 0 ? false : lua_toboolean(L, 1);
     bool *ref = static_cast<bool *>(lua_newuserdatauv(L, sizeof(*ref), 0));
-    luaL_setmetatable(L, "ImGuiLua_BoolRef");
+    luaL_setmetatable(L, "ImGuiLuaBoolRef");
     *ref = value;
     return 1;
 }
-
-
-static int ImGuiLua_IntRefIndex(lua_State *L)
-{
-    int *ref = static_cast<int *>(luaL_checkudata(L, 1, "ImGuiLua_IntRef"));
-    lua_pushliteral(L, "value");
-    if (lua_rawequal(L, 2, -1)) {
-        lua_pushinteger(L, static_cast<lua_Integer>(*ref));
-    }
-    else {
-        lua_pushnil(L);
-    }
-    return 1;
-}
-
-static int ImGuiLua_IntRefNewindex(lua_State *L)
-{
-    int *ref = static_cast<int *>(luaL_checkudata(L, 1, "ImGuiLua_IntRef"));
-    lua_pushliteral(L, "value");
-    if (lua_rawequal(L, 2, -1)) {
-        int value = static_cast<int>(lua_tointeger(L, 3));
-        *ref = value;
-        return 0;
-    }
-    else {
-        const char *key = lua_tostring(L, 2);
-        return luaL_error(L, "Attempt to assign to nonexistent field '%s'", key);
-    }
-}
-
-static luaL_Reg ImGuiLua_IntRefMethods[] = {
-    {"__index", ImGuiLua_IntRefIndex},
-    {"__newindex", ImGuiLua_IntRefNewindex},
-    {NULL, NULL},
-};
 
 IMGUILUA_FUNCTION(ImGui::Int)
 static int ImGuiLua_Int(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC > 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 0, 1);
-    }
-    int value = ARGC == 0 ? 0 : lua_tointeger(L, 1);
+    IMGUILUA_CHECK_ARGC_MAX(1);
+    int value = ARGC == 0 ? 0 : static_cast<int>(lua_tointeger(L, 1));
     int *ref = static_cast<int *>(lua_newuserdatauv(L, sizeof(*ref), 0));
-    luaL_setmetatable(L, "ImGuiLua_IntRef");
+    luaL_setmetatable(L, "ImGuiLuaIntRef");
     *ref = value;
     return 1;
 }
-
-
-static int ImGuiLua_FloatRefIndex(lua_State *L)
-{
-    float *ref = static_cast<float *>(luaL_checkudata(L, 1, "ImGuiLua_FloatRef"));
-    lua_pushliteral(L, "value");
-    if (lua_rawequal(L, 2, -1)) {
-        lua_pushnumber(L, static_cast<lua_Number>(*ref));
-    }
-    else {
-        lua_pushnil(L);
-    }
-    return 1;
-}
-
-static int ImGuiLua_FloatRefNewindex(lua_State *L)
-{
-    float *ref = static_cast<float *>(luaL_checkudata(L, 1, "ImGuiLua_FloatRef"));
-    lua_pushliteral(L, "value");
-    if (lua_rawequal(L, 2, -1)) {
-        float value = static_cast<float>(lua_tonumber(L, 3));
-        *ref = value;
-        return 0;
-    }
-    else {
-        const char *key = lua_tostring(L, 2);
-        return luaL_error(L, "Attempt to assign to nonexistent field '%s'", key);
-    }
-}
-
-static luaL_Reg ImGuiLua_FloatRefMethods[] = {
-    {"__index", ImGuiLua_FloatRefIndex},
-    {"__newindex", ImGuiLua_FloatRefNewindex},
-    {NULL, NULL},
-};
 
 IMGUILUA_FUNCTION(ImGui::Float)
 static int ImGuiLua_Float(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC > 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 0, 1);
-    }
+    IMGUILUA_CHECK_ARGC_MAX(1);
     float value = ARGC == 0 ? 0.0f : static_cast<float>(lua_tonumber(L, 1));
     float *ref = static_cast<float *>(lua_newuserdatauv(L, sizeof(*ref), 0));
-    luaL_setmetatable(L, "ImGuiLua_FloatRef");
+    luaL_setmetatable(L, "ImGuiLuaFloatRef");
     *ref = value;
     return 1;
 }
 
-
-static void ImGuiLua_InitTypes(lua_State *L)
+IMGUILUA_FUNCTION(ImGui::String)
+static int ImGuiLua_String(lua_State *L)
 {
-    ImGuiLua_InitMetaTable(L, "ImGuiLua_BoolRef", ImGuiLua_BoolRefMethods);
-    ImGuiLua_InitMetaTable(L, "ImGuiLua_IntRef", ImGuiLua_IntRefMethods);
-    ImGuiLua_InitMetaTable(L, "ImGuiLua_FloatRef", ImGuiLua_FloatRefMethods);
+    IMGUILUA_CHECK_ARGC_MAX(1);
+    lua_newuserdatauv(L, 0, 1);
+    luaL_setmetatable(L, "ImGuiLuaStringRef");
+
+    if (ARGC == 0) {
+        lua_pushliteral(L, "");
+    }
+    else {
+        luaL_checkstring(L, 1);
+        lua_pushvalue(L, 1);
+    }
+    lua_setiuservalue(L, -2, 1);
+
+    return 1;
 }
 
 
@@ -516,6 +431,7 @@ static void ImGuiLua_RegisterEnumImGuiFocusedFlags(lua_State *L)
     ImGuiLua_SetEnumValue(L, "ChildWindows", 1 << 0);
     ImGuiLua_SetEnumValue(L, "RootWindow", 1 << 1);
     ImGuiLua_SetEnumValue(L, "AnyWindow", 1 << 2);
+    ImGuiLua_SetEnumValue(L, "NoPopupHierarchy", 1 << 3);
     ImGuiLua_SetEnumValue(L, "RootAndChildWindows", ImGuiFocusedFlags_RootWindow | ImGuiFocusedFlags_ChildWindows);
 }
 
@@ -526,10 +442,12 @@ static void ImGuiLua_RegisterEnumImGuiHoveredFlags(lua_State *L)
     ImGuiLua_SetEnumValue(L, "ChildWindows", 1 << 0);
     ImGuiLua_SetEnumValue(L, "RootWindow", 1 << 1);
     ImGuiLua_SetEnumValue(L, "AnyWindow", 1 << 2);
-    ImGuiLua_SetEnumValue(L, "AllowWhenBlockedByPopup", 1 << 3);
-    ImGuiLua_SetEnumValue(L, "AllowWhenBlockedByActiveItem", 1 << 5);
-    ImGuiLua_SetEnumValue(L, "AllowWhenOverlapped", 1 << 6);
-    ImGuiLua_SetEnumValue(L, "AllowWhenDisabled", 1 << 7);
+    ImGuiLua_SetEnumValue(L, "NoPopupHierarchy", 1 << 3);
+    ImGuiLua_SetEnumValue(L, "AllowWhenBlockedByPopup", 1 << 5);
+    ImGuiLua_SetEnumValue(L, "AllowWhenBlockedByActiveItem", 1 << 7);
+    ImGuiLua_SetEnumValue(L, "AllowWhenOverlapped", 1 << 8);
+    ImGuiLua_SetEnumValue(L, "AllowWhenDisabled", 1 << 9);
+    ImGuiLua_SetEnumValue(L, "NoNavOverride", 1 << 10);
     ImGuiLua_SetEnumValue(L, "RectOnly", ImGuiHoveredFlags_AllowWhenBlockedByPopup | ImGuiHoveredFlags_AllowWhenBlockedByActiveItem | ImGuiHoveredFlags_AllowWhenOverlapped);
     ImGuiLua_SetEnumValue(L, "RootAndChildWindows", ImGuiHoveredFlags_RootWindow | ImGuiHoveredFlags_ChildWindows);
 }
@@ -560,42 +478,167 @@ static void ImGuiLua_RegisterEnumImGuiInputTextFlags(lua_State *L)
     ImGuiLua_SetEnumValue(L, "CallbackEdit", 1 << 19);
 }
 
-IMGUILUA_ENUM(ImGuiKeyModFlags)
-static void ImGuiLua_RegisterEnumImGuiKeyModFlags(lua_State *L)
+IMGUILUA_ENUM(ImGuiKey)
+static void ImGuiLua_RegisterEnumImGuiKey(lua_State *L)
+{
+    ImGuiLua_SetEnumValue(L, "None", 0);
+    ImGuiLua_SetEnumValue(L, "Tab", 512);
+    ImGuiLua_SetEnumValue(L, "LeftArrow", 513);
+    ImGuiLua_SetEnumValue(L, "RightArrow", 514);
+    ImGuiLua_SetEnumValue(L, "UpArrow", 515);
+    ImGuiLua_SetEnumValue(L, "DownArrow", 516);
+    ImGuiLua_SetEnumValue(L, "PageUp", 517);
+    ImGuiLua_SetEnumValue(L, "PageDown", 518);
+    ImGuiLua_SetEnumValue(L, "Home", 519);
+    ImGuiLua_SetEnumValue(L, "End", 520);
+    ImGuiLua_SetEnumValue(L, "Insert", 521);
+    ImGuiLua_SetEnumValue(L, "Delete", 522);
+    ImGuiLua_SetEnumValue(L, "Backspace", 523);
+    ImGuiLua_SetEnumValue(L, "Space", 524);
+    ImGuiLua_SetEnumValue(L, "Enter", 525);
+    ImGuiLua_SetEnumValue(L, "Escape", 526);
+    ImGuiLua_SetEnumValue(L, "LeftCtrl", 527);
+    ImGuiLua_SetEnumValue(L, "LeftShift", 528);
+    ImGuiLua_SetEnumValue(L, "LeftAlt", 529);
+    ImGuiLua_SetEnumValue(L, "LeftSuper", 530);
+    ImGuiLua_SetEnumValue(L, "RightCtrl", 531);
+    ImGuiLua_SetEnumValue(L, "RightShift", 532);
+    ImGuiLua_SetEnumValue(L, "RightAlt", 533);
+    ImGuiLua_SetEnumValue(L, "RightSuper", 534);
+    ImGuiLua_SetEnumValue(L, "Menu", 535);
+    ImGuiLua_SetEnumValue(L, "0", 536);
+    ImGuiLua_SetEnumValue(L, "1", 537);
+    ImGuiLua_SetEnumValue(L, "2", 538);
+    ImGuiLua_SetEnumValue(L, "3", 539);
+    ImGuiLua_SetEnumValue(L, "4", 540);
+    ImGuiLua_SetEnumValue(L, "5", 541);
+    ImGuiLua_SetEnumValue(L, "6", 542);
+    ImGuiLua_SetEnumValue(L, "7", 543);
+    ImGuiLua_SetEnumValue(L, "8", 544);
+    ImGuiLua_SetEnumValue(L, "9", 545);
+    ImGuiLua_SetEnumValue(L, "A", 546);
+    ImGuiLua_SetEnumValue(L, "B", 547);
+    ImGuiLua_SetEnumValue(L, "C", 548);
+    ImGuiLua_SetEnumValue(L, "D", 549);
+    ImGuiLua_SetEnumValue(L, "E", 550);
+    ImGuiLua_SetEnumValue(L, "F", 551);
+    ImGuiLua_SetEnumValue(L, "G", 552);
+    ImGuiLua_SetEnumValue(L, "H", 553);
+    ImGuiLua_SetEnumValue(L, "I", 554);
+    ImGuiLua_SetEnumValue(L, "J", 555);
+    ImGuiLua_SetEnumValue(L, "K", 556);
+    ImGuiLua_SetEnumValue(L, "L", 557);
+    ImGuiLua_SetEnumValue(L, "M", 558);
+    ImGuiLua_SetEnumValue(L, "N", 559);
+    ImGuiLua_SetEnumValue(L, "O", 560);
+    ImGuiLua_SetEnumValue(L, "P", 561);
+    ImGuiLua_SetEnumValue(L, "Q", 562);
+    ImGuiLua_SetEnumValue(L, "R", 563);
+    ImGuiLua_SetEnumValue(L, "S", 564);
+    ImGuiLua_SetEnumValue(L, "T", 565);
+    ImGuiLua_SetEnumValue(L, "U", 566);
+    ImGuiLua_SetEnumValue(L, "V", 567);
+    ImGuiLua_SetEnumValue(L, "W", 568);
+    ImGuiLua_SetEnumValue(L, "X", 569);
+    ImGuiLua_SetEnumValue(L, "Y", 570);
+    ImGuiLua_SetEnumValue(L, "Z", 571);
+    ImGuiLua_SetEnumValue(L, "F1", 572);
+    ImGuiLua_SetEnumValue(L, "F2", 573);
+    ImGuiLua_SetEnumValue(L, "F3", 574);
+    ImGuiLua_SetEnumValue(L, "F4", 575);
+    ImGuiLua_SetEnumValue(L, "F5", 576);
+    ImGuiLua_SetEnumValue(L, "F6", 577);
+    ImGuiLua_SetEnumValue(L, "F7", 578);
+    ImGuiLua_SetEnumValue(L, "F8", 579);
+    ImGuiLua_SetEnumValue(L, "F9", 580);
+    ImGuiLua_SetEnumValue(L, "F10", 581);
+    ImGuiLua_SetEnumValue(L, "F11", 582);
+    ImGuiLua_SetEnumValue(L, "F12", 583);
+    ImGuiLua_SetEnumValue(L, "Apostrophe", 584);
+    ImGuiLua_SetEnumValue(L, "Comma", 585);
+    ImGuiLua_SetEnumValue(L, "Minus", 586);
+    ImGuiLua_SetEnumValue(L, "Period", 587);
+    ImGuiLua_SetEnumValue(L, "Slash", 588);
+    ImGuiLua_SetEnumValue(L, "Semicolon", 589);
+    ImGuiLua_SetEnumValue(L, "Equal", 590);
+    ImGuiLua_SetEnumValue(L, "LeftBracket", 591);
+    ImGuiLua_SetEnumValue(L, "Backslash", 592);
+    ImGuiLua_SetEnumValue(L, "RightBracket", 593);
+    ImGuiLua_SetEnumValue(L, "GraveAccent", 594);
+    ImGuiLua_SetEnumValue(L, "CapsLock", 595);
+    ImGuiLua_SetEnumValue(L, "ScrollLock", 596);
+    ImGuiLua_SetEnumValue(L, "NumLock", 597);
+    ImGuiLua_SetEnumValue(L, "PrintScreen", 598);
+    ImGuiLua_SetEnumValue(L, "Pause", 599);
+    ImGuiLua_SetEnumValue(L, "Keypad0", 600);
+    ImGuiLua_SetEnumValue(L, "Keypad1", 601);
+    ImGuiLua_SetEnumValue(L, "Keypad2", 602);
+    ImGuiLua_SetEnumValue(L, "Keypad3", 603);
+    ImGuiLua_SetEnumValue(L, "Keypad4", 604);
+    ImGuiLua_SetEnumValue(L, "Keypad5", 605);
+    ImGuiLua_SetEnumValue(L, "Keypad6", 606);
+    ImGuiLua_SetEnumValue(L, "Keypad7", 607);
+    ImGuiLua_SetEnumValue(L, "Keypad8", 608);
+    ImGuiLua_SetEnumValue(L, "Keypad9", 609);
+    ImGuiLua_SetEnumValue(L, "KeypadDecimal", 610);
+    ImGuiLua_SetEnumValue(L, "KeypadDivide", 611);
+    ImGuiLua_SetEnumValue(L, "KeypadMultiply", 612);
+    ImGuiLua_SetEnumValue(L, "KeypadSubtract", 613);
+    ImGuiLua_SetEnumValue(L, "KeypadAdd", 614);
+    ImGuiLua_SetEnumValue(L, "KeypadEnter", 615);
+    ImGuiLua_SetEnumValue(L, "KeypadEqual", 616);
+    ImGuiLua_SetEnumValue(L, "GamepadStart", 617);
+    ImGuiLua_SetEnumValue(L, "GamepadBack", 618);
+    ImGuiLua_SetEnumValue(L, "GamepadFaceLeft", 619);
+    ImGuiLua_SetEnumValue(L, "GamepadFaceRight", 620);
+    ImGuiLua_SetEnumValue(L, "GamepadFaceUp", 621);
+    ImGuiLua_SetEnumValue(L, "GamepadFaceDown", 622);
+    ImGuiLua_SetEnumValue(L, "GamepadDpadLeft", 623);
+    ImGuiLua_SetEnumValue(L, "GamepadDpadRight", 624);
+    ImGuiLua_SetEnumValue(L, "GamepadDpadUp", 625);
+    ImGuiLua_SetEnumValue(L, "GamepadDpadDown", 626);
+    ImGuiLua_SetEnumValue(L, "GamepadL1", 627);
+    ImGuiLua_SetEnumValue(L, "GamepadR1", 628);
+    ImGuiLua_SetEnumValue(L, "GamepadL2", 629);
+    ImGuiLua_SetEnumValue(L, "GamepadR2", 630);
+    ImGuiLua_SetEnumValue(L, "GamepadL3", 631);
+    ImGuiLua_SetEnumValue(L, "GamepadR3", 632);
+    ImGuiLua_SetEnumValue(L, "GamepadLStickLeft", 633);
+    ImGuiLua_SetEnumValue(L, "GamepadLStickRight", 634);
+    ImGuiLua_SetEnumValue(L, "GamepadLStickUp", 635);
+    ImGuiLua_SetEnumValue(L, "GamepadLStickDown", 636);
+    ImGuiLua_SetEnumValue(L, "GamepadRStickLeft", 637);
+    ImGuiLua_SetEnumValue(L, "GamepadRStickRight", 638);
+    ImGuiLua_SetEnumValue(L, "GamepadRStickUp", 639);
+    ImGuiLua_SetEnumValue(L, "GamepadRStickDown", 640);
+    ImGuiLua_SetEnumValue(L, "ModCtrl", 641);
+    ImGuiLua_SetEnumValue(L, "ModShift", 642);
+    ImGuiLua_SetEnumValue(L, "ModAlt", 643);
+    ImGuiLua_SetEnumValue(L, "ModSuper", 644);
+    ImGuiLua_SetEnumValue(L, "MouseLeft", 645);
+    ImGuiLua_SetEnumValue(L, "MouseRight", 646);
+    ImGuiLua_SetEnumValue(L, "MouseMiddle", 647);
+    ImGuiLua_SetEnumValue(L, "MouseX1", 648);
+    ImGuiLua_SetEnumValue(L, "MouseX2", 649);
+    ImGuiLua_SetEnumValue(L, "MouseWheelX", 650);
+    ImGuiLua_SetEnumValue(L, "MouseWheelY", 651);
+    ImGuiLua_SetEnumValue(L, "COUNT", 652);
+    ImGuiLua_SetEnumValue(L, "NamedKey_BEGIN", 512);
+    ImGuiLua_SetEnumValue(L, "NamedKey_END", ImGuiKey_COUNT);
+    ImGuiLua_SetEnumValue(L, "NamedKey_COUNT", ImGuiKey_NamedKey_END - ImGuiKey_NamedKey_BEGIN);
+    ImGuiLua_SetEnumValue(L, "KeysData_SIZE", ImGuiKey_COUNT);
+    ImGuiLua_SetEnumValue(L, "KeysData_OFFSET", 0);
+}
+
+IMGUILUA_ENUM(ImGuiModFlags)
+static void ImGuiLua_RegisterEnumImGuiModFlags(lua_State *L)
 {
     ImGuiLua_SetEnumValue(L, "None", 0);
     ImGuiLua_SetEnumValue(L, "Ctrl", 1 << 0);
     ImGuiLua_SetEnumValue(L, "Shift", 1 << 1);
     ImGuiLua_SetEnumValue(L, "Alt", 1 << 2);
     ImGuiLua_SetEnumValue(L, "Super", 1 << 3);
-}
-
-IMGUILUA_ENUM(ImGuiKey)
-static void ImGuiLua_RegisterEnumImGuiKey(lua_State *L)
-{
-    ImGuiLua_SetEnumValue(L, "Tab", 0);
-    ImGuiLua_SetEnumValue(L, "LeftArrow", 1);
-    ImGuiLua_SetEnumValue(L, "RightArrow", 2);
-    ImGuiLua_SetEnumValue(L, "UpArrow", 3);
-    ImGuiLua_SetEnumValue(L, "DownArrow", 4);
-    ImGuiLua_SetEnumValue(L, "PageUp", 5);
-    ImGuiLua_SetEnumValue(L, "PageDown", 6);
-    ImGuiLua_SetEnumValue(L, "Home", 7);
-    ImGuiLua_SetEnumValue(L, "End", 8);
-    ImGuiLua_SetEnumValue(L, "Insert", 9);
-    ImGuiLua_SetEnumValue(L, "Delete", 10);
-    ImGuiLua_SetEnumValue(L, "Backspace", 11);
-    ImGuiLua_SetEnumValue(L, "Space", 12);
-    ImGuiLua_SetEnumValue(L, "Enter", 13);
-    ImGuiLua_SetEnumValue(L, "Escape", 14);
-    ImGuiLua_SetEnumValue(L, "KeyPadEnter", 15);
-    ImGuiLua_SetEnumValue(L, "A", 16);
-    ImGuiLua_SetEnumValue(L, "C", 17);
-    ImGuiLua_SetEnumValue(L, "V", 18);
-    ImGuiLua_SetEnumValue(L, "X", 19);
-    ImGuiLua_SetEnumValue(L, "Y", 20);
-    ImGuiLua_SetEnumValue(L, "Z", 21);
-    ImGuiLua_SetEnumValue(L, "COUNT", 22);
+    ImGuiLua_SetEnumValue(L, "All", 0x0F);
 }
 
 IMGUILUA_ENUM(ImGuiMouseButton)
@@ -642,12 +685,7 @@ static void ImGuiLua_RegisterEnumImGuiNavInput(lua_State *L)
     ImGuiLua_SetEnumValue(L, "FocusNext", 13);
     ImGuiLua_SetEnumValue(L, "TweakSlow", 14);
     ImGuiLua_SetEnumValue(L, "TweakFast", 15);
-    ImGuiLua_SetEnumValue(L, "KeyLeft_", 16);
-    ImGuiLua_SetEnumValue(L, "KeyRight_", 17);
-    ImGuiLua_SetEnumValue(L, "KeyUp_", 18);
-    ImGuiLua_SetEnumValue(L, "KeyDown_", 19);
-    ImGuiLua_SetEnumValue(L, "COUNT", 20);
-    ImGuiLua_SetEnumValue(L, "InternalStart_", ImGuiNavInput_KeyLeft_);
+    ImGuiLua_SetEnumValue(L, "COUNT", 16);
 }
 
 IMGUILUA_ENUM(ImGuiPopupFlags)
@@ -912,6 +950,2026 @@ static void ImGuiLua_RegisterEnumImGuiWindowFlags(lua_State *L)
 }
 
 
+// struct ImColor: Unknown argument type 'ImColor*' (ImColor*)
+
+// struct ImDrawChannel: Unknown argument type 'ImDrawChannel*' (ImDrawChannel*)
+
+// struct ImDrawCmd: Unknown argument type 'ImDrawCmd*' (ImDrawCmd*)
+
+// struct ImDrawCmdHeader: Unknown argument type 'ImDrawCmdHeader*' (ImDrawCmdHeader*)
+
+// struct ImDrawData: Unknown argument type 'ImDrawData*' (ImDrawData*)
+
+// struct ImDrawList: Unknown argument type 'ImDrawList*' (ImDrawList*)
+
+// struct ImDrawListSplitter: Unknown argument type 'ImDrawListSplitter*' (ImDrawListSplitter*)
+
+// struct ImDrawVert: Unknown argument type 'ImDrawVert*' (ImDrawVert*)
+
+// struct ImFont: Unknown argument type 'ImFont*' (ImFont*)
+
+// struct ImFontAtlas: Unknown argument type 'ImFontAtlas*' (ImFontAtlas*)
+
+// struct ImFontAtlasCustomRect: Unknown argument type 'ImFontAtlasCustomRect*' (ImFontAtlasCustomRect*)
+
+// struct ImFontConfig: Unknown argument type 'ImFontConfig*' (ImFontConfig*)
+
+// struct ImFontGlyph: Unknown argument type 'ImFontGlyph*' (ImFontGlyph*)
+
+// struct ImFontGlyphRangesBuilder: Unknown argument type 'ImFontGlyphRangesBuilder*' (ImFontGlyphRangesBuilder*)
+
+static int ImGuiLua_IndexImGuiIO(lua_State *L)
+{
+    ImGuiIO *self;
+    self = *static_cast<ImGuiIO **>(luaL_checkudata(L, 1, "ImGuiIO"));
+    size_t len;
+    const char *key = luaL_checklstring(L, 2, &len);
+
+    if (len == 11 && memcmp(key, "ConfigFlags", 11) == 0) {
+        int RETVAL = self->ConfigFlags;
+        lua_pushinteger(L, static_cast<lua_Integer>(RETVAL));
+        return 1;
+    }
+
+    if (len == 12 && memcmp(key, "BackendFlags", 12) == 0) {
+        int RETVAL = self->BackendFlags;
+        lua_pushinteger(L, static_cast<lua_Integer>(RETVAL));
+        return 1;
+    }
+
+    if (len == 11 && memcmp(key, "DisplaySize", 11) == 0) {
+        ImVec2 RETVAL = self->DisplaySize;
+        ImGuiLua_PushImVec2(L, RETVAL);
+        return 1;
+    }
+
+    if (len == 9 && memcmp(key, "DeltaTime", 9) == 0) {
+        float RETVAL = self->DeltaTime;
+        lua_pushnumber(L, static_cast<lua_Number>(RETVAL));
+        return 1;
+    }
+
+    if (len == 13 && memcmp(key, "IniSavingRate", 13) == 0) {
+        float RETVAL = self->IniSavingRate;
+        lua_pushnumber(L, static_cast<lua_Number>(RETVAL));
+        return 1;
+    }
+
+    if (len == 11 && memcmp(key, "IniFilename", 11) == 0) {
+        const char *RETVAL = self->IniFilename;
+        lua_pushstring(L, RETVAL);
+        return 1;
+    }
+
+    if (len == 11 && memcmp(key, "LogFilename", 11) == 0) {
+        const char *RETVAL = self->LogFilename;
+        lua_pushstring(L, RETVAL);
+        return 1;
+    }
+
+    if (len == 20 && memcmp(key, "MouseDoubleClickTime", 20) == 0) {
+        float RETVAL = self->MouseDoubleClickTime;
+        lua_pushnumber(L, static_cast<lua_Number>(RETVAL));
+        return 1;
+    }
+
+    if (len == 23 && memcmp(key, "MouseDoubleClickMaxDist", 23) == 0) {
+        float RETVAL = self->MouseDoubleClickMaxDist;
+        lua_pushnumber(L, static_cast<lua_Number>(RETVAL));
+        return 1;
+    }
+
+    if (len == 18 && memcmp(key, "MouseDragThreshold", 18) == 0) {
+        float RETVAL = self->MouseDragThreshold;
+        lua_pushnumber(L, static_cast<lua_Number>(RETVAL));
+        return 1;
+    }
+
+    if (len == 14 && memcmp(key, "KeyRepeatDelay", 14) == 0) {
+        float RETVAL = self->KeyRepeatDelay;
+        lua_pushnumber(L, static_cast<lua_Number>(RETVAL));
+        return 1;
+    }
+
+    if (len == 13 && memcmp(key, "KeyRepeatRate", 13) == 0) {
+        float RETVAL = self->KeyRepeatRate;
+        lua_pushnumber(L, static_cast<lua_Number>(RETVAL));
+        return 1;
+    }
+
+    // void* UserData: Unknown return type 'void*'
+
+    // ImFontAtlas* Fonts: Unknown return type 'ImFontAtlas*'
+
+    if (len == 15 && memcmp(key, "FontGlobalScale", 15) == 0) {
+        float RETVAL = self->FontGlobalScale;
+        lua_pushnumber(L, static_cast<lua_Number>(RETVAL));
+        return 1;
+    }
+
+    if (len == 20 && memcmp(key, "FontAllowUserScaling", 20) == 0) {
+        bool RETVAL = self->FontAllowUserScaling;
+        lua_pushboolean(L, RETVAL);
+        return 1;
+    }
+
+    // ImFont* FontDefault: Unknown return type 'ImFont*'
+
+    if (len == 23 && memcmp(key, "DisplayFramebufferScale", 23) == 0) {
+        ImVec2 RETVAL = self->DisplayFramebufferScale;
+        ImGuiLua_PushImVec2(L, RETVAL);
+        return 1;
+    }
+
+    if (len == 15 && memcmp(key, "MouseDrawCursor", 15) == 0) {
+        bool RETVAL = self->MouseDrawCursor;
+        lua_pushboolean(L, RETVAL);
+        return 1;
+    }
+
+    if (len == 21 && memcmp(key, "ConfigMacOSXBehaviors", 21) == 0) {
+        bool RETVAL = self->ConfigMacOSXBehaviors;
+        lua_pushboolean(L, RETVAL);
+        return 1;
+    }
+
+    if (len == 28 && memcmp(key, "ConfigInputTrickleEventQueue", 28) == 0) {
+        bool RETVAL = self->ConfigInputTrickleEventQueue;
+        lua_pushboolean(L, RETVAL);
+        return 1;
+    }
+
+    if (len == 26 && memcmp(key, "ConfigInputTextCursorBlink", 26) == 0) {
+        bool RETVAL = self->ConfigInputTextCursorBlink;
+        lua_pushboolean(L, RETVAL);
+        return 1;
+    }
+
+    if (len == 30 && memcmp(key, "ConfigInputTextEnterKeepActive", 30) == 0) {
+        bool RETVAL = self->ConfigInputTextEnterKeepActive;
+        lua_pushboolean(L, RETVAL);
+        return 1;
+    }
+
+    if (len == 26 && memcmp(key, "ConfigDragClickToInputText", 26) == 0) {
+        bool RETVAL = self->ConfigDragClickToInputText;
+        lua_pushboolean(L, RETVAL);
+        return 1;
+    }
+
+    if (len == 28 && memcmp(key, "ConfigWindowsResizeFromEdges", 28) == 0) {
+        bool RETVAL = self->ConfigWindowsResizeFromEdges;
+        lua_pushboolean(L, RETVAL);
+        return 1;
+    }
+
+    if (len == 33 && memcmp(key, "ConfigWindowsMoveFromTitleBarOnly", 33) == 0) {
+        bool RETVAL = self->ConfigWindowsMoveFromTitleBarOnly;
+        lua_pushboolean(L, RETVAL);
+        return 1;
+    }
+
+    if (len == 24 && memcmp(key, "ConfigMemoryCompactTimer", 24) == 0) {
+        float RETVAL = self->ConfigMemoryCompactTimer;
+        lua_pushnumber(L, static_cast<lua_Number>(RETVAL));
+        return 1;
+    }
+
+    if (len == 19 && memcmp(key, "BackendPlatformName", 19) == 0) {
+        const char *RETVAL = self->BackendPlatformName;
+        lua_pushstring(L, RETVAL);
+        return 1;
+    }
+
+    if (len == 19 && memcmp(key, "BackendRendererName", 19) == 0) {
+        const char *RETVAL = self->BackendRendererName;
+        lua_pushstring(L, RETVAL);
+        return 1;
+    }
+
+    // void* BackendPlatformUserData: Unknown return type 'void*'
+
+    // void* BackendRendererUserData: Unknown return type 'void*'
+
+    // void* BackendLanguageUserData: Unknown return type 'void*'
+
+    // const char*(*)(void* user_data) GetClipboardTextFn: Unknown return type 'const char*(*)(void* user_data)'
+
+    // void(*)(void* user_data,const char* text) SetClipboardTextFn: Unknown return type 'void(*)(void* user_data,const char* text)'
+
+    // void* ClipboardUserData: Unknown return type 'void*'
+
+    // void(*)(ImGuiViewport* viewport,ImGuiPlatformImeData* data) SetPlatformImeDataFn: Unknown return type 'void(*)(ImGuiViewport* viewport,ImGuiPlatformImeData* data)'
+
+    // void* _UnusedPadding: Unknown return type 'void*'
+
+    if (len == 16 && memcmp(key, "WantCaptureMouse", 16) == 0) {
+        bool RETVAL = self->WantCaptureMouse;
+        lua_pushboolean(L, RETVAL);
+        return 1;
+    }
+
+    if (len == 19 && memcmp(key, "WantCaptureKeyboard", 19) == 0) {
+        bool RETVAL = self->WantCaptureKeyboard;
+        lua_pushboolean(L, RETVAL);
+        return 1;
+    }
+
+    if (len == 13 && memcmp(key, "WantTextInput", 13) == 0) {
+        bool RETVAL = self->WantTextInput;
+        lua_pushboolean(L, RETVAL);
+        return 1;
+    }
+
+    if (len == 15 && memcmp(key, "WantSetMousePos", 15) == 0) {
+        bool RETVAL = self->WantSetMousePos;
+        lua_pushboolean(L, RETVAL);
+        return 1;
+    }
+
+    if (len == 19 && memcmp(key, "WantSaveIniSettings", 19) == 0) {
+        bool RETVAL = self->WantSaveIniSettings;
+        lua_pushboolean(L, RETVAL);
+        return 1;
+    }
+
+    if (len == 9 && memcmp(key, "NavActive", 9) == 0) {
+        bool RETVAL = self->NavActive;
+        lua_pushboolean(L, RETVAL);
+        return 1;
+    }
+
+    if (len == 10 && memcmp(key, "NavVisible", 10) == 0) {
+        bool RETVAL = self->NavVisible;
+        lua_pushboolean(L, RETVAL);
+        return 1;
+    }
+
+    if (len == 9 && memcmp(key, "Framerate", 9) == 0) {
+        float RETVAL = self->Framerate;
+        lua_pushnumber(L, static_cast<lua_Number>(RETVAL));
+        return 1;
+    }
+
+    if (len == 21 && memcmp(key, "MetricsRenderVertices", 21) == 0) {
+        int RETVAL = self->MetricsRenderVertices;
+        lua_pushinteger(L, static_cast<lua_Integer>(RETVAL));
+        return 1;
+    }
+
+    if (len == 20 && memcmp(key, "MetricsRenderIndices", 20) == 0) {
+        int RETVAL = self->MetricsRenderIndices;
+        lua_pushinteger(L, static_cast<lua_Integer>(RETVAL));
+        return 1;
+    }
+
+    if (len == 20 && memcmp(key, "MetricsRenderWindows", 20) == 0) {
+        int RETVAL = self->MetricsRenderWindows;
+        lua_pushinteger(L, static_cast<lua_Integer>(RETVAL));
+        return 1;
+    }
+
+    if (len == 20 && memcmp(key, "MetricsActiveWindows", 20) == 0) {
+        int RETVAL = self->MetricsActiveWindows;
+        lua_pushinteger(L, static_cast<lua_Integer>(RETVAL));
+        return 1;
+    }
+
+    if (len == 24 && memcmp(key, "MetricsActiveAllocations", 24) == 0) {
+        int RETVAL = self->MetricsActiveAllocations;
+        lua_pushinteger(L, static_cast<lua_Integer>(RETVAL));
+        return 1;
+    }
+
+    if (len == 10 && memcmp(key, "MouseDelta", 10) == 0) {
+        ImVec2 RETVAL = self->MouseDelta;
+        ImGuiLua_PushImVec2(L, RETVAL);
+        return 1;
+    }
+
+    // int KeyMap[ImGuiKey_COUNT]: arrays not supported
+
+    // bool KeysDown[ImGuiKey_COUNT]: arrays not supported
+
+    // float NavInputs[ImGuiNavInput_COUNT]: arrays not supported
+
+    if (len == 8 && memcmp(key, "MousePos", 8) == 0) {
+        ImVec2 RETVAL = self->MousePos;
+        ImGuiLua_PushImVec2(L, RETVAL);
+        return 1;
+    }
+
+    // bool MouseDown[5]: arrays not supported
+
+    if (len == 10 && memcmp(key, "MouseWheel", 10) == 0) {
+        float RETVAL = self->MouseWheel;
+        lua_pushnumber(L, static_cast<lua_Number>(RETVAL));
+        return 1;
+    }
+
+    if (len == 11 && memcmp(key, "MouseWheelH", 11) == 0) {
+        float RETVAL = self->MouseWheelH;
+        lua_pushnumber(L, static_cast<lua_Number>(RETVAL));
+        return 1;
+    }
+
+    if (len == 7 && memcmp(key, "KeyCtrl", 7) == 0) {
+        bool RETVAL = self->KeyCtrl;
+        lua_pushboolean(L, RETVAL);
+        return 1;
+    }
+
+    if (len == 8 && memcmp(key, "KeyShift", 8) == 0) {
+        bool RETVAL = self->KeyShift;
+        lua_pushboolean(L, RETVAL);
+        return 1;
+    }
+
+    if (len == 6 && memcmp(key, "KeyAlt", 6) == 0) {
+        bool RETVAL = self->KeyAlt;
+        lua_pushboolean(L, RETVAL);
+        return 1;
+    }
+
+    if (len == 8 && memcmp(key, "KeySuper", 8) == 0) {
+        bool RETVAL = self->KeySuper;
+        lua_pushboolean(L, RETVAL);
+        return 1;
+    }
+
+    // ImGuiModFlags KeyMods: Unknown return type 'ImGuiModFlags'
+
+    // ImGuiKeyData KeysData[ImGuiKey_KeysData_SIZE]: Unknown return type 'ImGuiKeyData'
+
+    if (len == 32 && memcmp(key, "WantCaptureMouseUnlessPopupClose", 32) == 0) {
+        bool RETVAL = self->WantCaptureMouseUnlessPopupClose;
+        lua_pushboolean(L, RETVAL);
+        return 1;
+    }
+
+    if (len == 12 && memcmp(key, "MousePosPrev", 12) == 0) {
+        ImVec2 RETVAL = self->MousePosPrev;
+        ImGuiLua_PushImVec2(L, RETVAL);
+        return 1;
+    }
+
+    // ImVec2 MouseClickedPos[5]: arrays not supported
+
+    // double MouseClickedTime[5]: arrays not supported
+
+    // bool MouseClicked[5]: arrays not supported
+
+    // bool MouseDoubleClicked[5]: arrays not supported
+
+    // ImU16 MouseClickedCount[5]: Unknown return type 'ImU16'
+
+    // ImU16 MouseClickedLastCount[5]: Unknown return type 'ImU16'
+
+    // bool MouseReleased[5]: arrays not supported
+
+    // bool MouseDownOwned[5]: arrays not supported
+
+    // bool MouseDownOwnedUnlessPopupClose[5]: arrays not supported
+
+    // float MouseDownDuration[5]: arrays not supported
+
+    // float MouseDownDurationPrev[5]: arrays not supported
+
+    // float MouseDragMaxDistanceSqr[5]: arrays not supported
+
+    if (len == 11 && memcmp(key, "PenPressure", 11) == 0) {
+        float RETVAL = self->PenPressure;
+        lua_pushnumber(L, static_cast<lua_Number>(RETVAL));
+        return 1;
+    }
+
+    if (len == 12 && memcmp(key, "AppFocusLost", 12) == 0) {
+        bool RETVAL = self->AppFocusLost;
+        lua_pushboolean(L, RETVAL);
+        return 1;
+    }
+
+    if (len == 18 && memcmp(key, "AppAcceptingEvents", 18) == 0) {
+        bool RETVAL = self->AppAcceptingEvents;
+        lua_pushboolean(L, RETVAL);
+        return 1;
+    }
+
+    // ImS8 BackendUsingLegacyKeyArrays: Unknown return type 'ImS8'
+
+    if (len == 31 && memcmp(key, "BackendUsingLegacyNavInputArray", 31) == 0) {
+        bool RETVAL = self->BackendUsingLegacyNavInputArray;
+        lua_pushboolean(L, RETVAL);
+        return 1;
+    }
+
+    // ImWchar16 InputQueueSurrogate: Unknown return type 'ImWchar16'
+
+    // ImVector_ImWchar InputQueueCharacters: Unknown return type 'ImVector_ImWchar'
+
+    luaL_getmetafield(L, 1, key);
+    return 1;
+}
+
+static int ImGuiLua_NewindexImGuiIO(lua_State *L)
+{
+    ImGuiIO *self;
+    self = *static_cast<ImGuiIO **>(luaL_checkudata(L, 1, "ImGuiIO"));
+    size_t len;
+    const char *key = luaL_checklstring(L, 2, &len);
+
+    if (len == 11 && memcmp(key, "ConfigFlags", 11) == 0) {
+        int ARGVAL;
+        ARGVAL = static_cast<int>(luaL_checkinteger(L, 3));
+        self->ConfigFlags = ARGVAL;
+        return 0;
+    }
+
+    if (len == 12 && memcmp(key, "BackendFlags", 12) == 0) {
+        int ARGVAL;
+        ARGVAL = static_cast<int>(luaL_checkinteger(L, 3));
+        self->BackendFlags = ARGVAL;
+        return 0;
+    }
+
+    if (len == 11 && memcmp(key, "DisplaySize", 11) == 0) {
+        ImVec2 ARGVAL;
+        ARGVAL = ImGuiLua_ToImVec2(L, 3);
+        self->DisplaySize = ARGVAL;
+        return 0;
+    }
+
+    if (len == 9 && memcmp(key, "DeltaTime", 9) == 0) {
+        float ARGVAL;
+        ARGVAL = static_cast<float>(luaL_checknumber(L, 3));
+        self->DeltaTime = ARGVAL;
+        return 0;
+    }
+
+    if (len == 13 && memcmp(key, "IniSavingRate", 13) == 0) {
+        float ARGVAL;
+        ARGVAL = static_cast<float>(luaL_checknumber(L, 3));
+        self->IniSavingRate = ARGVAL;
+        return 0;
+    }
+
+    if (len == 11 && memcmp(key, "IniFilename", 11) == 0) {
+        const char *ARGVAL;
+        ARGVAL = lua_tostring(L, 3);
+        self->IniFilename = ARGVAL;
+        return 0;
+    }
+
+    if (len == 11 && memcmp(key, "LogFilename", 11) == 0) {
+        const char *ARGVAL;
+        ARGVAL = lua_tostring(L, 3);
+        self->LogFilename = ARGVAL;
+        return 0;
+    }
+
+    if (len == 20 && memcmp(key, "MouseDoubleClickTime", 20) == 0) {
+        float ARGVAL;
+        ARGVAL = static_cast<float>(luaL_checknumber(L, 3));
+        self->MouseDoubleClickTime = ARGVAL;
+        return 0;
+    }
+
+    if (len == 23 && memcmp(key, "MouseDoubleClickMaxDist", 23) == 0) {
+        float ARGVAL;
+        ARGVAL = static_cast<float>(luaL_checknumber(L, 3));
+        self->MouseDoubleClickMaxDist = ARGVAL;
+        return 0;
+    }
+
+    if (len == 18 && memcmp(key, "MouseDragThreshold", 18) == 0) {
+        float ARGVAL;
+        ARGVAL = static_cast<float>(luaL_checknumber(L, 3));
+        self->MouseDragThreshold = ARGVAL;
+        return 0;
+    }
+
+    if (len == 14 && memcmp(key, "KeyRepeatDelay", 14) == 0) {
+        float ARGVAL;
+        ARGVAL = static_cast<float>(luaL_checknumber(L, 3));
+        self->KeyRepeatDelay = ARGVAL;
+        return 0;
+    }
+
+    if (len == 13 && memcmp(key, "KeyRepeatRate", 13) == 0) {
+        float ARGVAL;
+        ARGVAL = static_cast<float>(luaL_checknumber(L, 3));
+        self->KeyRepeatRate = ARGVAL;
+        return 0;
+    }
+
+    // void* UserData: Unknown argument type 'void*'
+
+    // ImFontAtlas* Fonts: Unknown argument type 'ImFontAtlas*'
+
+    if (len == 15 && memcmp(key, "FontGlobalScale", 15) == 0) {
+        float ARGVAL;
+        ARGVAL = static_cast<float>(luaL_checknumber(L, 3));
+        self->FontGlobalScale = ARGVAL;
+        return 0;
+    }
+
+    if (len == 20 && memcmp(key, "FontAllowUserScaling", 20) == 0) {
+        bool ARGVAL;
+        ARGVAL = lua_toboolean(L, 3);
+        self->FontAllowUserScaling = ARGVAL;
+        return 0;
+    }
+
+    // ImFont* FontDefault: Unknown argument type 'ImFont*'
+
+    if (len == 23 && memcmp(key, "DisplayFramebufferScale", 23) == 0) {
+        ImVec2 ARGVAL;
+        ARGVAL = ImGuiLua_ToImVec2(L, 3);
+        self->DisplayFramebufferScale = ARGVAL;
+        return 0;
+    }
+
+    if (len == 15 && memcmp(key, "MouseDrawCursor", 15) == 0) {
+        bool ARGVAL;
+        ARGVAL = lua_toboolean(L, 3);
+        self->MouseDrawCursor = ARGVAL;
+        return 0;
+    }
+
+    if (len == 21 && memcmp(key, "ConfigMacOSXBehaviors", 21) == 0) {
+        bool ARGVAL;
+        ARGVAL = lua_toboolean(L, 3);
+        self->ConfigMacOSXBehaviors = ARGVAL;
+        return 0;
+    }
+
+    if (len == 28 && memcmp(key, "ConfigInputTrickleEventQueue", 28) == 0) {
+        bool ARGVAL;
+        ARGVAL = lua_toboolean(L, 3);
+        self->ConfigInputTrickleEventQueue = ARGVAL;
+        return 0;
+    }
+
+    if (len == 26 && memcmp(key, "ConfigInputTextCursorBlink", 26) == 0) {
+        bool ARGVAL;
+        ARGVAL = lua_toboolean(L, 3);
+        self->ConfigInputTextCursorBlink = ARGVAL;
+        return 0;
+    }
+
+    if (len == 30 && memcmp(key, "ConfigInputTextEnterKeepActive", 30) == 0) {
+        bool ARGVAL;
+        ARGVAL = lua_toboolean(L, 3);
+        self->ConfigInputTextEnterKeepActive = ARGVAL;
+        return 0;
+    }
+
+    if (len == 26 && memcmp(key, "ConfigDragClickToInputText", 26) == 0) {
+        bool ARGVAL;
+        ARGVAL = lua_toboolean(L, 3);
+        self->ConfigDragClickToInputText = ARGVAL;
+        return 0;
+    }
+
+    if (len == 28 && memcmp(key, "ConfigWindowsResizeFromEdges", 28) == 0) {
+        bool ARGVAL;
+        ARGVAL = lua_toboolean(L, 3);
+        self->ConfigWindowsResizeFromEdges = ARGVAL;
+        return 0;
+    }
+
+    if (len == 33 && memcmp(key, "ConfigWindowsMoveFromTitleBarOnly", 33) == 0) {
+        bool ARGVAL;
+        ARGVAL = lua_toboolean(L, 3);
+        self->ConfigWindowsMoveFromTitleBarOnly = ARGVAL;
+        return 0;
+    }
+
+    if (len == 24 && memcmp(key, "ConfigMemoryCompactTimer", 24) == 0) {
+        float ARGVAL;
+        ARGVAL = static_cast<float>(luaL_checknumber(L, 3));
+        self->ConfigMemoryCompactTimer = ARGVAL;
+        return 0;
+    }
+
+    if (len == 19 && memcmp(key, "BackendPlatformName", 19) == 0) {
+        const char *ARGVAL;
+        ARGVAL = lua_tostring(L, 3);
+        self->BackendPlatformName = ARGVAL;
+        return 0;
+    }
+
+    if (len == 19 && memcmp(key, "BackendRendererName", 19) == 0) {
+        const char *ARGVAL;
+        ARGVAL = lua_tostring(L, 3);
+        self->BackendRendererName = ARGVAL;
+        return 0;
+    }
+
+    // void* BackendPlatformUserData: Unknown argument type 'void*'
+
+    // void* BackendRendererUserData: Unknown argument type 'void*'
+
+    // void* BackendLanguageUserData: Unknown argument type 'void*'
+
+    // const char*(*)(void* user_data) GetClipboardTextFn: Unknown argument type 'const char*(*)(void* user_data)'
+
+    // void(*)(void* user_data,const char* text) SetClipboardTextFn: Unknown argument type 'void(*)(void* user_data,const char* text)'
+
+    // void* ClipboardUserData: Unknown argument type 'void*'
+
+    // void(*)(ImGuiViewport* viewport,ImGuiPlatformImeData* data) SetPlatformImeDataFn: Unknown argument type 'void(*)(ImGuiViewport* viewport,ImGuiPlatformImeData* data)'
+
+    // void* _UnusedPadding: Unknown argument type 'void*'
+
+    if (len == 16 && memcmp(key, "WantCaptureMouse", 16) == 0) {
+        bool ARGVAL;
+        ARGVAL = lua_toboolean(L, 3);
+        self->WantCaptureMouse = ARGVAL;
+        return 0;
+    }
+
+    if (len == 19 && memcmp(key, "WantCaptureKeyboard", 19) == 0) {
+        bool ARGVAL;
+        ARGVAL = lua_toboolean(L, 3);
+        self->WantCaptureKeyboard = ARGVAL;
+        return 0;
+    }
+
+    if (len == 13 && memcmp(key, "WantTextInput", 13) == 0) {
+        bool ARGVAL;
+        ARGVAL = lua_toboolean(L, 3);
+        self->WantTextInput = ARGVAL;
+        return 0;
+    }
+
+    if (len == 15 && memcmp(key, "WantSetMousePos", 15) == 0) {
+        bool ARGVAL;
+        ARGVAL = lua_toboolean(L, 3);
+        self->WantSetMousePos = ARGVAL;
+        return 0;
+    }
+
+    if (len == 19 && memcmp(key, "WantSaveIniSettings", 19) == 0) {
+        bool ARGVAL;
+        ARGVAL = lua_toboolean(L, 3);
+        self->WantSaveIniSettings = ARGVAL;
+        return 0;
+    }
+
+    if (len == 9 && memcmp(key, "NavActive", 9) == 0) {
+        bool ARGVAL;
+        ARGVAL = lua_toboolean(L, 3);
+        self->NavActive = ARGVAL;
+        return 0;
+    }
+
+    if (len == 10 && memcmp(key, "NavVisible", 10) == 0) {
+        bool ARGVAL;
+        ARGVAL = lua_toboolean(L, 3);
+        self->NavVisible = ARGVAL;
+        return 0;
+    }
+
+    if (len == 9 && memcmp(key, "Framerate", 9) == 0) {
+        float ARGVAL;
+        ARGVAL = static_cast<float>(luaL_checknumber(L, 3));
+        self->Framerate = ARGVAL;
+        return 0;
+    }
+
+    if (len == 21 && memcmp(key, "MetricsRenderVertices", 21) == 0) {
+        int ARGVAL;
+        ARGVAL = static_cast<int>(luaL_checkinteger(L, 3));
+        self->MetricsRenderVertices = ARGVAL;
+        return 0;
+    }
+
+    if (len == 20 && memcmp(key, "MetricsRenderIndices", 20) == 0) {
+        int ARGVAL;
+        ARGVAL = static_cast<int>(luaL_checkinteger(L, 3));
+        self->MetricsRenderIndices = ARGVAL;
+        return 0;
+    }
+
+    if (len == 20 && memcmp(key, "MetricsRenderWindows", 20) == 0) {
+        int ARGVAL;
+        ARGVAL = static_cast<int>(luaL_checkinteger(L, 3));
+        self->MetricsRenderWindows = ARGVAL;
+        return 0;
+    }
+
+    if (len == 20 && memcmp(key, "MetricsActiveWindows", 20) == 0) {
+        int ARGVAL;
+        ARGVAL = static_cast<int>(luaL_checkinteger(L, 3));
+        self->MetricsActiveWindows = ARGVAL;
+        return 0;
+    }
+
+    if (len == 24 && memcmp(key, "MetricsActiveAllocations", 24) == 0) {
+        int ARGVAL;
+        ARGVAL = static_cast<int>(luaL_checkinteger(L, 3));
+        self->MetricsActiveAllocations = ARGVAL;
+        return 0;
+    }
+
+    if (len == 10 && memcmp(key, "MouseDelta", 10) == 0) {
+        ImVec2 ARGVAL;
+        ARGVAL = ImGuiLua_ToImVec2(L, 3);
+        self->MouseDelta = ARGVAL;
+        return 0;
+    }
+
+    // int KeyMap[ImGuiKey_COUNT]: arrays not supported
+
+    // bool KeysDown[ImGuiKey_COUNT]: arrays not supported
+
+    // float NavInputs[ImGuiNavInput_COUNT]: arrays not supported
+
+    if (len == 8 && memcmp(key, "MousePos", 8) == 0) {
+        ImVec2 ARGVAL;
+        ARGVAL = ImGuiLua_ToImVec2(L, 3);
+        self->MousePos = ARGVAL;
+        return 0;
+    }
+
+    // bool MouseDown[5]: arrays not supported
+
+    if (len == 10 && memcmp(key, "MouseWheel", 10) == 0) {
+        float ARGVAL;
+        ARGVAL = static_cast<float>(luaL_checknumber(L, 3));
+        self->MouseWheel = ARGVAL;
+        return 0;
+    }
+
+    if (len == 11 && memcmp(key, "MouseWheelH", 11) == 0) {
+        float ARGVAL;
+        ARGVAL = static_cast<float>(luaL_checknumber(L, 3));
+        self->MouseWheelH = ARGVAL;
+        return 0;
+    }
+
+    if (len == 7 && memcmp(key, "KeyCtrl", 7) == 0) {
+        bool ARGVAL;
+        ARGVAL = lua_toboolean(L, 3);
+        self->KeyCtrl = ARGVAL;
+        return 0;
+    }
+
+    if (len == 8 && memcmp(key, "KeyShift", 8) == 0) {
+        bool ARGVAL;
+        ARGVAL = lua_toboolean(L, 3);
+        self->KeyShift = ARGVAL;
+        return 0;
+    }
+
+    if (len == 6 && memcmp(key, "KeyAlt", 6) == 0) {
+        bool ARGVAL;
+        ARGVAL = lua_toboolean(L, 3);
+        self->KeyAlt = ARGVAL;
+        return 0;
+    }
+
+    if (len == 8 && memcmp(key, "KeySuper", 8) == 0) {
+        bool ARGVAL;
+        ARGVAL = lua_toboolean(L, 3);
+        self->KeySuper = ARGVAL;
+        return 0;
+    }
+
+    // ImGuiModFlags KeyMods: Unknown argument type 'ImGuiModFlags'
+
+    // ImGuiKeyData KeysData[ImGuiKey_KeysData_SIZE]: Unknown argument type 'ImGuiKeyData'
+
+    if (len == 32 && memcmp(key, "WantCaptureMouseUnlessPopupClose", 32) == 0) {
+        bool ARGVAL;
+        ARGVAL = lua_toboolean(L, 3);
+        self->WantCaptureMouseUnlessPopupClose = ARGVAL;
+        return 0;
+    }
+
+    if (len == 12 && memcmp(key, "MousePosPrev", 12) == 0) {
+        ImVec2 ARGVAL;
+        ARGVAL = ImGuiLua_ToImVec2(L, 3);
+        self->MousePosPrev = ARGVAL;
+        return 0;
+    }
+
+    // ImVec2 MouseClickedPos[5]: arrays not supported
+
+    // double MouseClickedTime[5]: arrays not supported
+
+    // bool MouseClicked[5]: arrays not supported
+
+    // bool MouseDoubleClicked[5]: arrays not supported
+
+    // ImU16 MouseClickedCount[5]: Unknown argument type 'ImU16'
+
+    // ImU16 MouseClickedLastCount[5]: Unknown argument type 'ImU16'
+
+    // bool MouseReleased[5]: arrays not supported
+
+    // bool MouseDownOwned[5]: arrays not supported
+
+    // bool MouseDownOwnedUnlessPopupClose[5]: arrays not supported
+
+    // float MouseDownDuration[5]: arrays not supported
+
+    // float MouseDownDurationPrev[5]: arrays not supported
+
+    // float MouseDragMaxDistanceSqr[5]: arrays not supported
+
+    if (len == 11 && memcmp(key, "PenPressure", 11) == 0) {
+        float ARGVAL;
+        ARGVAL = static_cast<float>(luaL_checknumber(L, 3));
+        self->PenPressure = ARGVAL;
+        return 0;
+    }
+
+    if (len == 12 && memcmp(key, "AppFocusLost", 12) == 0) {
+        bool ARGVAL;
+        ARGVAL = lua_toboolean(L, 3);
+        self->AppFocusLost = ARGVAL;
+        return 0;
+    }
+
+    if (len == 18 && memcmp(key, "AppAcceptingEvents", 18) == 0) {
+        bool ARGVAL;
+        ARGVAL = lua_toboolean(L, 3);
+        self->AppAcceptingEvents = ARGVAL;
+        return 0;
+    }
+
+    // ImS8 BackendUsingLegacyKeyArrays: Unknown argument type 'ImS8'
+
+    if (len == 31 && memcmp(key, "BackendUsingLegacyNavInputArray", 31) == 0) {
+        bool ARGVAL;
+        ARGVAL = lua_toboolean(L, 3);
+        self->BackendUsingLegacyNavInputArray = ARGVAL;
+        return 0;
+    }
+
+    // ImWchar16 InputQueueSurrogate: Unknown argument type 'ImWchar16'
+
+    // ImVector_ImWchar InputQueueCharacters: Unknown argument type 'ImVector_ImWchar'
+
+    return luaL_error(L, "ImGuiIO has no field '%s'", key);
+}
+
+// method ImGuiIO::AddFocusEvent
+
+IMGUILUA_METHOD(ImGuiIO::AddFocusEvent)
+static int ImGuiIO_AddFocusEvent(lua_State *L)
+{
+    IMGUILUA_CHECK_ARGC(2);
+    ImGuiIO *self;
+    self = *static_cast<ImGuiIO **>(luaL_checkudata(L, 1, "ImGuiIO"));
+    bool focused;
+    focused = lua_toboolean(L, 2);
+    self->AddFocusEvent(focused);
+    return 0;
+}
+
+
+// method ImGuiIO::AddInputCharacter
+
+IMGUILUA_METHOD(ImGuiIO::AddInputCharacter)
+static int ImGuiIO_AddInputCharacter(lua_State *L)
+{
+    IMGUILUA_CHECK_ARGC(2);
+    ImGuiIO *self;
+    self = *static_cast<ImGuiIO **>(luaL_checkudata(L, 1, "ImGuiIO"));
+    unsigned int c;
+    c = static_cast<unsigned int>(luaL_checkinteger(L, 2));
+    self->AddInputCharacter(c);
+    return 0;
+}
+
+
+// method ImGuiIO::AddInputCharacterUTF16
+
+// void ImGuiIO_AddInputCharacterUTF16(ImGuiIO*, ImWchar16): Unknown argument type 'ImWchar16' (ImWchar16)
+
+
+// method ImGuiIO::AddInputCharactersUTF8
+
+IMGUILUA_METHOD(ImGuiIO::AddInputCharactersUTF8)
+static int ImGuiIO_AddInputCharactersUTF8(lua_State *L)
+{
+    IMGUILUA_CHECK_ARGC(2);
+    ImGuiIO *self;
+    self = *static_cast<ImGuiIO **>(luaL_checkudata(L, 1, "ImGuiIO"));
+    const char *str;
+    str = lua_tostring(L, 2);
+    self->AddInputCharactersUTF8(str);
+    return 0;
+}
+
+
+// method ImGuiIO::AddKeyAnalogEvent
+
+IMGUILUA_METHOD(ImGuiIO::AddKeyAnalogEvent)
+static int ImGuiIO_AddKeyAnalogEvent(lua_State *L)
+{
+    IMGUILUA_CHECK_ARGC(4);
+    ImGuiIO *self;
+    self = *static_cast<ImGuiIO **>(luaL_checkudata(L, 1, "ImGuiIO"));
+    int key;
+    key = static_cast<int>(luaL_checkinteger(L, 2));
+    bool down;
+    down = lua_toboolean(L, 3);
+    float v;
+    v = static_cast<float>(luaL_checknumber(L, 4));
+    self->AddKeyAnalogEvent(key,down,v);
+    return 0;
+}
+
+
+// method ImGuiIO::AddKeyEvent
+
+IMGUILUA_METHOD(ImGuiIO::AddKeyEvent)
+static int ImGuiIO_AddKeyEvent(lua_State *L)
+{
+    IMGUILUA_CHECK_ARGC(3);
+    ImGuiIO *self;
+    self = *static_cast<ImGuiIO **>(luaL_checkudata(L, 1, "ImGuiIO"));
+    int key;
+    key = static_cast<int>(luaL_checkinteger(L, 2));
+    bool down;
+    down = lua_toboolean(L, 3);
+    self->AddKeyEvent(key,down);
+    return 0;
+}
+
+
+// method ImGuiIO::AddMouseButtonEvent
+
+IMGUILUA_METHOD(ImGuiIO::AddMouseButtonEvent)
+static int ImGuiIO_AddMouseButtonEvent(lua_State *L)
+{
+    IMGUILUA_CHECK_ARGC(3);
+    ImGuiIO *self;
+    self = *static_cast<ImGuiIO **>(luaL_checkudata(L, 1, "ImGuiIO"));
+    int button;
+    button = static_cast<int>(luaL_checkinteger(L, 2));
+    bool down;
+    down = lua_toboolean(L, 3);
+    self->AddMouseButtonEvent(button,down);
+    return 0;
+}
+
+
+// method ImGuiIO::AddMousePosEvent
+
+IMGUILUA_METHOD(ImGuiIO::AddMousePosEvent)
+static int ImGuiIO_AddMousePosEvent(lua_State *L)
+{
+    IMGUILUA_CHECK_ARGC(3);
+    ImGuiIO *self;
+    self = *static_cast<ImGuiIO **>(luaL_checkudata(L, 1, "ImGuiIO"));
+    float x;
+    x = static_cast<float>(luaL_checknumber(L, 2));
+    float y;
+    y = static_cast<float>(luaL_checknumber(L, 3));
+    self->AddMousePosEvent(x,y);
+    return 0;
+}
+
+
+// method ImGuiIO::AddMouseWheelEvent
+
+IMGUILUA_METHOD(ImGuiIO::AddMouseWheelEvent)
+static int ImGuiIO_AddMouseWheelEvent(lua_State *L)
+{
+    IMGUILUA_CHECK_ARGC(3);
+    ImGuiIO *self;
+    self = *static_cast<ImGuiIO **>(luaL_checkudata(L, 1, "ImGuiIO"));
+    float wh_x;
+    wh_x = static_cast<float>(luaL_checknumber(L, 2));
+    float wh_y;
+    wh_y = static_cast<float>(luaL_checknumber(L, 3));
+    self->AddMouseWheelEvent(wh_x,wh_y);
+    return 0;
+}
+
+
+// method ImGuiIO::ClearInputCharacters
+
+IMGUILUA_METHOD(ImGuiIO::ClearInputCharacters)
+static int ImGuiIO_ClearInputCharacters(lua_State *L)
+{
+    IMGUILUA_CHECK_ARGC(1);
+    ImGuiIO *self;
+    self = *static_cast<ImGuiIO **>(luaL_checkudata(L, 1, "ImGuiIO"));
+    self->ClearInputCharacters();
+    return 0;
+}
+
+
+// method ImGuiIO::ClearInputKeys
+
+IMGUILUA_METHOD(ImGuiIO::ClearInputKeys)
+static int ImGuiIO_ClearInputKeys(lua_State *L)
+{
+    IMGUILUA_CHECK_ARGC(1);
+    ImGuiIO *self;
+    self = *static_cast<ImGuiIO **>(luaL_checkudata(L, 1, "ImGuiIO"));
+    self->ClearInputKeys();
+    return 0;
+}
+
+
+// method ImGuiIO::SetAppAcceptingEvents
+
+IMGUILUA_METHOD(ImGuiIO::SetAppAcceptingEvents)
+static int ImGuiIO_SetAppAcceptingEvents(lua_State *L)
+{
+    IMGUILUA_CHECK_ARGC(2);
+    ImGuiIO *self;
+    self = *static_cast<ImGuiIO **>(luaL_checkudata(L, 1, "ImGuiIO"));
+    bool accepting_events;
+    accepting_events = lua_toboolean(L, 2);
+    self->SetAppAcceptingEvents(accepting_events);
+    return 0;
+}
+
+
+// method ImGuiIO::SetKeyEventNativeData
+
+IMGUILUA_METHOD(ImGuiIO::SetKeyEventNativeData)
+static int ImGuiIO_SetKeyEventNativeData(lua_State *L)
+{
+    IMGUILUA_CHECK_ARGC_BETWEEN(4, 5);
+    ImGuiIO *self;
+    self = *static_cast<ImGuiIO **>(luaL_checkudata(L, 1, "ImGuiIO"));
+    int key;
+    key = static_cast<int>(luaL_checkinteger(L, 2));
+    int native_keycode;
+    native_keycode = static_cast<int>(luaL_checkinteger(L, 3));
+    int native_scancode;
+    native_scancode = static_cast<int>(luaL_checkinteger(L, 4));
+    int native_legacy_index;
+    if (ARGC < 5) {
+        native_legacy_index = -1;
+    }
+    else {
+        native_legacy_index = static_cast<int>(luaL_checkinteger(L, 5));
+    }
+    self->SetKeyEventNativeData(key,native_keycode,native_scancode,native_legacy_index);
+    return 0;
+}
+
+
+IMGUILUA_STRUCT(ImGuiIO)
+static void ImGuiLua_RegisterStructImGuiIO(lua_State *L)
+{
+    luaL_newmetatable(L, "ImGuiIO");
+    lua_pushcfunction(L, ImGuiLua_IndexImGuiIO);
+    lua_setfield(L, -2, "__index");
+    lua_pushcfunction(L, ImGuiLua_NewindexImGuiIO);
+    lua_setfield(L, -2, "__newindex");
+    lua_pushcfunction(L, ImGuiIO_AddFocusEvent);
+    lua_setfield(L, -2, "AddFocusEvent");
+    lua_pushcfunction(L, ImGuiIO_AddInputCharacter);
+    lua_setfield(L, -2, "AddInputCharacter");
+    lua_pushcfunction(L, ImGuiIO_AddInputCharactersUTF8);
+    lua_setfield(L, -2, "AddInputCharactersUTF8");
+    lua_pushcfunction(L, ImGuiIO_AddKeyAnalogEvent);
+    lua_setfield(L, -2, "AddKeyAnalogEvent");
+    lua_pushcfunction(L, ImGuiIO_AddKeyEvent);
+    lua_setfield(L, -2, "AddKeyEvent");
+    lua_pushcfunction(L, ImGuiIO_AddMouseButtonEvent);
+    lua_setfield(L, -2, "AddMouseButtonEvent");
+    lua_pushcfunction(L, ImGuiIO_AddMousePosEvent);
+    lua_setfield(L, -2, "AddMousePosEvent");
+    lua_pushcfunction(L, ImGuiIO_AddMouseWheelEvent);
+    lua_setfield(L, -2, "AddMouseWheelEvent");
+    lua_pushcfunction(L, ImGuiIO_ClearInputCharacters);
+    lua_setfield(L, -2, "ClearInputCharacters");
+    lua_pushcfunction(L, ImGuiIO_ClearInputKeys);
+    lua_setfield(L, -2, "ClearInputKeys");
+    lua_pushcfunction(L, ImGuiIO_SetAppAcceptingEvents);
+    lua_setfield(L, -2, "SetAppAcceptingEvents");
+    lua_pushcfunction(L, ImGuiIO_SetKeyEventNativeData);
+    lua_setfield(L, -2, "SetKeyEventNativeData");
+    lua_pop(L, 1);
+}
+
+// struct ImGuiInputTextCallbackData: Unknown argument type 'ImGuiInputTextCallbackData*' (ImGuiInputTextCallbackData*)
+
+// struct ImGuiKeyData: Unknown argument type 'ImGuiKeyData*' (ImGuiKeyData*)
+
+// struct ImGuiListClipper: Unknown argument type 'ImGuiListClipper*' (ImGuiListClipper*)
+
+// struct ImGuiOnceUponAFrame: Unknown argument type 'ImGuiOnceUponAFrame*' (ImGuiOnceUponAFrame*)
+
+// struct ImGuiPayload: Unknown argument type 'ImGuiPayload*' (ImGuiPayload*)
+
+// struct ImGuiPlatformImeData: Unknown argument type 'ImGuiPlatformImeData*' (ImGuiPlatformImeData*)
+
+// struct ImGuiSizeCallbackData: Unknown argument type 'ImGuiSizeCallbackData*' (ImGuiSizeCallbackData*)
+
+// struct ImGuiStorage: Unknown argument type 'ImGuiStorage*' (ImGuiStorage*)
+
+// struct ImGuiStoragePair: Unknown argument type 'ImGuiStoragePair*' (ImGuiStoragePair*)
+
+// struct ImGuiStyle: Unknown argument type 'ImGuiStyle*' (ImGuiStyle*)
+
+// struct ImGuiTableColumnSortSpecs: Unknown argument type 'ImGuiTableColumnSortSpecs*' (ImGuiTableColumnSortSpecs*)
+
+// struct ImGuiTableSortSpecs: Unknown argument type 'ImGuiTableSortSpecs*' (ImGuiTableSortSpecs*)
+
+// struct ImGuiTextBuffer: Unknown argument type 'ImGuiTextBuffer*' (ImGuiTextBuffer*)
+
+// struct ImGuiTextFilter: Unknown argument type 'ImGuiTextFilter*' (ImGuiTextFilter*)
+
+// struct ImGuiTextRange: Unknown argument type 'ImGuiTextRange*' (ImGuiTextRange*)
+
+static int ImGuiLua_IndexImGuiViewport(lua_State *L)
+{
+    ImGuiViewport *self;
+    self = *static_cast<ImGuiViewport **>(luaL_checkudata(L, 1, "ImGuiViewport"));
+    size_t len;
+    const char *key = luaL_checklstring(L, 2, &len);
+
+    if (len == 5 && memcmp(key, "Flags", 5) == 0) {
+        int RETVAL = self->Flags;
+        lua_pushinteger(L, static_cast<lua_Integer>(RETVAL));
+        return 1;
+    }
+
+    if (len == 3 && memcmp(key, "Pos", 3) == 0) {
+        ImVec2 RETVAL = self->Pos;
+        ImGuiLua_PushImVec2(L, RETVAL);
+        return 1;
+    }
+
+    if (len == 4 && memcmp(key, "Size", 4) == 0) {
+        ImVec2 RETVAL = self->Size;
+        ImGuiLua_PushImVec2(L, RETVAL);
+        return 1;
+    }
+
+    if (len == 7 && memcmp(key, "WorkPos", 7) == 0) {
+        ImVec2 RETVAL = self->WorkPos;
+        ImGuiLua_PushImVec2(L, RETVAL);
+        return 1;
+    }
+
+    if (len == 8 && memcmp(key, "WorkSize", 8) == 0) {
+        ImVec2 RETVAL = self->WorkSize;
+        ImGuiLua_PushImVec2(L, RETVAL);
+        return 1;
+    }
+
+    // void* PlatformHandleRaw: Unknown return type 'void*'
+
+    luaL_getmetafield(L, 1, key);
+    return 1;
+}
+
+static int ImGuiLua_NewindexImGuiViewport(lua_State *L)
+{
+    ImGuiViewport *self;
+    self = *static_cast<ImGuiViewport **>(luaL_checkudata(L, 1, "ImGuiViewport"));
+    size_t len;
+    const char *key = luaL_checklstring(L, 2, &len);
+
+    if (len == 5 && memcmp(key, "Flags", 5) == 0) {
+        int ARGVAL;
+        ARGVAL = static_cast<int>(luaL_checkinteger(L, 3));
+        self->Flags = ARGVAL;
+        return 0;
+    }
+
+    if (len == 3 && memcmp(key, "Pos", 3) == 0) {
+        ImVec2 ARGVAL;
+        ARGVAL = ImGuiLua_ToImVec2(L, 3);
+        self->Pos = ARGVAL;
+        return 0;
+    }
+
+    if (len == 4 && memcmp(key, "Size", 4) == 0) {
+        ImVec2 ARGVAL;
+        ARGVAL = ImGuiLua_ToImVec2(L, 3);
+        self->Size = ARGVAL;
+        return 0;
+    }
+
+    if (len == 7 && memcmp(key, "WorkPos", 7) == 0) {
+        ImVec2 ARGVAL;
+        ARGVAL = ImGuiLua_ToImVec2(L, 3);
+        self->WorkPos = ARGVAL;
+        return 0;
+    }
+
+    if (len == 8 && memcmp(key, "WorkSize", 8) == 0) {
+        ImVec2 ARGVAL;
+        ARGVAL = ImGuiLua_ToImVec2(L, 3);
+        self->WorkSize = ARGVAL;
+        return 0;
+    }
+
+    // void* PlatformHandleRaw: Unknown argument type 'void*'
+
+    return luaL_error(L, "ImGuiViewport has no field '%s'", key);
+}
+
+// method ImGuiViewport::GetCenter
+
+IMGUILUA_METHOD(ImGuiViewport::GetCenter)
+static int ImGuiViewport_GetCenter(lua_State *L)
+{
+    IMGUILUA_CHECK_ARGC(1);
+    ImGuiViewport *self;
+    self = *static_cast<ImGuiViewport **>(luaL_checkudata(L, 1, "ImGuiViewport"));
+    ImVec2 RETVAL = self->GetCenter();
+    ImGuiLua_PushImVec2(L, RETVAL);
+    return 1;
+}
+
+
+// method ImGuiViewport::GetWorkCenter
+
+IMGUILUA_METHOD(ImGuiViewport::GetWorkCenter)
+static int ImGuiViewport_GetWorkCenter(lua_State *L)
+{
+    IMGUILUA_CHECK_ARGC(1);
+    ImGuiViewport *self;
+    self = *static_cast<ImGuiViewport **>(luaL_checkudata(L, 1, "ImGuiViewport"));
+    ImVec2 RETVAL = self->GetWorkCenter();
+    ImGuiLua_PushImVec2(L, RETVAL);
+    return 1;
+}
+
+
+IMGUILUA_STRUCT(ImGuiViewport)
+static void ImGuiLua_RegisterStructImGuiViewport(lua_State *L)
+{
+    luaL_newmetatable(L, "ImGuiViewport");
+    lua_pushcfunction(L, ImGuiLua_IndexImGuiViewport);
+    lua_setfield(L, -2, "__index");
+    lua_pushcfunction(L, ImGuiLua_NewindexImGuiViewport);
+    lua_setfield(L, -2, "__newindex");
+    lua_pushcfunction(L, ImGuiViewport_GetCenter);
+    lua_setfield(L, -2, "GetCenter");
+    lua_pushcfunction(L, ImGuiViewport_GetWorkCenter);
+    lua_setfield(L, -2, "GetWorkCenter");
+    lua_pop(L, 1);
+}
+
+static int ImGuiLua_IndexImVec2(lua_State *L)
+{
+    ImVec2 *self;
+    self = static_cast<ImVec2 *>(luaL_checkudata(L, 1, "ImVec2"));
+    size_t len;
+    const char *key = luaL_checklstring(L, 2, &len);
+
+    if (len == 1 && memcmp(key, "x", 1) == 0) {
+        float RETVAL = self->x;
+        lua_pushnumber(L, static_cast<lua_Number>(RETVAL));
+        return 1;
+    }
+
+    if (len == 1 && memcmp(key, "y", 1) == 0) {
+        float RETVAL = self->y;
+        lua_pushnumber(L, static_cast<lua_Number>(RETVAL));
+        return 1;
+    }
+
+    luaL_getmetafield(L, 1, key);
+    return 1;
+}
+
+static int ImGuiLua_NewindexImVec2(lua_State *L)
+{
+    ImVec2 *self;
+    self = static_cast<ImVec2 *>(luaL_checkudata(L, 1, "ImVec2"));
+    size_t len;
+    const char *key = luaL_checklstring(L, 2, &len);
+
+    if (len == 1 && memcmp(key, "x", 1) == 0) {
+        float ARGVAL;
+        ARGVAL = static_cast<float>(luaL_checknumber(L, 3));
+        self->x = ARGVAL;
+        return 0;
+    }
+
+    if (len == 1 && memcmp(key, "y", 1) == 0) {
+        float ARGVAL;
+        ARGVAL = static_cast<float>(luaL_checknumber(L, 3));
+        self->y = ARGVAL;
+        return 0;
+    }
+
+    return luaL_error(L, "ImVec2 has no field '%s'", key);
+}
+
+IMGUILUA_STRUCT(ImVec2)
+static void ImGuiLua_RegisterStructImVec2(lua_State *L)
+{
+    luaL_newmetatable(L, "ImVec2");
+    lua_pushcfunction(L, ImGuiLua_IndexImVec2);
+    lua_setfield(L, -2, "__index");
+    lua_pushcfunction(L, ImGuiLua_NewindexImVec2);
+    lua_setfield(L, -2, "__newindex");
+    lua_pop(L, 1);
+}
+
+static int ImGuiLua_IndexImVec4(lua_State *L)
+{
+    ImVec4 *self;
+    self = static_cast<ImVec4 *>(luaL_checkudata(L, 1, "ImVec4"));
+    size_t len;
+    const char *key = luaL_checklstring(L, 2, &len);
+
+    if (len == 1 && memcmp(key, "x", 1) == 0) {
+        float RETVAL = self->x;
+        lua_pushnumber(L, static_cast<lua_Number>(RETVAL));
+        return 1;
+    }
+
+    if (len == 1 && memcmp(key, "y", 1) == 0) {
+        float RETVAL = self->y;
+        lua_pushnumber(L, static_cast<lua_Number>(RETVAL));
+        return 1;
+    }
+
+    if (len == 1 && memcmp(key, "z", 1) == 0) {
+        float RETVAL = self->z;
+        lua_pushnumber(L, static_cast<lua_Number>(RETVAL));
+        return 1;
+    }
+
+    if (len == 1 && memcmp(key, "w", 1) == 0) {
+        float RETVAL = self->w;
+        lua_pushnumber(L, static_cast<lua_Number>(RETVAL));
+        return 1;
+    }
+
+    luaL_getmetafield(L, 1, key);
+    return 1;
+}
+
+static int ImGuiLua_NewindexImVec4(lua_State *L)
+{
+    ImVec4 *self;
+    self = static_cast<ImVec4 *>(luaL_checkudata(L, 1, "ImVec4"));
+    size_t len;
+    const char *key = luaL_checklstring(L, 2, &len);
+
+    if (len == 1 && memcmp(key, "x", 1) == 0) {
+        float ARGVAL;
+        ARGVAL = static_cast<float>(luaL_checknumber(L, 3));
+        self->x = ARGVAL;
+        return 0;
+    }
+
+    if (len == 1 && memcmp(key, "y", 1) == 0) {
+        float ARGVAL;
+        ARGVAL = static_cast<float>(luaL_checknumber(L, 3));
+        self->y = ARGVAL;
+        return 0;
+    }
+
+    if (len == 1 && memcmp(key, "z", 1) == 0) {
+        float ARGVAL;
+        ARGVAL = static_cast<float>(luaL_checknumber(L, 3));
+        self->z = ARGVAL;
+        return 0;
+    }
+
+    if (len == 1 && memcmp(key, "w", 1) == 0) {
+        float ARGVAL;
+        ARGVAL = static_cast<float>(luaL_checknumber(L, 3));
+        self->w = ARGVAL;
+        return 0;
+    }
+
+    return luaL_error(L, "ImVec4 has no field '%s'", key);
+}
+
+IMGUILUA_STRUCT(ImVec4)
+static void ImGuiLua_RegisterStructImVec4(lua_State *L)
+{
+    luaL_newmetatable(L, "ImVec4");
+    lua_pushcfunction(L, ImGuiLua_IndexImVec4);
+    lua_setfield(L, -2, "__index");
+    lua_pushcfunction(L, ImGuiLua_NewindexImVec4);
+    lua_setfield(L, -2, "__newindex");
+    lua_pop(L, 1);
+}
+
+static int ImGuiLua_IndexImGuiLuaBoolRef(lua_State *L)
+{
+    bool *self;
+    self = static_cast<bool *>(luaL_checkudata(L, 1, "ImGuiLuaBoolRef"));
+    size_t len;
+    const char *key = luaL_checklstring(L, 2, &len);
+
+    if (len == 5 && memcmp(key, "value", 5) == 0) {
+        bool RETVAL = *self;
+        lua_pushboolean(L, RETVAL);
+        return 1;
+    }
+
+    luaL_getmetafield(L, 1, key);
+    return 1;
+}
+
+static int ImGuiLua_NewindexImGuiLuaBoolRef(lua_State *L)
+{
+    bool *self;
+    self = static_cast<bool *>(luaL_checkudata(L, 1, "ImGuiLuaBoolRef"));
+    size_t len;
+    const char *key = luaL_checklstring(L, 2, &len);
+
+    if (len == 5 && memcmp(key, "value", 5) == 0) {
+        bool ARGVAL;
+        ARGVAL = lua_toboolean(L, 3);
+        *self = ARGVAL;
+        return 0;
+    }
+
+    return luaL_error(L, "ImGuiLuaBoolRef has no field '%s'", key);
+}
+
+IMGUILUA_STRUCT(ImGuiLuaBoolRef)
+static void ImGuiLua_RegisterStructImGuiLuaBoolRef(lua_State *L)
+{
+    luaL_newmetatable(L, "ImGuiLuaBoolRef");
+    lua_pushcfunction(L, ImGuiLua_IndexImGuiLuaBoolRef);
+    lua_setfield(L, -2, "__index");
+    lua_pushcfunction(L, ImGuiLua_NewindexImGuiLuaBoolRef);
+    lua_setfield(L, -2, "__newindex");
+    lua_pop(L, 1);
+}
+
+static int ImGuiLua_IndexImGuiLuaFloatRef(lua_State *L)
+{
+    float *self;
+    self = static_cast<float *>(luaL_checkudata(L, 1, "ImGuiLuaFloatRef"));
+    size_t len;
+    const char *key = luaL_checklstring(L, 2, &len);
+
+    if (len == 5 && memcmp(key, "value", 5) == 0) {
+        float RETVAL = *self;
+        lua_pushnumber(L, static_cast<lua_Number>(RETVAL));
+        return 1;
+    }
+
+    luaL_getmetafield(L, 1, key);
+    return 1;
+}
+
+static int ImGuiLua_NewindexImGuiLuaFloatRef(lua_State *L)
+{
+    float *self;
+    self = static_cast<float *>(luaL_checkudata(L, 1, "ImGuiLuaFloatRef"));
+    size_t len;
+    const char *key = luaL_checklstring(L, 2, &len);
+
+    if (len == 5 && memcmp(key, "value", 5) == 0) {
+        float ARGVAL;
+        ARGVAL = static_cast<float>(luaL_checknumber(L, 3));
+        *self = ARGVAL;
+        return 0;
+    }
+
+    return luaL_error(L, "ImGuiLuaFloatRef has no field '%s'", key);
+}
+
+IMGUILUA_STRUCT(ImGuiLuaFloatRef)
+static void ImGuiLua_RegisterStructImGuiLuaFloatRef(lua_State *L)
+{
+    luaL_newmetatable(L, "ImGuiLuaFloatRef");
+    lua_pushcfunction(L, ImGuiLua_IndexImGuiLuaFloatRef);
+    lua_setfield(L, -2, "__index");
+    lua_pushcfunction(L, ImGuiLua_NewindexImGuiLuaFloatRef);
+    lua_setfield(L, -2, "__newindex");
+    lua_pop(L, 1);
+}
+
+static int ImGuiLua_IndexImGuiLuaIntRef(lua_State *L)
+{
+    int *self;
+    self = static_cast<int *>(luaL_checkudata(L, 1, "ImGuiLuaIntRef"));
+    size_t len;
+    const char *key = luaL_checklstring(L, 2, &len);
+
+    if (len == 5 && memcmp(key, "value", 5) == 0) {
+        int RETVAL = *self;
+        lua_pushinteger(L, static_cast<lua_Integer>(RETVAL));
+        return 1;
+    }
+
+    luaL_getmetafield(L, 1, key);
+    return 1;
+}
+
+static int ImGuiLua_NewindexImGuiLuaIntRef(lua_State *L)
+{
+    int *self;
+    self = static_cast<int *>(luaL_checkudata(L, 1, "ImGuiLuaIntRef"));
+    size_t len;
+    const char *key = luaL_checklstring(L, 2, &len);
+
+    if (len == 5 && memcmp(key, "value", 5) == 0) {
+        int ARGVAL;
+        ARGVAL = static_cast<int>(luaL_checkinteger(L, 3));
+        *self = ARGVAL;
+        return 0;
+    }
+
+    return luaL_error(L, "ImGuiLuaIntRef has no field '%s'", key);
+}
+
+IMGUILUA_STRUCT(ImGuiLuaIntRef)
+static void ImGuiLua_RegisterStructImGuiLuaIntRef(lua_State *L)
+{
+    luaL_newmetatable(L, "ImGuiLuaIntRef");
+    lua_pushcfunction(L, ImGuiLua_IndexImGuiLuaIntRef);
+    lua_setfield(L, -2, "__index");
+    lua_pushcfunction(L, ImGuiLua_NewindexImGuiLuaIntRef);
+    lua_setfield(L, -2, "__newindex");
+    lua_pop(L, 1);
+}
+
+static int ImGuiLua_IndexImGuiLuaStringRef(lua_State *L)
+{
+    luaL_checkudata(L, 1, "ImGuiLuaStringRef");
+    size_t len;
+    const char *key = luaL_checklstring(L, 2, &len);
+
+    if (len == 5 && memcmp(key, "value", 5) == 0) {
+        lua_getiuservalue(L, 1, 1);
+        return 1;
+    }
+
+    luaL_getmetafield(L, 1, key);
+    return 1;
+}
+
+static int ImGuiLua_NewindexImGuiLuaStringRef(lua_State *L)
+{
+    luaL_checkudata(L, 1, "ImGuiLuaStringRef");
+    size_t len;
+    const char *key = luaL_checklstring(L, 2, &len);
+
+    if (len == 5 && memcmp(key, "value", 5) == 0) {
+        luaL_checkstring(L, 3);
+        lua_pushvalue(L, 3);
+        lua_setiuservalue(L, 1, 1);
+        return 0;
+    }
+
+    return luaL_error(L, "ImGuiLuaStringRef has no field '%s'", key);
+}
+
+IMGUILUA_STRUCT(ImGuiLuaStringRef)
+static void ImGuiLua_RegisterStructImGuiLuaStringRef(lua_State *L)
+{
+    luaL_newmetatable(L, "ImGuiLuaStringRef");
+    lua_pushcfunction(L, ImGuiLua_IndexImGuiLuaStringRef);
+    lua_setfield(L, -2, "__index");
+    lua_pushcfunction(L, ImGuiLua_NewindexImGuiLuaStringRef);
+    lua_setfield(L, -2, "__newindex");
+    lua_pop(L, 1);
+}
+
+
+// method ImColor::~ImColor has no namespace
+
+
+// static method ImColor::HSV has no namespace
+
+
+// method ImColor::ImColor has no namespace
+
+
+// method ImColor::SetHSV has no namespace
+
+
+// method ImDrawCmd::~ImDrawCmd has no namespace
+
+
+// method ImDrawCmd::GetTexID has no namespace
+
+
+// method ImDrawCmd::ImDrawCmd has no namespace
+
+
+// method ImDrawData::~ImDrawData has no namespace
+
+
+// method ImDrawData::Clear has no namespace
+
+
+// method ImDrawData::DeIndexAllBuffers has no namespace
+
+
+// method ImDrawData::ImDrawData has no namespace
+
+
+// method ImDrawData::ScaleClipRects has no namespace
+
+
+// method ImDrawList::~ImDrawList has no namespace
+
+
+// method ImDrawList::AddBezierCubic has no namespace
+
+
+// method ImDrawList::AddBezierQuadratic has no namespace
+
+
+// method ImDrawList::AddCallback has no namespace
+
+
+// method ImDrawList::AddCircle has no namespace
+
+
+// method ImDrawList::AddCircleFilled has no namespace
+
+
+// method ImDrawList::AddConvexPolyFilled has no namespace
+
+
+// method ImDrawList::AddDrawCmd has no namespace
+
+
+// method ImDrawList::AddImage has no namespace
+
+
+// method ImDrawList::AddImageQuad has no namespace
+
+
+// method ImDrawList::AddImageRounded has no namespace
+
+
+// method ImDrawList::AddLine has no namespace
+
+
+// method ImDrawList::AddNgon has no namespace
+
+
+// method ImDrawList::AddNgonFilled has no namespace
+
+
+// method ImDrawList::AddPolyline has no namespace
+
+
+// method ImDrawList::AddQuad has no namespace
+
+
+// method ImDrawList::AddQuadFilled has no namespace
+
+
+// method ImDrawList::AddRect has no namespace
+
+
+// method ImDrawList::AddRectFilled has no namespace
+
+
+// method ImDrawList::AddRectFilledMultiColor has no namespace
+
+
+// method ImDrawList::AddText has no namespace
+
+
+// method ImDrawList::AddTriangle has no namespace
+
+
+// method ImDrawList::AddTriangleFilled has no namespace
+
+
+// method ImDrawList::ChannelsMerge has no namespace
+
+
+// method ImDrawList::ChannelsSetCurrent has no namespace
+
+
+// method ImDrawList::ChannelsSplit has no namespace
+
+
+// method ImDrawList::CloneOutput has no namespace
+
+
+// method ImDrawList::GetClipRectMax has no namespace
+
+
+// method ImDrawList::GetClipRectMin has no namespace
+
+
+// method ImDrawList::ImDrawList has no namespace
+
+
+// method ImDrawList::PathArcTo has no namespace
+
+
+// method ImDrawList::PathArcToFast has no namespace
+
+
+// method ImDrawList::PathBezierCubicCurveTo has no namespace
+
+
+// method ImDrawList::PathBezierQuadraticCurveTo has no namespace
+
+
+// method ImDrawList::PathClear has no namespace
+
+
+// method ImDrawList::PathFillConvex has no namespace
+
+
+// method ImDrawList::PathLineTo has no namespace
+
+
+// method ImDrawList::PathLineToMergeDuplicate has no namespace
+
+
+// method ImDrawList::PathRect has no namespace
+
+
+// method ImDrawList::PathStroke has no namespace
+
+
+// method ImDrawList::PopClipRect has no namespace
+
+
+// method ImDrawList::PopTextureID has no namespace
+
+
+// method ImDrawList::PrimQuadUV has no namespace
+
+
+// method ImDrawList::PrimRect has no namespace
+
+
+// method ImDrawList::PrimRectUV has no namespace
+
+
+// method ImDrawList::PrimReserve has no namespace
+
+
+// method ImDrawList::PrimUnreserve has no namespace
+
+
+// method ImDrawList::PrimVtx has no namespace
+
+
+// method ImDrawList::PrimWriteIdx has no namespace
+
+
+// method ImDrawList::PrimWriteVtx has no namespace
+
+
+// method ImDrawList::PushClipRect has no namespace
+
+
+// method ImDrawList::PushClipRectFullScreen has no namespace
+
+
+// method ImDrawList::PushTextureID has no namespace
+
+
+// method ImDrawList::_CalcCircleAutoSegmentCount has no namespace
+
+
+// method ImDrawList::_ClearFreeMemory has no namespace
+
+
+// method ImDrawList::_OnChangedClipRect has no namespace
+
+
+// method ImDrawList::_OnChangedTextureID has no namespace
+
+
+// method ImDrawList::_OnChangedVtxOffset has no namespace
+
+
+// method ImDrawList::_PathArcToFastEx has no namespace
+
+
+// method ImDrawList::_PathArcToN has no namespace
+
+
+// method ImDrawList::_PopUnusedDrawCmd has no namespace
+
+
+// method ImDrawList::_ResetForNewFrame has no namespace
+
+
+// method ImDrawList::_TryMergeDrawCmds has no namespace
+
+
+// method ImDrawListSplitter::~ImDrawListSplitter has no namespace
+
+
+// method ImDrawListSplitter::Clear has no namespace
+
+
+// method ImDrawListSplitter::ClearFreeMemory has no namespace
+
+
+// method ImDrawListSplitter::ImDrawListSplitter has no namespace
+
+
+// method ImDrawListSplitter::Merge has no namespace
+
+
+// method ImDrawListSplitter::SetCurrentChannel has no namespace
+
+
+// method ImDrawListSplitter::Split has no namespace
+
+
+// method ImFont::~ImFont has no namespace
+
+
+// method ImFont::AddGlyph has no namespace
+
+
+// method ImFont::AddRemapChar has no namespace
+
+
+// method ImFont::BuildLookupTable has no namespace
+
+
+// method ImFont::CalcTextSizeA has no namespace
+
+
+// method ImFont::CalcWordWrapPositionA has no namespace
+
+
+// method ImFont::ClearOutputData has no namespace
+
+
+// method ImFont::FindGlyph has no namespace
+
+
+// method ImFont::FindGlyphNoFallback has no namespace
+
+
+// method ImFont::GetCharAdvance has no namespace
+
+
+// method ImFont::GetDebugName has no namespace
+
+
+// method ImFont::GrowIndex has no namespace
+
+
+// method ImFont::ImFont has no namespace
+
+
+// method ImFont::IsGlyphRangeUnused has no namespace
+
+
+// method ImFont::IsLoaded has no namespace
+
+
+// method ImFont::RenderChar has no namespace
+
+
+// method ImFont::RenderText has no namespace
+
+
+// method ImFont::SetGlyphVisible has no namespace
+
+
+// method ImFontAtlas::~ImFontAtlas has no namespace
+
+
+// method ImFontAtlas::AddCustomRectFontGlyph has no namespace
+
+
+// method ImFontAtlas::AddCustomRectRegular has no namespace
+
+
+// method ImFontAtlas::AddFont has no namespace
+
+
+// method ImFontAtlas::AddFontDefault has no namespace
+
+
+// method ImFontAtlas::AddFontFromFileTTF has no namespace
+
+
+// method ImFontAtlas::AddFontFromMemoryCompressedBase85TTF has no namespace
+
+
+// method ImFontAtlas::AddFontFromMemoryCompressedTTF has no namespace
+
+
+// method ImFontAtlas::AddFontFromMemoryTTF has no namespace
+
+
+// method ImFontAtlas::Build has no namespace
+
+
+// method ImFontAtlas::CalcCustomRectUV has no namespace
+
+
+// method ImFontAtlas::Clear has no namespace
+
+
+// method ImFontAtlas::ClearFonts has no namespace
+
+
+// method ImFontAtlas::ClearInputData has no namespace
+
+
+// method ImFontAtlas::ClearTexData has no namespace
+
+
+// method ImFontAtlas::GetCustomRectByIndex has no namespace
+
+
+// method ImFontAtlas::GetGlyphRangesChineseFull has no namespace
+
+
+// method ImFontAtlas::GetGlyphRangesChineseSimplifiedCommon has no namespace
+
+
+// method ImFontAtlas::GetGlyphRangesCyrillic has no namespace
+
+
+// method ImFontAtlas::GetGlyphRangesDefault has no namespace
+
+
+// method ImFontAtlas::GetGlyphRangesJapanese has no namespace
+
+
+// method ImFontAtlas::GetGlyphRangesKorean has no namespace
+
+
+// method ImFontAtlas::GetGlyphRangesThai has no namespace
+
+
+// method ImFontAtlas::GetGlyphRangesVietnamese has no namespace
+
+
+// method ImFontAtlas::GetMouseCursorTexData has no namespace
+
+
+// method ImFontAtlas::GetTexDataAsAlpha8 has no namespace
+
+
+// method ImFontAtlas::GetTexDataAsRGBA32 has no namespace
+
+
+// method ImFontAtlas::ImFontAtlas has no namespace
+
+
+// method ImFontAtlas::IsBuilt has no namespace
+
+
+// method ImFontAtlas::SetTexID has no namespace
+
+
+// method ImFontAtlasCustomRect::~ImFontAtlasCustomRect has no namespace
+
+
+// method ImFontAtlasCustomRect::ImFontAtlasCustomRect has no namespace
+
+
+// method ImFontAtlasCustomRect::IsPacked has no namespace
+
+
+// method ImFontConfig::~ImFontConfig has no namespace
+
+
+// method ImFontConfig::ImFontConfig has no namespace
+
+
+// method ImFontGlyphRangesBuilder::~ImFontGlyphRangesBuilder has no namespace
+
+
+// method ImFontGlyphRangesBuilder::AddChar has no namespace
+
+
+// method ImFontGlyphRangesBuilder::AddRanges has no namespace
+
+
+// method ImFontGlyphRangesBuilder::AddText has no namespace
+
+
+// method ImFontGlyphRangesBuilder::BuildRanges has no namespace
+
+
+// method ImFontGlyphRangesBuilder::Clear has no namespace
+
+
+// method ImFontGlyphRangesBuilder::GetBit has no namespace
+
+
+// method ImFontGlyphRangesBuilder::ImFontGlyphRangesBuilder has no namespace
+
+
+// method ImFontGlyphRangesBuilder::SetBit has no namespace
+
+
 // function ImGui::AcceptDragDropPayload
 
 // const ImGuiPayload* ImGui_AcceptDragDropPayload(const char*, ImGuiDragDropFlags): Unknown return type 'const ImGuiPayload*' (const ImGuiPayload*)
@@ -922,10 +2980,7 @@ static void ImGuiLua_RegisterEnumImGuiWindowFlags(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::AlignTextToFramePadding)
 static int ImGui_AlignTextToFramePadding(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     ImGui::AlignTextToFramePadding();
     return 0;
 }
@@ -936,10 +2991,7 @@ static int ImGui_AlignTextToFramePadding(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::ArrowButton)
 static int ImGui_ArrowButton(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 2) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 2);
-    }
+    IMGUILUA_CHECK_ARGC(2);
     const char *str_id;
     str_id = lua_tostring(L, 1);
     int dir;
@@ -955,10 +3007,7 @@ static int ImGui_ArrowButton(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::Begin)
 static int ImGui_Begin(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 1 || ARGC > 3) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 1, 3);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(1, 3);
     const char *name;
     name = lua_tostring(L, 1);
     bool *p_open;
@@ -970,7 +3019,7 @@ static int ImGui_Begin(lua_State *L)
             p_open = NULL;
         }
         else {
-            p_open = static_cast<bool *>(luaL_checkudata(L, 2, "ImGuiLua_BoolRef"));
+            p_open = static_cast<bool *>(luaL_checkudata(L, 2, "ImGuiLuaBoolRef"));
         }
     }
     int flags;
@@ -991,10 +3040,7 @@ static int ImGui_Begin(lua_State *L)
 
 static int ImGui_BeginChild_uv2bi(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 1 || ARGC > 4) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 1, 4);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(1, 4);
     unsigned int id;
     id = static_cast<unsigned int>(luaL_checkinteger(L, 1));
     ImVec2 size;
@@ -1026,10 +3072,7 @@ static int ImGui_BeginChild_uv2bi(lua_State *L)
 
 static int ImGui_BeginChild_sv2bi(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 1 || ARGC > 4) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 1, 4);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(1, 4);
     const char *str_id;
     str_id = lua_tostring(L, 1);
     ImVec2 size;
@@ -1059,7 +3102,7 @@ static int ImGui_BeginChild_sv2bi(lua_State *L)
     return 1;
 }
 
-IMGUILUA_FUNCTION(ImGui::ImGui_BeginChild)
+IMGUILUA_FUNCTION(ImGui::BeginChild)
 static int ImGui_BeginChild(lua_State *L)
 {
     if (lua_type(L, 1) == LUA_TNUMBER) {
@@ -1076,10 +3119,7 @@ static int ImGui_BeginChild(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::BeginChildFrame)
 static int ImGui_BeginChildFrame(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 2 || ARGC > 3) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 2, 3);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(2, 3);
     unsigned int id;
     id = static_cast<unsigned int>(luaL_checkinteger(L, 1));
     ImVec2 size;
@@ -1105,10 +3145,7 @@ static int ImGui_BeginChildFrame(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::BeginCombo)
 static int ImGui_BeginCombo(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 2 || ARGC > 3) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 2, 3);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(2, 3);
     const char *label;
     label = lua_tostring(L, 1);
     const char *preview_value;
@@ -1134,10 +3171,7 @@ static int ImGui_BeginCombo(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::BeginDisabled)
 static int ImGui_BeginDisabled(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC > 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 0, 1);
-    }
+    IMGUILUA_CHECK_ARGC_MAX(1);
     bool disabled;
     if (ARGC < 1) {
         disabled = true;
@@ -1155,10 +3189,7 @@ static int ImGui_BeginDisabled(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::BeginDragDropSource)
 static int ImGui_BeginDragDropSource(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC > 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 0, 1);
-    }
+    IMGUILUA_CHECK_ARGC_MAX(1);
     int flags;
     if (ARGC < 1) {
         flags = 0;
@@ -1180,10 +3211,7 @@ static int ImGui_BeginDragDropSource(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::BeginDragDropTarget)
 static int ImGui_BeginDragDropTarget(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     bool RETVAL = ImGui::BeginDragDropTarget();
     if (RETVAL) {
         IMGUILUA_BEGIN(L, ImGui::BeginDragDropTarget, ImGui::EndDragDropTarget, 6);
@@ -1198,10 +3226,7 @@ static int ImGui_BeginDragDropTarget(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::BeginGroup)
 static int ImGui_BeginGroup(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     ImGui::BeginGroup();
     IMGUILUA_BEGIN(L, ImGui::BeginGroup, ImGui::EndGroup, 7);
     return 0;
@@ -1213,10 +3238,7 @@ static int ImGui_BeginGroup(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::BeginListBox)
 static int ImGui_BeginListBox(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 1 || ARGC > 2) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 1, 2);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(1, 2);
     const char *label;
     label = lua_tostring(L, 1);
     ImVec2 size;
@@ -1240,10 +3262,7 @@ static int ImGui_BeginListBox(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::BeginMainMenuBar)
 static int ImGui_BeginMainMenuBar(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     bool RETVAL = ImGui::BeginMainMenuBar();
     if (RETVAL) {
         IMGUILUA_BEGIN(L, ImGui::BeginMainMenuBar, ImGui::EndMainMenuBar, 9);
@@ -1258,10 +3277,7 @@ static int ImGui_BeginMainMenuBar(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::BeginMenu)
 static int ImGui_BeginMenu(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 1 || ARGC > 2) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 1, 2);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(1, 2);
     const char *label;
     label = lua_tostring(L, 1);
     bool enabled;
@@ -1285,10 +3301,7 @@ static int ImGui_BeginMenu(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::BeginMenuBar)
 static int ImGui_BeginMenuBar(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     bool RETVAL = ImGui::BeginMenuBar();
     if (RETVAL) {
         IMGUILUA_BEGIN(L, ImGui::BeginMenuBar, ImGui::EndMenuBar, 11);
@@ -1303,10 +3316,7 @@ static int ImGui_BeginMenuBar(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::BeginPopup)
 static int ImGui_BeginPopup(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 1 || ARGC > 2) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 1, 2);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(1, 2);
     const char *str_id;
     str_id = lua_tostring(L, 1);
     int flags;
@@ -1330,10 +3340,7 @@ static int ImGui_BeginPopup(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::BeginPopupContextItem)
 static int ImGui_BeginPopupContextItem(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC > 2) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 0, 2);
-    }
+    IMGUILUA_CHECK_ARGC_MAX(2);
     const char *str_id;
     if (ARGC < 1) {
         str_id = NULL;
@@ -1362,10 +3369,7 @@ static int ImGui_BeginPopupContextItem(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::BeginPopupContextVoid)
 static int ImGui_BeginPopupContextVoid(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC > 2) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 0, 2);
-    }
+    IMGUILUA_CHECK_ARGC_MAX(2);
     const char *str_id;
     if (ARGC < 1) {
         str_id = NULL;
@@ -1394,10 +3398,7 @@ static int ImGui_BeginPopupContextVoid(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::BeginPopupContextWindow)
 static int ImGui_BeginPopupContextWindow(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC > 2) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 0, 2);
-    }
+    IMGUILUA_CHECK_ARGC_MAX(2);
     const char *str_id;
     if (ARGC < 1) {
         str_id = NULL;
@@ -1426,10 +3427,7 @@ static int ImGui_BeginPopupContextWindow(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::BeginPopupModal)
 static int ImGui_BeginPopupModal(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 1 || ARGC > 3) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 1, 3);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(1, 3);
     const char *name;
     name = lua_tostring(L, 1);
     bool *p_open;
@@ -1441,7 +3439,7 @@ static int ImGui_BeginPopupModal(lua_State *L)
             p_open = NULL;
         }
         else {
-            p_open = static_cast<bool *>(luaL_checkudata(L, 2, "ImGuiLua_BoolRef"));
+            p_open = static_cast<bool *>(luaL_checkudata(L, 2, "ImGuiLuaBoolRef"));
         }
     }
     int flags;
@@ -1465,10 +3463,7 @@ static int ImGui_BeginPopupModal(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::BeginTabBar)
 static int ImGui_BeginTabBar(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 1 || ARGC > 2) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 1, 2);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(1, 2);
     const char *str_id;
     str_id = lua_tostring(L, 1);
     int flags;
@@ -1492,10 +3487,7 @@ static int ImGui_BeginTabBar(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::BeginTabItem)
 static int ImGui_BeginTabItem(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 1 || ARGC > 3) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 1, 3);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(1, 3);
     const char *label;
     label = lua_tostring(L, 1);
     bool *p_open;
@@ -1507,7 +3499,7 @@ static int ImGui_BeginTabItem(lua_State *L)
             p_open = NULL;
         }
         else {
-            p_open = static_cast<bool *>(luaL_checkudata(L, 2, "ImGuiLua_BoolRef"));
+            p_open = static_cast<bool *>(luaL_checkudata(L, 2, "ImGuiLuaBoolRef"));
         }
     }
     int flags;
@@ -1531,10 +3523,7 @@ static int ImGui_BeginTabItem(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::BeginTable)
 static int ImGui_BeginTable(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 2 || ARGC > 5) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 2, 5);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(2, 5);
     const char *str_id;
     str_id = lua_tostring(L, 1);
     int column;
@@ -1574,10 +3563,7 @@ static int ImGui_BeginTable(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::BeginTooltip)
 static int ImGui_BeginTooltip(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     ImGui::BeginTooltip();
     IMGUILUA_BEGIN(L, ImGui::BeginTooltip, ImGui::EndTooltip, 16);
     return 0;
@@ -1589,10 +3575,7 @@ static int ImGui_BeginTooltip(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::Bullet)
 static int ImGui_Bullet(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     ImGui::Bullet();
     return 0;
 }
@@ -1609,10 +3592,7 @@ static int ImGui_Bullet(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::Button)
 static int ImGui_Button(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 1 || ARGC > 2) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 1, 2);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(1, 2);
     const char *label;
     label = lua_tostring(L, 1);
     ImVec2 size;
@@ -1633,35 +3613,10 @@ static int ImGui_Button(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::CalcItemWidth)
 static int ImGui_CalcItemWidth(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     float RETVAL = ImGui::CalcItemWidth();
     lua_pushnumber(L, static_cast<lua_Number>(RETVAL));
     return 1;
-}
-
-
-// function ImGui::CalcListClipping
-
-IMGUILUA_FUNCTION(ImGui::CalcListClipping)
-static int ImGui_CalcListClipping(lua_State *L)
-{
-    int ARGC = lua_gettop(L);
-    if (ARGC != 4) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 4);
-    }
-    int items_count;
-    items_count = static_cast<int>(luaL_checkinteger(L, 1));
-    float items_height;
-    items_height = static_cast<float>(luaL_checknumber(L, 2));
-    int *out_items_display_start;
-    out_items_display_start = static_cast<int *>(luaL_checkudata(L, 3, "ImGuiLua_IntRef"));
-    int *out_items_display_end;
-    out_items_display_end = static_cast<int *>(luaL_checkudata(L, 4, "ImGuiLua_IntRef"));
-    ImGui::CalcListClipping(items_count,items_height,out_items_display_start,out_items_display_end);
-    return 0;
 }
 
 
@@ -1670,10 +3625,7 @@ static int ImGui_CalcListClipping(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::CalcTextSize)
 static int ImGui_CalcTextSize(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 1 || ARGC > 4) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 1, 4);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(1, 4);
     const char *text;
     text = lua_tostring(L, 1);
     const char *text_end;
@@ -1703,57 +3655,12 @@ static int ImGui_CalcTextSize(lua_State *L)
 }
 
 
-// function ImGui::CaptureKeyboardFromApp
-
-IMGUILUA_FUNCTION(ImGui::CaptureKeyboardFromApp)
-static int ImGui_CaptureKeyboardFromApp(lua_State *L)
-{
-    int ARGC = lua_gettop(L);
-    if (ARGC > 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 0, 1);
-    }
-    bool want_capture_keyboard_value;
-    if (ARGC < 1) {
-        want_capture_keyboard_value = true;
-    }
-    else {
-        want_capture_keyboard_value = lua_toboolean(L, 1);
-    }
-    ImGui::CaptureKeyboardFromApp(want_capture_keyboard_value);
-    return 0;
-}
-
-
-// function ImGui::CaptureMouseFromApp
-
-IMGUILUA_FUNCTION(ImGui::CaptureMouseFromApp)
-static int ImGui_CaptureMouseFromApp(lua_State *L)
-{
-    int ARGC = lua_gettop(L);
-    if (ARGC > 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 0, 1);
-    }
-    bool want_capture_mouse_value;
-    if (ARGC < 1) {
-        want_capture_mouse_value = true;
-    }
-    else {
-        want_capture_mouse_value = lua_toboolean(L, 1);
-    }
-    ImGui::CaptureMouseFromApp(want_capture_mouse_value);
-    return 0;
-}
-
-
 // function ImGui::Checkbox
 
 IMGUILUA_FUNCTION(ImGui::Checkbox)
 static int ImGui_Checkbox(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 2) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 2);
-    }
+    IMGUILUA_CHECK_ARGC(2);
     const char *label;
     label = lua_tostring(L, 1);
     bool *v;
@@ -1761,7 +3668,7 @@ static int ImGui_Checkbox(lua_State *L)
         v = NULL;
     }
     else {
-        v = static_cast<bool *>(luaL_checkudata(L, 2, "ImGuiLua_BoolRef"));
+        v = static_cast<bool *>(luaL_checkudata(L, 2, "ImGuiLuaBoolRef"));
     }
     bool RETVAL = ImGui::Checkbox(label,v);
     lua_pushboolean(L, RETVAL);
@@ -1776,14 +3683,11 @@ static int ImGui_Checkbox(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::CheckboxFlags)
 static int ImGui_CheckboxFlags(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 3) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 3);
-    }
+    IMGUILUA_CHECK_ARGC(3);
     const char *label;
     label = lua_tostring(L, 1);
     int *flags;
-    flags = static_cast<int *>(luaL_checkudata(L, 2, "ImGuiLua_IntRef"));
+    flags = static_cast<int *>(luaL_checkudata(L, 2, "ImGuiLuaIntRef"));
     int flags_value;
     flags_value = static_cast<int>(luaL_checkinteger(L, 3));
     bool RETVAL = ImGui::CheckboxFlags(label,flags,flags_value);
@@ -1797,10 +3701,7 @@ static int ImGui_CheckboxFlags(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::CloseCurrentPopup)
 static int ImGui_CloseCurrentPopup(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     ImGui::CloseCurrentPopup();
     return 0;
 }
@@ -1810,10 +3711,7 @@ static int ImGui_CloseCurrentPopup(lua_State *L)
 
 static int ImGui_CollapsingHeader_si(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 1 || ARGC > 2) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 1, 2);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(1, 2);
     const char *label;
     label = lua_tostring(L, 1);
     int flags;
@@ -1830,10 +3728,7 @@ static int ImGui_CollapsingHeader_si(lua_State *L)
 
 static int ImGui_CollapsingHeader_sbPi(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 2 || ARGC > 3) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 2, 3);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(2, 3);
     const char *label;
     label = lua_tostring(L, 1);
     bool *p_visible;
@@ -1841,7 +3736,7 @@ static int ImGui_CollapsingHeader_sbPi(lua_State *L)
         p_visible = NULL;
     }
     else {
-        p_visible = static_cast<bool *>(luaL_checkudata(L, 2, "ImGuiLua_BoolRef"));
+        p_visible = static_cast<bool *>(luaL_checkudata(L, 2, "ImGuiLuaBoolRef"));
     }
     int flags;
     if (ARGC < 3) {
@@ -1855,7 +3750,7 @@ static int ImGui_CollapsingHeader_sbPi(lua_State *L)
     return 1;
 }
 
-IMGUILUA_FUNCTION(ImGui::ImGui_CollapsingHeader)
+IMGUILUA_FUNCTION(ImGui::CollapsingHeader)
 static int ImGui_CollapsingHeader(lua_State *L)
 {
     int ARGC = lua_gettop(L);
@@ -1876,10 +3771,7 @@ static int ImGui_CollapsingHeader(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::ColorButton)
 static int ImGui_ColorButton(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 2 || ARGC > 4) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 2, 4);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(2, 4);
     const char *desc_id;
     desc_id = lua_tostring(L, 1);
     ImVec4 col;
@@ -1909,10 +3801,7 @@ static int ImGui_ColorButton(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::ColorConvertFloat4ToU32)
 static int ImGui_ColorConvertFloat4ToU32(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 1);
-    }
+    IMGUILUA_CHECK_ARGC(1);
     ImVec4 in;
     in = ImGuiLua_ToImVec4(L, 1);
     ImU32 RETVAL = ImGui::ColorConvertFloat4ToU32(in);
@@ -1926,10 +3815,7 @@ static int ImGui_ColorConvertFloat4ToU32(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::ColorConvertHSVtoRGB)
 static int ImGui_ColorConvertHSVtoRGB(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 6) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 6);
-    }
+    IMGUILUA_CHECK_ARGC(6);
     float h;
     h = static_cast<float>(luaL_checknumber(L, 1));
     float s;
@@ -1937,11 +3823,11 @@ static int ImGui_ColorConvertHSVtoRGB(lua_State *L)
     float v;
     v = static_cast<float>(luaL_checknumber(L, 3));
     float *out_r;
-    out_r = static_cast<float *>(luaL_checkudata(L, 4, "ImGuiLua_FloatRef"));
+    out_r = static_cast<float *>(luaL_checkudata(L, 4, "ImGuiLuaFloatRef"));
     float *out_g;
-    out_g = static_cast<float *>(luaL_checkudata(L, 5, "ImGuiLua_FloatRef"));
+    out_g = static_cast<float *>(luaL_checkudata(L, 5, "ImGuiLuaFloatRef"));
     float *out_b;
-    out_b = static_cast<float *>(luaL_checkudata(L, 6, "ImGuiLua_FloatRef"));
+    out_b = static_cast<float *>(luaL_checkudata(L, 6, "ImGuiLuaFloatRef"));
     ImGui::ColorConvertHSVtoRGB(h,s,v,*out_r,*out_g,*out_b);
     return 0;
 }
@@ -1952,10 +3838,7 @@ static int ImGui_ColorConvertHSVtoRGB(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::ColorConvertRGBtoHSV)
 static int ImGui_ColorConvertRGBtoHSV(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 6) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 6);
-    }
+    IMGUILUA_CHECK_ARGC(6);
     float r;
     r = static_cast<float>(luaL_checknumber(L, 1));
     float g;
@@ -1963,11 +3846,11 @@ static int ImGui_ColorConvertRGBtoHSV(lua_State *L)
     float b;
     b = static_cast<float>(luaL_checknumber(L, 3));
     float *out_h;
-    out_h = static_cast<float *>(luaL_checkudata(L, 4, "ImGuiLua_FloatRef"));
+    out_h = static_cast<float *>(luaL_checkudata(L, 4, "ImGuiLuaFloatRef"));
     float *out_s;
-    out_s = static_cast<float *>(luaL_checkudata(L, 5, "ImGuiLua_FloatRef"));
+    out_s = static_cast<float *>(luaL_checkudata(L, 5, "ImGuiLuaFloatRef"));
     float *out_v;
-    out_v = static_cast<float *>(luaL_checkudata(L, 6, "ImGuiLua_FloatRef"));
+    out_v = static_cast<float *>(luaL_checkudata(L, 6, "ImGuiLuaFloatRef"));
     ImGui::ColorConvertRGBtoHSV(r,g,b,*out_h,*out_s,*out_v);
     return 0;
 }
@@ -1978,10 +3861,7 @@ static int ImGui_ColorConvertRGBtoHSV(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::ColorConvertU32ToFloat4)
 static int ImGui_ColorConvertU32ToFloat4(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 1);
-    }
+    IMGUILUA_CHECK_ARGC(1);
     ImU32 in;
     in = static_cast<ImU32>(luaL_checkinteger(L, 1));
     ImVec4 RETVAL = ImGui::ColorConvertU32ToFloat4(in);
@@ -2015,10 +3895,7 @@ static int ImGui_ColorConvertU32ToFloat4(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::Columns)
 static int ImGui_Columns(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC > 3) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 0, 3);
-    }
+    IMGUILUA_CHECK_ARGC_MAX(3);
     int count;
     if (ARGC < 1) {
         count = 1;
@@ -2054,14 +3931,11 @@ static int ImGui_Columns(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::Combo)
 static int ImGui_Combo(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 3 || ARGC > 4) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 3, 4);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(3, 4);
     const char *label;
     label = lua_tostring(L, 1);
     int *current_item;
-    current_item = static_cast<int *>(luaL_checkudata(L, 2, "ImGuiLua_IntRef"));
+    current_item = static_cast<int *>(luaL_checkudata(L, 2, "ImGuiLuaIntRef"));
     const char *items_separated_by_zeros;
     items_separated_by_zeros = lua_tostring(L, 3);
     int popup_max_height_in_items;
@@ -2087,6 +3961,19 @@ static int ImGui_Combo(lua_State *L)
 // bool ImGui_DebugCheckVersionAndDataLayout(const char*, size_t, size_t, size_t, size_t, size_t, size_t): Unknown argument type 'size_t' (size_t)
 
 
+// function ImGui::DebugTextEncoding
+
+IMGUILUA_FUNCTION(ImGui::DebugTextEncoding)
+static int ImGui_DebugTextEncoding(lua_State *L)
+{
+    IMGUILUA_CHECK_ARGC(1);
+    const char *text;
+    text = lua_tostring(L, 1);
+    ImGui::DebugTextEncoding(text);
+    return 0;
+}
+
+
 // function ImGui::DestroyContext
 
 // void ImGui_DestroyContext(ImGuiContext*): Unknown argument type 'ImGuiContext*' (ImGuiContext*)
@@ -2097,14 +3984,11 @@ static int ImGui_Combo(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::DragFloat)
 static int ImGui_DragFloat(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 2 || ARGC > 7) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 2, 7);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(2, 7);
     const char *label;
     label = lua_tostring(L, 1);
     float *v;
-    v = static_cast<float *>(luaL_checkudata(L, 2, "ImGuiLua_FloatRef"));
+    v = static_cast<float *>(luaL_checkudata(L, 2, "ImGuiLuaFloatRef"));
     float v_speed;
     if (ARGC < 3) {
         v_speed = 1.0f;
@@ -2166,16 +4050,13 @@ static int ImGui_DragFloat(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::DragFloatRange2)
 static int ImGui_DragFloatRange2(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 3 || ARGC > 9) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 3, 9);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(3, 9);
     const char *label;
     label = lua_tostring(L, 1);
     float *v_current_min;
-    v_current_min = static_cast<float *>(luaL_checkudata(L, 2, "ImGuiLua_FloatRef"));
+    v_current_min = static_cast<float *>(luaL_checkudata(L, 2, "ImGuiLuaFloatRef"));
     float *v_current_max;
-    v_current_max = static_cast<float *>(luaL_checkudata(L, 3, "ImGuiLua_FloatRef"));
+    v_current_max = static_cast<float *>(luaL_checkudata(L, 3, "ImGuiLuaFloatRef"));
     float v_speed;
     if (ARGC < 4) {
         v_speed = 1.0f;
@@ -2229,14 +4110,11 @@ static int ImGui_DragFloatRange2(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::DragInt)
 static int ImGui_DragInt(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 2 || ARGC > 7) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 2, 7);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(2, 7);
     const char *label;
     label = lua_tostring(L, 1);
     int *v;
-    v = static_cast<int *>(luaL_checkudata(L, 2, "ImGuiLua_IntRef"));
+    v = static_cast<int *>(luaL_checkudata(L, 2, "ImGuiLuaIntRef"));
     float v_speed;
     if (ARGC < 3) {
         v_speed = 1.0f;
@@ -2298,16 +4176,13 @@ static int ImGui_DragInt(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::DragIntRange2)
 static int ImGui_DragIntRange2(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 3 || ARGC > 9) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 3, 9);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(3, 9);
     const char *label;
     label = lua_tostring(L, 1);
     int *v_current_min;
-    v_current_min = static_cast<int *>(luaL_checkudata(L, 2, "ImGuiLua_IntRef"));
+    v_current_min = static_cast<int *>(luaL_checkudata(L, 2, "ImGuiLuaIntRef"));
     int *v_current_max;
-    v_current_max = static_cast<int *>(luaL_checkudata(L, 3, "ImGuiLua_IntRef"));
+    v_current_max = static_cast<int *>(luaL_checkudata(L, 3, "ImGuiLuaIntRef"));
     float v_speed;
     if (ARGC < 4) {
         v_speed = 1.0f;
@@ -2371,10 +4246,7 @@ static int ImGui_DragIntRange2(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::Dummy)
 static int ImGui_Dummy(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 1);
-    }
+    IMGUILUA_CHECK_ARGC(1);
     ImVec2 size;
     size = ImGuiLua_ToImVec2(L, 1);
     ImGui::Dummy(size);
@@ -2387,10 +4259,7 @@ static int ImGui_Dummy(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::End)
 static int ImGui_End(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     IMGUILUA_END(L, ImGui::End, 1, ImGui::Begin);
     ImGui::End();
     return 0;
@@ -2402,10 +4271,7 @@ static int ImGui_End(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::EndChild)
 static int ImGui_EndChild(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     IMGUILUA_END(L, ImGui::EndChild, 2, ImGui::BeginChild);
     ImGui::EndChild();
     return 0;
@@ -2417,10 +4283,7 @@ static int ImGui_EndChild(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::EndChildFrame)
 static int ImGui_EndChildFrame(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     IMGUILUA_END(L, ImGui::EndChildFrame, 3, ImGui::BeginChildFrame);
     ImGui::EndChildFrame();
     return 0;
@@ -2432,10 +4295,7 @@ static int ImGui_EndChildFrame(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::EndCombo)
 static int ImGui_EndCombo(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     IMGUILUA_END(L, ImGui::EndCombo, 4, ImGui::BeginCombo);
     ImGui::EndCombo();
     return 0;
@@ -2447,10 +4307,7 @@ static int ImGui_EndCombo(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::EndDisabled)
 static int ImGui_EndDisabled(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     ImGui::EndDisabled();
     return 0;
 }
@@ -2461,10 +4318,7 @@ static int ImGui_EndDisabled(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::EndDragDropSource)
 static int ImGui_EndDragDropSource(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     IMGUILUA_END(L, ImGui::EndDragDropSource, 5, ImGui::BeginDragDropSource);
     ImGui::EndDragDropSource();
     return 0;
@@ -2476,10 +4330,7 @@ static int ImGui_EndDragDropSource(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::EndDragDropTarget)
 static int ImGui_EndDragDropTarget(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     IMGUILUA_END(L, ImGui::EndDragDropTarget, 6, ImGui::BeginDragDropTarget);
     ImGui::EndDragDropTarget();
     return 0;
@@ -2494,10 +4345,7 @@ static int ImGui_EndDragDropTarget(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::EndGroup)
 static int ImGui_EndGroup(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     IMGUILUA_END(L, ImGui::EndGroup, 7, ImGui::BeginGroup);
     ImGui::EndGroup();
     return 0;
@@ -2509,10 +4357,7 @@ static int ImGui_EndGroup(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::EndListBox)
 static int ImGui_EndListBox(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     IMGUILUA_END(L, ImGui::EndListBox, 8, ImGui::BeginListBox);
     ImGui::EndListBox();
     return 0;
@@ -2524,10 +4369,7 @@ static int ImGui_EndListBox(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::EndMainMenuBar)
 static int ImGui_EndMainMenuBar(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     IMGUILUA_END(L, ImGui::EndMainMenuBar, 9, ImGui::BeginMainMenuBar);
     ImGui::EndMainMenuBar();
     return 0;
@@ -2539,10 +4381,7 @@ static int ImGui_EndMainMenuBar(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::EndMenu)
 static int ImGui_EndMenu(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     IMGUILUA_END(L, ImGui::EndMenu, 10, ImGui::BeginMenu);
     ImGui::EndMenu();
     return 0;
@@ -2554,10 +4393,7 @@ static int ImGui_EndMenu(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::EndMenuBar)
 static int ImGui_EndMenuBar(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     IMGUILUA_END(L, ImGui::EndMenuBar, 11, ImGui::BeginMenuBar);
     ImGui::EndMenuBar();
     return 0;
@@ -2569,10 +4405,7 @@ static int ImGui_EndMenuBar(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::EndPopup)
 static int ImGui_EndPopup(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     IMGUILUA_END(L, ImGui::EndPopup, 12, ImGui::BeginPopup, ImGui::BeginPopupContextItem, ImGui::BeginPopupContextVoid, ImGui::BeginPopupContextWindow, ImGui::BeginPopupModal);
     ImGui::EndPopup();
     return 0;
@@ -2584,10 +4417,7 @@ static int ImGui_EndPopup(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::EndTabBar)
 static int ImGui_EndTabBar(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     IMGUILUA_END(L, ImGui::EndTabBar, 13, ImGui::BeginTabBar);
     ImGui::EndTabBar();
     return 0;
@@ -2599,10 +4429,7 @@ static int ImGui_EndTabBar(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::EndTabItem)
 static int ImGui_EndTabItem(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     IMGUILUA_END(L, ImGui::EndTabItem, 14, ImGui::BeginTabItem);
     ImGui::EndTabItem();
     return 0;
@@ -2614,10 +4441,7 @@ static int ImGui_EndTabItem(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::EndTable)
 static int ImGui_EndTable(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     IMGUILUA_END(L, ImGui::EndTable, 15, ImGui::BeginTable);
     ImGui::EndTable();
     return 0;
@@ -2629,10 +4453,7 @@ static int ImGui_EndTable(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::EndTooltip)
 static int ImGui_EndTooltip(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     IMGUILUA_END(L, ImGui::EndTooltip, 16, ImGui::BeginTooltip);
     ImGui::EndTooltip();
     return 0;
@@ -2654,10 +4475,7 @@ static int ImGui_EndTooltip(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::GetClipboardText)
 static int ImGui_GetClipboardText(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     const char *RETVAL = ImGui::GetClipboardText();
     lua_pushstring(L, RETVAL);
     return 1;
@@ -2668,10 +4486,7 @@ static int ImGui_GetClipboardText(lua_State *L)
 
 static int ImGui_GetColorU32_if(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 1 || ARGC > 2) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 1, 2);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(1, 2);
     int idx;
     idx = static_cast<int>(luaL_checkinteger(L, 1));
     float alpha_mul;
@@ -2688,10 +4503,7 @@ static int ImGui_GetColorU32_if(lua_State *L)
 
 static int ImGui_GetColorU32_u32(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 1);
-    }
+    IMGUILUA_CHECK_ARGC(1);
     ImU32 col;
     col = static_cast<ImU32>(luaL_checkinteger(L, 1));
     ImU32 RETVAL = ImGui::GetColorU32(col);
@@ -2701,10 +4513,7 @@ static int ImGui_GetColorU32_u32(lua_State *L)
 
 static int ImGui_GetColorU32_v4(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 1);
-    }
+    IMGUILUA_CHECK_ARGC(1);
     ImVec4 col;
     col = ImGuiLua_ToImVec4(L, 1);
     ImU32 RETVAL = ImGui::GetColorU32(col);
@@ -2712,7 +4521,7 @@ static int ImGui_GetColorU32_v4(lua_State *L)
     return 1;
 }
 
-IMGUILUA_FUNCTION(ImGui::ImGui_GetColorU32)
+IMGUILUA_FUNCTION(ImGui::GetColorU32)
 static int ImGui_GetColorU32(lua_State *L)
 {
     int ARGC = lua_gettop(L);
@@ -2738,10 +4547,7 @@ static int ImGui_GetColorU32(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::GetColumnIndex)
 static int ImGui_GetColumnIndex(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     int RETVAL = ImGui::GetColumnIndex();
     lua_pushinteger(L, static_cast<lua_Integer>(RETVAL));
     return 1;
@@ -2753,10 +4559,7 @@ static int ImGui_GetColumnIndex(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::GetColumnOffset)
 static int ImGui_GetColumnOffset(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC > 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 0, 1);
-    }
+    IMGUILUA_CHECK_ARGC_MAX(1);
     int column_index;
     if (ARGC < 1) {
         column_index = -1;
@@ -2775,10 +4578,7 @@ static int ImGui_GetColumnOffset(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::GetColumnWidth)
 static int ImGui_GetColumnWidth(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC > 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 0, 1);
-    }
+    IMGUILUA_CHECK_ARGC_MAX(1);
     int column_index;
     if (ARGC < 1) {
         column_index = -1;
@@ -2797,10 +4597,7 @@ static int ImGui_GetColumnWidth(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::GetColumnsCount)
 static int ImGui_GetColumnsCount(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     int RETVAL = ImGui::GetColumnsCount();
     lua_pushinteger(L, static_cast<lua_Integer>(RETVAL));
     return 1;
@@ -2812,10 +4609,7 @@ static int ImGui_GetColumnsCount(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::GetContentRegionAvail)
 static int ImGui_GetContentRegionAvail(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     ImVec2 RETVAL = ImGui::GetContentRegionAvail();
     ImGuiLua_PushImVec2(L, RETVAL);
     return 1;
@@ -2827,10 +4621,7 @@ static int ImGui_GetContentRegionAvail(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::GetContentRegionMax)
 static int ImGui_GetContentRegionMax(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     ImVec2 RETVAL = ImGui::GetContentRegionMax();
     ImGuiLua_PushImVec2(L, RETVAL);
     return 1;
@@ -2847,10 +4638,7 @@ static int ImGui_GetContentRegionMax(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::GetCursorPos)
 static int ImGui_GetCursorPos(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     ImVec2 RETVAL = ImGui::GetCursorPos();
     ImGuiLua_PushImVec2(L, RETVAL);
     return 1;
@@ -2862,10 +4650,7 @@ static int ImGui_GetCursorPos(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::GetCursorPosX)
 static int ImGui_GetCursorPosX(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     float RETVAL = ImGui::GetCursorPosX();
     lua_pushnumber(L, static_cast<lua_Number>(RETVAL));
     return 1;
@@ -2877,10 +4662,7 @@ static int ImGui_GetCursorPosX(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::GetCursorPosY)
 static int ImGui_GetCursorPosY(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     float RETVAL = ImGui::GetCursorPosY();
     lua_pushnumber(L, static_cast<lua_Number>(RETVAL));
     return 1;
@@ -2892,10 +4674,7 @@ static int ImGui_GetCursorPosY(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::GetCursorScreenPos)
 static int ImGui_GetCursorScreenPos(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     ImVec2 RETVAL = ImGui::GetCursorScreenPos();
     ImGuiLua_PushImVec2(L, RETVAL);
     return 1;
@@ -2907,10 +4686,7 @@ static int ImGui_GetCursorScreenPos(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::GetCursorStartPos)
 static int ImGui_GetCursorStartPos(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     ImVec2 RETVAL = ImGui::GetCursorStartPos();
     ImGuiLua_PushImVec2(L, RETVAL);
     return 1;
@@ -2942,10 +4718,7 @@ static int ImGui_GetCursorStartPos(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::GetFontSize)
 static int ImGui_GetFontSize(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     float RETVAL = ImGui::GetFontSize();
     lua_pushnumber(L, static_cast<lua_Number>(RETVAL));
     return 1;
@@ -2957,10 +4730,7 @@ static int ImGui_GetFontSize(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::GetFontTexUvWhitePixel)
 static int ImGui_GetFontTexUvWhitePixel(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     ImVec2 RETVAL = ImGui::GetFontTexUvWhitePixel();
     ImGuiLua_PushImVec2(L, RETVAL);
     return 1;
@@ -2977,10 +4747,7 @@ static int ImGui_GetFontTexUvWhitePixel(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::GetFrameCount)
 static int ImGui_GetFrameCount(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     int RETVAL = ImGui::GetFrameCount();
     lua_pushinteger(L, static_cast<lua_Integer>(RETVAL));
     return 1;
@@ -2992,10 +4759,7 @@ static int ImGui_GetFrameCount(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::GetFrameHeight)
 static int ImGui_GetFrameHeight(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     float RETVAL = ImGui::GetFrameHeight();
     lua_pushnumber(L, static_cast<lua_Number>(RETVAL));
     return 1;
@@ -3007,10 +4771,7 @@ static int ImGui_GetFrameHeight(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::GetFrameHeightWithSpacing)
 static int ImGui_GetFrameHeightWithSpacing(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     float RETVAL = ImGui::GetFrameHeightWithSpacing();
     lua_pushnumber(L, static_cast<lua_Number>(RETVAL));
     return 1;
@@ -3020,9 +4781,7 @@ static int ImGui_GetFrameHeightWithSpacing(lua_State *L)
 // function ImGui::GetID is excluded
 
 
-// function ImGui::GetIO
-
-// ImGuiIO* ImGui_GetIO(): Unknown return type 'ImGuiIO*' (ImGuiIO*)
+// function ImGui::GetIO is excluded
 
 
 // function ImGui::GetItemRectMax
@@ -3030,10 +4789,7 @@ static int ImGui_GetFrameHeightWithSpacing(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::GetItemRectMax)
 static int ImGui_GetItemRectMax(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     ImVec2 RETVAL = ImGui::GetItemRectMax();
     ImGuiLua_PushImVec2(L, RETVAL);
     return 1;
@@ -3045,10 +4801,7 @@ static int ImGui_GetItemRectMax(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::GetItemRectMin)
 static int ImGui_GetItemRectMin(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     ImVec2 RETVAL = ImGui::GetItemRectMin();
     ImGuiLua_PushImVec2(L, RETVAL);
     return 1;
@@ -3060,10 +4813,7 @@ static int ImGui_GetItemRectMin(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::GetItemRectSize)
 static int ImGui_GetItemRectSize(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     ImVec2 RETVAL = ImGui::GetItemRectSize();
     ImGuiLua_PushImVec2(L, RETVAL);
     return 1;
@@ -3075,14 +4825,25 @@ static int ImGui_GetItemRectSize(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::GetKeyIndex)
 static int ImGui_GetKeyIndex(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 1);
-    }
-    int imgui_key;
-    imgui_key = static_cast<int>(luaL_checkinteger(L, 1));
-    int RETVAL = ImGui::GetKeyIndex(imgui_key);
+    IMGUILUA_CHECK_ARGC(1);
+    int key;
+    key = static_cast<int>(luaL_checkinteger(L, 1));
+    int RETVAL = ImGui::GetKeyIndex(key);
     lua_pushinteger(L, static_cast<lua_Integer>(RETVAL));
+    return 1;
+}
+
+
+// function ImGui::GetKeyName
+
+IMGUILUA_FUNCTION(ImGui::GetKeyName)
+static int ImGui_GetKeyName(lua_State *L)
+{
+    IMGUILUA_CHECK_ARGC(1);
+    int key;
+    key = static_cast<int>(luaL_checkinteger(L, 1));
+    const char *RETVAL = ImGui::GetKeyName(key);
+    lua_pushstring(L, RETVAL);
     return 1;
 }
 
@@ -3092,17 +4853,14 @@ static int ImGui_GetKeyIndex(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::GetKeyPressedAmount)
 static int ImGui_GetKeyPressedAmount(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 3) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 3);
-    }
-    int key_index;
-    key_index = static_cast<int>(luaL_checkinteger(L, 1));
+    IMGUILUA_CHECK_ARGC(3);
+    int key;
+    key = static_cast<int>(luaL_checkinteger(L, 1));
     float repeat_delay;
     repeat_delay = static_cast<float>(luaL_checknumber(L, 2));
     float rate;
     rate = static_cast<float>(luaL_checknumber(L, 3));
-    int RETVAL = ImGui::GetKeyPressedAmount(key_index,repeat_delay,rate);
+    int RETVAL = ImGui::GetKeyPressedAmount(key,repeat_delay,rate);
     lua_pushinteger(L, static_cast<lua_Integer>(RETVAL));
     return 1;
 }
@@ -3110,7 +4868,30 @@ static int ImGui_GetKeyPressedAmount(lua_State *L)
 
 // function ImGui::GetMainViewport
 
-// ImGuiViewport* ImGui_GetMainViewport(): Unknown return type 'ImGuiViewport*' (ImGuiViewport*)
+IMGUILUA_FUNCTION(ImGui::GetMainViewport)
+static int ImGui_GetMainViewport(lua_State *L)
+{
+    IMGUILUA_CHECK_ARGC(0);
+    ImGuiViewport *RETVAL = ImGui::GetMainViewport();
+    ImGuiViewport **pp = static_cast<ImGuiViewport **>(lua_newuserdatauv(L, sizeof(*pp), 0));
+    *pp = RETVAL;
+    luaL_setmetatable(L, "ImGuiViewport");
+    return 1;
+}
+
+
+// function ImGui::GetMouseClickedCount
+
+IMGUILUA_FUNCTION(ImGui::GetMouseClickedCount)
+static int ImGui_GetMouseClickedCount(lua_State *L)
+{
+    IMGUILUA_CHECK_ARGC(1);
+    int button;
+    button = static_cast<int>(luaL_checkinteger(L, 1));
+    int RETVAL = ImGui::GetMouseClickedCount(button);
+    lua_pushinteger(L, static_cast<lua_Integer>(RETVAL));
+    return 1;
+}
 
 
 // function ImGui::GetMouseCursor
@@ -3118,10 +4899,7 @@ static int ImGui_GetKeyPressedAmount(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::GetMouseCursor)
 static int ImGui_GetMouseCursor(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     int RETVAL = ImGui::GetMouseCursor();
     lua_pushinteger(L, static_cast<lua_Integer>(RETVAL));
     return 1;
@@ -3133,10 +4911,7 @@ static int ImGui_GetMouseCursor(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::GetMouseDragDelta)
 static int ImGui_GetMouseDragDelta(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC > 2) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 0, 2);
-    }
+    IMGUILUA_CHECK_ARGC_MAX(2);
     int button;
     if (ARGC < 1) {
         button = 0;
@@ -3162,10 +4937,7 @@ static int ImGui_GetMouseDragDelta(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::GetMousePos)
 static int ImGui_GetMousePos(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     ImVec2 RETVAL = ImGui::GetMousePos();
     ImGuiLua_PushImVec2(L, RETVAL);
     return 1;
@@ -3177,10 +4949,7 @@ static int ImGui_GetMousePos(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::GetMousePosOnOpeningCurrentPopup)
 static int ImGui_GetMousePosOnOpeningCurrentPopup(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     ImVec2 RETVAL = ImGui::GetMousePosOnOpeningCurrentPopup();
     ImGuiLua_PushImVec2(L, RETVAL);
     return 1;
@@ -3192,10 +4961,7 @@ static int ImGui_GetMousePosOnOpeningCurrentPopup(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::GetScrollMaxX)
 static int ImGui_GetScrollMaxX(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     float RETVAL = ImGui::GetScrollMaxX();
     lua_pushnumber(L, static_cast<lua_Number>(RETVAL));
     return 1;
@@ -3207,10 +4973,7 @@ static int ImGui_GetScrollMaxX(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::GetScrollMaxY)
 static int ImGui_GetScrollMaxY(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     float RETVAL = ImGui::GetScrollMaxY();
     lua_pushnumber(L, static_cast<lua_Number>(RETVAL));
     return 1;
@@ -3222,10 +4985,7 @@ static int ImGui_GetScrollMaxY(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::GetScrollX)
 static int ImGui_GetScrollX(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     float RETVAL = ImGui::GetScrollX();
     lua_pushnumber(L, static_cast<lua_Number>(RETVAL));
     return 1;
@@ -3237,10 +4997,7 @@ static int ImGui_GetScrollX(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::GetScrollY)
 static int ImGui_GetScrollY(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     float RETVAL = ImGui::GetScrollY();
     lua_pushnumber(L, static_cast<lua_Number>(RETVAL));
     return 1;
@@ -3262,10 +5019,7 @@ static int ImGui_GetScrollY(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::GetStyleColorName)
 static int ImGui_GetStyleColorName(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 1);
-    }
+    IMGUILUA_CHECK_ARGC(1);
     int idx;
     idx = static_cast<int>(luaL_checkinteger(L, 1));
     const char *RETVAL = ImGui::GetStyleColorName(idx);
@@ -3284,10 +5038,7 @@ static int ImGui_GetStyleColorName(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::GetTextLineHeight)
 static int ImGui_GetTextLineHeight(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     float RETVAL = ImGui::GetTextLineHeight();
     lua_pushnumber(L, static_cast<lua_Number>(RETVAL));
     return 1;
@@ -3299,10 +5050,7 @@ static int ImGui_GetTextLineHeight(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::GetTextLineHeightWithSpacing)
 static int ImGui_GetTextLineHeightWithSpacing(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     float RETVAL = ImGui::GetTextLineHeightWithSpacing();
     lua_pushnumber(L, static_cast<lua_Number>(RETVAL));
     return 1;
@@ -3314,10 +5062,7 @@ static int ImGui_GetTextLineHeightWithSpacing(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::GetTime)
 static int ImGui_GetTime(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     double RETVAL = ImGui::GetTime();
     lua_pushnumber(L, static_cast<lua_Number>(RETVAL));
     return 1;
@@ -3329,10 +5074,7 @@ static int ImGui_GetTime(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::GetTreeNodeToLabelSpacing)
 static int ImGui_GetTreeNodeToLabelSpacing(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     float RETVAL = ImGui::GetTreeNodeToLabelSpacing();
     lua_pushnumber(L, static_cast<lua_Number>(RETVAL));
     return 1;
@@ -3344,10 +5086,7 @@ static int ImGui_GetTreeNodeToLabelSpacing(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::GetVersion)
 static int ImGui_GetVersion(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     const char *RETVAL = ImGui::GetVersion();
     lua_pushstring(L, RETVAL);
     return 1;
@@ -3359,10 +5098,7 @@ static int ImGui_GetVersion(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::GetWindowContentRegionMax)
 static int ImGui_GetWindowContentRegionMax(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     ImVec2 RETVAL = ImGui::GetWindowContentRegionMax();
     ImGuiLua_PushImVec2(L, RETVAL);
     return 1;
@@ -3374,27 +5110,9 @@ static int ImGui_GetWindowContentRegionMax(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::GetWindowContentRegionMin)
 static int ImGui_GetWindowContentRegionMin(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     ImVec2 RETVAL = ImGui::GetWindowContentRegionMin();
     ImGuiLua_PushImVec2(L, RETVAL);
-    return 1;
-}
-
-
-// function ImGui::GetWindowContentRegionWidth
-
-IMGUILUA_FUNCTION(ImGui::GetWindowContentRegionWidth)
-static int ImGui_GetWindowContentRegionWidth(lua_State *L)
-{
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
-    float RETVAL = ImGui::GetWindowContentRegionWidth();
-    lua_pushnumber(L, static_cast<lua_Number>(RETVAL));
     return 1;
 }
 
@@ -3409,10 +5127,7 @@ static int ImGui_GetWindowContentRegionWidth(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::GetWindowHeight)
 static int ImGui_GetWindowHeight(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     float RETVAL = ImGui::GetWindowHeight();
     lua_pushnumber(L, static_cast<lua_Number>(RETVAL));
     return 1;
@@ -3424,10 +5139,7 @@ static int ImGui_GetWindowHeight(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::GetWindowPos)
 static int ImGui_GetWindowPos(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     ImVec2 RETVAL = ImGui::GetWindowPos();
     ImGuiLua_PushImVec2(L, RETVAL);
     return 1;
@@ -3439,10 +5151,7 @@ static int ImGui_GetWindowPos(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::GetWindowSize)
 static int ImGui_GetWindowSize(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     ImVec2 RETVAL = ImGui::GetWindowSize();
     ImGuiLua_PushImVec2(L, RETVAL);
     return 1;
@@ -3454,10 +5163,7 @@ static int ImGui_GetWindowSize(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::GetWindowWidth)
 static int ImGui_GetWindowWidth(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     float RETVAL = ImGui::GetWindowWidth();
     lua_pushnumber(L, static_cast<lua_Number>(RETVAL));
     return 1;
@@ -3479,10 +5185,7 @@ static int ImGui_GetWindowWidth(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::Indent)
 static int ImGui_Indent(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC > 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 0, 1);
-    }
+    IMGUILUA_CHECK_ARGC_MAX(1);
     float indent_w;
     if (ARGC < 1) {
         indent_w = 0.0f;
@@ -3505,14 +5208,11 @@ static int ImGui_Indent(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::InputFloat)
 static int ImGui_InputFloat(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 2 || ARGC > 6) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 2, 6);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(2, 6);
     const char *label;
     label = lua_tostring(L, 1);
     float *v;
-    v = static_cast<float *>(luaL_checkudata(L, 2, "ImGuiLua_FloatRef"));
+    v = static_cast<float *>(luaL_checkudata(L, 2, "ImGuiLuaFloatRef"));
     float step;
     if (ARGC < 3) {
         step = 0.0f;
@@ -3567,14 +5267,11 @@ static int ImGui_InputFloat(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::InputInt)
 static int ImGui_InputInt(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 2 || ARGC > 5) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 2, 5);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(2, 5);
     const char *label;
     label = lua_tostring(L, 1);
     int *v;
-    v = static_cast<int *>(luaL_checkudata(L, 2, "ImGuiLua_IntRef"));
+    v = static_cast<int *>(luaL_checkudata(L, 2, "ImGuiLuaIntRef"));
     int step;
     if (ARGC < 3) {
         step = 1;
@@ -3647,10 +5344,7 @@ static int ImGui_InputInt(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::InvisibleButton)
 static int ImGui_InvisibleButton(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 2 || ARGC > 3) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 2, 3);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(2, 3);
     const char *str_id;
     str_id = lua_tostring(L, 1);
     ImVec2 size;
@@ -3673,10 +5367,7 @@ static int ImGui_InvisibleButton(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::IsAnyItemActive)
 static int ImGui_IsAnyItemActive(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     bool RETVAL = ImGui::IsAnyItemActive();
     lua_pushboolean(L, RETVAL);
     return 1;
@@ -3688,10 +5379,7 @@ static int ImGui_IsAnyItemActive(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::IsAnyItemFocused)
 static int ImGui_IsAnyItemFocused(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     bool RETVAL = ImGui::IsAnyItemFocused();
     lua_pushboolean(L, RETVAL);
     return 1;
@@ -3703,10 +5391,7 @@ static int ImGui_IsAnyItemFocused(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::IsAnyItemHovered)
 static int ImGui_IsAnyItemHovered(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     bool RETVAL = ImGui::IsAnyItemHovered();
     lua_pushboolean(L, RETVAL);
     return 1;
@@ -3718,10 +5403,7 @@ static int ImGui_IsAnyItemHovered(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::IsAnyMouseDown)
 static int ImGui_IsAnyMouseDown(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     bool RETVAL = ImGui::IsAnyMouseDown();
     lua_pushboolean(L, RETVAL);
     return 1;
@@ -3733,10 +5415,7 @@ static int ImGui_IsAnyMouseDown(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::IsItemActivated)
 static int ImGui_IsItemActivated(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     bool RETVAL = ImGui::IsItemActivated();
     lua_pushboolean(L, RETVAL);
     return 1;
@@ -3748,10 +5427,7 @@ static int ImGui_IsItemActivated(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::IsItemActive)
 static int ImGui_IsItemActive(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     bool RETVAL = ImGui::IsItemActive();
     lua_pushboolean(L, RETVAL);
     return 1;
@@ -3763,10 +5439,7 @@ static int ImGui_IsItemActive(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::IsItemClicked)
 static int ImGui_IsItemClicked(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC > 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 0, 1);
-    }
+    IMGUILUA_CHECK_ARGC_MAX(1);
     int mouse_button;
     if (ARGC < 1) {
         mouse_button = 0;
@@ -3785,10 +5458,7 @@ static int ImGui_IsItemClicked(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::IsItemDeactivated)
 static int ImGui_IsItemDeactivated(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     bool RETVAL = ImGui::IsItemDeactivated();
     lua_pushboolean(L, RETVAL);
     return 1;
@@ -3800,10 +5470,7 @@ static int ImGui_IsItemDeactivated(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::IsItemDeactivatedAfterEdit)
 static int ImGui_IsItemDeactivatedAfterEdit(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     bool RETVAL = ImGui::IsItemDeactivatedAfterEdit();
     lua_pushboolean(L, RETVAL);
     return 1;
@@ -3815,10 +5482,7 @@ static int ImGui_IsItemDeactivatedAfterEdit(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::IsItemEdited)
 static int ImGui_IsItemEdited(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     bool RETVAL = ImGui::IsItemEdited();
     lua_pushboolean(L, RETVAL);
     return 1;
@@ -3830,10 +5494,7 @@ static int ImGui_IsItemEdited(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::IsItemFocused)
 static int ImGui_IsItemFocused(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     bool RETVAL = ImGui::IsItemFocused();
     lua_pushboolean(L, RETVAL);
     return 1;
@@ -3845,10 +5506,7 @@ static int ImGui_IsItemFocused(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::IsItemHovered)
 static int ImGui_IsItemHovered(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC > 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 0, 1);
-    }
+    IMGUILUA_CHECK_ARGC_MAX(1);
     int flags;
     if (ARGC < 1) {
         flags = 0;
@@ -3867,10 +5525,7 @@ static int ImGui_IsItemHovered(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::IsItemToggledOpen)
 static int ImGui_IsItemToggledOpen(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     bool RETVAL = ImGui::IsItemToggledOpen();
     lua_pushboolean(L, RETVAL);
     return 1;
@@ -3882,10 +5537,7 @@ static int ImGui_IsItemToggledOpen(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::IsItemVisible)
 static int ImGui_IsItemVisible(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     bool RETVAL = ImGui::IsItemVisible();
     lua_pushboolean(L, RETVAL);
     return 1;
@@ -3897,13 +5549,10 @@ static int ImGui_IsItemVisible(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::IsKeyDown)
 static int ImGui_IsKeyDown(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 1);
-    }
-    int user_key_index;
-    user_key_index = static_cast<int>(luaL_checkinteger(L, 1));
-    bool RETVAL = ImGui::IsKeyDown(user_key_index);
+    IMGUILUA_CHECK_ARGC(1);
+    int key;
+    key = static_cast<int>(luaL_checkinteger(L, 1));
+    bool RETVAL = ImGui::IsKeyDown(key);
     lua_pushboolean(L, RETVAL);
     return 1;
 }
@@ -3914,12 +5563,9 @@ static int ImGui_IsKeyDown(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::IsKeyPressed)
 static int ImGui_IsKeyPressed(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 1 || ARGC > 2) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 1, 2);
-    }
-    int user_key_index;
-    user_key_index = static_cast<int>(luaL_checkinteger(L, 1));
+    IMGUILUA_CHECK_ARGC_BETWEEN(1, 2);
+    int key;
+    key = static_cast<int>(luaL_checkinteger(L, 1));
     bool repeat;
     if (ARGC < 2) {
         repeat = true;
@@ -3927,7 +5573,7 @@ static int ImGui_IsKeyPressed(lua_State *L)
     else {
         repeat = lua_toboolean(L, 2);
     }
-    bool RETVAL = ImGui::IsKeyPressed(user_key_index,repeat);
+    bool RETVAL = ImGui::IsKeyPressed(key,repeat);
     lua_pushboolean(L, RETVAL);
     return 1;
 }
@@ -3938,13 +5584,10 @@ static int ImGui_IsKeyPressed(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::IsKeyReleased)
 static int ImGui_IsKeyReleased(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 1);
-    }
-    int user_key_index;
-    user_key_index = static_cast<int>(luaL_checkinteger(L, 1));
-    bool RETVAL = ImGui::IsKeyReleased(user_key_index);
+    IMGUILUA_CHECK_ARGC(1);
+    int key;
+    key = static_cast<int>(luaL_checkinteger(L, 1));
+    bool RETVAL = ImGui::IsKeyReleased(key);
     lua_pushboolean(L, RETVAL);
     return 1;
 }
@@ -3955,10 +5598,7 @@ static int ImGui_IsKeyReleased(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::IsMouseClicked)
 static int ImGui_IsMouseClicked(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 1 || ARGC > 2) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 1, 2);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(1, 2);
     int button;
     button = static_cast<int>(luaL_checkinteger(L, 1));
     bool repeat;
@@ -3979,10 +5619,7 @@ static int ImGui_IsMouseClicked(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::IsMouseDoubleClicked)
 static int ImGui_IsMouseDoubleClicked(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 1);
-    }
+    IMGUILUA_CHECK_ARGC(1);
     int button;
     button = static_cast<int>(luaL_checkinteger(L, 1));
     bool RETVAL = ImGui::IsMouseDoubleClicked(button);
@@ -3996,10 +5633,7 @@ static int ImGui_IsMouseDoubleClicked(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::IsMouseDown)
 static int ImGui_IsMouseDown(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 1);
-    }
+    IMGUILUA_CHECK_ARGC(1);
     int button;
     button = static_cast<int>(luaL_checkinteger(L, 1));
     bool RETVAL = ImGui::IsMouseDown(button);
@@ -4013,10 +5647,7 @@ static int ImGui_IsMouseDown(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::IsMouseDragging)
 static int ImGui_IsMouseDragging(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 1 || ARGC > 2) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 1, 2);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(1, 2);
     int button;
     button = static_cast<int>(luaL_checkinteger(L, 1));
     float lock_threshold;
@@ -4037,10 +5668,7 @@ static int ImGui_IsMouseDragging(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::IsMouseHoveringRect)
 static int ImGui_IsMouseHoveringRect(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 2 || ARGC > 3) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 2, 3);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(2, 3);
     ImVec2 r_min;
     r_min = ImGuiLua_ToImVec2(L, 1);
     ImVec2 r_max;
@@ -4068,10 +5696,7 @@ static int ImGui_IsMouseHoveringRect(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::IsMouseReleased)
 static int ImGui_IsMouseReleased(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 1);
-    }
+    IMGUILUA_CHECK_ARGC(1);
     int button;
     button = static_cast<int>(luaL_checkinteger(L, 1));
     bool RETVAL = ImGui::IsMouseReleased(button);
@@ -4085,10 +5710,7 @@ static int ImGui_IsMouseReleased(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::IsPopupOpen)
 static int ImGui_IsPopupOpen(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 1 || ARGC > 2) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 1, 2);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(1, 2);
     const char *str_id;
     str_id = lua_tostring(L, 1);
     int flags;
@@ -4108,10 +5730,7 @@ static int ImGui_IsPopupOpen(lua_State *L)
 
 static int ImGui_IsRectVisible_v2(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 1);
-    }
+    IMGUILUA_CHECK_ARGC(1);
     ImVec2 size;
     size = ImGuiLua_ToImVec2(L, 1);
     bool RETVAL = ImGui::IsRectVisible(size);
@@ -4121,10 +5740,7 @@ static int ImGui_IsRectVisible_v2(lua_State *L)
 
 static int ImGui_IsRectVisible_v2v2(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 2) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 2);
-    }
+    IMGUILUA_CHECK_ARGC(2);
     ImVec2 rect_min;
     rect_min = ImGuiLua_ToImVec2(L, 1);
     ImVec2 rect_max;
@@ -4134,7 +5750,7 @@ static int ImGui_IsRectVisible_v2v2(lua_State *L)
     return 1;
 }
 
-IMGUILUA_FUNCTION(ImGui::ImGui_IsRectVisible)
+IMGUILUA_FUNCTION(ImGui::IsRectVisible)
 static int ImGui_IsRectVisible(lua_State *L)
 {
     int ARGC = lua_gettop(L);
@@ -4154,10 +5770,7 @@ static int ImGui_IsRectVisible(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::IsWindowAppearing)
 static int ImGui_IsWindowAppearing(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     bool RETVAL = ImGui::IsWindowAppearing();
     lua_pushboolean(L, RETVAL);
     return 1;
@@ -4169,10 +5782,7 @@ static int ImGui_IsWindowAppearing(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::IsWindowCollapsed)
 static int ImGui_IsWindowCollapsed(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     bool RETVAL = ImGui::IsWindowCollapsed();
     lua_pushboolean(L, RETVAL);
     return 1;
@@ -4184,10 +5794,7 @@ static int ImGui_IsWindowCollapsed(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::IsWindowFocused)
 static int ImGui_IsWindowFocused(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC > 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 0, 1);
-    }
+    IMGUILUA_CHECK_ARGC_MAX(1);
     int flags;
     if (ARGC < 1) {
         flags = 0;
@@ -4206,10 +5813,7 @@ static int ImGui_IsWindowFocused(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::IsWindowHovered)
 static int ImGui_IsWindowHovered(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC > 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 0, 1);
-    }
+    IMGUILUA_CHECK_ARGC_MAX(1);
     int flags;
     if (ARGC < 1) {
         flags = 0;
@@ -4241,10 +5845,7 @@ static int ImGui_IsWindowHovered(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::LoadIniSettingsFromDisk)
 static int ImGui_LoadIniSettingsFromDisk(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 1);
-    }
+    IMGUILUA_CHECK_ARGC(1);
     const char *ini_filename;
     ini_filename = lua_tostring(L, 1);
     ImGui::LoadIniSettingsFromDisk(ini_filename);
@@ -4262,10 +5863,7 @@ static int ImGui_LoadIniSettingsFromDisk(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::LogButtons)
 static int ImGui_LogButtons(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     ImGui::LogButtons();
     return 0;
 }
@@ -4276,10 +5874,7 @@ static int ImGui_LogButtons(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::LogFinish)
 static int ImGui_LogFinish(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     ImGui::LogFinish();
     return 0;
 }
@@ -4300,10 +5895,7 @@ static int ImGui_LogFinish(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::LogToClipboard)
 static int ImGui_LogToClipboard(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC > 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 0, 1);
-    }
+    IMGUILUA_CHECK_ARGC_MAX(1);
     int auto_open_depth;
     if (ARGC < 1) {
         auto_open_depth = -1;
@@ -4321,10 +5913,7 @@ static int ImGui_LogToClipboard(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::LogToFile)
 static int ImGui_LogToFile(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC > 2) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 0, 2);
-    }
+    IMGUILUA_CHECK_ARGC_MAX(2);
     int auto_open_depth;
     if (ARGC < 1) {
         auto_open_depth = -1;
@@ -4349,10 +5938,7 @@ static int ImGui_LogToFile(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::LogToTTY)
 static int ImGui_LogToTTY(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC > 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 0, 1);
-    }
+    IMGUILUA_CHECK_ARGC_MAX(1);
     int auto_open_depth;
     if (ARGC < 1) {
         auto_open_depth = -1;
@@ -4382,10 +5968,7 @@ static int ImGui_LogToTTY(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::MenuItem)
 static int ImGui_MenuItem(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 1 || ARGC > 4) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 1, 4);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(1, 4);
     const char *label;
     label = lua_tostring(L, 1);
     const char *shortcut;
@@ -4423,10 +6006,7 @@ static int ImGui_MenuItem(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::NewLine)
 static int ImGui_NewLine(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     ImGui::NewLine();
     return 0;
 }
@@ -4437,10 +6017,7 @@ static int ImGui_NewLine(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::NextColumn)
 static int ImGui_NextColumn(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     ImGui::NextColumn();
     return 0;
 }
@@ -4450,10 +6027,7 @@ static int ImGui_NextColumn(lua_State *L)
 
 static int ImGui_OpenPopup_ui(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 1 || ARGC > 2) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 1, 2);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(1, 2);
     unsigned int id;
     id = static_cast<unsigned int>(luaL_checkinteger(L, 1));
     int popup_flags;
@@ -4469,10 +6043,7 @@ static int ImGui_OpenPopup_ui(lua_State *L)
 
 static int ImGui_OpenPopup_si(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 1 || ARGC > 2) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 1, 2);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(1, 2);
     const char *str_id;
     str_id = lua_tostring(L, 1);
     int popup_flags;
@@ -4486,7 +6057,7 @@ static int ImGui_OpenPopup_si(lua_State *L)
     return 0;
 }
 
-IMGUILUA_FUNCTION(ImGui::ImGui_OpenPopup)
+IMGUILUA_FUNCTION(ImGui::OpenPopup)
 static int ImGui_OpenPopup(lua_State *L)
 {
     if (lua_type(L, 1) == LUA_TNUMBER) {
@@ -4503,10 +6074,7 @@ static int ImGui_OpenPopup(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::OpenPopupOnItemClick)
 static int ImGui_OpenPopupOnItemClick(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC > 2) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 0, 2);
-    }
+    IMGUILUA_CHECK_ARGC_MAX(2);
     const char *str_id;
     if (ARGC < 1) {
         str_id = NULL;
@@ -4545,10 +6113,7 @@ static int ImGui_OpenPopupOnItemClick(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::PopAllowKeyboardFocus)
 static int ImGui_PopAllowKeyboardFocus(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     ImGui::PopAllowKeyboardFocus();
     return 0;
 }
@@ -4559,10 +6124,7 @@ static int ImGui_PopAllowKeyboardFocus(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::PopButtonRepeat)
 static int ImGui_PopButtonRepeat(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     ImGui::PopButtonRepeat();
     return 0;
 }
@@ -4573,10 +6135,7 @@ static int ImGui_PopButtonRepeat(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::PopClipRect)
 static int ImGui_PopClipRect(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     ImGui::PopClipRect();
     return 0;
 }
@@ -4587,10 +6146,7 @@ static int ImGui_PopClipRect(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::PopFont)
 static int ImGui_PopFont(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     ImGui::PopFont();
     return 0;
 }
@@ -4601,10 +6157,7 @@ static int ImGui_PopFont(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::PopID)
 static int ImGui_PopID(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     ImGui::PopID();
     return 0;
 }
@@ -4615,55 +6168,16 @@ static int ImGui_PopID(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::PopItemWidth)
 static int ImGui_PopItemWidth(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     ImGui::PopItemWidth();
     return 0;
 }
 
 
-// function ImGui::PopStyleColor
-
-IMGUILUA_FUNCTION(ImGui::PopStyleColor)
-static int ImGui_PopStyleColor(lua_State *L)
-{
-    int ARGC = lua_gettop(L);
-    if (ARGC > 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 0, 1);
-    }
-    int count;
-    if (ARGC < 1) {
-        count = 1;
-    }
-    else {
-        count = static_cast<int>(luaL_checkinteger(L, 1));
-    }
-    ImGui::PopStyleColor(count);
-    return 0;
-}
+// function ImGui::PopStyleColor is excluded
 
 
-// function ImGui::PopStyleVar
-
-IMGUILUA_FUNCTION(ImGui::PopStyleVar)
-static int ImGui_PopStyleVar(lua_State *L)
-{
-    int ARGC = lua_gettop(L);
-    if (ARGC > 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 0, 1);
-    }
-    int count;
-    if (ARGC < 1) {
-        count = 1;
-    }
-    else {
-        count = static_cast<int>(luaL_checkinteger(L, 1));
-    }
-    ImGui::PopStyleVar(count);
-    return 0;
-}
+// function ImGui::PopStyleVar is excluded
 
 
 // function ImGui::PopTextWrapPos
@@ -4671,10 +6185,7 @@ static int ImGui_PopStyleVar(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::PopTextWrapPos)
 static int ImGui_PopTextWrapPos(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     ImGui::PopTextWrapPos();
     return 0;
 }
@@ -4685,10 +6196,7 @@ static int ImGui_PopTextWrapPos(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::ProgressBar)
 static int ImGui_ProgressBar(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 1 || ARGC > 3) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 1, 3);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(1, 3);
     float fraction;
     fraction = static_cast<float>(luaL_checknumber(L, 1));
     ImVec2 size_arg;
@@ -4715,10 +6223,7 @@ static int ImGui_ProgressBar(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::PushAllowKeyboardFocus)
 static int ImGui_PushAllowKeyboardFocus(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 1);
-    }
+    IMGUILUA_CHECK_ARGC(1);
     bool allow_keyboard_focus;
     allow_keyboard_focus = lua_toboolean(L, 1);
     ImGui::PushAllowKeyboardFocus(allow_keyboard_focus);
@@ -4731,10 +6236,7 @@ static int ImGui_PushAllowKeyboardFocus(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::PushButtonRepeat)
 static int ImGui_PushButtonRepeat(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 1);
-    }
+    IMGUILUA_CHECK_ARGC(1);
     bool repeat;
     repeat = lua_toboolean(L, 1);
     ImGui::PushButtonRepeat(repeat);
@@ -4747,10 +6249,7 @@ static int ImGui_PushButtonRepeat(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::PushClipRect)
 static int ImGui_PushClipRect(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 3) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 3);
-    }
+    IMGUILUA_CHECK_ARGC(3);
     ImVec2 clip_rect_min;
     clip_rect_min = ImGuiLua_ToImVec2(L, 1);
     ImVec2 clip_rect_max;
@@ -4775,10 +6274,7 @@ static int ImGui_PushClipRect(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::PushItemWidth)
 static int ImGui_PushItemWidth(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 1);
-    }
+    IMGUILUA_CHECK_ARGC(1);
     float item_width;
     item_width = static_cast<float>(luaL_checknumber(L, 1));
     ImGui::PushItemWidth(item_width);
@@ -4786,88 +6282,10 @@ static int ImGui_PushItemWidth(lua_State *L)
 }
 
 
-// function ImGui::PushStyleColor
-
-static int ImGui_PushStyleColor_iu32(lua_State *L)
-{
-    int ARGC = lua_gettop(L);
-    if (ARGC != 2) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 2);
-    }
-    int idx;
-    idx = static_cast<int>(luaL_checkinteger(L, 1));
-    ImU32 col;
-    col = static_cast<ImU32>(luaL_checkinteger(L, 2));
-    ImGui::PushStyleColor(idx,col);
-    return 0;
-}
-
-static int ImGui_PushStyleColor_iv4(lua_State *L)
-{
-    int ARGC = lua_gettop(L);
-    if (ARGC != 2) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 2);
-    }
-    int idx;
-    idx = static_cast<int>(luaL_checkinteger(L, 1));
-    ImVec4 col;
-    col = ImGuiLua_ToImVec4(L, 2);
-    ImGui::PushStyleColor(idx,col);
-    return 0;
-}
-
-IMGUILUA_FUNCTION(ImGui::ImGui_PushStyleColor)
-static int ImGui_PushStyleColor(lua_State *L)
-{
-    if (lua_isnumber(L, 1)) {
-        return ImGui_PushStyleColor_iv4(L);
-    }
-    else {
-        return ImGui_PushStyleColor_iu32(L);
-    }
-}
+// function ImGui::PushStyleColor is excluded
 
 
-// function ImGui::PushStyleVar
-
-static int ImGui_PushStyleVar_iv2(lua_State *L)
-{
-    int ARGC = lua_gettop(L);
-    if (ARGC != 2) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 2);
-    }
-    int idx;
-    idx = static_cast<int>(luaL_checkinteger(L, 1));
-    ImVec2 val;
-    val = ImGuiLua_ToImVec2(L, 2);
-    ImGui::PushStyleVar(idx,val);
-    return 0;
-}
-
-static int ImGui_PushStyleVar_if(lua_State *L)
-{
-    int ARGC = lua_gettop(L);
-    if (ARGC != 2) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 2);
-    }
-    int idx;
-    idx = static_cast<int>(luaL_checkinteger(L, 1));
-    float val;
-    val = static_cast<float>(luaL_checknumber(L, 2));
-    ImGui::PushStyleVar(idx,val);
-    return 0;
-}
-
-IMGUILUA_FUNCTION(ImGui::ImGui_PushStyleVar)
-static int ImGui_PushStyleVar(lua_State *L)
-{
-    if (lua_isnumber(L, 1)) {
-        return ImGui_PushStyleVar_if(L);
-    }
-    else {
-        return ImGui_PushStyleVar_iv2(L);
-    }
-}
+// function ImGui::PushStyleVar is excluded
 
 
 // function ImGui::PushTextWrapPos
@@ -4875,10 +6293,7 @@ static int ImGui_PushStyleVar(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::PushTextWrapPos)
 static int ImGui_PushTextWrapPos(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC > 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 0, 1);
-    }
+    IMGUILUA_CHECK_ARGC_MAX(1);
     float wrap_local_pos_x;
     if (ARGC < 1) {
         wrap_local_pos_x = 0.0f;
@@ -4895,10 +6310,7 @@ static int ImGui_PushTextWrapPos(lua_State *L)
 
 static int ImGui_RadioButton_sb(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 2) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 2);
-    }
+    IMGUILUA_CHECK_ARGC(2);
     const char *label;
     label = lua_tostring(L, 1);
     bool active;
@@ -4910,14 +6322,11 @@ static int ImGui_RadioButton_sb(lua_State *L)
 
 static int ImGui_RadioButton_sfPi(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 3) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 3);
-    }
+    IMGUILUA_CHECK_ARGC(3);
     const char *label;
     label = lua_tostring(L, 1);
     int *v;
-    v = static_cast<int *>(luaL_checkudata(L, 2, "ImGuiLua_IntRef"));
+    v = static_cast<int *>(luaL_checkudata(L, 2, "ImGuiLuaIntRef"));
     int v_button;
     v_button = static_cast<int>(luaL_checkinteger(L, 3));
     bool RETVAL = ImGui::RadioButton(label,v,v_button);
@@ -4925,7 +6334,7 @@ static int ImGui_RadioButton_sfPi(lua_State *L)
     return 1;
 }
 
-IMGUILUA_FUNCTION(ImGui::ImGui_RadioButton)
+IMGUILUA_FUNCTION(ImGui::RadioButton)
 static int ImGui_RadioButton(lua_State *L)
 {
     int ARGC = lua_gettop(L);
@@ -4948,10 +6357,7 @@ static int ImGui_RadioButton(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::ResetMouseDragDelta)
 static int ImGui_ResetMouseDragDelta(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC > 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 0, 1);
-    }
+    IMGUILUA_CHECK_ARGC_MAX(1);
     int button;
     if (ARGC < 1) {
         button = 0;
@@ -4969,10 +6375,7 @@ static int ImGui_ResetMouseDragDelta(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::SameLine)
 static int ImGui_SameLine(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC > 2) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 0, 2);
-    }
+    IMGUILUA_CHECK_ARGC_MAX(2);
     float offset_from_start_x;
     if (ARGC < 1) {
         offset_from_start_x = 0.0f;
@@ -4997,10 +6400,7 @@ static int ImGui_SameLine(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::SaveIniSettingsToDisk)
 static int ImGui_SaveIniSettingsToDisk(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 1);
-    }
+    IMGUILUA_CHECK_ARGC(1);
     const char *ini_filename;
     ini_filename = lua_tostring(L, 1);
     ImGui::SaveIniSettingsToDisk(ini_filename);
@@ -5020,10 +6420,7 @@ static int ImGui_SaveIniSettingsToDisk(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::Selectable)
 static int ImGui_Selectable(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 1 || ARGC > 4) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 1, 4);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(1, 4);
     const char *label;
     label = lua_tostring(L, 1);
     bool selected;
@@ -5058,10 +6455,7 @@ static int ImGui_Selectable(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::Separator)
 static int ImGui_Separator(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     ImGui::Separator();
     return 0;
 }
@@ -5077,10 +6471,7 @@ static int ImGui_Separator(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::SetClipboardText)
 static int ImGui_SetClipboardText(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 1);
-    }
+    IMGUILUA_CHECK_ARGC(1);
     const char *text;
     text = lua_tostring(L, 1);
     ImGui::SetClipboardText(text);
@@ -5093,10 +6484,7 @@ static int ImGui_SetClipboardText(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::SetColorEditOptions)
 static int ImGui_SetColorEditOptions(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 1);
-    }
+    IMGUILUA_CHECK_ARGC(1);
     int flags;
     flags = static_cast<int>(luaL_checkinteger(L, 1));
     ImGui::SetColorEditOptions(flags);
@@ -5109,10 +6497,7 @@ static int ImGui_SetColorEditOptions(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::SetColumnOffset)
 static int ImGui_SetColumnOffset(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 2) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 2);
-    }
+    IMGUILUA_CHECK_ARGC(2);
     int column_index;
     column_index = static_cast<int>(luaL_checkinteger(L, 1));
     float offset_x;
@@ -5127,10 +6512,7 @@ static int ImGui_SetColumnOffset(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::SetColumnWidth)
 static int ImGui_SetColumnWidth(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 2) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 2);
-    }
+    IMGUILUA_CHECK_ARGC(2);
     int column_index;
     column_index = static_cast<int>(luaL_checkinteger(L, 1));
     float width;
@@ -5150,10 +6532,7 @@ static int ImGui_SetColumnWidth(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::SetCursorPos)
 static int ImGui_SetCursorPos(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 1);
-    }
+    IMGUILUA_CHECK_ARGC(1);
     ImVec2 local_pos;
     local_pos = ImGuiLua_ToImVec2(L, 1);
     ImGui::SetCursorPos(local_pos);
@@ -5166,10 +6545,7 @@ static int ImGui_SetCursorPos(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::SetCursorPosX)
 static int ImGui_SetCursorPosX(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 1);
-    }
+    IMGUILUA_CHECK_ARGC(1);
     float local_x;
     local_x = static_cast<float>(luaL_checknumber(L, 1));
     ImGui::SetCursorPosX(local_x);
@@ -5182,10 +6558,7 @@ static int ImGui_SetCursorPosX(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::SetCursorPosY)
 static int ImGui_SetCursorPosY(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 1);
-    }
+    IMGUILUA_CHECK_ARGC(1);
     float local_y;
     local_y = static_cast<float>(luaL_checknumber(L, 1));
     ImGui::SetCursorPosY(local_y);
@@ -5198,10 +6571,7 @@ static int ImGui_SetCursorPosY(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::SetCursorScreenPos)
 static int ImGui_SetCursorScreenPos(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 1);
-    }
+    IMGUILUA_CHECK_ARGC(1);
     ImVec2 pos;
     pos = ImGuiLua_ToImVec2(L, 1);
     ImGui::SetCursorScreenPos(pos);
@@ -5209,9 +6579,7 @@ static int ImGui_SetCursorScreenPos(lua_State *L)
 }
 
 
-// function ImGui::SetDragDropPayload
-
-// bool ImGui_SetDragDropPayload(const char*, const void*, size_t, ImGuiCond): Unknown argument type 'const void*' (const void*)
+// function ImGui::SetDragDropPayload is excluded
 
 
 // function ImGui::SetItemAllowOverlap
@@ -5219,10 +6587,7 @@ static int ImGui_SetCursorScreenPos(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::SetItemAllowOverlap)
 static int ImGui_SetItemAllowOverlap(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     ImGui::SetItemAllowOverlap();
     return 0;
 }
@@ -5233,10 +6598,7 @@ static int ImGui_SetItemAllowOverlap(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::SetItemDefaultFocus)
 static int ImGui_SetItemDefaultFocus(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     ImGui::SetItemDefaultFocus();
     return 0;
 }
@@ -5247,10 +6609,7 @@ static int ImGui_SetItemDefaultFocus(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::SetKeyboardFocusHere)
 static int ImGui_SetKeyboardFocusHere(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC > 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 0, 1);
-    }
+    IMGUILUA_CHECK_ARGC_MAX(1);
     int offset;
     if (ARGC < 1) {
         offset = 0;
@@ -5268,13 +6627,36 @@ static int ImGui_SetKeyboardFocusHere(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::SetMouseCursor)
 static int ImGui_SetMouseCursor(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 1);
-    }
+    IMGUILUA_CHECK_ARGC(1);
     int cursor_type;
     cursor_type = static_cast<int>(luaL_checkinteger(L, 1));
     ImGui::SetMouseCursor(cursor_type);
+    return 0;
+}
+
+
+// function ImGui::SetNextFrameWantCaptureKeyboard
+
+IMGUILUA_FUNCTION(ImGui::SetNextFrameWantCaptureKeyboard)
+static int ImGui_SetNextFrameWantCaptureKeyboard(lua_State *L)
+{
+    IMGUILUA_CHECK_ARGC(1);
+    bool want_capture_keyboard;
+    want_capture_keyboard = lua_toboolean(L, 1);
+    ImGui::SetNextFrameWantCaptureKeyboard(want_capture_keyboard);
+    return 0;
+}
+
+
+// function ImGui::SetNextFrameWantCaptureMouse
+
+IMGUILUA_FUNCTION(ImGui::SetNextFrameWantCaptureMouse)
+static int ImGui_SetNextFrameWantCaptureMouse(lua_State *L)
+{
+    IMGUILUA_CHECK_ARGC(1);
+    bool want_capture_mouse;
+    want_capture_mouse = lua_toboolean(L, 1);
+    ImGui::SetNextFrameWantCaptureMouse(want_capture_mouse);
     return 0;
 }
 
@@ -5284,10 +6666,7 @@ static int ImGui_SetMouseCursor(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::SetNextItemOpen)
 static int ImGui_SetNextItemOpen(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 1 || ARGC > 2) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 1, 2);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(1, 2);
     bool is_open;
     is_open = lua_toboolean(L, 1);
     int cond;
@@ -5307,10 +6686,7 @@ static int ImGui_SetNextItemOpen(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::SetNextItemWidth)
 static int ImGui_SetNextItemWidth(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 1);
-    }
+    IMGUILUA_CHECK_ARGC(1);
     float item_width;
     item_width = static_cast<float>(luaL_checknumber(L, 1));
     ImGui::SetNextItemWidth(item_width);
@@ -5323,10 +6699,7 @@ static int ImGui_SetNextItemWidth(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::SetNextWindowBgAlpha)
 static int ImGui_SetNextWindowBgAlpha(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 1);
-    }
+    IMGUILUA_CHECK_ARGC(1);
     float alpha;
     alpha = static_cast<float>(luaL_checknumber(L, 1));
     ImGui::SetNextWindowBgAlpha(alpha);
@@ -5339,10 +6712,7 @@ static int ImGui_SetNextWindowBgAlpha(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::SetNextWindowCollapsed)
 static int ImGui_SetNextWindowCollapsed(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 1 || ARGC > 2) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 1, 2);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(1, 2);
     bool collapsed;
     collapsed = lua_toboolean(L, 1);
     int cond;
@@ -5362,10 +6732,7 @@ static int ImGui_SetNextWindowCollapsed(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::SetNextWindowContentSize)
 static int ImGui_SetNextWindowContentSize(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 1);
-    }
+    IMGUILUA_CHECK_ARGC(1);
     ImVec2 size;
     size = ImGuiLua_ToImVec2(L, 1);
     ImGui::SetNextWindowContentSize(size);
@@ -5378,10 +6745,7 @@ static int ImGui_SetNextWindowContentSize(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::SetNextWindowFocus)
 static int ImGui_SetNextWindowFocus(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     ImGui::SetNextWindowFocus();
     return 0;
 }
@@ -5392,10 +6756,7 @@ static int ImGui_SetNextWindowFocus(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::SetNextWindowPos)
 static int ImGui_SetNextWindowPos(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 1 || ARGC > 3) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 1, 3);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(1, 3);
     ImVec2 pos;
     pos = ImGuiLua_ToImVec2(L, 1);
     int cond;
@@ -5422,10 +6783,7 @@ static int ImGui_SetNextWindowPos(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::SetNextWindowSize)
 static int ImGui_SetNextWindowSize(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 1 || ARGC > 2) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 1, 2);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(1, 2);
     ImVec2 size;
     size = ImGuiLua_ToImVec2(L, 1);
     int cond;
@@ -5450,10 +6808,7 @@ static int ImGui_SetNextWindowSize(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::SetScrollFromPosX)
 static int ImGui_SetScrollFromPosX(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 1 || ARGC > 2) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 1, 2);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(1, 2);
     float local_x;
     local_x = static_cast<float>(luaL_checknumber(L, 1));
     float center_x_ratio;
@@ -5473,10 +6828,7 @@ static int ImGui_SetScrollFromPosX(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::SetScrollFromPosY)
 static int ImGui_SetScrollFromPosY(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 1 || ARGC > 2) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 1, 2);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(1, 2);
     float local_y;
     local_y = static_cast<float>(luaL_checknumber(L, 1));
     float center_y_ratio;
@@ -5496,10 +6848,7 @@ static int ImGui_SetScrollFromPosY(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::SetScrollHereX)
 static int ImGui_SetScrollHereX(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC > 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 0, 1);
-    }
+    IMGUILUA_CHECK_ARGC_MAX(1);
     float center_x_ratio;
     if (ARGC < 1) {
         center_x_ratio = 0.5f;
@@ -5517,10 +6866,7 @@ static int ImGui_SetScrollHereX(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::SetScrollHereY)
 static int ImGui_SetScrollHereY(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC > 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 0, 1);
-    }
+    IMGUILUA_CHECK_ARGC_MAX(1);
     float center_y_ratio;
     if (ARGC < 1) {
         center_y_ratio = 0.5f;
@@ -5538,10 +6884,7 @@ static int ImGui_SetScrollHereY(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::SetScrollX)
 static int ImGui_SetScrollX(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 1);
-    }
+    IMGUILUA_CHECK_ARGC(1);
     float scroll_x;
     scroll_x = static_cast<float>(luaL_checknumber(L, 1));
     ImGui::SetScrollX(scroll_x);
@@ -5554,10 +6897,7 @@ static int ImGui_SetScrollX(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::SetScrollY)
 static int ImGui_SetScrollY(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 1);
-    }
+    IMGUILUA_CHECK_ARGC(1);
     float scroll_y;
     scroll_y = static_cast<float>(luaL_checknumber(L, 1));
     ImGui::SetScrollY(scroll_y);
@@ -5575,10 +6915,7 @@ static int ImGui_SetScrollY(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::SetTabItemClosed)
 static int ImGui_SetTabItemClosed(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 1);
-    }
+    IMGUILUA_CHECK_ARGC(1);
     const char *tab_or_docked_window_label;
     tab_or_docked_window_label = lua_tostring(L, 1);
     ImGui::SetTabItemClosed(tab_or_docked_window_label);
@@ -5600,10 +6937,7 @@ static int ImGui_SetTabItemClosed(lua_State *L)
 
 static int ImGui_SetWindowCollapsed_bi(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 1 || ARGC > 2) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 1, 2);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(1, 2);
     bool collapsed;
     collapsed = lua_toboolean(L, 1);
     int cond;
@@ -5619,10 +6953,7 @@ static int ImGui_SetWindowCollapsed_bi(lua_State *L)
 
 static int ImGui_SetWindowCollapsed_sbi(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 2 || ARGC > 3) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 2, 3);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(2, 3);
     const char *name;
     name = lua_tostring(L, 1);
     bool collapsed;
@@ -5638,7 +6969,7 @@ static int ImGui_SetWindowCollapsed_sbi(lua_State *L)
     return 0;
 }
 
-IMGUILUA_FUNCTION(ImGui::ImGui_SetWindowCollapsed)
+IMGUILUA_FUNCTION(ImGui::SetWindowCollapsed)
 static int ImGui_SetWindowCollapsed(lua_State *L)
 {
     if (lua_isstring(L, 1)) {
@@ -5654,27 +6985,21 @@ static int ImGui_SetWindowCollapsed(lua_State *L)
 
 static int ImGui_SetWindowFocus_(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     ImGui::SetWindowFocus();
     return 0;
 }
 
 static int ImGui_SetWindowFocus_s(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 1);
-    }
+    IMGUILUA_CHECK_ARGC(1);
     const char *name;
     name = lua_tostring(L, 1);
     ImGui::SetWindowFocus(name);
     return 0;
 }
 
-IMGUILUA_FUNCTION(ImGui::ImGui_SetWindowFocus)
+IMGUILUA_FUNCTION(ImGui::SetWindowFocus)
 static int ImGui_SetWindowFocus(lua_State *L)
 {
     int ARGC = lua_gettop(L);
@@ -5694,10 +7019,7 @@ static int ImGui_SetWindowFocus(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::SetWindowFontScale)
 static int ImGui_SetWindowFontScale(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 1);
-    }
+    IMGUILUA_CHECK_ARGC(1);
     float scale;
     scale = static_cast<float>(luaL_checknumber(L, 1));
     ImGui::SetWindowFontScale(scale);
@@ -5709,10 +7031,7 @@ static int ImGui_SetWindowFontScale(lua_State *L)
 
 static int ImGui_SetWindowPos_v2i(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 1 || ARGC > 2) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 1, 2);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(1, 2);
     ImVec2 pos;
     pos = ImGuiLua_ToImVec2(L, 1);
     int cond;
@@ -5728,10 +7047,7 @@ static int ImGui_SetWindowPos_v2i(lua_State *L)
 
 static int ImGui_SetWindowPos_sv2i(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 2 || ARGC > 3) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 2, 3);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(2, 3);
     const char *name;
     name = lua_tostring(L, 1);
     ImVec2 pos;
@@ -5747,7 +7063,7 @@ static int ImGui_SetWindowPos_sv2i(lua_State *L)
     return 0;
 }
 
-IMGUILUA_FUNCTION(ImGui::ImGui_SetWindowPos)
+IMGUILUA_FUNCTION(ImGui::SetWindowPos)
 static int ImGui_SetWindowPos(lua_State *L)
 {
     if (lua_isstring(L, 1)) {
@@ -5763,10 +7079,7 @@ static int ImGui_SetWindowPos(lua_State *L)
 
 static int ImGui_SetWindowSize_v2i(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 1 || ARGC > 2) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 1, 2);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(1, 2);
     ImVec2 size;
     size = ImGuiLua_ToImVec2(L, 1);
     int cond;
@@ -5782,10 +7095,7 @@ static int ImGui_SetWindowSize_v2i(lua_State *L)
 
 static int ImGui_SetWindowSize_sv2i(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 2 || ARGC > 3) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 2, 3);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(2, 3);
     const char *name;
     name = lua_tostring(L, 1);
     ImVec2 size;
@@ -5801,7 +7111,7 @@ static int ImGui_SetWindowSize_sv2i(lua_State *L)
     return 0;
 }
 
-IMGUILUA_FUNCTION(ImGui::ImGui_SetWindowSize)
+IMGUILUA_FUNCTION(ImGui::SetWindowSize)
 static int ImGui_SetWindowSize(lua_State *L)
 {
     if (lua_isstring(L, 1)) {
@@ -5818,10 +7128,7 @@ static int ImGui_SetWindowSize(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::ShowAboutWindow)
 static int ImGui_ShowAboutWindow(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC > 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 0, 1);
-    }
+    IMGUILUA_CHECK_ARGC_MAX(1);
     bool *p_open;
     if (ARGC < 1) {
         p_open = NULL;
@@ -5831,10 +7138,33 @@ static int ImGui_ShowAboutWindow(lua_State *L)
             p_open = NULL;
         }
         else {
-            p_open = static_cast<bool *>(luaL_checkudata(L, 1, "ImGuiLua_BoolRef"));
+            p_open = static_cast<bool *>(luaL_checkudata(L, 1, "ImGuiLuaBoolRef"));
         }
     }
     ImGui::ShowAboutWindow(p_open);
+    return 0;
+}
+
+
+// function ImGui::ShowDebugLogWindow
+
+IMGUILUA_FUNCTION(ImGui::ShowDebugLogWindow)
+static int ImGui_ShowDebugLogWindow(lua_State *L)
+{
+    IMGUILUA_CHECK_ARGC_MAX(1);
+    bool *p_open;
+    if (ARGC < 1) {
+        p_open = NULL;
+    }
+    else {
+        if (lua_type(L, 1) == LUA_TNIL) {
+            p_open = NULL;
+        }
+        else {
+            p_open = static_cast<bool *>(luaL_checkudata(L, 1, "ImGuiLuaBoolRef"));
+        }
+    }
+    ImGui::ShowDebugLogWindow(p_open);
     return 0;
 }
 
@@ -5844,10 +7174,7 @@ static int ImGui_ShowAboutWindow(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::ShowDemoWindow)
 static int ImGui_ShowDemoWindow(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC > 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 0, 1);
-    }
+    IMGUILUA_CHECK_ARGC_MAX(1);
     bool *p_open;
     if (ARGC < 1) {
         p_open = NULL;
@@ -5857,7 +7184,7 @@ static int ImGui_ShowDemoWindow(lua_State *L)
             p_open = NULL;
         }
         else {
-            p_open = static_cast<bool *>(luaL_checkudata(L, 1, "ImGuiLua_BoolRef"));
+            p_open = static_cast<bool *>(luaL_checkudata(L, 1, "ImGuiLuaBoolRef"));
         }
     }
     ImGui::ShowDemoWindow(p_open);
@@ -5870,10 +7197,7 @@ static int ImGui_ShowDemoWindow(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::ShowFontSelector)
 static int ImGui_ShowFontSelector(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 1);
-    }
+    IMGUILUA_CHECK_ARGC(1);
     const char *label;
     label = lua_tostring(L, 1);
     ImGui::ShowFontSelector(label);
@@ -5886,10 +7210,7 @@ static int ImGui_ShowFontSelector(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::ShowMetricsWindow)
 static int ImGui_ShowMetricsWindow(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC > 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 0, 1);
-    }
+    IMGUILUA_CHECK_ARGC_MAX(1);
     bool *p_open;
     if (ARGC < 1) {
         p_open = NULL;
@@ -5899,10 +7220,33 @@ static int ImGui_ShowMetricsWindow(lua_State *L)
             p_open = NULL;
         }
         else {
-            p_open = static_cast<bool *>(luaL_checkudata(L, 1, "ImGuiLua_BoolRef"));
+            p_open = static_cast<bool *>(luaL_checkudata(L, 1, "ImGuiLuaBoolRef"));
         }
     }
     ImGui::ShowMetricsWindow(p_open);
+    return 0;
+}
+
+
+// function ImGui::ShowStackToolWindow
+
+IMGUILUA_FUNCTION(ImGui::ShowStackToolWindow)
+static int ImGui_ShowStackToolWindow(lua_State *L)
+{
+    IMGUILUA_CHECK_ARGC_MAX(1);
+    bool *p_open;
+    if (ARGC < 1) {
+        p_open = NULL;
+    }
+    else {
+        if (lua_type(L, 1) == LUA_TNIL) {
+            p_open = NULL;
+        }
+        else {
+            p_open = static_cast<bool *>(luaL_checkudata(L, 1, "ImGuiLuaBoolRef"));
+        }
+    }
+    ImGui::ShowStackToolWindow(p_open);
     return 0;
 }
 
@@ -5917,10 +7261,7 @@ static int ImGui_ShowMetricsWindow(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::ShowStyleSelector)
 static int ImGui_ShowStyleSelector(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 1);
-    }
+    IMGUILUA_CHECK_ARGC(1);
     const char *label;
     label = lua_tostring(L, 1);
     bool RETVAL = ImGui::ShowStyleSelector(label);
@@ -5934,10 +7275,7 @@ static int ImGui_ShowStyleSelector(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::ShowUserGuide)
 static int ImGui_ShowUserGuide(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     ImGui::ShowUserGuide();
     return 0;
 }
@@ -5948,14 +7286,11 @@ static int ImGui_ShowUserGuide(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::SliderAngle)
 static int ImGui_SliderAngle(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 2 || ARGC > 6) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 2, 6);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(2, 6);
     const char *label;
     label = lua_tostring(L, 1);
     float *v_rad;
-    v_rad = static_cast<float *>(luaL_checkudata(L, 2, "ImGuiLua_FloatRef"));
+    v_rad = static_cast<float *>(luaL_checkudata(L, 2, "ImGuiLuaFloatRef"));
     float v_degrees_min;
     if (ARGC < 3) {
         v_degrees_min = -360.0f;
@@ -5995,14 +7330,11 @@ static int ImGui_SliderAngle(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::SliderFloat)
 static int ImGui_SliderFloat(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 4 || ARGC > 6) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 4, 6);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(4, 6);
     const char *label;
     label = lua_tostring(L, 1);
     float *v;
-    v = static_cast<float *>(luaL_checkudata(L, 2, "ImGuiLua_FloatRef"));
+    v = static_cast<float *>(luaL_checkudata(L, 2, "ImGuiLuaFloatRef"));
     float v_min;
     v_min = static_cast<float>(luaL_checknumber(L, 3));
     float v_max;
@@ -6047,14 +7379,11 @@ static int ImGui_SliderFloat(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::SliderInt)
 static int ImGui_SliderInt(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 4 || ARGC > 6) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 4, 6);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(4, 6);
     const char *label;
     label = lua_tostring(L, 1);
     int *v;
-    v = static_cast<int *>(luaL_checkudata(L, 2, "ImGuiLua_IntRef"));
+    v = static_cast<int *>(luaL_checkudata(L, 2, "ImGuiLuaIntRef"));
     int v_min;
     v_min = static_cast<int>(luaL_checkinteger(L, 3));
     int v_max;
@@ -6109,10 +7438,7 @@ static int ImGui_SliderInt(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::SmallButton)
 static int ImGui_SmallButton(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 1);
-    }
+    IMGUILUA_CHECK_ARGC(1);
     const char *label;
     label = lua_tostring(L, 1);
     bool RETVAL = ImGui::SmallButton(label);
@@ -6126,10 +7452,7 @@ static int ImGui_SmallButton(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::Spacing)
 static int ImGui_Spacing(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     ImGui::Spacing();
     return 0;
 }
@@ -6155,10 +7478,7 @@ static int ImGui_Spacing(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::TabItemButton)
 static int ImGui_TabItemButton(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 1 || ARGC > 2) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 1, 2);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(1, 2);
     const char *label;
     label = lua_tostring(L, 1);
     int flags;
@@ -6179,10 +7499,7 @@ static int ImGui_TabItemButton(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::TableGetColumnCount)
 static int ImGui_TableGetColumnCount(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     int RETVAL = ImGui::TableGetColumnCount();
     lua_pushinteger(L, static_cast<lua_Integer>(RETVAL));
     return 1;
@@ -6194,10 +7511,7 @@ static int ImGui_TableGetColumnCount(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::TableGetColumnFlags)
 static int ImGui_TableGetColumnFlags(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC > 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 0, 1);
-    }
+    IMGUILUA_CHECK_ARGC_MAX(1);
     int column_n;
     if (ARGC < 1) {
         column_n = -1;
@@ -6216,10 +7530,7 @@ static int ImGui_TableGetColumnFlags(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::TableGetColumnIndex)
 static int ImGui_TableGetColumnIndex(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     int RETVAL = ImGui::TableGetColumnIndex();
     lua_pushinteger(L, static_cast<lua_Integer>(RETVAL));
     return 1;
@@ -6231,10 +7542,7 @@ static int ImGui_TableGetColumnIndex(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::TableGetColumnName)
 static int ImGui_TableGetColumnName(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC > 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 0, 1);
-    }
+    IMGUILUA_CHECK_ARGC_MAX(1);
     int column_n;
     if (ARGC < 1) {
         column_n = -1;
@@ -6253,10 +7561,7 @@ static int ImGui_TableGetColumnName(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::TableGetRowIndex)
 static int ImGui_TableGetRowIndex(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     int RETVAL = ImGui::TableGetRowIndex();
     lua_pushinteger(L, static_cast<lua_Integer>(RETVAL));
     return 1;
@@ -6273,10 +7578,7 @@ static int ImGui_TableGetRowIndex(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::TableHeader)
 static int ImGui_TableHeader(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 1);
-    }
+    IMGUILUA_CHECK_ARGC(1);
     const char *label;
     label = lua_tostring(L, 1);
     ImGui::TableHeader(label);
@@ -6289,10 +7591,7 @@ static int ImGui_TableHeader(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::TableHeadersRow)
 static int ImGui_TableHeadersRow(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     ImGui::TableHeadersRow();
     return 0;
 }
@@ -6303,10 +7602,7 @@ static int ImGui_TableHeadersRow(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::TableNextColumn)
 static int ImGui_TableNextColumn(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     bool RETVAL = ImGui::TableNextColumn();
     lua_pushboolean(L, RETVAL);
     return 1;
@@ -6318,10 +7614,7 @@ static int ImGui_TableNextColumn(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::TableNextRow)
 static int ImGui_TableNextRow(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC > 2) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 0, 2);
-    }
+    IMGUILUA_CHECK_ARGC_MAX(2);
     int row_flags;
     if (ARGC < 1) {
         row_flags = 0;
@@ -6346,10 +7639,7 @@ static int ImGui_TableNextRow(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::TableSetBgColor)
 static int ImGui_TableSetBgColor(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 2 || ARGC > 3) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 2, 3);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(2, 3);
     int target;
     target = static_cast<int>(luaL_checkinteger(L, 1));
     ImU32 color;
@@ -6371,10 +7661,7 @@ static int ImGui_TableSetBgColor(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::TableSetColumnEnabled)
 static int ImGui_TableSetColumnEnabled(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 2) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 2);
-    }
+    IMGUILUA_CHECK_ARGC(2);
     int column_n;
     column_n = static_cast<int>(luaL_checkinteger(L, 1));
     bool v;
@@ -6389,10 +7676,7 @@ static int ImGui_TableSetColumnEnabled(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::TableSetColumnIndex)
 static int ImGui_TableSetColumnIndex(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 1);
-    }
+    IMGUILUA_CHECK_ARGC(1);
     int column_n;
     column_n = static_cast<int>(luaL_checkinteger(L, 1));
     bool RETVAL = ImGui::TableSetColumnIndex(column_n);
@@ -6406,10 +7690,7 @@ static int ImGui_TableSetColumnIndex(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::TableSetupColumn)
 static int ImGui_TableSetupColumn(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 1 || ARGC > 4) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 1, 4);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(1, 4);
     const char *label;
     label = lua_tostring(L, 1);
     int flags;
@@ -6443,10 +7724,7 @@ static int ImGui_TableSetupColumn(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::TableSetupScrollFreeze)
 static int ImGui_TableSetupScrollFreeze(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 2) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 2);
-    }
+    IMGUILUA_CHECK_ARGC(2);
     int cols;
     cols = static_cast<int>(luaL_checkinteger(L, 1));
     int rows;
@@ -6492,10 +7770,7 @@ static int ImGui_TableSetupScrollFreeze(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::TreeNode)
 static int ImGui_TreeNode(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 1);
-    }
+    IMGUILUA_CHECK_ARGC(1);
     const char *label;
     label = lua_tostring(L, 1);
     bool RETVAL = ImGui::TreeNode(label);
@@ -6513,10 +7788,7 @@ static int ImGui_TreeNode(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::TreeNodeEx)
 static int ImGui_TreeNodeEx(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 1 || ARGC > 2) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 1, 2);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(1, 2);
     const char *label;
     label = lua_tostring(L, 1);
     int flags;
@@ -6551,10 +7823,7 @@ static int ImGui_TreeNodeEx(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::TreePop)
 static int ImGui_TreePop(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 0) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 0);
-    }
+    IMGUILUA_CHECK_ARGC(0);
     ImGui::TreePop();
     return 0;
 }
@@ -6567,10 +7836,7 @@ static int ImGui_TreePop(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::TreePush)
 static int ImGui_TreePush(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 1);
-    }
+    IMGUILUA_CHECK_ARGC(1);
     const char *str_id;
     str_id = lua_tostring(L, 1);
     ImGui::TreePush(str_id);
@@ -6583,10 +7849,7 @@ static int ImGui_TreePush(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::Unindent)
 static int ImGui_Unindent(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC > 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 0, 1);
-    }
+    IMGUILUA_CHECK_ARGC_MAX(1);
     float indent_w;
     if (ARGC < 1) {
         indent_w = 0.0f;
@@ -6604,16 +7867,13 @@ static int ImGui_Unindent(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::VSliderFloat)
 static int ImGui_VSliderFloat(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 5 || ARGC > 7) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 5, 7);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(5, 7);
     const char *label;
     label = lua_tostring(L, 1);
     ImVec2 size;
     size = ImGuiLua_ToImVec2(L, 2);
     float *v;
-    v = static_cast<float *>(luaL_checkudata(L, 3, "ImGuiLua_FloatRef"));
+    v = static_cast<float *>(luaL_checkudata(L, 3, "ImGuiLuaFloatRef"));
     float v_min;
     v_min = static_cast<float>(luaL_checknumber(L, 4));
     float v_max;
@@ -6643,16 +7903,13 @@ static int ImGui_VSliderFloat(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::VSliderInt)
 static int ImGui_VSliderInt(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC < 5 || ARGC > 7) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted between %d and %d", ARGC, 5, 7);
-    }
+    IMGUILUA_CHECK_ARGC_BETWEEN(5, 7);
     const char *label;
     label = lua_tostring(L, 1);
     ImVec2 size;
     size = ImGuiLua_ToImVec2(L, 2);
     int *v;
-    v = static_cast<int *>(luaL_checkudata(L, 3, "ImGuiLua_IntRef"));
+    v = static_cast<int *>(luaL_checkudata(L, 3, "ImGuiLuaIntRef"));
     int v_min;
     v_min = static_cast<int>(luaL_checkinteger(L, 4));
     int v_max;
@@ -6685,13 +7942,382 @@ static int ImGui_VSliderInt(lua_State *L)
 // function ImGui::Value is excluded
 
 
+// method ImGuiIO::~ImGuiIO has no namespace
+
+
+// method ImGuiIO::AddFocusEvent has no namespace
+
+
+// method ImGuiIO::AddInputCharacter has no namespace
+
+
+// method ImGuiIO::AddInputCharacterUTF16 has no namespace
+
+
+// method ImGuiIO::AddInputCharactersUTF8 has no namespace
+
+
+// method ImGuiIO::AddKeyAnalogEvent has no namespace
+
+
+// method ImGuiIO::AddKeyEvent has no namespace
+
+
+// method ImGuiIO::AddMouseButtonEvent has no namespace
+
+
+// method ImGuiIO::AddMousePosEvent has no namespace
+
+
+// method ImGuiIO::AddMouseWheelEvent has no namespace
+
+
+// method ImGuiIO::ClearInputCharacters has no namespace
+
+
+// method ImGuiIO::ClearInputKeys has no namespace
+
+
+// method ImGuiIO::ImGuiIO has no namespace
+
+
+// method ImGuiIO::SetAppAcceptingEvents has no namespace
+
+
+// method ImGuiIO::SetKeyEventNativeData has no namespace
+
+
+// method ImGuiInputTextCallbackData::~ImGuiInputTextCallbackData has no namespace
+
+
+// method ImGuiInputTextCallbackData::ClearSelection has no namespace
+
+
+// method ImGuiInputTextCallbackData::DeleteChars has no namespace
+
+
+// method ImGuiInputTextCallbackData::HasSelection has no namespace
+
+
+// method ImGuiInputTextCallbackData::ImGuiInputTextCallbackData has no namespace
+
+
+// method ImGuiInputTextCallbackData::InsertChars has no namespace
+
+
+// method ImGuiInputTextCallbackData::SelectAll has no namespace
+
+
+// method ImGuiListClipper::~ImGuiListClipper has no namespace
+
+
+// method ImGuiListClipper::Begin has no namespace
+
+
+// method ImGuiListClipper::End has no namespace
+
+
+// method ImGuiListClipper::ForceDisplayRangeByIndices has no namespace
+
+
+// method ImGuiListClipper::ImGuiListClipper has no namespace
+
+
+// method ImGuiListClipper::Step has no namespace
+
+
+// method ImGuiOnceUponAFrame::~ImGuiOnceUponAFrame has no namespace
+
+
+// method ImGuiOnceUponAFrame::ImGuiOnceUponAFrame has no namespace
+
+
+// method ImGuiPayload::~ImGuiPayload has no namespace
+
+
+// method ImGuiPayload::Clear has no namespace
+
+
+// method ImGuiPayload::ImGuiPayload has no namespace
+
+
+// method ImGuiPayload::IsDataType has no namespace
+
+
+// method ImGuiPayload::IsDelivery has no namespace
+
+
+// method ImGuiPayload::IsPreview has no namespace
+
+
+// method ImGuiPlatformImeData::~ImGuiPlatformImeData has no namespace
+
+
+// method ImGuiPlatformImeData::ImGuiPlatformImeData has no namespace
+
+
+// method ImGuiStorage::BuildSortByKey has no namespace
+
+
+// method ImGuiStorage::Clear has no namespace
+
+
+// method ImGuiStorage::GetBool has no namespace
+
+
+// method ImGuiStorage::GetBoolRef has no namespace
+
+
+// method ImGuiStorage::GetFloat has no namespace
+
+
+// method ImGuiStorage::GetFloatRef has no namespace
+
+
+// method ImGuiStorage::GetInt has no namespace
+
+
+// method ImGuiStorage::GetIntRef has no namespace
+
+
+// method ImGuiStorage::GetVoidPtr has no namespace
+
+
+// method ImGuiStorage::GetVoidPtrRef has no namespace
+
+
+// method ImGuiStorage::SetAllInt has no namespace
+
+
+// method ImGuiStorage::SetBool has no namespace
+
+
+// method ImGuiStorage::SetFloat has no namespace
+
+
+// method ImGuiStorage::SetInt has no namespace
+
+
+// method ImGuiStorage::SetVoidPtr has no namespace
+
+
+// method ImGuiStoragePair::~ImGuiStoragePair has no namespace
+
+
+// method ImGuiStoragePair::ImGuiStoragePair has no namespace
+
+
+// method ImGuiStyle::~ImGuiStyle has no namespace
+
+
+// method ImGuiStyle::ImGuiStyle has no namespace
+
+
+// method ImGuiStyle::ScaleAllSizes has no namespace
+
+
+// method ImGuiTableColumnSortSpecs::~ImGuiTableColumnSortSpecs has no namespace
+
+
+// method ImGuiTableColumnSortSpecs::ImGuiTableColumnSortSpecs has no namespace
+
+
+// method ImGuiTableSortSpecs::~ImGuiTableSortSpecs has no namespace
+
+
+// method ImGuiTableSortSpecs::ImGuiTableSortSpecs has no namespace
+
+
+// method ImGuiTextBuffer::~ImGuiTextBuffer has no namespace
+
+
+// method ImGuiTextBuffer::ImGuiTextBuffer has no namespace
+
+
+// method ImGuiTextBuffer::append has no namespace
+
+
+// method ImGuiTextBuffer::appendf has no namespace
+
+
+// method ImGuiTextBuffer::appendfv has no namespace
+
+
+// method ImGuiTextBuffer::begin has no namespace
+
+
+// method ImGuiTextBuffer::c_str has no namespace
+
+
+// method ImGuiTextBuffer::clear has no namespace
+
+
+// method ImGuiTextBuffer::empty has no namespace
+
+
+// method ImGuiTextBuffer::end has no namespace
+
+
+// method ImGuiTextBuffer::reserve has no namespace
+
+
+// method ImGuiTextBuffer::size has no namespace
+
+
+// method ImGuiTextFilter::~ImGuiTextFilter has no namespace
+
+
+// method ImGuiTextFilter::Build has no namespace
+
+
+// method ImGuiTextFilter::Clear has no namespace
+
+
+// method ImGuiTextFilter::Draw has no namespace
+
+
+// method ImGuiTextFilter::ImGuiTextFilter has no namespace
+
+
+// method ImGuiTextFilter::IsActive has no namespace
+
+
+// method ImGuiTextFilter::PassFilter has no namespace
+
+
+// method ImGuiTextRange::~ImGuiTextRange has no namespace
+
+
+// method ImGuiTextRange::ImGuiTextRange has no namespace
+
+
+// method ImGuiTextRange::empty has no namespace
+
+
+// method ImGuiTextRange::split has no namespace
+
+
+// method ImGuiViewport::~ImGuiViewport has no namespace
+
+
+// method ImGuiViewport::GetCenter has no namespace
+
+
+// method ImGuiViewport::GetWorkCenter has no namespace
+
+
+// method ImGuiViewport::ImGuiViewport has no namespace
+
+
+// method ImVec2::~ImVec2 has no namespace
+
+
+// method ImVec2::ImVec2 has no namespace
+
+
+// method ImVec4::~ImVec4 has no namespace
+
+
+// method ImVec4::ImVec4 has no namespace
+
+
+// method ImVector::~ImVector has no namespace
+
+
+// method ImVector::ImVector has no namespace
+
+
+// method ImVector::_grow_capacity has no namespace
+
+
+// method ImVector::back has no namespace
+
+
+// method ImVector::begin has no namespace
+
+
+// method ImVector::capacity has no namespace
+
+
+// method ImVector::clear has no namespace
+
+
+// method ImVector::clear_delete has no namespace
+
+
+// method ImVector::clear_destruct has no namespace
+
+
+// method ImVector::contains has no namespace
+
+
+// method ImVector::empty has no namespace
+
+
+// method ImVector::end has no namespace
+
+
+// method ImVector::erase has no namespace
+
+
+// method ImVector::erase_unsorted has no namespace
+
+
+// method ImVector::find has no namespace
+
+
+// method ImVector::find_erase has no namespace
+
+
+// method ImVector::find_erase_unsorted has no namespace
+
+
+// method ImVector::front has no namespace
+
+
+// method ImVector::index_from_ptr has no namespace
+
+
+// method ImVector::insert has no namespace
+
+
+// method ImVector::max_size has no namespace
+
+
+// method ImVector::pop_back has no namespace
+
+
+// method ImVector::push_back has no namespace
+
+
+// method ImVector::push_front has no namespace
+
+
+// method ImVector::reserve has no namespace
+
+
+// method ImVector::reserve_discard has no namespace
+
+
+// method ImVector::resize has no namespace
+
+
+// method ImVector::shrink has no namespace
+
+
+// method ImVector::size has no namespace
+
+
+// method ImVector::size_in_bytes has no namespace
+
+
+// method ImVector::swap has no namespace
+
+
 IMGUILUA_FUNCTION(ImGui::PushID)
 static int ImGui_PushID(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 1);
-    }
+    IMGUILUA_CHECK_ARGC(1);
     if (lua_type(L, 1) == LUA_TNUMBER) {
         int int_id = static_cast<int>(luaL_checkinteger(L, 1));
         ImGui::PushID(int_id);
@@ -6708,10 +8334,7 @@ static int ImGui_PushID(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::GetID)
 static int ImGui_GetID(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 1);
-    }
+    IMGUILUA_CHECK_ARGC(1);
     size_t len;
     const char *str_id = luaL_checklstring(L, 1, &len);
     ImGuiID RETVAL = ImGui::GetID(str_id, str_id + len);
@@ -6720,13 +8343,21 @@ static int ImGui_GetID(lua_State *L)
 }
 
 
+IMGUILUA_FUNCTION(ImGui::GetIO)
+static int ImGui_GetIO(lua_State *L)
+{
+    IMGUILUA_CHECK_ARGC(0);
+    ImGuiIO **u = static_cast<ImGuiIO **>(lua_newuserdatauv(L, sizeof(*u), 0));
+    *u = &ImGui::GetIO();
+    luaL_setmetatable(L, "ImGuiIO");
+    return 1;
+}
+
+
 IMGUILUA_FUNCTION(ImGui::Text)
 static int ImGui_Text(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 1);
-    }
+    IMGUILUA_CHECK_ARGC(1);
     size_t len;
     const char *text = luaL_checklstring(L, 1, &len);
     ImGui::TextUnformatted(text, text + len);
@@ -6736,10 +8367,7 @@ static int ImGui_Text(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::TextColored)
 static int ImGui_TextColored(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 2) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 2);
-    }
+    IMGUILUA_CHECK_ARGC(2);
     ImVec4 col = ImGuiLua_ToImVec4(L, 1);
     const char *text = luaL_checkstring(L, 2);
     ImGui::TextColored(col, "%s", text);
@@ -6749,10 +8377,7 @@ static int ImGui_TextColored(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::TextDisabled)
 static int ImGui_TextDisabled(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 1);
-    }
+    IMGUILUA_CHECK_ARGC(1);
     const char *text = luaL_checkstring(L, 1);
     ImGui::TextDisabled("%s", text);
     return 0;
@@ -6761,10 +8386,7 @@ static int ImGui_TextDisabled(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::TextWrapped)
 static int ImGui_TextWrapped(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 1) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 1);
-    }
+    IMGUILUA_CHECK_ARGC(1);
     const char *text = luaL_checkstring(L, 1);
     ImGui::TextWrapped("%s", text);
     return 0;
@@ -6773,10 +8395,7 @@ static int ImGui_TextWrapped(lua_State *L)
 IMGUILUA_FUNCTION(ImGui::LabelText)
 static int ImGui_LabelText(lua_State *L)
 {
-    int ARGC = lua_gettop(L);
-    if (ARGC != 2) {
-        return luaL_error(L, "Wrong number of arguments: got %d, wanted %d", ARGC, 2);
-    }
+    IMGUILUA_CHECK_ARGC(2);
     const char *label = luaL_checkstring(L, 1);
     const char *text = luaL_checkstring(L, 2);
     ImGui::LabelText(label, "%s", text);
@@ -6795,266 +8414,413 @@ static int ImGui_BulletText(lua_State *L)
     return 0;
 }
 
+static int ImGuiLua_InputTextCallback(ImGuiInputTextCallbackData *data)
+{
+    if (data->EventFlag == ImGuiInputTextFlags_CallbackResize) {
+        luaL_Buffer *pb = static_cast<luaL_Buffer *>(data->UserData);
+        luaL_prepbuffsize(pb, static_cast<size_t>(data->BufTextLen));
+        data->Buf = luaL_buffaddr(pb);
+    }
+    return 0;
+}
+
+IMGUILUA_FUNCTION(ImGui::InputText)
+static int ImGui_InputText(lua_State *L)
+{
+    IMGUILUA_CHECK_ARGC_BETWEEN(2, 3);
+
+    const char *label = luaL_checkstring(L, 1);
+    luaL_checkudata(L, 2, "ImGuiLuaStringRef");
+    ImGuiInputTextFlags flags;
+    if (ARGC >= 3) {
+        flags = static_cast<ImGuiInputTextFlags>(luaL_checkinteger(L, 3));
+    }
+    else {
+        flags = ImGuiInputTextFlags_None;
+    }
+
+    lua_getiuservalue(L, 2, 1);
+    size_t len;
+    const char *str = luaL_checklstring(L, -1, &len);
+    size_t size = len + 1;
+
+    luaL_Buffer buffer;
+    memcpy(luaL_buffinitsize(L, &buffer, size), str, size);
+    bool result = ImGui::InputText(label, luaL_buffaddr(&buffer), size,
+                                   flags | ImGuiInputTextFlags_CallbackResize,
+                                   ImGuiLua_InputTextCallback, &buffer);
+    luaL_pushresultsize(&buffer, strlen(luaL_buffaddr(&buffer)));
+    lua_setiuservalue(L, 2, 1);
+
+    lua_pushboolean(L, result);
+    return 1;
+}
+
+
+static int ImGuiLua_PushedStyleColors;
+static int ImGuiLua_PushedStyleVars;
+
+extern "C" int ImGuiLua_PopStyleColors()
+{
+    int count = ImGuiLua_PushedStyleColors;
+    if (count > 0) {
+        ImGui::PopStyleColor(count);
+        ImGuiLua_PushedStyleColors = 0;
+    }
+    return count;
+}
+
+extern "C" int ImGuiLua_PopStyleVars()
+{
+    int count = ImGuiLua_PushedStyleVars;
+    if (count > 0) {
+        ImGui::PopStyleVar(count);
+        ImGuiLua_PushedStyleVars = 0;
+    }
+    return count;
+}
+
+IMGUILUA_FUNCTION(ImGui::PushStyleColor)
+static int ImGui_PushStyleColor(lua_State *L)
+{
+    IMGUILUA_CHECK_ARGC(2);
+    int idx = static_cast<int>(luaL_checkinteger(L, 1));
+    if (lua_isnumber(L, 2)) {
+        ImU32 col = static_cast<ImU32>(luaL_checkinteger(L, 2));
+        ImGui::PushStyleColor(idx, col);
+    }
+    else {
+        ImVec4 col = ImGuiLua_ToImVec4(L, 2);
+        ImGui::PushStyleColor(idx, col);
+    }
+    ++ImGuiLua_PushedStyleColors;
+    return 0;
+}
+
+IMGUILUA_FUNCTION(ImGui::PushStyleVar)
+static int ImGui_PushStyleVar(lua_State *L)
+{
+    IMGUILUA_CHECK_ARGC(2);
+    int idx = static_cast<int>(luaL_checkinteger(L, 1));
+    if (lua_isnumber(L, 2)) {
+        float val = static_cast<float>(luaL_checknumber(L, 2));
+        ImGui::PushStyleVar(idx, val);
+    }
+    else {
+        ImVec2 val = ImGuiLua_ToImVec2(L, 2);
+        ImGui::PushStyleVar(idx, val);
+    }
+    ++ImGuiLua_PushedStyleVars;
+    return 0;
+}
+
+IMGUILUA_FUNCTION(ImGui::PopStyleColor)
+static int ImGui_PopStyleColor(lua_State *L)
+{
+    IMGUILUA_CHECK_ARGC_MAX(1);
+    int count;
+    if (ARGC < 1) {
+        count = 1;
+    }
+    else {
+        count = static_cast<int>(luaL_checkinteger(L, 1));
+    }
+    if (count <= ImGuiLua_PushedStyleColors) {
+        ImGui::PopStyleColor(count);
+        ImGuiLua_PushedStyleColors -= count;
+    }
+    else {
+        luaL_error(L, "Attempt to pop %d style colors, but only %d are on the stack", count, ImGuiLua_PushedStyleColors);
+    }
+    return 0;
+}
+
+IMGUILUA_FUNCTION(ImGui::PopStyleVar)
+static int ImGui_PopStyleVar(lua_State *L)
+{
+    IMGUILUA_CHECK_ARGC_MAX(1);
+    int count;
+    if (ARGC < 1) {
+        count = 1;
+    }
+    else {
+        count = static_cast<int>(luaL_checkinteger(L, 1));
+    }
+    if (count <= ImGuiLua_PushedStyleVars) {
+        ImGui::PopStyleVar(count);
+        ImGuiLua_PushedStyleVars -= count;
+    }
+    else {
+        luaL_error(L, "Attempt to pop %d style vars, but only %d are on the stack", count, ImGuiLua_PushedStyleColors);
+    }
+    return 0;
+}
+
 
 static luaL_Reg ImGuiLua_RegImGui[] = {
-    {"bool", ImGuiLua_Bool},
-    {"float", ImGuiLua_Float},
-    {"int", ImGuiLua_Int},
-    {"align_text_to_frame_padding", ImGui_AlignTextToFramePadding},
-    {"arrow_button", ImGui_ArrowButton},
-    {"begin", ImGui_Begin},
-    {"begin_child", ImGui_BeginChild},
-    {"begin_child_frame", ImGui_BeginChildFrame},
-    {"begin_combo", ImGui_BeginCombo},
-    {"begin_disabled", ImGui_BeginDisabled},
-    {"begin_drag_drop_source", ImGui_BeginDragDropSource},
-    {"begin_drag_drop_target", ImGui_BeginDragDropTarget},
-    {"begin_group", ImGui_BeginGroup},
-    {"begin_list_box", ImGui_BeginListBox},
-    {"begin_main_menu_bar", ImGui_BeginMainMenuBar},
-    {"begin_menu", ImGui_BeginMenu},
-    {"begin_menu_bar", ImGui_BeginMenuBar},
-    {"begin_popup", ImGui_BeginPopup},
-    {"begin_popup_context_item", ImGui_BeginPopupContextItem},
-    {"begin_popup_context_void", ImGui_BeginPopupContextVoid},
-    {"begin_popup_context_window", ImGui_BeginPopupContextWindow},
-    {"begin_popup_modal", ImGui_BeginPopupModal},
-    {"begin_tab_bar", ImGui_BeginTabBar},
-    {"begin_tab_item", ImGui_BeginTabItem},
-    {"begin_table", ImGui_BeginTable},
-    {"begin_tooltip", ImGui_BeginTooltip},
-    {"bullet", ImGui_Bullet},
-    {"bullet_text", ImGui_BulletText},
-    {"button", ImGui_Button},
-    {"calc_item_width", ImGui_CalcItemWidth},
-    {"calc_list_clipping", ImGui_CalcListClipping},
-    {"calc_text_size", ImGui_CalcTextSize},
-    {"capture_keyboard_from_app", ImGui_CaptureKeyboardFromApp},
-    {"capture_mouse_from_app", ImGui_CaptureMouseFromApp},
-    {"checkbox", ImGui_Checkbox},
-    {"checkbox_flags", ImGui_CheckboxFlags},
-    {"close_current_popup", ImGui_CloseCurrentPopup},
-    {"collapsing_header", ImGui_CollapsingHeader},
-    {"color_button", ImGui_ColorButton},
-    {"color_convert_float4to_u32", ImGui_ColorConvertFloat4ToU32},
-    {"color_convert_hsvto_rgb", ImGui_ColorConvertHSVtoRGB},
-    {"color_convert_rgbto_hsv", ImGui_ColorConvertRGBtoHSV},
-    {"color_convert_u32to_float4", ImGui_ColorConvertU32ToFloat4},
-    {"columns", ImGui_Columns},
-    {"combo", ImGui_Combo},
-    {"drag_float", ImGui_DragFloat},
-    {"drag_float_range2", ImGui_DragFloatRange2},
-    {"drag_int", ImGui_DragInt},
-    {"drag_int_range2", ImGui_DragIntRange2},
-    {"dummy", ImGui_Dummy},
-    {"end", ImGui_End},
-    {"end_child", ImGui_EndChild},
-    {"end_child_frame", ImGui_EndChildFrame},
-    {"end_combo", ImGui_EndCombo},
-    {"end_disabled", ImGui_EndDisabled},
-    {"end_drag_drop_source", ImGui_EndDragDropSource},
-    {"end_drag_drop_target", ImGui_EndDragDropTarget},
-    {"end_group", ImGui_EndGroup},
-    {"end_list_box", ImGui_EndListBox},
-    {"end_main_menu_bar", ImGui_EndMainMenuBar},
-    {"end_menu", ImGui_EndMenu},
-    {"end_menu_bar", ImGui_EndMenuBar},
-    {"end_popup", ImGui_EndPopup},
-    {"end_tab_bar", ImGui_EndTabBar},
-    {"end_tab_item", ImGui_EndTabItem},
-    {"end_table", ImGui_EndTable},
-    {"end_tooltip", ImGui_EndTooltip},
-    {"get_clipboard_text", ImGui_GetClipboardText},
-    {"get_color_u32", ImGui_GetColorU32},
-    {"get_column_index", ImGui_GetColumnIndex},
-    {"get_column_offset", ImGui_GetColumnOffset},
-    {"get_column_width", ImGui_GetColumnWidth},
-    {"get_columns_count", ImGui_GetColumnsCount},
-    {"get_content_region_avail", ImGui_GetContentRegionAvail},
-    {"get_content_region_max", ImGui_GetContentRegionMax},
-    {"get_cursor_pos", ImGui_GetCursorPos},
-    {"get_cursor_pos_x", ImGui_GetCursorPosX},
-    {"get_cursor_pos_y", ImGui_GetCursorPosY},
-    {"get_cursor_screen_pos", ImGui_GetCursorScreenPos},
-    {"get_cursor_start_pos", ImGui_GetCursorStartPos},
-    {"get_font_size", ImGui_GetFontSize},
-    {"get_font_tex_uv_white_pixel", ImGui_GetFontTexUvWhitePixel},
-    {"get_frame_count", ImGui_GetFrameCount},
-    {"get_frame_height", ImGui_GetFrameHeight},
-    {"get_frame_height_with_spacing", ImGui_GetFrameHeightWithSpacing},
-    {"get_id", ImGui_GetID},
-    {"get_item_rect_max", ImGui_GetItemRectMax},
-    {"get_item_rect_min", ImGui_GetItemRectMin},
-    {"get_item_rect_size", ImGui_GetItemRectSize},
-    {"get_key_index", ImGui_GetKeyIndex},
-    {"get_key_pressed_amount", ImGui_GetKeyPressedAmount},
-    {"get_mouse_cursor", ImGui_GetMouseCursor},
-    {"get_mouse_drag_delta", ImGui_GetMouseDragDelta},
-    {"get_mouse_pos", ImGui_GetMousePos},
-    {"get_mouse_pos_on_opening_current_popup", ImGui_GetMousePosOnOpeningCurrentPopup},
-    {"get_scroll_max_x", ImGui_GetScrollMaxX},
-    {"get_scroll_max_y", ImGui_GetScrollMaxY},
-    {"get_scroll_x", ImGui_GetScrollX},
-    {"get_scroll_y", ImGui_GetScrollY},
-    {"get_style_color_name", ImGui_GetStyleColorName},
-    {"get_text_line_height", ImGui_GetTextLineHeight},
-    {"get_text_line_height_with_spacing", ImGui_GetTextLineHeightWithSpacing},
-    {"get_time", ImGui_GetTime},
-    {"get_tree_node_to_label_spacing", ImGui_GetTreeNodeToLabelSpacing},
-    {"get_version", ImGui_GetVersion},
-    {"get_window_content_region_max", ImGui_GetWindowContentRegionMax},
-    {"get_window_content_region_min", ImGui_GetWindowContentRegionMin},
-    {"get_window_content_region_width", ImGui_GetWindowContentRegionWidth},
-    {"get_window_height", ImGui_GetWindowHeight},
-    {"get_window_pos", ImGui_GetWindowPos},
-    {"get_window_size", ImGui_GetWindowSize},
-    {"get_window_width", ImGui_GetWindowWidth},
-    {"indent", ImGui_Indent},
-    {"input_float", ImGui_InputFloat},
-    {"input_int", ImGui_InputInt},
-    {"invisible_button", ImGui_InvisibleButton},
-    {"is_any_item_active", ImGui_IsAnyItemActive},
-    {"is_any_item_focused", ImGui_IsAnyItemFocused},
-    {"is_any_item_hovered", ImGui_IsAnyItemHovered},
-    {"is_any_mouse_down", ImGui_IsAnyMouseDown},
-    {"is_item_activated", ImGui_IsItemActivated},
-    {"is_item_active", ImGui_IsItemActive},
-    {"is_item_clicked", ImGui_IsItemClicked},
-    {"is_item_deactivated", ImGui_IsItemDeactivated},
-    {"is_item_deactivated_after_edit", ImGui_IsItemDeactivatedAfterEdit},
-    {"is_item_edited", ImGui_IsItemEdited},
-    {"is_item_focused", ImGui_IsItemFocused},
-    {"is_item_hovered", ImGui_IsItemHovered},
-    {"is_item_toggled_open", ImGui_IsItemToggledOpen},
-    {"is_item_visible", ImGui_IsItemVisible},
-    {"is_key_down", ImGui_IsKeyDown},
-    {"is_key_pressed", ImGui_IsKeyPressed},
-    {"is_key_released", ImGui_IsKeyReleased},
-    {"is_mouse_clicked", ImGui_IsMouseClicked},
-    {"is_mouse_double_clicked", ImGui_IsMouseDoubleClicked},
-    {"is_mouse_down", ImGui_IsMouseDown},
-    {"is_mouse_dragging", ImGui_IsMouseDragging},
-    {"is_mouse_hovering_rect", ImGui_IsMouseHoveringRect},
-    {"is_mouse_released", ImGui_IsMouseReleased},
-    {"is_popup_open", ImGui_IsPopupOpen},
-    {"is_rect_visible", ImGui_IsRectVisible},
-    {"is_window_appearing", ImGui_IsWindowAppearing},
-    {"is_window_collapsed", ImGui_IsWindowCollapsed},
-    {"is_window_focused", ImGui_IsWindowFocused},
-    {"is_window_hovered", ImGui_IsWindowHovered},
-    {"label_text", ImGui_LabelText},
-    {"load_ini_settings_from_disk", ImGui_LoadIniSettingsFromDisk},
-    {"log_buttons", ImGui_LogButtons},
-    {"log_finish", ImGui_LogFinish},
-    {"log_to_clipboard", ImGui_LogToClipboard},
-    {"log_to_file", ImGui_LogToFile},
-    {"log_to_tty", ImGui_LogToTTY},
-    {"menu_item", ImGui_MenuItem},
-    {"new_line", ImGui_NewLine},
-    {"next_column", ImGui_NextColumn},
-    {"open_popup", ImGui_OpenPopup},
-    {"open_popup_on_item_click", ImGui_OpenPopupOnItemClick},
-    {"pop_allow_keyboard_focus", ImGui_PopAllowKeyboardFocus},
-    {"pop_button_repeat", ImGui_PopButtonRepeat},
-    {"pop_clip_rect", ImGui_PopClipRect},
-    {"pop_font", ImGui_PopFont},
-    {"pop_id", ImGui_PopID},
-    {"pop_item_width", ImGui_PopItemWidth},
-    {"pop_style_color", ImGui_PopStyleColor},
-    {"pop_style_var", ImGui_PopStyleVar},
-    {"pop_text_wrap_pos", ImGui_PopTextWrapPos},
-    {"progress_bar", ImGui_ProgressBar},
-    {"push_allow_keyboard_focus", ImGui_PushAllowKeyboardFocus},
-    {"push_button_repeat", ImGui_PushButtonRepeat},
-    {"push_clip_rect", ImGui_PushClipRect},
-    {"push_id", ImGui_PushID},
-    {"push_item_width", ImGui_PushItemWidth},
-    {"push_style_color", ImGui_PushStyleColor},
-    {"push_style_var", ImGui_PushStyleVar},
-    {"push_text_wrap_pos", ImGui_PushTextWrapPos},
-    {"radio_button", ImGui_RadioButton},
-    {"reset_mouse_drag_delta", ImGui_ResetMouseDragDelta},
-    {"same_line", ImGui_SameLine},
-    {"save_ini_settings_to_disk", ImGui_SaveIniSettingsToDisk},
-    {"selectable", ImGui_Selectable},
-    {"separator", ImGui_Separator},
-    {"set_clipboard_text", ImGui_SetClipboardText},
-    {"set_color_edit_options", ImGui_SetColorEditOptions},
-    {"set_column_offset", ImGui_SetColumnOffset},
-    {"set_column_width", ImGui_SetColumnWidth},
-    {"set_cursor_pos", ImGui_SetCursorPos},
-    {"set_cursor_pos_x", ImGui_SetCursorPosX},
-    {"set_cursor_pos_y", ImGui_SetCursorPosY},
-    {"set_cursor_screen_pos", ImGui_SetCursorScreenPos},
-    {"set_item_allow_overlap", ImGui_SetItemAllowOverlap},
-    {"set_item_default_focus", ImGui_SetItemDefaultFocus},
-    {"set_keyboard_focus_here", ImGui_SetKeyboardFocusHere},
-    {"set_mouse_cursor", ImGui_SetMouseCursor},
-    {"set_next_item_open", ImGui_SetNextItemOpen},
-    {"set_next_item_width", ImGui_SetNextItemWidth},
-    {"set_next_window_bg_alpha", ImGui_SetNextWindowBgAlpha},
-    {"set_next_window_collapsed", ImGui_SetNextWindowCollapsed},
-    {"set_next_window_content_size", ImGui_SetNextWindowContentSize},
-    {"set_next_window_focus", ImGui_SetNextWindowFocus},
-    {"set_next_window_pos", ImGui_SetNextWindowPos},
-    {"set_next_window_size", ImGui_SetNextWindowSize},
-    {"set_scroll_from_pos_x", ImGui_SetScrollFromPosX},
-    {"set_scroll_from_pos_y", ImGui_SetScrollFromPosY},
-    {"set_scroll_here_x", ImGui_SetScrollHereX},
-    {"set_scroll_here_y", ImGui_SetScrollHereY},
-    {"set_scroll_x", ImGui_SetScrollX},
-    {"set_scroll_y", ImGui_SetScrollY},
-    {"set_tab_item_closed", ImGui_SetTabItemClosed},
-    {"set_window_collapsed", ImGui_SetWindowCollapsed},
-    {"set_window_focus", ImGui_SetWindowFocus},
-    {"set_window_font_scale", ImGui_SetWindowFontScale},
-    {"set_window_pos", ImGui_SetWindowPos},
-    {"set_window_size", ImGui_SetWindowSize},
-    {"show_about_window", ImGui_ShowAboutWindow},
-    {"show_demo_window", ImGui_ShowDemoWindow},
-    {"show_font_selector", ImGui_ShowFontSelector},
-    {"show_metrics_window", ImGui_ShowMetricsWindow},
-    {"show_style_selector", ImGui_ShowStyleSelector},
-    {"show_user_guide", ImGui_ShowUserGuide},
-    {"slider_angle", ImGui_SliderAngle},
-    {"slider_float", ImGui_SliderFloat},
-    {"slider_int", ImGui_SliderInt},
-    {"small_button", ImGui_SmallButton},
-    {"spacing", ImGui_Spacing},
-    {"tab_item_button", ImGui_TabItemButton},
-    {"table_get_column_count", ImGui_TableGetColumnCount},
-    {"table_get_column_flags", ImGui_TableGetColumnFlags},
-    {"table_get_column_index", ImGui_TableGetColumnIndex},
-    {"table_get_column_name", ImGui_TableGetColumnName},
-    {"table_get_row_index", ImGui_TableGetRowIndex},
-    {"table_header", ImGui_TableHeader},
-    {"table_headers_row", ImGui_TableHeadersRow},
-    {"table_next_column", ImGui_TableNextColumn},
-    {"table_next_row", ImGui_TableNextRow},
-    {"table_set_bg_color", ImGui_TableSetBgColor},
-    {"table_set_column_enabled", ImGui_TableSetColumnEnabled},
-    {"table_set_column_index", ImGui_TableSetColumnIndex},
-    {"table_setup_column", ImGui_TableSetupColumn},
-    {"table_setup_scroll_freeze", ImGui_TableSetupScrollFreeze},
-    {"text", ImGui_Text},
-    {"text_colored", ImGui_TextColored},
-    {"text_disabled", ImGui_TextDisabled},
-    {"text_wrapped", ImGui_TextWrapped},
-    {"tree_node", ImGui_TreeNode},
-    {"tree_node_ex", ImGui_TreeNodeEx},
-    {"tree_pop", ImGui_TreePop},
-    {"tree_push", ImGui_TreePush},
-    {"unindent", ImGui_Unindent},
-    {"vslider_float", ImGui_VSliderFloat},
-    {"vslider_int", ImGui_VSliderInt},
+    {"Bool", ImGuiLua_Bool},
+    {"Float", ImGuiLua_Float},
+    {"Int", ImGuiLua_Int},
+    {"String", ImGuiLua_String},
+    {"AlignTextToFramePadding", ImGui_AlignTextToFramePadding},
+    {"ArrowButton", ImGui_ArrowButton},
+    {"Begin", ImGui_Begin},
+    {"BeginChild", ImGui_BeginChild},
+    {"BeginChildFrame", ImGui_BeginChildFrame},
+    {"BeginCombo", ImGui_BeginCombo},
+    {"BeginDisabled", ImGui_BeginDisabled},
+    {"BeginDragDropSource", ImGui_BeginDragDropSource},
+    {"BeginDragDropTarget", ImGui_BeginDragDropTarget},
+    {"BeginGroup", ImGui_BeginGroup},
+    {"BeginListBox", ImGui_BeginListBox},
+    {"BeginMainMenuBar", ImGui_BeginMainMenuBar},
+    {"BeginMenu", ImGui_BeginMenu},
+    {"BeginMenuBar", ImGui_BeginMenuBar},
+    {"BeginPopup", ImGui_BeginPopup},
+    {"BeginPopupContextItem", ImGui_BeginPopupContextItem},
+    {"BeginPopupContextVoid", ImGui_BeginPopupContextVoid},
+    {"BeginPopupContextWindow", ImGui_BeginPopupContextWindow},
+    {"BeginPopupModal", ImGui_BeginPopupModal},
+    {"BeginTabBar", ImGui_BeginTabBar},
+    {"BeginTabItem", ImGui_BeginTabItem},
+    {"BeginTable", ImGui_BeginTable},
+    {"BeginTooltip", ImGui_BeginTooltip},
+    {"Bullet", ImGui_Bullet},
+    {"BulletText", ImGui_BulletText},
+    {"Button", ImGui_Button},
+    {"CalcItemWidth", ImGui_CalcItemWidth},
+    {"CalcTextSize", ImGui_CalcTextSize},
+    {"Checkbox", ImGui_Checkbox},
+    {"CheckboxFlags", ImGui_CheckboxFlags},
+    {"CloseCurrentPopup", ImGui_CloseCurrentPopup},
+    {"CollapsingHeader", ImGui_CollapsingHeader},
+    {"ColorButton", ImGui_ColorButton},
+    {"ColorConvertFloat4ToU32", ImGui_ColorConvertFloat4ToU32},
+    {"ColorConvertHSVtoRGB", ImGui_ColorConvertHSVtoRGB},
+    {"ColorConvertRGBtoHSV", ImGui_ColorConvertRGBtoHSV},
+    {"ColorConvertU32ToFloat4", ImGui_ColorConvertU32ToFloat4},
+    {"Columns", ImGui_Columns},
+    {"Combo", ImGui_Combo},
+    {"DebugTextEncoding", ImGui_DebugTextEncoding},
+    {"DragFloat", ImGui_DragFloat},
+    {"DragFloatRange2", ImGui_DragFloatRange2},
+    {"DragInt", ImGui_DragInt},
+    {"DragIntRange2", ImGui_DragIntRange2},
+    {"Dummy", ImGui_Dummy},
+    {"End", ImGui_End},
+    {"EndChild", ImGui_EndChild},
+    {"EndChildFrame", ImGui_EndChildFrame},
+    {"EndCombo", ImGui_EndCombo},
+    {"EndDisabled", ImGui_EndDisabled},
+    {"EndDragDropSource", ImGui_EndDragDropSource},
+    {"EndDragDropTarget", ImGui_EndDragDropTarget},
+    {"EndGroup", ImGui_EndGroup},
+    {"EndListBox", ImGui_EndListBox},
+    {"EndMainMenuBar", ImGui_EndMainMenuBar},
+    {"EndMenu", ImGui_EndMenu},
+    {"EndMenuBar", ImGui_EndMenuBar},
+    {"EndPopup", ImGui_EndPopup},
+    {"EndTabBar", ImGui_EndTabBar},
+    {"EndTabItem", ImGui_EndTabItem},
+    {"EndTable", ImGui_EndTable},
+    {"EndTooltip", ImGui_EndTooltip},
+    {"GetClipboardText", ImGui_GetClipboardText},
+    {"GetColorU32", ImGui_GetColorU32},
+    {"GetColumnIndex", ImGui_GetColumnIndex},
+    {"GetColumnOffset", ImGui_GetColumnOffset},
+    {"GetColumnWidth", ImGui_GetColumnWidth},
+    {"GetColumnsCount", ImGui_GetColumnsCount},
+    {"GetContentRegionAvail", ImGui_GetContentRegionAvail},
+    {"GetContentRegionMax", ImGui_GetContentRegionMax},
+    {"GetCursorPos", ImGui_GetCursorPos},
+    {"GetCursorPosX", ImGui_GetCursorPosX},
+    {"GetCursorPosY", ImGui_GetCursorPosY},
+    {"GetCursorScreenPos", ImGui_GetCursorScreenPos},
+    {"GetCursorStartPos", ImGui_GetCursorStartPos},
+    {"GetFontSize", ImGui_GetFontSize},
+    {"GetFontTexUvWhitePixel", ImGui_GetFontTexUvWhitePixel},
+    {"GetFrameCount", ImGui_GetFrameCount},
+    {"GetFrameHeight", ImGui_GetFrameHeight},
+    {"GetFrameHeightWithSpacing", ImGui_GetFrameHeightWithSpacing},
+    {"GetID", ImGui_GetID},
+    {"GetIO", ImGui_GetIO},
+    {"GetItemRectMax", ImGui_GetItemRectMax},
+    {"GetItemRectMin", ImGui_GetItemRectMin},
+    {"GetItemRectSize", ImGui_GetItemRectSize},
+    {"GetKeyIndex", ImGui_GetKeyIndex},
+    {"GetKeyName", ImGui_GetKeyName},
+    {"GetKeyPressedAmount", ImGui_GetKeyPressedAmount},
+    {"GetMainViewport", ImGui_GetMainViewport},
+    {"GetMouseClickedCount", ImGui_GetMouseClickedCount},
+    {"GetMouseCursor", ImGui_GetMouseCursor},
+    {"GetMouseDragDelta", ImGui_GetMouseDragDelta},
+    {"GetMousePos", ImGui_GetMousePos},
+    {"GetMousePosOnOpeningCurrentPopup", ImGui_GetMousePosOnOpeningCurrentPopup},
+    {"GetScrollMaxX", ImGui_GetScrollMaxX},
+    {"GetScrollMaxY", ImGui_GetScrollMaxY},
+    {"GetScrollX", ImGui_GetScrollX},
+    {"GetScrollY", ImGui_GetScrollY},
+    {"GetStyleColorName", ImGui_GetStyleColorName},
+    {"GetTextLineHeight", ImGui_GetTextLineHeight},
+    {"GetTextLineHeightWithSpacing", ImGui_GetTextLineHeightWithSpacing},
+    {"GetTime", ImGui_GetTime},
+    {"GetTreeNodeToLabelSpacing", ImGui_GetTreeNodeToLabelSpacing},
+    {"GetVersion", ImGui_GetVersion},
+    {"GetWindowContentRegionMax", ImGui_GetWindowContentRegionMax},
+    {"GetWindowContentRegionMin", ImGui_GetWindowContentRegionMin},
+    {"GetWindowHeight", ImGui_GetWindowHeight},
+    {"GetWindowPos", ImGui_GetWindowPos},
+    {"GetWindowSize", ImGui_GetWindowSize},
+    {"GetWindowWidth", ImGui_GetWindowWidth},
+    {"Indent", ImGui_Indent},
+    {"InputFloat", ImGui_InputFloat},
+    {"InputInt", ImGui_InputInt},
+    {"InputText", ImGui_InputText},
+    {"InvisibleButton", ImGui_InvisibleButton},
+    {"IsAnyItemActive", ImGui_IsAnyItemActive},
+    {"IsAnyItemFocused", ImGui_IsAnyItemFocused},
+    {"IsAnyItemHovered", ImGui_IsAnyItemHovered},
+    {"IsAnyMouseDown", ImGui_IsAnyMouseDown},
+    {"IsItemActivated", ImGui_IsItemActivated},
+    {"IsItemActive", ImGui_IsItemActive},
+    {"IsItemClicked", ImGui_IsItemClicked},
+    {"IsItemDeactivated", ImGui_IsItemDeactivated},
+    {"IsItemDeactivatedAfterEdit", ImGui_IsItemDeactivatedAfterEdit},
+    {"IsItemEdited", ImGui_IsItemEdited},
+    {"IsItemFocused", ImGui_IsItemFocused},
+    {"IsItemHovered", ImGui_IsItemHovered},
+    {"IsItemToggledOpen", ImGui_IsItemToggledOpen},
+    {"IsItemVisible", ImGui_IsItemVisible},
+    {"IsKeyDown", ImGui_IsKeyDown},
+    {"IsKeyPressed", ImGui_IsKeyPressed},
+    {"IsKeyReleased", ImGui_IsKeyReleased},
+    {"IsMouseClicked", ImGui_IsMouseClicked},
+    {"IsMouseDoubleClicked", ImGui_IsMouseDoubleClicked},
+    {"IsMouseDown", ImGui_IsMouseDown},
+    {"IsMouseDragging", ImGui_IsMouseDragging},
+    {"IsMouseHoveringRect", ImGui_IsMouseHoveringRect},
+    {"IsMouseReleased", ImGui_IsMouseReleased},
+    {"IsPopupOpen", ImGui_IsPopupOpen},
+    {"IsRectVisible", ImGui_IsRectVisible},
+    {"IsWindowAppearing", ImGui_IsWindowAppearing},
+    {"IsWindowCollapsed", ImGui_IsWindowCollapsed},
+    {"IsWindowFocused", ImGui_IsWindowFocused},
+    {"IsWindowHovered", ImGui_IsWindowHovered},
+    {"LabelText", ImGui_LabelText},
+    {"LoadIniSettingsFromDisk", ImGui_LoadIniSettingsFromDisk},
+    {"LogButtons", ImGui_LogButtons},
+    {"LogFinish", ImGui_LogFinish},
+    {"LogToClipboard", ImGui_LogToClipboard},
+    {"LogToFile", ImGui_LogToFile},
+    {"LogToTTY", ImGui_LogToTTY},
+    {"MenuItem", ImGui_MenuItem},
+    {"NewLine", ImGui_NewLine},
+    {"NextColumn", ImGui_NextColumn},
+    {"OpenPopup", ImGui_OpenPopup},
+    {"OpenPopupOnItemClick", ImGui_OpenPopupOnItemClick},
+    {"PopAllowKeyboardFocus", ImGui_PopAllowKeyboardFocus},
+    {"PopButtonRepeat", ImGui_PopButtonRepeat},
+    {"PopClipRect", ImGui_PopClipRect},
+    {"PopFont", ImGui_PopFont},
+    {"PopID", ImGui_PopID},
+    {"PopItemWidth", ImGui_PopItemWidth},
+    {"PopStyleColor", ImGui_PopStyleColor},
+    {"PopStyleVar", ImGui_PopStyleVar},
+    {"PopTextWrapPos", ImGui_PopTextWrapPos},
+    {"ProgressBar", ImGui_ProgressBar},
+    {"PushAllowKeyboardFocus", ImGui_PushAllowKeyboardFocus},
+    {"PushButtonRepeat", ImGui_PushButtonRepeat},
+    {"PushClipRect", ImGui_PushClipRect},
+    {"PushID", ImGui_PushID},
+    {"PushItemWidth", ImGui_PushItemWidth},
+    {"PushStyleColor", ImGui_PushStyleColor},
+    {"PushStyleVar", ImGui_PushStyleVar},
+    {"PushTextWrapPos", ImGui_PushTextWrapPos},
+    {"RadioButton", ImGui_RadioButton},
+    {"ResetMouseDragDelta", ImGui_ResetMouseDragDelta},
+    {"SameLine", ImGui_SameLine},
+    {"SaveIniSettingsToDisk", ImGui_SaveIniSettingsToDisk},
+    {"Selectable", ImGui_Selectable},
+    {"Separator", ImGui_Separator},
+    {"SetClipboardText", ImGui_SetClipboardText},
+    {"SetColorEditOptions", ImGui_SetColorEditOptions},
+    {"SetColumnOffset", ImGui_SetColumnOffset},
+    {"SetColumnWidth", ImGui_SetColumnWidth},
+    {"SetCursorPos", ImGui_SetCursorPos},
+    {"SetCursorPosX", ImGui_SetCursorPosX},
+    {"SetCursorPosY", ImGui_SetCursorPosY},
+    {"SetCursorScreenPos", ImGui_SetCursorScreenPos},
+    {"SetItemAllowOverlap", ImGui_SetItemAllowOverlap},
+    {"SetItemDefaultFocus", ImGui_SetItemDefaultFocus},
+    {"SetKeyboardFocusHere", ImGui_SetKeyboardFocusHere},
+    {"SetMouseCursor", ImGui_SetMouseCursor},
+    {"SetNextFrameWantCaptureKeyboard", ImGui_SetNextFrameWantCaptureKeyboard},
+    {"SetNextFrameWantCaptureMouse", ImGui_SetNextFrameWantCaptureMouse},
+    {"SetNextItemOpen", ImGui_SetNextItemOpen},
+    {"SetNextItemWidth", ImGui_SetNextItemWidth},
+    {"SetNextWindowBgAlpha", ImGui_SetNextWindowBgAlpha},
+    {"SetNextWindowCollapsed", ImGui_SetNextWindowCollapsed},
+    {"SetNextWindowContentSize", ImGui_SetNextWindowContentSize},
+    {"SetNextWindowFocus", ImGui_SetNextWindowFocus},
+    {"SetNextWindowPos", ImGui_SetNextWindowPos},
+    {"SetNextWindowSize", ImGui_SetNextWindowSize},
+    {"SetScrollFromPosX", ImGui_SetScrollFromPosX},
+    {"SetScrollFromPosY", ImGui_SetScrollFromPosY},
+    {"SetScrollHereX", ImGui_SetScrollHereX},
+    {"SetScrollHereY", ImGui_SetScrollHereY},
+    {"SetScrollX", ImGui_SetScrollX},
+    {"SetScrollY", ImGui_SetScrollY},
+    {"SetTabItemClosed", ImGui_SetTabItemClosed},
+    {"SetWindowCollapsed", ImGui_SetWindowCollapsed},
+    {"SetWindowFocus", ImGui_SetWindowFocus},
+    {"SetWindowFontScale", ImGui_SetWindowFontScale},
+    {"SetWindowPos", ImGui_SetWindowPos},
+    {"SetWindowSize", ImGui_SetWindowSize},
+    {"ShowAboutWindow", ImGui_ShowAboutWindow},
+    {"ShowDebugLogWindow", ImGui_ShowDebugLogWindow},
+    {"ShowDemoWindow", ImGui_ShowDemoWindow},
+    {"ShowFontSelector", ImGui_ShowFontSelector},
+    {"ShowMetricsWindow", ImGui_ShowMetricsWindow},
+    {"ShowStackToolWindow", ImGui_ShowStackToolWindow},
+    {"ShowStyleSelector", ImGui_ShowStyleSelector},
+    {"ShowUserGuide", ImGui_ShowUserGuide},
+    {"SliderAngle", ImGui_SliderAngle},
+    {"SliderFloat", ImGui_SliderFloat},
+    {"SliderInt", ImGui_SliderInt},
+    {"SmallButton", ImGui_SmallButton},
+    {"Spacing", ImGui_Spacing},
+    {"TabItemButton", ImGui_TabItemButton},
+    {"TableGetColumnCount", ImGui_TableGetColumnCount},
+    {"TableGetColumnFlags", ImGui_TableGetColumnFlags},
+    {"TableGetColumnIndex", ImGui_TableGetColumnIndex},
+    {"TableGetColumnName", ImGui_TableGetColumnName},
+    {"TableGetRowIndex", ImGui_TableGetRowIndex},
+    {"TableHeader", ImGui_TableHeader},
+    {"TableHeadersRow", ImGui_TableHeadersRow},
+    {"TableNextColumn", ImGui_TableNextColumn},
+    {"TableNextRow", ImGui_TableNextRow},
+    {"TableSetBgColor", ImGui_TableSetBgColor},
+    {"TableSetColumnEnabled", ImGui_TableSetColumnEnabled},
+    {"TableSetColumnIndex", ImGui_TableSetColumnIndex},
+    {"TableSetupColumn", ImGui_TableSetupColumn},
+    {"TableSetupScrollFreeze", ImGui_TableSetupScrollFreeze},
+    {"Text", ImGui_Text},
+    {"TextColored", ImGui_TextColored},
+    {"TextDisabled", ImGui_TextDisabled},
+    {"TextWrapped", ImGui_TextWrapped},
+    {"TreeNode", ImGui_TreeNode},
+    {"TreeNodeEx", ImGui_TreeNodeEx},
+    {"TreePop", ImGui_TreePop},
+    {"TreePush", ImGui_TreePush},
+    {"Unindent", ImGui_Unindent},
+    {"VSliderFloat", ImGui_VSliderFloat},
+    {"VSliderInt", ImGui_VSliderInt},
     {NULL, NULL},
 };
 
 extern "C" int ImGuiLua_InitImGui(lua_State *L)
 {
     luaL_checktype(L, 1, LUA_TTABLE);
-    IMGUILUA_SETUP(L);
-    ImGuiLua_InitTypes(L);
     lua_pushvalue(L, 1);
     ImGuiLua_GetOrCreateTable(L, "ImDrawFlags");
     ImGuiLua_RegisterEnumImDrawFlags(L);
@@ -7104,11 +8870,11 @@ extern "C" int ImGuiLua_InitImGui(lua_State *L)
     ImGuiLua_GetOrCreateTable(L, "ImGuiInputTextFlags");
     ImGuiLua_RegisterEnumImGuiInputTextFlags(L);
     lua_pop(L, 1);
-    ImGuiLua_GetOrCreateTable(L, "ImGuiKeyModFlags");
-    ImGuiLua_RegisterEnumImGuiKeyModFlags(L);
-    lua_pop(L, 1);
     ImGuiLua_GetOrCreateTable(L, "ImGuiKey");
     ImGuiLua_RegisterEnumImGuiKey(L);
+    lua_pop(L, 1);
+    ImGuiLua_GetOrCreateTable(L, "ImGuiModFlags");
+    ImGuiLua_RegisterEnumImGuiModFlags(L);
     lua_pop(L, 1);
     ImGuiLua_GetOrCreateTable(L, "ImGuiMouseButton");
     ImGuiLua_RegisterEnumImGuiMouseButton(L);
@@ -7161,6 +8927,14 @@ extern "C" int ImGuiLua_InitImGui(lua_State *L)
     ImGuiLua_GetOrCreateTable(L, "ImGuiWindowFlags");
     ImGuiLua_RegisterEnumImGuiWindowFlags(L);
     lua_pop(L, 1);
+    ImGuiLua_RegisterStructImGuiIO(L);
+    ImGuiLua_RegisterStructImGuiViewport(L);
+    ImGuiLua_RegisterStructImVec2(L);
+    ImGuiLua_RegisterStructImVec4(L);
+    ImGuiLua_RegisterStructImGuiLuaBoolRef(L);
+    ImGuiLua_RegisterStructImGuiLuaFloatRef(L);
+    ImGuiLua_RegisterStructImGuiLuaIntRef(L);
+    ImGuiLua_RegisterStructImGuiLuaStringRef(L);
     ImGuiLua_GetOrCreateTable(L, "ImGui");
     luaL_setfuncs(L, ImGuiLua_RegImGui, 0);
     lua_pop(L, 1);

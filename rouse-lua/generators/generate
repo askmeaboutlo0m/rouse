@@ -1,0 +1,150 @@
+#!/bin/bash
+# Copyright (c) 2021 - 2022 askmeaboutloom
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
+IMGUI_GIT_URL='https://github.com/ocornut/imgui.git'
+IMGUI_GIT_CHECKOUT='2d38bc99b3b0013952d3d390397297083b767972'
+
+CIMGUI_GIT_URL='https://github.com/cimgui/cimgui.git'
+CIMGUI_GIT_CHECKOUT='44b388121a32088a88a442bd807bc2e930520a6c'
+
+set -e
+
+abs_path() {
+    perl -MCwd -e 'print Cwd::abs_path(shift)' "$1"
+}
+
+generators_dir="$(abs_path "$(dirname "$0")")"
+root_dir="$(abs_path "$generators_dir/..")"
+
+
+heading() {
+    echo
+    echo
+    echo "*** $@ ***" | sed 's/./*/g'
+    echo "*** $@ ***"
+    echo "*** $@ ***" | sed 's/./*/g'
+    echo
+    echo
+}
+
+get_imgui() {
+    heading 'get_imgui'
+    cd "$root_dir"
+    mkdir -p lib/3rdparty
+    cd lib/3rdparty
+
+    if ! [ -e imgui_git ]; then
+        git clone "$IMGUI_GIT_URL" imgui_git
+    fi
+
+    cd imgui_git
+    git fetch
+    git checkout "$IMGUI_GIT_CHECKOUT"
+    git config --local user.name rouse
+    git config --local user.email rouse@example.com
+    git am ../imgui/rouse.patch
+
+    cp -v LICENSE.txt \
+          backends/imgui_impl_opengl3.cpp \
+          backends/imgui_impl_opengl3.h \
+          backends/imgui_impl_sdl.cpp \
+          backends/imgui_impl_sdl.h \
+          imconfig.h \
+          imgui.cpp \
+          imgui.h \
+          imgui_demo.cpp \
+          imgui_draw.cpp \
+          imgui_internal.h \
+          imgui_tables.cpp \
+          imgui_widgets.cpp \
+          imstb_rectpack.h \
+          imstb_textedit.h \
+          imstb_truetype.h \
+          ../imgui
+}
+
+get_cimgui() {
+    heading 'get_cimgui'
+    cd "$generators_dir"
+
+    if ! [ -e cimgui_git ]; then
+        git clone "$CIMGUI_GIT_URL" cimgui_git
+    fi
+
+    cd cimgui_git
+    git fetch
+    git checkout "$CIMGUI_GIT_CHECKOUT"
+}
+
+run_cimgui() {
+    heading 'run_cimgui'
+    cd "$generators_dir/cimgui_git/generator"
+    IMGUI_PATH="$root_dir/lib/3rdparty/imgui_git" luajit ./generator.lua gcc ''
+}
+
+generate_imgui() {
+    heading 'generate_imgui'
+    perl "$generators_dir/imgui_bindings_generator/generator.pl" \
+         "$generators_dir/cimgui_git/generator/output" \
+         >"$root_dir/lib/rouse/lua/imgui_gen.cpp"
+}
+
+all_imgui() {
+    get_imgui
+    get_cimgui
+    run_cimgui
+    generate_imgui
+}
+
+
+if [ "$#" -eq 0 ]; then
+    echo "Usage: $0 COMMAND [COMMAND...]" 1>&2
+    echo 'Where COMMAND is one of:' 1>&2
+    echo '    all, all-imgui, get-imgui, get-cimgui, run-cimgui, generate-imgui' 1>&2
+fi
+
+
+while [ "$#" -ne 0 ]; do
+    case "$1" in
+        all)
+            all_imgui
+            ;;
+        all-imgui)
+            all_imgui
+            ;;
+        get-imgui)
+            get_imgui
+            ;;
+        get-cimgui)
+            get_cimgui
+            ;;
+        run-cimgui)
+            run-cimgui
+            ;;
+        generate-imgui)
+            generate_imgui
+            ;;
+        *)
+            echo "Unknown command '$1'" 1>&2
+            ;;
+    esac
+    shift
+done

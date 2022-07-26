@@ -83,13 +83,6 @@ set(imgui_sources
     "${CMAKE_SOURCE_DIR}/lib/3rdparty/imgui/imgui_tables.cpp"
     "${CMAKE_SOURCE_DIR}/lib/3rdparty/imgui/imgui_widgets.cpp")
 
-set(imnodes_headers
-    "${CMAKE_SOURCE_DIR}/lib/3rdparty/imnodes/imnodes.h"
-    "${CMAKE_SOURCE_DIR}/lib/3rdparty/imnodes/imnodes_internal.h")
-
-set(imnodes_sources
-    "${CMAKE_SOURCE_DIR}/lib/3rdparty/imnodes/imnodes.cpp")
-
 set(rouse_lua_headers
     "${CMAKE_SOURCE_DIR}/lib/rouse/lua/intern.h"
     "${CMAKE_SOURCE_DIR}/lib/rouse/lua/lua_inc.h"
@@ -135,8 +128,7 @@ set(rouse_lua_box2d_xls
 unset(rouse_lua_imgui_headers)
 
 set(rouse_lua_imgui_sources
-    "${CMAKE_SOURCE_DIR}/lib/rouse/lua/imgui_gen.cpp"
-    "${CMAKE_SOURCE_DIR}/lib/rouse/lua/imnodes_gen.cpp")
+    "${CMAKE_SOURCE_DIR}/lib/rouse/lua/imgui_gen.cpp")
 
 set(rouse_lua_imgui_xls
     "${CMAKE_SOURCE_DIR}/lib/rouse/lua/imgui.xl")

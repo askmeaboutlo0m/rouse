@@ -4,7 +4,7 @@
 /* Modify the matching .xl file and rebuild.     */
 /*************************************************/
 /*
- * Copyright (c) 2021 askmeaboutloom
+ * Copyright (c) 2021 - 2022 askmeaboutloom
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,6 @@
 #include <imgui.h>
 #include <imgui_impl_sdl.h>
 #include <imgui_impl_opengl3.h>
-#include <imnodes.h>
 
 extern "C" {
 
@@ -43,7 +42,6 @@ static void imgui_quit(void)
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
-    ImNodes::DestroyContext();
 }
 
 static void imgui_on_quit(R_UNUSED void *arg)
@@ -94,11 +92,6 @@ static void close_begin_stack(void)
 }
 
 
-#define SET_STYLE(STYLE) do { \
-         ImGui::StyleColors ## STYLE(); \
-         ImNodes::StyleColors ## STYLE(); \
-     } while (0)
-
 
 static int imgui_init_xl(lua_State *L)
 {
@@ -106,25 +99,24 @@ static int imgui_init_xl(lua_State *L)
     if (imgui_quit_handler_id == 0) {
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
-        ImNodes::CreateContext();
 
         ImGuiIO &io    = ImGui::GetIO();
         io.IniFilename = NULL;
 
         int type = lua_gettop(L) == 0 ? LUA_TNONE : lua_type(L, 1);
         if (type == LUA_TNONE || type == LUA_TNIL) {
-            SET_STYLE(Dark);
+            ImGui::StyleColorsDark();
         }
         else if (type == LUA_TSTRING) {
             const char *style = lua_tostring(L, 1);
             if (R_str_equal(style, "dark")) {
-                SET_STYLE(Dark);
+                ImGui::StyleColorsDark();
             }
             else if (R_str_equal(style, "light")) {
-                SET_STYLE(Light);
+                ImGui::StyleColorsLight();
             }
             else if (R_str_equal(style, "classic")) {
-                SET_STYLE(Classic);
+                ImGui::StyleColorsClassic();
             }
             else {
                 R_LUA_DIE(L, "Unknown ImGui style '%s'", style);
@@ -133,7 +125,6 @@ static int imgui_init_xl(lua_State *L)
         else {
             lua_pushvalue(L, 1);
             if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
-                ImNodes::DestroyContext();
                 ImGui::DestroyContext();
                 lua_error(L);
             }
@@ -174,35 +165,35 @@ static int imgui_shutdown_xl(lua_State *L)
     return 1;
 }
 
-static int imgui_style_colors_dark_xl(lua_State *L)
+static int imgui_stylecolorsdark_xl(lua_State *L)
 {
     XL_UNUSED(L);
     ImGui::StyleColorsDark();
     return 0;
 }
 
-static int imgui_style_colors_light_xl(lua_State *L)
+static int imgui_stylecolorslight_xl(lua_State *L)
 {
     XL_UNUSED(L);
     ImGui::StyleColorsLight();
     return 0;
 }
 
-static int imgui_style_colors_classic_xl(lua_State *L)
+static int imgui_stylecolorsclassic_xl(lua_State *L)
 {
     XL_UNUSED(L);
     ImGui::StyleColorsClassic();
     return 0;
 }
 
-static int imgui_process_event_xl(lua_State *L)
+static int imgui_processevent_xl(lua_State *L)
 {
     SDL_Event *event = R_CPPCAST(SDL_Event *, XL_checkutype(L, 1, "SDL_Event"));
     ImGui_ImplSDL2_ProcessEvent(event);
     return 0;
 }
 
-static int imgui_new_frame_xl(lua_State *L)
+static int imgui_newframe_xl(lua_State *L)
 {
     XL_UNUSED(L);
     if (imgui_have_frame) {
@@ -233,7 +224,7 @@ static int imgui_render_xl(lua_State *L)
     return 0;
 }
 
-static int imgui_render_draw_data_xl(lua_State *L)
+static int imgui_renderdrawdata_xl(lua_State *L)
 {
     XL_UNUSED(L);
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -243,7 +234,6 @@ static int imgui_render_draw_data_xl(lua_State *L)
 
 static int init(lua_State *L);
 int ImGuiLua_InitImGui(lua_State *L);
-int ImGuiLua_InitImNodes(lua_State *L);
 
 int R_lua_imgui_init(lua_State *L)
 {
@@ -251,20 +241,6 @@ int R_lua_imgui_init(lua_State *L)
     lua_pushcfunction(L, ImGuiLua_InitImGui);
     lua_pushglobaltable(L);
     lua_call(L, 1, 0);
-
-    init(L);
-    lua_pushcfunction(L, ImGuiLua_InitImNodes);
-    lua_pushglobaltable(L);
-    lua_call(L, 1, 0);
-
-    lua_pushglobaltable(L);
-    lua_getfield(L, -1, "ImGui");
-    lua_getfield(L, -1, "begin");
-    lua_setfield(L, -2, "begin_window");
-    lua_getfield(L, -1, "end");
-    lua_setfield(L, -2, "end_window");
-    lua_pop(L, 2);
-
     return 0;
 }
 
@@ -275,15 +251,15 @@ extern "C" {
 #endif
 
 static luaL_Reg imgui_function_registry_xl[] = {
-    {"init", imgui_init_xl},
-    {"new_frame", imgui_new_frame_xl},
-    {"process_event", imgui_process_event_xl},
-    {"render", imgui_render_xl},
-    {"render_draw_data", imgui_render_draw_data_xl},
-    {"shutdown", imgui_shutdown_xl},
-    {"style_colors_classic", imgui_style_colors_classic_xl},
-    {"style_colors_dark", imgui_style_colors_dark_xl},
-    {"style_colors_light", imgui_style_colors_light_xl},
+    {"Init", imgui_init_xl},
+    {"NewFrame", imgui_newframe_xl},
+    {"ProcessEvent", imgui_processevent_xl},
+    {"Render", imgui_render_xl},
+    {"RenderDrawData", imgui_renderdrawdata_xl},
+    {"Shutdown", imgui_shutdown_xl},
+    {"StyleColorsClassic", imgui_stylecolorsclassic_xl},
+    {"StyleColorsDark", imgui_stylecolorsdark_xl},
+    {"StyleColorsLight", imgui_stylecolorslight_xl},
     {NULL, NULL},
 };
 

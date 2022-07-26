@@ -61,7 +61,5 @@ endif()
 
 if(BUILD_WITH_IMGUI)
     add_subdirectory(3rdparty/imgui)
-    add_subdirectory(3rdparty/imnodes)
     add_rouse_lua_library(imgui)
-    target_link_libraries(rouse_lua_imgui PUBLIC imnodes)
 endif()

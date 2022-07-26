@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 askmeaboutloom
+ * Copyright (c) 2021 - 2022 askmeaboutloom
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,6 @@
 #include <imgui.h>
 #include <imgui_impl_sdl.h>
 #include <imgui_impl_opengl3.h>
-#include <imnodes.h>
 
 extern "C" {
 
@@ -38,7 +37,6 @@ static void imgui_quit(void)
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
-    ImNodes::DestroyContext();
 }
 
 static void imgui_on_quit(R_UNUSED void *arg)
@@ -89,36 +87,30 @@ static void close_begin_stack(void)
 }
 
 
-#define SET_STYLE(STYLE) do { \
-         ImGui::StyleColors ## STYLE(); \
-         ImNodes::StyleColors ## STYLE(); \
-     } while (0)
-
 @xl
 
-FUNCTION bool ImGui.init()
+FUNCTION bool ImGui.Init()
     if (imgui_quit_handler_id == 0) {
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
-        ImNodes::CreateContext();
 
         ImGuiIO &io    = ImGui::GetIO();
         io.IniFilename = NULL;
 
         int type = lua_gettop(L) == 0 ? LUA_TNONE : lua_type(L, 1);
         if (type == LUA_TNONE || type == LUA_TNIL) {
-            SET_STYLE(Dark);
+            ImGui::StyleColorsDark();
         }
         else if (type == LUA_TSTRING) {
             const char *style = lua_tostring(L, 1);
             if (R_str_equal(style, "dark")) {
-                SET_STYLE(Dark);
+                ImGui::StyleColorsDark();
             }
             else if (R_str_equal(style, "light")) {
-                SET_STYLE(Light);
+                ImGui::StyleColorsLight();
             }
             else if (R_str_equal(style, "classic")) {
-                SET_STYLE(Classic);
+                ImGui::StyleColorsClassic();
             }
             else {
                 R_LUA_DIE(L, "Unknown ImGui style '%s'", style);
@@ -127,7 +119,6 @@ FUNCTION bool ImGui.init()
         else {
             lua_pushvalue(L, 1);
             if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
-                ImNodes::DestroyContext();
                 ImGui::DestroyContext();
                 lua_error(L);
             }
@@ -143,7 +134,7 @@ FUNCTION bool ImGui.init()
     }
 END
 
-FUNCTION bool ImGui.shutdown()
+FUNCTION bool ImGui.Shutdown()
     XL_UNUSED(L);
     if (imgui_quit_handler_id == 0) {
         RETVAL = false;
@@ -162,17 +153,17 @@ FUNCTION bool ImGui.shutdown()
     }
 END
 
-FUNCTION void ImGui.style_colors_dark()
+FUNCTION void ImGui.StyleColorsDark()
     XL_UNUSED(L);
     ImGui::StyleColorsDark();
 END
 
-FUNCTION void ImGui.style_colors_light()
+FUNCTION void ImGui.StyleColorsLight()
     XL_UNUSED(L);
     ImGui::StyleColorsLight();
 END
 
-FUNCTION void ImGui.style_colors_classic()
+FUNCTION void ImGui.StyleColorsClassic()
     XL_UNUSED(L);
     ImGui::StyleColorsClassic();
 END
@@ -180,12 +171,12 @@ END
 
 UTYPE SDL_Event
 
-FUNCTION void ImGui.process_event(SDL_Event *event)
+FUNCTION void ImGui.ProcessEvent(SDL_Event *event)
     ImGui_ImplSDL2_ProcessEvent(event);
 END
 
 
-FUNCTION void ImGui.new_frame()
+FUNCTION void ImGui.NewFrame()
     XL_UNUSED(L);
     if (imgui_have_frame) {
         close_begin_stack();
@@ -200,7 +191,7 @@ FUNCTION void ImGui.new_frame()
     ImGui::NewFrame();
 END
 
-FUNCTION void ImGui.render()
+FUNCTION void ImGui.Render()
     XL_UNUSED(L);
     if (imgui_have_frame) {
         close_begin_stack();
@@ -212,7 +203,7 @@ FUNCTION void ImGui.render()
     }
 END
 
-FUNCTION void ImGui.render_draw_data()
+FUNCTION void ImGui.RenderDrawData()
     XL_UNUSED(L);
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 END
@@ -224,7 +215,6 @@ INIT static init
 
 static int init(lua_State *L);
 int ImGuiLua_InitImGui(lua_State *L);
-int ImGuiLua_InitImNodes(lua_State *L);
 
 int R_lua_imgui_init(lua_State *L)
 {
@@ -232,20 +222,6 @@ int R_lua_imgui_init(lua_State *L)
     lua_pushcfunction(L, ImGuiLua_InitImGui);
     lua_pushglobaltable(L);
     lua_call(L, 1, 0);
-
-    init(L);
-    lua_pushcfunction(L, ImGuiLua_InitImNodes);
-    lua_pushglobaltable(L);
-    lua_call(L, 1, 0);
-
-    lua_pushglobaltable(L);
-    lua_getfield(L, -1, "ImGui");
-    lua_getfield(L, -1, "begin");
-    lua_setfield(L, -2, "begin_window");
-    lua_getfield(L, -1, "end");
-    lua_setfield(L, -2, "end_window");
-    lua_pop(L, 2);
-
     return 0;
 }
 

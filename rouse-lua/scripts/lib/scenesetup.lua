@@ -35,10 +35,14 @@ function SetupSpec:like(name)
     return self
 end
 
-function SetupSpec:parent(name)
-    self.setup:find_spec(name)
+function SetupSpec:unchecked_parent(name)
     self.spec.parent = name
     return self
+end
+
+function SetupSpec:parent(name)
+    self.setup:find_spec(name)
+    return self:unchecked_parent(name)
 end
 
 function SetupSpec:track(name)

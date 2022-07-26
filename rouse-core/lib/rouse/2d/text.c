@@ -87,6 +87,7 @@ R_V4 R_text_field_bounds(R_TextField *field, NVGcontext *ctx)
         const char *start = R_string_body(string);
         const char *end   = start + len;
         set_nvg_state(field, ctx);
+        nvgFontBlur(ctx, R_MAX(field->blur, field->outline_blur));
         R_V4 bounds;
         if (field->width > 0.0f) {
             nvgTextBoxBounds(ctx, x, y, field->width, start, end, bounds.raw);

@@ -33,56 +33,63 @@ function SceneBase:init(args)
     self.root           = R.Sprite.new("root")
     self.clear_color    = args.clear_color or R.Nvg.rgbaf(1.0, 1.0, 1.0, 1.0)
     self.sprites        = {}
+    if args.imgui_enabled then
+        ImGui.Init()
+        self.imgui_enabled = true
+    end
     R.Viewport.set_window(self.width, self.height)
     self:init_render_function()
 end
 
 function SceneBase:init_render_function()
-    local nvg    = self.nvg
-    local width  = self.width
-    local height = self.height
-    local root   = self.root
+    local nvg      = self.nvg
+    local width    = self.width
+    local height   = self.height
+    local root     = self.root
+    local imgui    = self.imgui_enabled
+    local fr       = self.frame_renderer
+    local fb       = self.frame_buffer
+    local indirect = fb and fr
+    local dump     = rawget(_G, "DUMP_FRAME_BUFFER_EACH_FRAME")
+    self.render    = function ()
+        if imgui then
+            ImGui.NewFrame()
+        end
 
-    if self.frame_renderer and self.frame_buffer then
-        local fr    = self.frame_renderer
-        local fb    = self.frame_buffer
-        local fb_w  = fb.width
-        local fb_h  = fb.height
-        local fb_vp = R.Viewport.new(0, 0, fb_w, fb_h)
+        local w, h
+        if indirect then
+            fb:bind()
+            w, h = fb.width, fb.height
+        else
+            local vp = self.viewport or self:reset_viewport()
+            w, h     = vp.w, vp.h
+        end
 
-        if rawget(_G, "DUMP_FRAME_BUFFER_EACH_FRAME") then
-            self.render = function ()
-                self:before_render(nvg, width, height, fb_w, fb_h)
-                fb:bind()
-                local r, g, b, a = self.clear_color:unpack()
-                R.GL.clear(r, g, b, a, 0.0, 0)
-                root:draw(nvg, width, height, fb_w, fb_h)
-                fb:unbind()
-                R.GL.clear(r, g, b, a, 0.0, 0)
-                fr:draw(fb)
+        self:before_render(nvg, width, height, w, h)
+        local r, g, b, a = self.clear_color:unpack()
+        R.GL.clear(r, g, b, a, 0.0, 0)
+        root:draw(nvg, width, height, w, h)
+
+        if imgui then
+            ImGui.Render()
+            ImGui.RenderDrawData()
+        end
+
+        if indirect then
+            fb:unbind()
+            R.GL.clear(r, g, b, a, 0.0, 0)
+            fr:draw(fb)
+            if dump then
                 fb:write_to_stdout()
             end
-        else
-            self.render = function ()
-                self:before_render(nvg, width, height, fb_w, fb_h)
-                fb:bind()
-                local r, g, b, a = self.clear_color:unpack()
-                R.GL.clear(r, g, b, a, 0.0, 0)
-                root:draw(nvg, width, height, fb_w, fb_h)
-                fb:unbind()
-                R.GL.clear(r, g, b, a, 0.0, 0)
-                fr:draw(fb)
-            end
         end
-    else
-        self.render = function ()
-            local vp     = self.viewport or self:reset_viewport()
-            local vw, vh = vp.w, vp.h
-            self:before_render(nvg, width, height, vw, vh)
-            local r, g, b, a = self.clear_color:unpack()
-            R.GL.clear(r, g, b, a, 0.0, 0)
-            root:draw(nvg, width, height, vw, vh)
-        end
+    end
+end
+
+
+function SceneBase:on_free()
+    if self.imgui_enabled then
+        ImGui.Shutdown()
     end
 end
 
@@ -106,6 +113,10 @@ function SceneBase:on_event(event)
         if (scancode == RETURN or scancode == RETURN2) and (key.mod & ALT) ~= 0 then
             SDL.toggle_fullscreen_desktop()
         end
+    end
+
+    if self.imgui_enabled then
+        ImGui.ProcessEvent(event)
     end
 end
 

@@ -31,9 +31,22 @@ local function get_empty_loaded()
     return loaded
 end
 
+function PreloadScene.extract_key_base(path)
+    return string.match(path, "([^/%.]+)%.[^/]+$")
+end
+
+function PreloadScene.extract_key_dir_base(path)
+    return string.match(path, "([^/%.]+/[^/%.]+)%.[^/]+$")
+end
+
+function PreloadScene.extract_key_path(path)
+    return string.match(path, "^(.*)%.[^/]+$")
+end
+
 function PreloadScene:init(args)
     self.nvg                = args.nvg or R.Nvg.new(0)
     self.ms                 = args.ms or 10
+    self.extract_key        = args.extract_key or self.extract_key_base
     self.on_done            = args.on_done or error("No on_done callback given")
     self.loaded             = get_empty_loaded()
     self.current            = 1
@@ -199,9 +212,10 @@ PreloadScene["load_type_texture.png"] = function (self, key, path)
 end
 
 function PreloadScene:load_resource(path)
-    local key, suffix = string.match(path, "([^/%.]+)%.([^/]+)$")
-    local loader      = self["load_type_" .. suffix]
+    local suffix = string.match(path, "%.([^/]+)$")
+    local loader = self["load_type_" .. suffix]
     if loader then
+        local key                     = self.extract_key(path)
         local prefix, asset_or_reason = loader(self, key, path)
         if prefix then
             if self.loaded[prefix][key] then

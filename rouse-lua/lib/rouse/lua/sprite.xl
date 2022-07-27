@@ -367,6 +367,60 @@ INDEX ... index
     return 1;
 END
 
+@c
+
+static int push_sprite_or_nil(lua_State *L, R_Sprite *sprite)
+{
+    if (sprite) {
+        XL_pushnewpptypeuv(L, R_sprite_incref(sprite), "R_Sprite", 0);
+    }
+    else {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+
+static int child_iterator(lua_State *L)
+{
+    if (lua_toboolean(L, 2)) {
+        lua_getfield(L, 2, "next");
+    }
+    else {
+        lua_getfield(L, 1, "first_child");
+    }
+    return 1;
+}
+
+@xl
+
+INDEX ... first_child
+    return push_sprite_or_nil(L, R_sprite_child_first(self));
+END
+
+INDEX ... next
+    return push_sprite_or_nil(L, R_sprite_next(self));
+END
+
+INDEX ... children
+    lua_newtable(L);
+    R_Sprite    *child = R_sprite_child_first(self);
+    lua_Integer index  = 1;
+    while (child) {
+        XL_pushnewpptypeuv(L, R_sprite_incref(child), "R_Sprite", 0);
+        lua_seti(L, -2, index);
+        child = R_sprite_next(child);
+        ++index;
+    }
+    return 1;
+END
+
+METHOD ... iterate_children()
+    XL_UNUSED(self);
+    lua_pushcfunction(L, child_iterator);
+    lua_pushvalue(L, 1);
+    return 2;
+END
+
 
 METHOD void draw(R_Nvg *nvg, int logical_width, int logical_height,
                  int target_width, int target_height) = R_sprite_draw

@@ -1261,6 +1261,66 @@ static int r_sprite_index_index_xl(lua_State *L)
     return 1;
 }
 
+
+static int push_sprite_or_nil(lua_State *L, R_Sprite *sprite)
+{
+    if (sprite) {
+        XL_pushnewpptypeuv(L, R_sprite_incref(sprite), "R_Sprite", 0);
+    }
+    else {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+
+static int child_iterator(lua_State *L)
+{
+    if (lua_toboolean(L, 2)) {
+        lua_getfield(L, 2, "next");
+    }
+    else {
+        lua_getfield(L, 1, "first_child");
+    }
+    return 1;
+}
+
+
+static int r_sprite_first_child_index_xl(lua_State *L)
+{
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
+    return push_sprite_or_nil(L, R_sprite_child_first(self));
+}
+
+static int r_sprite_next_index_xl(lua_State *L)
+{
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
+    return push_sprite_or_nil(L, R_sprite_next(self));
+}
+
+static int r_sprite_children_index_xl(lua_State *L)
+{
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
+    lua_newtable(L);
+    R_Sprite    *child = R_sprite_child_first(self);
+    lua_Integer index  = 1;
+    while (child) {
+        XL_pushnewpptypeuv(L, R_sprite_incref(child), "R_Sprite", 0);
+        lua_seti(L, -2, index);
+        child = R_sprite_next(child);
+        ++index;
+    }
+    return 1;
+}
+
+static int r_sprite_method_iterate_children_xl(lua_State *L)
+{
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
+    XL_UNUSED(self);
+    lua_pushcfunction(L, child_iterator);
+    lua_pushvalue(L, 1);
+    return 2;
+}
+
 static int r_sprite_method_draw_xl(lua_State *L)
 {
     R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
@@ -1338,11 +1398,14 @@ static luaL_Reg r_sprite_index_registry_xl[] = {
     {"base", r_sprite_base_index_xl},
     {"base_x", r_sprite_base_x_index_xl},
     {"base_y", r_sprite_base_y_index_xl},
+    {"children", r_sprite_children_index_xl},
     {"color", r_sprite_color_index_xl},
     {"content", r_sprite_content_index_xl},
+    {"first_child", r_sprite_first_child_index_xl},
     {"index", r_sprite_index_index_xl},
     {"matrix", r_sprite_matrix_index_xl},
     {"name", r_sprite_name_index_xl},
+    {"next", r_sprite_next_index_xl},
     {"origin", r_sprite_origin_index_xl},
     {"origin_x", r_sprite_origin_x_index_xl},
     {"origin_y", r_sprite_origin_y_index_xl},
@@ -1391,6 +1454,7 @@ static luaL_Reg r_sprite_method_registry_xl[] = {
     {"add_child_at", r_sprite_method_add_child_at_xl},
     {"child_index", r_sprite_method_child_index_xl},
     {"draw", r_sprite_method_draw_xl},
+    {"iterate_children", r_sprite_method_iterate_children_xl},
     {"orphan", r_sprite_method_orphan_xl},
     {"remove_child", r_sprite_method_remove_child_xl},
     {"reset_base", r_sprite_method_reset_base_xl},

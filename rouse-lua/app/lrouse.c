@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, 2020, 2021 askmeaboutloom
+ * Copyright (c) 2019 - 2022 askmeaboutloom
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -263,6 +263,14 @@ static void disallow_questionable_features_on_post_init(lua_State *L)
         lua_pushcclosure(L, disallow, 1);
         lua_rawset(L, -3);
         lua_pop(L, 1);
+
+        lua_getglobal(L, "R");
+        lua_getfield(L, -1, "Json");
+        lua_pushstring(L, "to_file");
+        lua_pushstring(L, "R.Json.to_file");
+        lua_pushcclosure(L, disallow, 1);
+        lua_settable(L, -3);
+        lua_pop(L, 2);
     }
 }
 

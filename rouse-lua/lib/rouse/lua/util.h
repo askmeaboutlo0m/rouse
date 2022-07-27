@@ -107,6 +107,11 @@ static inline float R_lua_n2float(lua_Number x)
     return (float) x;
 }
 
+static inline double R_lua_n2double(lua_Number x)
+{
+    return (double) x;
+}
+
 static inline lua_Integer R_lua_size2i(size_t x)
 {
     return (lua_Integer) x;

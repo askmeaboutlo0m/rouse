@@ -4,7 +4,7 @@
 /* Modify the matching .xl file and rebuild.     */
 /*************************************************/
 /*
- * Copyright (c) 2019 askmeaboutloom
+ * Copyright (c) 2019 - 2022 askmeaboutloom
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -127,6 +127,169 @@ static int r_json_parse_file_xl(lua_State *L)
     return push_table_from_json(L, value);
 }
 
+
+static int to_json_value(lua_State *L);
+
+static JSON_Value *table_to_json_array(lua_State *L, lua_Integer numeric_keys)
+{
+    lua_Integer len = luaL_len(L, 1);
+    if (len != numeric_keys) {
+        R_LUA_DIE(L, "Numeric keys not sequential (%I keys with length %I)",
+                  numeric_keys, len);
+    }
+
+    JSON_Value *value = json_value_init_array();
+    JSON_Array *array = json_value_get_array(value);
+    for (int i = 0; i < len; ++i) {
+        lua_pushcfunction(L, to_json_value);
+        lua_geti(L, 1, i + 1);
+        if (lua_pcall(L, 1, 1, 0) == LUA_OK) {
+            JSON_Value *element = lua_touserdata(L, -1);
+            json_array_append_value(array, element);
+            lua_pop(L, 1);
+        }
+        else {
+            json_value_free(value);
+            lua_error(L);
+            R_UNREACHABLE();
+        }
+    }
+    return value;
+}
+
+static JSON_Value *table_to_json_object(lua_State *L)
+{
+    JSON_Value  *value  = json_value_init_object();
+    JSON_Object *object = json_value_get_object(value);
+    lua_pushnil(L);
+    while (lua_next(L, 1)) {
+        lua_pushcfunction(L, to_json_value);
+        lua_pushvalue(L, -2);
+        if (lua_pcall(L, 1, 1, 0) == LUA_OK) {
+            JSON_Value *element = lua_touserdata(L, -1);
+            const char *key     = lua_tostring(L, -3);
+            json_object_set_value(object, key, element);
+            lua_pop(L, 2); /* returned value and iteration value */
+        }
+        else {
+            json_value_free(value);
+            lua_error(L);
+            R_UNREACHABLE();
+        }
+    }
+    return value;
+}
+
+static JSON_Value *table_to_json(lua_State *L)
+{
+    lua_Integer numeric_keys = 0;
+    bool        string_keys  = false;
+    lua_pushnil(L);
+    while (lua_next(L, 1)) {
+        int type = lua_type(L, -2);
+        switch (type) {
+            case LUA_TNUMBER:
+                if (string_keys) {
+                    R_LUA_DIE(L, "Can't serialize table with both "
+                                 "string and numeric keys to JSON");
+                }
+                ++numeric_keys;
+                break;
+            case LUA_TSTRING:
+                if (numeric_keys != 0) {
+                    R_LUA_DIE(L, "Can't serialize table with both "
+                                 "string and numeric keys to JSON");
+                }
+                string_keys = true;
+                break;
+            default:
+                R_LUA_DIE(L, "Can't serialize table with %s key to JSON",
+                          lua_typename(L, type));
+        }
+        lua_pop(L, 1);
+    }
+
+    if (numeric_keys != 0) {
+        return table_to_json_array(L, numeric_keys);
+    }
+    else { /* string keys or empty table */
+        return table_to_json_object(L);
+    }
+}
+
+static JSON_Value *convert_to_json_value(lua_State *L)
+{
+    int type = lua_type(L, 1);
+    switch (type) {
+        case LUA_TNIL:
+            return json_value_init_null();
+        case LUA_TNUMBER:
+            return json_value_init_number(R_lua_n2double(lua_tonumber(L, 1)));
+        case LUA_TBOOLEAN:
+            return json_value_init_boolean(lua_toboolean(L, 1));
+        case LUA_TSTRING:
+            return json_value_init_string(lua_tostring(L, 1));
+        case LUA_TTABLE:
+            return table_to_json(L);
+        default:
+            R_LUA_DIE(L, "Can't serialize %s to JSON", lua_typename(L, type));
+    }
+}
+
+static int to_json_value(lua_State *L)
+{
+    JSON_Value *value = convert_to_json_value(L);
+    lua_pushlightuserdata(L, value);
+    return 1;
+}
+
+
+static int r_json_to_string_xl(lua_State *L)
+{
+    luaL_checkany(L, 1);
+    int x = 1;
+    bool pretty = lua_toboolean(L, 2);
+
+    lua_pushcfunction(L, to_json_value);
+    lua_pushvalue(L, x);
+    lua_call(L, 1, 1);
+
+    JSON_Value *value  = lua_touserdata(L, -1);
+    char       *string = pretty
+                       ? json_serialize_to_string_pretty(value)
+                       : json_serialize_to_string(value);
+    json_value_free(value);
+
+    lua_pushstring(L, string);
+    json_free_serialized_string(string);
+    return 1;
+}
+
+static int r_json_to_file_xl(lua_State *L)
+{
+    luaL_checkany(L, 1);
+    int x = 1;
+    const char *filename = luaL_checkstring(L, 2);
+    bool pretty = lua_toboolean(L, 3);
+
+    lua_pushcfunction(L, to_json_value);
+    lua_pushvalue(L, x);
+    lua_call(L, 1, 1);
+
+    JSON_Value  *value = lua_touserdata(L, -1);
+    JSON_Status status = pretty
+                       ? json_serialize_to_file_pretty(value, filename)
+                       : json_serialize_to_file(value, filename);
+    json_value_free(value);
+
+    if (status == JSONSuccess) {
+        return 0;
+    }
+    else {
+        return luaL_error(L, "Error writing JSON to file '%s'", filename);
+    }
+}
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -134,6 +297,8 @@ extern "C" {
 static luaL_Reg r_json_function_registry_xl[] = {
     {"parse_file", r_json_parse_file_xl},
     {"parse_string", r_json_parse_string_xl},
+    {"to_file", r_json_to_file_xl},
+    {"to_string", r_json_to_string_xl},
     {NULL, NULL},
 };
 

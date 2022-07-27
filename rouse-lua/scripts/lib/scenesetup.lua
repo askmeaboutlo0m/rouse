@@ -207,11 +207,28 @@ function SceneSetup:move(name, target_index)
 end
 
 
-function SceneSetup:json(key)
+function SceneSetup:json(key, modify_spec)
     local json = self.scene:json_asset(key)
     for i, spec in ipairs(json) do
-        self:add_spec(spec)
+        if modify_spec then
+            spec = modify_spec(spec)
+        end
+        if spec then
+            self:add_spec(spec)
+        end
     end
+end
+
+function SceneSetup:json_prefixed(key, prefix)
+    if not prefix then
+        prefix = key .. "/"
+    end
+    return self:json(prefix .. key, function (spec)
+        if spec.content then
+            spec.content = prefix .. spec.content
+        end
+        return spec
+    end)
 end
 
 function SceneSetup:add(name)

@@ -154,7 +154,7 @@ static int sdl_mouse_x_staticindex_xl(lua_State *L)
 static int sdl_mouse_y_staticindex_xl(lua_State *L)
 {
     int RETVAL;
-    SDL_GetMouseState(&RETVAL, NULL);
+    SDL_GetMouseState(NULL, &RETVAL);
     XL_pushint(L, RETVAL);
     return 1;
 }

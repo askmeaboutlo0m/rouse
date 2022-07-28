@@ -114,7 +114,7 @@ STATICINDEX int SDL.mouse_x
 END
 
 STATICINDEX int SDL.mouse_y
-    SDL_GetMouseState(&RETVAL, NULL);
+    SDL_GetMouseState(NULL, &RETVAL);
 END
 
 

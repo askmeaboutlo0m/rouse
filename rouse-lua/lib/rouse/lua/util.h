@@ -58,6 +58,15 @@
     } while (0)
 
 
+static inline lua_State *R_lua_main_state(lua_State *L)
+{
+    lua_rawgeti(L, LUA_REGISTRYINDEX, LUA_RIDX_MAINTHREAD);
+    lua_State *main_state = lua_tothread(L, -1);
+    lua_pop(L, 1);
+    return main_state;
+}
+
+
 static inline int R_lua_pcall(lua_State *L, int nargs, int nresults)
 {
     int msgh = lua_gettop(L) - nargs;

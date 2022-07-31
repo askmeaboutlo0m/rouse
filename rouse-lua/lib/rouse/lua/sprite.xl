@@ -78,7 +78,7 @@ typedef struct R_LuaSpriteData {
 static R_UserData lua_sprite_data_new(lua_State *L)
 {
     R_LuaSpriteData *data = R_NEW_INIT_STRUCT(data, R_LuaSpriteData,
-        R_MAGIC_INIT(R_LuaSpriteData) L, LUA_NOREF, LUA_NOREF);
+        R_MAGIC_INIT(R_LuaSpriteData) R_lua_main_state(L), LUA_NOREF, LUA_NOREF);
     R_MAGIC_CHECK(R_LuaSpriteData, data);
     return R_user_data(data);
 }

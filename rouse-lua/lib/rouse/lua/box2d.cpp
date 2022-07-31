@@ -142,6 +142,175 @@ static int b2shape_method_gc_xl(lua_State *L)
     return 0;
 }
 
+static int b2shape_type_index_xl(lua_State *L)
+{
+    b2Shape *self = R_CPPCAST(b2Shape *, XL_checkpptype(L, 1, "b2Shape"));
+    lua_Integer RETVAL;
+    RETVAL = static_cast<lua_Integer>(self->GetType());
+    lua_pushinteger(L, RETVAL);
+    return 1;
+}
+
+static int b2shape_type_name_index_xl(lua_State *L)
+{
+    b2Shape *self = R_CPPCAST(b2Shape *, XL_checkpptype(L, 1, "b2Shape"));
+    b2Shape::Type type = self->GetType();
+    switch (type) {
+        case b2Shape::e_circle:
+            lua_pushliteral(L, "circle");
+            break;
+        case b2Shape::e_edge:
+            lua_pushliteral(L, "edge");
+            break;
+        case b2Shape::e_polygon:
+            lua_pushliteral(L, "polygon");
+            break;
+        case b2Shape::e_chain:
+            lua_pushliteral(L, "chain");
+            break;
+        default:
+            R_LUA_DIE(L, "Unknown shape type %d", static_cast<int>(type));
+    }
+    return 1;
+}
+
+static int b2shape_method_validate_xl(lua_State *L)
+{
+    b2Shape *self = R_CPPCAST(b2Shape *, XL_checkpptype(L, 1, "b2Shape"));
+    bool RETVAL;
+    if (self->GetType() == b2Shape::e_polygon) {
+        RETVAL = static_cast<b2PolygonShape *>(self)->Validate();
+    }
+    else {
+        RETVAL = true;
+    }
+    lua_pushboolean(L, RETVAL);
+    return 1;
+}
+
+static int b2shape_centroid_index_xl(lua_State *L)
+{
+    b2Shape *self = R_CPPCAST(b2Shape *, XL_checkpptype(L, 1, "b2Shape"));
+    if (self->GetType() == b2Shape::e_polygon) {
+        R_V2 centroid = to_v2(static_cast<b2PolygonShape *>(self)->m_centroid);
+        XL_pushnewutypeuv(L, &centroid, sizeof(centroid), "R_V2", 0);
+    }
+    else {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+
+static int b2shape_vertex_count_index_xl(lua_State *L)
+{
+    b2Shape *self = R_CPPCAST(b2Shape *, XL_checkpptype(L, 1, "b2Shape"));
+    if (self->GetType() == b2Shape::e_polygon) {
+        lua_pushinteger(L, static_cast<b2PolygonShape *>(self)->m_count);
+    }
+    else {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+
+static int b2shape_method_vertex_at_xl(lua_State *L)
+{
+    b2Shape *self = R_CPPCAST(b2Shape *, XL_checkpptype(L, 1, "b2Shape"));
+    int index = XL_checkint(L, 2);
+    if (index >= 1 && self->GetType() == b2Shape::e_polygon) {
+        b2PolygonShape *shape = static_cast<b2PolygonShape *>(self);
+        int            count  = shape->m_count;
+        if (index <= count) {
+            R_V2 vertex = to_v2(shape->m_vertices[index - 1]);
+            XL_pushnewutypeuv(L, &vertex, sizeof(vertex), "R_V2", 0);
+            return 1;
+        }
+    }
+    lua_pushnil(L);
+    return 1;
+}
+
+static int b2shape_method_normal_at_xl(lua_State *L)
+{
+    b2Shape *self = R_CPPCAST(b2Shape *, XL_checkpptype(L, 1, "b2Shape"));
+    int index = XL_checkint(L, 2);
+    if (index >= 1 && self->GetType() == b2Shape::e_polygon) {
+        b2PolygonShape *shape = static_cast<b2PolygonShape *>(self);
+        int            count  = shape->m_count;
+        if (index <= count) {
+            R_V2 normal = to_v2(shape->m_normals[index - 1]);
+            XL_pushnewutypeuv(L, &normal, sizeof(normal), "R_V2", 0);
+            return 1;
+        }
+    }
+    lua_pushnil(L);
+    return 1;
+}
+
+
+static b2Transform get_optional_xf(lua_State *L, int position_index,
+                                   int angle_index)
+{
+    b2Transform tf;
+    if (lua_isnoneornil(L, position_index)) {
+        tf.p.Set(0.0f, 0.0f);
+    }
+    else {
+        R_V2 *v2 = static_cast<R_V2 *>(XL_checkutype(L, position_index, "R_V2"));
+        tf.p.Set(v2->x, v2->y);
+    }
+
+    if (lua_isnoneornil(L, angle_index)) {
+        tf.q.Set(0.0f);
+    }
+    else {
+        float angle = XL_checkfloat(L, angle_index);
+        tf.q.Set(angle);
+    }
+
+    return tf;
+}
+
+
+static int b2shape_method_test_point_xl(lua_State *L)
+{
+    b2Shape *self = R_CPPCAST(b2Shape *, XL_checkpptype(L, 1, "b2Shape"));
+    R_V2 point = *((R_V2 *)luaL_checkudata(L, 2, "R_V2"));
+    bool RETVAL;
+    b2Transform xf = get_optional_xf(L, 3, 4);
+    RETVAL = self->TestPoint(xf, from_v2(point));
+    lua_pushboolean(L, RETVAL);
+    return 1;
+}
+
+static int b2shape_method_ray_cast_xl(lua_State *L)
+{
+    b2Shape *self = R_CPPCAST(b2Shape *, XL_checkpptype(L, 1, "b2Shape"));
+    R_V2 p1 = *((R_V2 *)luaL_checkudata(L, 2, "R_V2"));
+    R_V2 p2 = *((R_V2 *)luaL_checkudata(L, 3, "R_V2"));
+    float max_fraction  = lua_isnoneornil(L, 4) ? 1.0f : XL_checkfloat(L, 4);
+    b2Transform xf      = get_optional_xf(L, 5, 6);
+    int32_t child_index = lua_isnoneornil(L, 7) ? 0 : XL_checkint32(L, 7);
+
+    b2RayCastInput input;
+    input.p1          = from_v2(p1);
+    input.p2          = from_v2(p2);
+    input.maxFraction = max_fraction;
+
+    b2RayCastOutput output;
+    if (self->RayCast(&output, input, xf, child_index)) {
+        lua_pushboolean(L, true);
+        XL_pushnewutypeuv(L, &output.normal, sizeof(R_V2), "R_V2", 0);
+        XL_pushfloat(L, output.fraction);
+    }
+    else {
+        lua_pushboolean(L, false);
+        lua_pushnil(L);
+        lua_pushnil(L);
+    }
+    return 3;
+}
+
 static int b2fixture_destroyed_index_xl(lua_State *L)
 {
     b2Fixture *self = R_CPPCAST(b2Fixture *, XL_checkpptype_nullable(L, 1, "b2Fixture"));
@@ -1012,9 +1181,10 @@ static int b2joint_index_xl(lua_State *L)
     return XL_index(L, "b2Joint", &b2joint_index_anchor_xl, 1, 2);
 }
 
+static int b2shape_index_anchor_xl;
 static int b2shape_index_xl(lua_State *L)
 {
-    return XL_index_fallback(L, "b2Shape", 1, 2);
+    return XL_index(L, "b2Shape", &b2shape_index_anchor_xl, 1, 2);
 }
 
 static int b2world_index_xl(lua_State *L)
@@ -1085,6 +1255,14 @@ static luaL_Reg b2joint_index_registry_xl[] = {
     {NULL, NULL},
 };
 
+static luaL_Reg b2shape_index_registry_xl[] = {
+    {"centroid", b2shape_centroid_index_xl},
+    {"type", b2shape_type_index_xl},
+    {"type_name", b2shape_type_name_index_xl},
+    {"vertex_count", b2shape_vertex_count_index_xl},
+    {NULL, NULL},
+};
+
 static luaL_Reg r_luab2motorjointdef_method_registry_xl[] = {
     {"__newindex", r_luab2motorjointdef_newindex_xl},
     {NULL, NULL},
@@ -1132,6 +1310,11 @@ static luaL_Reg b2joint_method_registry_xl[] = {
 static luaL_Reg b2shape_method_registry_xl[] = {
     {"__gc", b2shape_method_gc_xl},
     {"__index", b2shape_index_xl},
+    {"normal_at", b2shape_method_normal_at_xl},
+    {"ray_cast", b2shape_method_ray_cast_xl},
+    {"test_point", b2shape_method_test_point_xl},
+    {"validate", b2shape_method_validate_xl},
+    {"vertex_at", b2shape_method_vertex_at_xl},
     {NULL, NULL},
 };
 
@@ -1239,6 +1422,7 @@ int R_lua_box2d_init(lua_State *L)
     XL_initindextable(L, &b2body_index_anchor_xl, b2body_index_registry_xl);
     XL_initindextable(L, &b2fixture_index_anchor_xl, b2fixture_index_registry_xl);
     XL_initindextable(L, &b2joint_index_anchor_xl, b2joint_index_registry_xl);
+    XL_initindextable(L, &b2shape_index_anchor_xl, b2shape_index_registry_xl);
     XL_initnewindextable(L, &r_luab2motorjointdef_newindex_anchor_xl, r_luab2motorjointdef_newindex_registry_xl);
     XL_initnewindextable(L, &r_luab2revolutejointdef_newindex_anchor_xl, r_luab2revolutejointdef_newindex_registry_xl);
     XL_initnewindextable(L, &b2body_newindex_anchor_xl, b2body_newindex_registry_xl);

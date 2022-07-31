@@ -147,6 +147,145 @@ END
 
 DESTRUCTOR = .delete
 
+INDEX lua_Integer type
+    RETVAL = static_cast<lua_Integer>(self->GetType());
+END
+
+INDEX ... type_name
+    b2Shape::Type type = self->GetType();
+    switch (type) {
+        case b2Shape::e_circle:
+            lua_pushliteral(L, "circle");
+            break;
+        case b2Shape::e_edge:
+            lua_pushliteral(L, "edge");
+            break;
+        case b2Shape::e_polygon:
+            lua_pushliteral(L, "polygon");
+            break;
+        case b2Shape::e_chain:
+            lua_pushliteral(L, "chain");
+            break;
+        default:
+            R_LUA_DIE(L, "Unknown shape type %d", static_cast<int>(type));
+    }
+    return 1;
+END
+
+METHOD bool validate()
+    if (self->GetType() == b2Shape::e_polygon) {
+        RETVAL = static_cast<b2PolygonShape *>(self)->Validate();
+    }
+    else {
+        RETVAL = true;
+    }
+END
+
+INDEX ... centroid
+    if (self->GetType() == b2Shape::e_polygon) {
+        R_V2 centroid = to_v2(static_cast<b2PolygonShape *>(self)->m_centroid);
+        XL_pushnewutypeuv(L, &centroid, sizeof(centroid), "R_V2", 0);
+    }
+    else {
+        lua_pushnil(L);
+    }
+    return 1;
+END
+
+INDEX ... vertex_count
+    if (self->GetType() == b2Shape::e_polygon) {
+        lua_pushinteger(L, static_cast<b2PolygonShape *>(self)->m_count);
+    }
+    else {
+        lua_pushnil(L);
+    }
+    return 1;
+END
+
+METHOD ... vertex_at(int index)
+    if (index >= 1 && self->GetType() == b2Shape::e_polygon) {
+        b2PolygonShape *shape = static_cast<b2PolygonShape *>(self);
+        int            count  = shape->m_count;
+        if (index <= count) {
+            R_V2 vertex = to_v2(shape->m_vertices[index - 1]);
+            XL_pushnewutypeuv(L, &vertex, sizeof(vertex), "R_V2", 0);
+            return 1;
+        }
+    }
+    lua_pushnil(L);
+    return 1;
+END
+
+METHOD ... normal_at(int index)
+    if (index >= 1 && self->GetType() == b2Shape::e_polygon) {
+        b2PolygonShape *shape = static_cast<b2PolygonShape *>(self);
+        int            count  = shape->m_count;
+        if (index <= count) {
+            R_V2 normal = to_v2(shape->m_normals[index - 1]);
+            XL_pushnewutypeuv(L, &normal, sizeof(normal), "R_V2", 0);
+            return 1;
+        }
+    }
+    lua_pushnil(L);
+    return 1;
+END
+
+@c
+
+static b2Transform get_optional_xf(lua_State *L, int position_index,
+                                   int angle_index)
+{
+    b2Transform tf;
+    if (lua_isnoneornil(L, position_index)) {
+        tf.p.Set(0.0f, 0.0f);
+    }
+    else {
+        R_V2 *v2 = static_cast<R_V2 *>(XL_checkutype(L, position_index, "R_V2"));
+        tf.p.Set(v2->x, v2->y);
+    }
+
+    if (lua_isnoneornil(L, angle_index)) {
+        tf.q.Set(0.0f);
+    }
+    else {
+        float angle = XL_checkfloat(L, angle_index);
+        tf.q.Set(angle);
+    }
+
+    return tf;
+}
+
+@xl
+
+METHOD bool test_point(R_V2 point)
+    b2Transform xf = get_optional_xf(L, 3, 4);
+    RETVAL = self->TestPoint(xf, from_v2(point));
+END
+
+METHOD ... ray_cast(R_V2 p1, R_V2 p2)
+    float max_fraction  = lua_isnoneornil(L, 4) ? 1.0f : XL_checkfloat(L, 4);
+    b2Transform xf      = get_optional_xf(L, 5, 6);
+    int32_t child_index = lua_isnoneornil(L, 7) ? 0 : XL_checkint32(L, 7);
+
+    b2RayCastInput input;
+    input.p1          = from_v2(p1);
+    input.p2          = from_v2(p2);
+    input.maxFraction = max_fraction;
+
+    b2RayCastOutput output;
+    if (self->RayCast(&output, input, xf, child_index)) {
+        lua_pushboolean(L, true);
+        XL_pushnewutypeuv(L, &output.normal, sizeof(R_V2), "R_V2", 0);
+        XL_pushfloat(L, output.fraction);
+    }
+    else {
+        lua_pushboolean(L, false);
+        lua_pushnil(L);
+        lua_pushnil(L);
+    }
+    return 3;
+END
+
 
 PPTYPE b2Fixture 1
 

@@ -200,7 +200,7 @@ function SceneBase:image_asset(key)
 end
 
 function SceneBase:json_asset(key)
-    return self:asset("json", key)
+    return R.Json.parse_file(self:asset("json", key))
 end
 
 function SceneBase:model_asset(key)

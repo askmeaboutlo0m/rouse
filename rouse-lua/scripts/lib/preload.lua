@@ -179,7 +179,7 @@ PreloadScene.load_type_frag = false
 PreloadScene.load_type_vert = false
 
 function PreloadScene:load_type_json(key, path)
-    return "json", R.Json.parse_file(path)
+    return "json", path
 end
 
 function PreloadScene:load_type_ogg(key, path)

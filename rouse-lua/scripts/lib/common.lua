@@ -182,6 +182,17 @@ function string.split(s, pattern)
 end
 
 
+function math.clamp(value, min, max)
+    if value < min then
+        return min
+    elseif value > max then
+        return max
+    else
+        return value
+    end
+end
+
+
 function simple_main_args(args)
     local msaa      = args.msaa
     local have_msaa = msaa and msaa > 1

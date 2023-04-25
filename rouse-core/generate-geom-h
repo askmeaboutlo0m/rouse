@@ -235,6 +235,9 @@ typedef versors R_Qn;
 typedef mat3s   R_M3;
 typedef mat4s   R_M4;
 
+#define R_V2_GL(V) ((V).raw)
+#define R_V3_GL(V) ((V).raw)
+#define R_V4_GL(V) ((V).raw)
 #define R_M3_GL(M) (*(M).raw)
 #define R_M4_GL(M) (*(M).raw)
 

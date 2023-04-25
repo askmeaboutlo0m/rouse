@@ -34,6 +34,13 @@
 #include "common.h"
 #include "parse.h"
 
+/* Windows not supporting isnan and isinf properly. */
+#ifdef _WIN32
+#   define IS_NORMAL(X) (!isnan((float)(X)) && !isinf((float)(X)))
+#else
+#   define IS_NORMAL(X) (!isnan(X) && !isinf(X))
+#endif
+
 
 R_Parse R_parse(const char *title, R_ParseReadFn read, R_UserData user,
                 int bufsize, unsigned char buffer[static bufsize])
@@ -120,7 +127,7 @@ float R_parse_read_float(R_Parse *parse)
     char  *end;
     char  *buffer = (char *)parse->buffer;
     float value   = strtof(buffer, &end);
-    if (end == buffer + len && !isnan(value) && !isinf(value)) {
+    if (end == buffer + len && IS_NORMAL(value)) {
         return value;
     }
     else {
@@ -142,7 +149,7 @@ double R_parse_read_double(R_Parse *parse)
     char  *end;
     char  *buffer = (char *)parse->buffer;
     double value  = strtod(buffer, &end);
-    if (end == buffer + len && !isnan(value) && !isinf(value)) {
+    if (end == buffer + len && IS_NORMAL(value)) {
         return value;
     }
     else {

@@ -223,8 +223,8 @@ void R_binder_draw_mesh_by_name(void *subject, R_UserData arg)
 
 static void bind_index_buffer(R_Attribute *attr, unsigned int buffer)
 {
-    R_AttributeType type = R_attribute_type(attr);
-    R_assert(type == R_ATTRIBUTE_TYPE_USHORT, "index buffer must be ushort");
+    R_assert(R_attribute_type(attr) == R_ATTRIBUTE_TYPE_USHORT,
+             "index buffer must be ushort");
     R_debug("bind index buffer '%s'",
             R_attribute_name(attr) ? R_attribute_name(attr) : "");
     R_GL_CLEAR_ERROR();

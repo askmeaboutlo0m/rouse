@@ -28,5 +28,4 @@
 
 #ifdef NDEBUG
 #   define IMGUI_DISABLE_DEMO_WINDOW
-#   define IMGUI_DISABLE_METRICS_WINDOW
 #endif

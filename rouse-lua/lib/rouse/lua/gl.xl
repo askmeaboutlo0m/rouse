@@ -38,6 +38,87 @@ UTYPE  R_V4
 UTYPE  R_M4
 
 
+@@PERL
+
+my %identity = (
+    Float => '0.0f',
+    V2 => 'glms_vec2_zero()',
+    V3 => 'glms_vec3_zero()',
+    V4 => 'glms_vec4_zero()',
+    M4 => 'glms_mat4_identity()',
+);
+
+for my $type (qw(Float V2 V3 V4 M4)) {
+    my $check  = sprintf 'check_%s_array_index', lc $type;
+    my $struct = sprintf 'R_Lua%sArray', $type;
+    my $utype  = sprintf 'R.%sArray', $type;
+    my $geom   = $type eq 'Float' ? 'float' : sprintf 'R_%s', $type;
+    print <<END_OF_XL;
+
+\@c
+
+typedef struct $struct {
+    R_MAGIC_FIELD
+    int count;
+    $geom values[];
+} $struct;
+
+static void $check(lua_State *L, $struct *self, int index)
+{
+    int count = self->count;
+    if (index < 1 || index > count) {
+        R_LUA_DIE(L, "$geom array index %d not in [1, %d]", index, count);
+    }
+}
+
+\@xl
+
+UTYPE $struct $utype
+
+FUNCTION ... $utype.new(int count)
+    if (count < 0) {
+        R_LUA_DIE(L, "$geom array size %d is less than 0", count);
+    }
+
+    $struct *self;
+    size_t size = sizeof(*self) + R_int2size(count) * sizeof(*self->values);
+    self = lua_newuserdatauv(L, size, 0);
+    luaL_setmetatable(L, "$struct");
+
+    R_MAGIC_SET($struct, self);
+    self->count = count;
+    for (int i = 0; i < count; ++i) {
+        self->values[i] = $identity{$type};
+    }
+
+    return 1;
+END
+
+FIELD int count
+
+INTINDEX $geom
+    R_MAGIC_CHECK($struct, self);
+    $check(L, self, INDEX);
+    RETVAL = self->values[INDEX - 1];
+END
+
+INTNEWINDEX $geom
+    R_MAGIC_CHECK($struct, self);
+    $check(L, self, INDEX);
+    self->values[INDEX - 1] = VALUE;
+END
+
+METHOD int __len()
+    R_MAGIC_CHECK($struct, self);
+    RETVAL = self->count;
+END
+
+END_OF_XL
+}
+
+@@END
+
+
 FUNCTION void R.GL.clear_color(float r, float g, float b, float a)
     R_GL_CLEAR_ERROR();
     R_GL(glClearColor, r, g, b, a);
@@ -121,6 +202,42 @@ FUNCTION void R.GL.uniform_m4(int location, R_M4 *m4)
     R_GL(glUniformMatrix4fv, location, 1, GL_FALSE, R_M4_GL(*m4));
 END
 
+FUNCTION void R.GL.uniform_v2_array(int location, R_LuaV2Array *v2s)
+    R_MAGIC_CHECK(R_LuaV2Array, v2s);
+    int argc  = lua_gettop(L);
+    int count = argc >= 3 ? XL_checkint(L, 3) : v2s->count;
+    check_v2_array_index(L, v2s, count);
+    R_GL_CLEAR_ERROR();
+    R_GL(glUniform2fv, location, count, R_V2_GL(*v2s->values));
+END
+
+FUNCTION void R.GL.uniform_v3_array(int location, R_LuaV3Array *v3s)
+    R_MAGIC_CHECK(R_LuaV3Array, v3s);
+    int argc  = lua_gettop(L);
+    int count = argc >= 3 ? XL_checkint(L, 3) : v3s->count;
+    check_v3_array_index(L, v3s, count);
+    R_GL_CLEAR_ERROR();
+    R_GL(glUniform3fv, location, count, R_V3_GL(*v3s->values));
+END
+
+FUNCTION void R.GL.uniform_v4_array(int location, R_LuaV4Array *v4s)
+    R_MAGIC_CHECK(R_LuaV4Array, v4s);
+    int argc  = lua_gettop(L);
+    int count = argc >= 3 ? XL_checkint(L, 3) : v4s->count;
+    check_v4_array_index(L, v4s, count);
+    R_GL_CLEAR_ERROR();
+    R_GL(glUniform4fv, location, count, R_V4_GL(*v4s->values));
+END
+
+FUNCTION void R.GL.uniform_m4_array(int location, R_LuaM4Array *m4s)
+    R_MAGIC_CHECK(R_LuaM4Array, m4s);
+    int argc  = lua_gettop(L);
+    int count = argc >= 3 ? XL_checkint(L, 3) : m4s->count;
+    check_m4_array_index(L, m4s, count);
+    R_GL_CLEAR_ERROR();
+    R_GL(glUniformMatrix4fv, location, count, GL_FALSE, R_M4_GL(*m4s->values));
+END
+
 
 FUNCTION void R.GL.enable(unsigned int cap)
     R_GL_CLEAR_ERROR();
@@ -185,6 +302,20 @@ FUNCTION void R.GL.disable_all_vertex_attrib_arrays()
     }
 END
 
+FUNCTION void R.GL.buffer_data_float(R_LuaFloatArray *floats,
+                                     unsigned int target, unsigned int usage)
+    R_MAGIC_CHECK(R_LuaFloatArray, floats);
+    R_GL_CLEAR_ERROR();
+    size_t size = R_int2size(floats->count) * sizeof(*floats->values);
+    R_GL(glBufferData, target, R_size2ptrdiff(size), floats->values, usage);
+END
+
+FUNCTION void R.GL.vertex_attrib_pointer(unsigned int index, int size,
+                                         unsigned int type, bool normalized,
+                                         int stride)
+    R_GL_CLEAR_ERROR();
+    R_GL(glVertexAttribPointer, index, size, type, normalized, stride, NULL);
+END
 
 FUNCTION void R.GL.draw_arrays(unsigned int mode, int first, int count)
     R_GL_CLEAR_ERROR();

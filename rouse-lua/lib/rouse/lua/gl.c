@@ -4,7 +4,7 @@
 /* Modify the matching .xl file and rebuild.     */
 /*************************************************/
 /*
- * Copyright (c) 2019 askmeaboutloom
+ * Copyright (c) 2019 - 2022 askmeaboutloom
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,441 @@ typedef unsigned int R_LuaGlBuffer;
 typedef unsigned int R_LuaGlProgram;
 typedef unsigned int R_LuaGlTexture;
 
+
+
+typedef struct R_LuaFloatArray {
+    R_MAGIC_FIELD
+    int count;
+    float values[];
+} R_LuaFloatArray;
+
+static void check_float_array_index(lua_State *L, R_LuaFloatArray *self, int index)
+{
+    int count = self->count;
+    if (index < 1 || index > count) {
+        R_LUA_DIE(L, "float array index %d not in [1, %d]", index, count);
+    }
+}
+
+
+static int r_floatarray_new_xl(lua_State *L)
+{
+    int count = XL_checkint(L, 1);
+    if (count < 0) {
+        R_LUA_DIE(L, "float array size %d is less than 0", count);
+    }
+
+    R_LuaFloatArray *self;
+    size_t size = sizeof(*self) + R_int2size(count) * sizeof(*self->values);
+    self = lua_newuserdatauv(L, size, 0);
+    luaL_setmetatable(L, "R_LuaFloatArray");
+
+    R_MAGIC_SET(R_LuaFloatArray, self);
+    self->count = count;
+    for (int i = 0; i < count; ++i) {
+        self->values[i] = 0.0f;
+    }
+
+    return 1;
+}
+
+static int r_luafloatarray_count_index_xl(lua_State *L)
+{
+    R_LuaFloatArray *self = R_CPPCAST(R_LuaFloatArray *, XL_checkutype(L, 1, "R_LuaFloatArray"));
+    int RETVAL;
+    RETVAL = self->count;
+    XL_pushint(L, RETVAL);
+    return 1;
+}
+
+static int r_luafloatarray_count_newindex_xl(lua_State *L)
+{
+    R_LuaFloatArray *self = R_CPPCAST(R_LuaFloatArray *, XL_checkutype(L, 1, "R_LuaFloatArray"));
+    int VALUE = XL_checkint(L, 2);
+    self->count = VALUE;
+    return 0;
+}
+
+static int r_luafloatarray_intindex_xl(lua_State *L)
+{
+    R_LuaFloatArray *self = R_CPPCAST(R_LuaFloatArray *, XL_checkutype(L, 1, "R_LuaFloatArray"));
+    lua_Integer INDEX = luaL_checkinteger(L, 2);
+    float RETVAL;
+    R_MAGIC_CHECK(R_LuaFloatArray, self);
+    check_float_array_index(L, self, INDEX);
+    RETVAL = self->values[INDEX - 1];
+    XL_pushfloat(L, RETVAL);
+    return 1;
+}
+
+static int r_luafloatarray_intnewindex_xl(lua_State *L)
+{
+    R_LuaFloatArray *self = R_CPPCAST(R_LuaFloatArray *, XL_checkutype(L, 1, "R_LuaFloatArray"));
+    lua_Integer INDEX = luaL_checkinteger(L, 2);
+    float VALUE = XL_checkfloat(L, 3);
+    R_MAGIC_CHECK(R_LuaFloatArray, self);
+    check_float_array_index(L, self, INDEX);
+    self->values[INDEX - 1] = VALUE;
+    return 0;
+}
+
+static int r_luafloatarray_method_len_xl(lua_State *L)
+{
+    R_LuaFloatArray *self = R_CPPCAST(R_LuaFloatArray *, XL_checkutype(L, 1, "R_LuaFloatArray"));
+    int RETVAL;
+    R_MAGIC_CHECK(R_LuaFloatArray, self);
+    RETVAL = self->count;
+    XL_pushint(L, RETVAL);
+    return 1;
+}
+
+
+typedef struct R_LuaV2Array {
+    R_MAGIC_FIELD
+    int count;
+    R_V2 values[];
+} R_LuaV2Array;
+
+static void check_v2_array_index(lua_State *L, R_LuaV2Array *self, int index)
+{
+    int count = self->count;
+    if (index < 1 || index > count) {
+        R_LUA_DIE(L, "R_V2 array index %d not in [1, %d]", index, count);
+    }
+}
+
+
+static int r_v2array_new_xl(lua_State *L)
+{
+    int count = XL_checkint(L, 1);
+    if (count < 0) {
+        R_LUA_DIE(L, "R_V2 array size %d is less than 0", count);
+    }
+
+    R_LuaV2Array *self;
+    size_t size = sizeof(*self) + R_int2size(count) * sizeof(*self->values);
+    self = lua_newuserdatauv(L, size, 0);
+    luaL_setmetatable(L, "R_LuaV2Array");
+
+    R_MAGIC_SET(R_LuaV2Array, self);
+    self->count = count;
+    for (int i = 0; i < count; ++i) {
+        self->values[i] = glms_vec2_zero();
+    }
+
+    return 1;
+}
+
+static int r_luav2array_count_index_xl(lua_State *L)
+{
+    R_LuaV2Array *self = R_CPPCAST(R_LuaV2Array *, XL_checkutype(L, 1, "R_LuaV2Array"));
+    int RETVAL;
+    RETVAL = self->count;
+    XL_pushint(L, RETVAL);
+    return 1;
+}
+
+static int r_luav2array_count_newindex_xl(lua_State *L)
+{
+    R_LuaV2Array *self = R_CPPCAST(R_LuaV2Array *, XL_checkutype(L, 1, "R_LuaV2Array"));
+    int VALUE = XL_checkint(L, 2);
+    self->count = VALUE;
+    return 0;
+}
+
+static int r_luav2array_intindex_xl(lua_State *L)
+{
+    R_LuaV2Array *self = R_CPPCAST(R_LuaV2Array *, XL_checkutype(L, 1, "R_LuaV2Array"));
+    lua_Integer INDEX = luaL_checkinteger(L, 2);
+    R_V2 RETVAL;
+    R_MAGIC_CHECK(R_LuaV2Array, self);
+    check_v2_array_index(L, self, INDEX);
+    RETVAL = self->values[INDEX - 1];
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V2), "R_V2", 0);
+    return 1;
+}
+
+static int r_luav2array_intnewindex_xl(lua_State *L)
+{
+    R_LuaV2Array *self = R_CPPCAST(R_LuaV2Array *, XL_checkutype(L, 1, "R_LuaV2Array"));
+    lua_Integer INDEX = luaL_checkinteger(L, 2);
+    R_V2 VALUE = *((R_V2 *)luaL_checkudata(L, 3, "R_V2"));
+    R_MAGIC_CHECK(R_LuaV2Array, self);
+    check_v2_array_index(L, self, INDEX);
+    self->values[INDEX - 1] = VALUE;
+    return 0;
+}
+
+static int r_luav2array_method_len_xl(lua_State *L)
+{
+    R_LuaV2Array *self = R_CPPCAST(R_LuaV2Array *, XL_checkutype(L, 1, "R_LuaV2Array"));
+    int RETVAL;
+    R_MAGIC_CHECK(R_LuaV2Array, self);
+    RETVAL = self->count;
+    XL_pushint(L, RETVAL);
+    return 1;
+}
+
+
+typedef struct R_LuaV3Array {
+    R_MAGIC_FIELD
+    int count;
+    R_V3 values[];
+} R_LuaV3Array;
+
+static void check_v3_array_index(lua_State *L, R_LuaV3Array *self, int index)
+{
+    int count = self->count;
+    if (index < 1 || index > count) {
+        R_LUA_DIE(L, "R_V3 array index %d not in [1, %d]", index, count);
+    }
+}
+
+
+static int r_v3array_new_xl(lua_State *L)
+{
+    int count = XL_checkint(L, 1);
+    if (count < 0) {
+        R_LUA_DIE(L, "R_V3 array size %d is less than 0", count);
+    }
+
+    R_LuaV3Array *self;
+    size_t size = sizeof(*self) + R_int2size(count) * sizeof(*self->values);
+    self = lua_newuserdatauv(L, size, 0);
+    luaL_setmetatable(L, "R_LuaV3Array");
+
+    R_MAGIC_SET(R_LuaV3Array, self);
+    self->count = count;
+    for (int i = 0; i < count; ++i) {
+        self->values[i] = glms_vec3_zero();
+    }
+
+    return 1;
+}
+
+static int r_luav3array_count_index_xl(lua_State *L)
+{
+    R_LuaV3Array *self = R_CPPCAST(R_LuaV3Array *, XL_checkutype(L, 1, "R_LuaV3Array"));
+    int RETVAL;
+    RETVAL = self->count;
+    XL_pushint(L, RETVAL);
+    return 1;
+}
+
+static int r_luav3array_count_newindex_xl(lua_State *L)
+{
+    R_LuaV3Array *self = R_CPPCAST(R_LuaV3Array *, XL_checkutype(L, 1, "R_LuaV3Array"));
+    int VALUE = XL_checkint(L, 2);
+    self->count = VALUE;
+    return 0;
+}
+
+static int r_luav3array_intindex_xl(lua_State *L)
+{
+    R_LuaV3Array *self = R_CPPCAST(R_LuaV3Array *, XL_checkutype(L, 1, "R_LuaV3Array"));
+    lua_Integer INDEX = luaL_checkinteger(L, 2);
+    R_V3 RETVAL;
+    R_MAGIC_CHECK(R_LuaV3Array, self);
+    check_v3_array_index(L, self, INDEX);
+    RETVAL = self->values[INDEX - 1];
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_luav3array_intnewindex_xl(lua_State *L)
+{
+    R_LuaV3Array *self = R_CPPCAST(R_LuaV3Array *, XL_checkutype(L, 1, "R_LuaV3Array"));
+    lua_Integer INDEX = luaL_checkinteger(L, 2);
+    R_V3 VALUE = *((R_V3 *)luaL_checkudata(L, 3, "R_V3"));
+    R_MAGIC_CHECK(R_LuaV3Array, self);
+    check_v3_array_index(L, self, INDEX);
+    self->values[INDEX - 1] = VALUE;
+    return 0;
+}
+
+static int r_luav3array_method_len_xl(lua_State *L)
+{
+    R_LuaV3Array *self = R_CPPCAST(R_LuaV3Array *, XL_checkutype(L, 1, "R_LuaV3Array"));
+    int RETVAL;
+    R_MAGIC_CHECK(R_LuaV3Array, self);
+    RETVAL = self->count;
+    XL_pushint(L, RETVAL);
+    return 1;
+}
+
+
+typedef struct R_LuaV4Array {
+    R_MAGIC_FIELD
+    int count;
+    R_V4 values[];
+} R_LuaV4Array;
+
+static void check_v4_array_index(lua_State *L, R_LuaV4Array *self, int index)
+{
+    int count = self->count;
+    if (index < 1 || index > count) {
+        R_LUA_DIE(L, "R_V4 array index %d not in [1, %d]", index, count);
+    }
+}
+
+
+static int r_v4array_new_xl(lua_State *L)
+{
+    int count = XL_checkint(L, 1);
+    if (count < 0) {
+        R_LUA_DIE(L, "R_V4 array size %d is less than 0", count);
+    }
+
+    R_LuaV4Array *self;
+    size_t size = sizeof(*self) + R_int2size(count) * sizeof(*self->values);
+    self = lua_newuserdatauv(L, size, 0);
+    luaL_setmetatable(L, "R_LuaV4Array");
+
+    R_MAGIC_SET(R_LuaV4Array, self);
+    self->count = count;
+    for (int i = 0; i < count; ++i) {
+        self->values[i] = glms_vec4_zero();
+    }
+
+    return 1;
+}
+
+static int r_luav4array_count_index_xl(lua_State *L)
+{
+    R_LuaV4Array *self = R_CPPCAST(R_LuaV4Array *, XL_checkutype(L, 1, "R_LuaV4Array"));
+    int RETVAL;
+    RETVAL = self->count;
+    XL_pushint(L, RETVAL);
+    return 1;
+}
+
+static int r_luav4array_count_newindex_xl(lua_State *L)
+{
+    R_LuaV4Array *self = R_CPPCAST(R_LuaV4Array *, XL_checkutype(L, 1, "R_LuaV4Array"));
+    int VALUE = XL_checkint(L, 2);
+    self->count = VALUE;
+    return 0;
+}
+
+static int r_luav4array_intindex_xl(lua_State *L)
+{
+    R_LuaV4Array *self = R_CPPCAST(R_LuaV4Array *, XL_checkutype(L, 1, "R_LuaV4Array"));
+    lua_Integer INDEX = luaL_checkinteger(L, 2);
+    R_V4 RETVAL;
+    R_MAGIC_CHECK(R_LuaV4Array, self);
+    check_v4_array_index(L, self, INDEX);
+    RETVAL = self->values[INDEX - 1];
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V4), "R_V4", 0);
+    return 1;
+}
+
+static int r_luav4array_intnewindex_xl(lua_State *L)
+{
+    R_LuaV4Array *self = R_CPPCAST(R_LuaV4Array *, XL_checkutype(L, 1, "R_LuaV4Array"));
+    lua_Integer INDEX = luaL_checkinteger(L, 2);
+    R_V4 VALUE = *((R_V4 *)luaL_checkudata(L, 3, "R_V4"));
+    R_MAGIC_CHECK(R_LuaV4Array, self);
+    check_v4_array_index(L, self, INDEX);
+    self->values[INDEX - 1] = VALUE;
+    return 0;
+}
+
+static int r_luav4array_method_len_xl(lua_State *L)
+{
+    R_LuaV4Array *self = R_CPPCAST(R_LuaV4Array *, XL_checkutype(L, 1, "R_LuaV4Array"));
+    int RETVAL;
+    R_MAGIC_CHECK(R_LuaV4Array, self);
+    RETVAL = self->count;
+    XL_pushint(L, RETVAL);
+    return 1;
+}
+
+
+typedef struct R_LuaM4Array {
+    R_MAGIC_FIELD
+    int count;
+    R_M4 values[];
+} R_LuaM4Array;
+
+static void check_m4_array_index(lua_State *L, R_LuaM4Array *self, int index)
+{
+    int count = self->count;
+    if (index < 1 || index > count) {
+        R_LUA_DIE(L, "R_M4 array index %d not in [1, %d]", index, count);
+    }
+}
+
+
+static int r_m4array_new_xl(lua_State *L)
+{
+    int count = XL_checkint(L, 1);
+    if (count < 0) {
+        R_LUA_DIE(L, "R_M4 array size %d is less than 0", count);
+    }
+
+    R_LuaM4Array *self;
+    size_t size = sizeof(*self) + R_int2size(count) * sizeof(*self->values);
+    self = lua_newuserdatauv(L, size, 0);
+    luaL_setmetatable(L, "R_LuaM4Array");
+
+    R_MAGIC_SET(R_LuaM4Array, self);
+    self->count = count;
+    for (int i = 0; i < count; ++i) {
+        self->values[i] = glms_mat4_identity();
+    }
+
+    return 1;
+}
+
+static int r_luam4array_count_index_xl(lua_State *L)
+{
+    R_LuaM4Array *self = R_CPPCAST(R_LuaM4Array *, XL_checkutype(L, 1, "R_LuaM4Array"));
+    int RETVAL;
+    RETVAL = self->count;
+    XL_pushint(L, RETVAL);
+    return 1;
+}
+
+static int r_luam4array_count_newindex_xl(lua_State *L)
+{
+    R_LuaM4Array *self = R_CPPCAST(R_LuaM4Array *, XL_checkutype(L, 1, "R_LuaM4Array"));
+    int VALUE = XL_checkint(L, 2);
+    self->count = VALUE;
+    return 0;
+}
+
+static int r_luam4array_intindex_xl(lua_State *L)
+{
+    R_LuaM4Array *self = R_CPPCAST(R_LuaM4Array *, XL_checkutype(L, 1, "R_LuaM4Array"));
+    lua_Integer INDEX = luaL_checkinteger(L, 2);
+    R_M4 RETVAL;
+    R_MAGIC_CHECK(R_LuaM4Array, self);
+    check_m4_array_index(L, self, INDEX);
+    RETVAL = self->values[INDEX - 1];
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_M4), "R_M4", 0);
+    return 1;
+}
+
+static int r_luam4array_intnewindex_xl(lua_State *L)
+{
+    R_LuaM4Array *self = R_CPPCAST(R_LuaM4Array *, XL_checkutype(L, 1, "R_LuaM4Array"));
+    lua_Integer INDEX = luaL_checkinteger(L, 2);
+    R_M4 VALUE = *((R_M4 *)luaL_checkudata(L, 3, "R_M4"));
+    R_MAGIC_CHECK(R_LuaM4Array, self);
+    check_m4_array_index(L, self, INDEX);
+    self->values[INDEX - 1] = VALUE;
+    return 0;
+}
+
+static int r_luam4array_method_len_xl(lua_State *L)
+{
+    R_LuaM4Array *self = R_CPPCAST(R_LuaM4Array *, XL_checkutype(L, 1, "R_LuaM4Array"));
+    int RETVAL;
+    R_MAGIC_CHECK(R_LuaM4Array, self);
+    RETVAL = self->count;
+    XL_pushint(L, RETVAL);
+    return 1;
+}
 
 static int r_gl_clear_color_xl(lua_State *L)
 {
@@ -173,6 +608,58 @@ static int r_gl_uniform_m4_xl(lua_State *L)
     return 0;
 }
 
+static int r_gl_uniform_v2_array_xl(lua_State *L)
+{
+    int location = XL_checkint(L, 1);
+    R_LuaV2Array *v2s = R_CPPCAST(R_LuaV2Array *, XL_checkutype(L, 2, "R_LuaV2Array"));
+    R_MAGIC_CHECK(R_LuaV2Array, v2s);
+    int argc  = lua_gettop(L);
+    int count = argc >= 3 ? XL_checkint(L, 3) : v2s->count;
+    check_v2_array_index(L, v2s, count);
+    R_GL_CLEAR_ERROR();
+    R_GL(glUniform2fv, location, count, R_V2_GL(*v2s->values));
+    return 0;
+}
+
+static int r_gl_uniform_v3_array_xl(lua_State *L)
+{
+    int location = XL_checkint(L, 1);
+    R_LuaV3Array *v3s = R_CPPCAST(R_LuaV3Array *, XL_checkutype(L, 2, "R_LuaV3Array"));
+    R_MAGIC_CHECK(R_LuaV3Array, v3s);
+    int argc  = lua_gettop(L);
+    int count = argc >= 3 ? XL_checkint(L, 3) : v3s->count;
+    check_v3_array_index(L, v3s, count);
+    R_GL_CLEAR_ERROR();
+    R_GL(glUniform3fv, location, count, R_V3_GL(*v3s->values));
+    return 0;
+}
+
+static int r_gl_uniform_v4_array_xl(lua_State *L)
+{
+    int location = XL_checkint(L, 1);
+    R_LuaV4Array *v4s = R_CPPCAST(R_LuaV4Array *, XL_checkutype(L, 2, "R_LuaV4Array"));
+    R_MAGIC_CHECK(R_LuaV4Array, v4s);
+    int argc  = lua_gettop(L);
+    int count = argc >= 3 ? XL_checkint(L, 3) : v4s->count;
+    check_v4_array_index(L, v4s, count);
+    R_GL_CLEAR_ERROR();
+    R_GL(glUniform4fv, location, count, R_V4_GL(*v4s->values));
+    return 0;
+}
+
+static int r_gl_uniform_m4_array_xl(lua_State *L)
+{
+    int location = XL_checkint(L, 1);
+    R_LuaM4Array *m4s = R_CPPCAST(R_LuaM4Array *, XL_checkutype(L, 2, "R_LuaM4Array"));
+    R_MAGIC_CHECK(R_LuaM4Array, m4s);
+    int argc  = lua_gettop(L);
+    int count = argc >= 3 ? XL_checkint(L, 3) : m4s->count;
+    check_m4_array_index(L, m4s, count);
+    R_GL_CLEAR_ERROR();
+    R_GL(glUniformMatrix4fv, location, count, GL_FALSE, R_M4_GL(*m4s->values));
+    return 0;
+}
+
 static int r_gl_enable_xl(lua_State *L)
 {
     unsigned int cap = XL_checkuint(L, 1);
@@ -260,6 +747,30 @@ static int r_gl_disable_all_vertex_attrib_arrays_xl(lua_State *L)
     for (unsigned int index = 0; index < max; ++index) {
         R_GL(glDisableVertexAttribArray, index);
     }
+    return 0;
+}
+
+static int r_gl_buffer_data_float_xl(lua_State *L)
+{
+    R_LuaFloatArray *floats = R_CPPCAST(R_LuaFloatArray *, XL_checkutype(L, 1, "R_LuaFloatArray"));
+    unsigned int target = XL_checkuint(L, 2);
+    unsigned int usage = XL_checkuint(L, 3);
+    R_MAGIC_CHECK(R_LuaFloatArray, floats);
+    R_GL_CLEAR_ERROR();
+    size_t size = R_int2size(floats->count) * sizeof(*floats->values);
+    R_GL(glBufferData, target, R_size2ptrdiff(size), floats->values, usage);
+    return 0;
+}
+
+static int r_gl_vertex_attrib_pointer_xl(lua_State *L)
+{
+    unsigned int index = XL_checkuint(L, 1);
+    int size = XL_checkint(L, 2);
+    unsigned int type = XL_checkuint(L, 3);
+    bool normalized = XL_checkbool(L, 4);
+    int stride = XL_checkint(L, 5);
+    R_GL_CLEAR_ERROR();
+    R_GL(glVertexAttribPointer, index, size, type, normalized, stride, NULL);
     return 0;
 }
 
@@ -449,10 +960,55 @@ static int r_luagltexture_id_index_xl(lua_State *L)
 extern "C" {
 #endif
 
+static int r_luafloatarray_index_anchor_xl;
+static int r_luafloatarray_index_xl(lua_State *L)
+{
+    if (lua_isinteger(L, 2)) {
+        return r_luafloatarray_intindex_xl(L);
+    }
+    return XL_index(L, "R_LuaFloatArray", &r_luafloatarray_index_anchor_xl, 1, 2);
+}
+
 static int r_luagltexture_index_anchor_xl;
 static int r_luagltexture_index_xl(lua_State *L)
 {
     return XL_index(L, "R_LuaGlTexture", &r_luagltexture_index_anchor_xl, 1, 2);
+}
+
+static int r_luam4array_index_anchor_xl;
+static int r_luam4array_index_xl(lua_State *L)
+{
+    if (lua_isinteger(L, 2)) {
+        return r_luam4array_intindex_xl(L);
+    }
+    return XL_index(L, "R_LuaM4Array", &r_luam4array_index_anchor_xl, 1, 2);
+}
+
+static int r_luav2array_index_anchor_xl;
+static int r_luav2array_index_xl(lua_State *L)
+{
+    if (lua_isinteger(L, 2)) {
+        return r_luav2array_intindex_xl(L);
+    }
+    return XL_index(L, "R_LuaV2Array", &r_luav2array_index_anchor_xl, 1, 2);
+}
+
+static int r_luav3array_index_anchor_xl;
+static int r_luav3array_index_xl(lua_State *L)
+{
+    if (lua_isinteger(L, 2)) {
+        return r_luav3array_intindex_xl(L);
+    }
+    return XL_index(L, "R_LuaV3Array", &r_luav3array_index_anchor_xl, 1, 2);
+}
+
+static int r_luav4array_index_anchor_xl;
+static int r_luav4array_index_xl(lua_State *L)
+{
+    if (lua_isinteger(L, 2)) {
+        return r_luav4array_intindex_xl(L);
+    }
+    return XL_index(L, "R_LuaV4Array", &r_luav4array_index_anchor_xl, 1, 2);
 }
 
 static int r_luaglbuffer_index_xl(lua_State *L)
@@ -465,12 +1021,63 @@ static int r_luaglprogram_index_xl(lua_State *L)
     return XL_index_fallback(L, "R_LuaGlProgram", 1, 2);
 }
 
+int r_luafloatarray_newindex_anchor_xl;
+static int r_luafloatarray_newindex_xl(lua_State *L)
+{
+    if (lua_isinteger(L, 2)) {
+        return r_luafloatarray_intnewindex_xl(L);
+    }
+    return XL_newindex(L, "R_LuaFloatArray", &r_luafloatarray_newindex_anchor_xl, 1, 2, 3);
+}
+
+int r_luam4array_newindex_anchor_xl;
+static int r_luam4array_newindex_xl(lua_State *L)
+{
+    if (lua_isinteger(L, 2)) {
+        return r_luam4array_intnewindex_xl(L);
+    }
+    return XL_newindex(L, "R_LuaM4Array", &r_luam4array_newindex_anchor_xl, 1, 2, 3);
+}
+
+int r_luav2array_newindex_anchor_xl;
+static int r_luav2array_newindex_xl(lua_State *L)
+{
+    if (lua_isinteger(L, 2)) {
+        return r_luav2array_intnewindex_xl(L);
+    }
+    return XL_newindex(L, "R_LuaV2Array", &r_luav2array_newindex_anchor_xl, 1, 2, 3);
+}
+
+int r_luav3array_newindex_anchor_xl;
+static int r_luav3array_newindex_xl(lua_State *L)
+{
+    if (lua_isinteger(L, 2)) {
+        return r_luav3array_intnewindex_xl(L);
+    }
+    return XL_newindex(L, "R_LuaV3Array", &r_luav3array_newindex_anchor_xl, 1, 2, 3);
+}
+
+int r_luav4array_newindex_anchor_xl;
+static int r_luav4array_newindex_xl(lua_State *L)
+{
+    if (lua_isinteger(L, 2)) {
+        return r_luav4array_intnewindex_xl(L);
+    }
+    return XL_newindex(L, "R_LuaV4Array", &r_luav4array_newindex_anchor_xl, 1, 2, 3);
+}
+
+static luaL_Reg r_floatarray_function_registry_xl[] = {
+    {"new", r_floatarray_new_xl},
+    {NULL, NULL},
+};
+
 static luaL_Reg r_gl_function_registry_xl[] = {
     {"active_texture", r_gl_active_texture_xl},
     {"bind_texture", r_gl_bind_texture_xl},
     {"bind_texture2d", r_gl_bind_texture2d_xl},
     {"bind_texture_cube", r_gl_bind_texture_cube_xl},
     {"blend_func", r_gl_blend_func_xl},
+    {"buffer_data_float", r_gl_buffer_data_float_xl},
     {"clear", r_gl_clear_xl},
     {"clear_color", r_gl_clear_color_xl},
     {"clear_depthf", r_gl_clear_depthf_xl},
@@ -492,9 +1099,14 @@ static luaL_Reg r_gl_function_registry_xl[] = {
     {"uniform_3f", r_gl_uniform_3f_xl},
     {"uniform_4f", r_gl_uniform_4f_xl},
     {"uniform_m4", r_gl_uniform_m4_xl},
+    {"uniform_m4_array", r_gl_uniform_m4_array_xl},
     {"uniform_v2", r_gl_uniform_v2_xl},
+    {"uniform_v2_array", r_gl_uniform_v2_array_xl},
     {"uniform_v3", r_gl_uniform_v3_xl},
+    {"uniform_v3_array", r_gl_uniform_v3_array_xl},
     {"uniform_v4", r_gl_uniform_v4_xl},
+    {"uniform_v4_array", r_gl_uniform_v4_array_xl},
+    {"vertex_attrib_pointer", r_gl_vertex_attrib_pointer_xl},
     {NULL, NULL},
 };
 
@@ -515,8 +1127,60 @@ static luaL_Reg r_gl_texture_function_registry_xl[] = {
     {NULL, NULL},
 };
 
+static luaL_Reg r_m4array_function_registry_xl[] = {
+    {"new", r_m4array_new_xl},
+    {NULL, NULL},
+};
+
+static luaL_Reg r_v2array_function_registry_xl[] = {
+    {"new", r_v2array_new_xl},
+    {NULL, NULL},
+};
+
+static luaL_Reg r_v3array_function_registry_xl[] = {
+    {"new", r_v3array_new_xl},
+    {NULL, NULL},
+};
+
+static luaL_Reg r_v4array_function_registry_xl[] = {
+    {"new", r_v4array_new_xl},
+    {NULL, NULL},
+};
+
+static luaL_Reg r_luafloatarray_index_registry_xl[] = {
+    {"count", r_luafloatarray_count_index_xl},
+    {NULL, NULL},
+};
+
 static luaL_Reg r_luagltexture_index_registry_xl[] = {
     {"id", r_luagltexture_id_index_xl},
+    {NULL, NULL},
+};
+
+static luaL_Reg r_luam4array_index_registry_xl[] = {
+    {"count", r_luam4array_count_index_xl},
+    {NULL, NULL},
+};
+
+static luaL_Reg r_luav2array_index_registry_xl[] = {
+    {"count", r_luav2array_count_index_xl},
+    {NULL, NULL},
+};
+
+static luaL_Reg r_luav3array_index_registry_xl[] = {
+    {"count", r_luav3array_count_index_xl},
+    {NULL, NULL},
+};
+
+static luaL_Reg r_luav4array_index_registry_xl[] = {
+    {"count", r_luav4array_count_index_xl},
+    {NULL, NULL},
+};
+
+static luaL_Reg r_luafloatarray_method_registry_xl[] = {
+    {"__index", r_luafloatarray_index_xl},
+    {"__len", r_luafloatarray_method_len_xl},
+    {"__newindex", r_luafloatarray_newindex_xl},
     {NULL, NULL},
 };
 
@@ -540,6 +1204,59 @@ static luaL_Reg r_luaglprogram_method_registry_xl[] = {
 static luaL_Reg r_luagltexture_method_registry_xl[] = {
     {"__gc", r_luagltexture_method_gc_xl},
     {"__index", r_luagltexture_index_xl},
+    {NULL, NULL},
+};
+
+static luaL_Reg r_luam4array_method_registry_xl[] = {
+    {"__index", r_luam4array_index_xl},
+    {"__len", r_luam4array_method_len_xl},
+    {"__newindex", r_luam4array_newindex_xl},
+    {NULL, NULL},
+};
+
+static luaL_Reg r_luav2array_method_registry_xl[] = {
+    {"__index", r_luav2array_index_xl},
+    {"__len", r_luav2array_method_len_xl},
+    {"__newindex", r_luav2array_newindex_xl},
+    {NULL, NULL},
+};
+
+static luaL_Reg r_luav3array_method_registry_xl[] = {
+    {"__index", r_luav3array_index_xl},
+    {"__len", r_luav3array_method_len_xl},
+    {"__newindex", r_luav3array_newindex_xl},
+    {NULL, NULL},
+};
+
+static luaL_Reg r_luav4array_method_registry_xl[] = {
+    {"__index", r_luav4array_index_xl},
+    {"__len", r_luav4array_method_len_xl},
+    {"__newindex", r_luav4array_newindex_xl},
+    {NULL, NULL},
+};
+
+static luaL_Reg r_luafloatarray_newindex_registry_xl[] = {
+    {"count", r_luafloatarray_count_newindex_xl},
+    {NULL, NULL},
+};
+
+static luaL_Reg r_luam4array_newindex_registry_xl[] = {
+    {"count", r_luam4array_count_newindex_xl},
+    {NULL, NULL},
+};
+
+static luaL_Reg r_luav2array_newindex_registry_xl[] = {
+    {"count", r_luav2array_count_newindex_xl},
+    {NULL, NULL},
+};
+
+static luaL_Reg r_luav3array_newindex_registry_xl[] = {
+    {"count", r_luav3array_count_newindex_xl},
+    {NULL, NULL},
+};
+
+static luaL_Reg r_luav4array_newindex_registry_xl[] = {
+    {"count", r_luav4array_count_newindex_xl},
     {NULL, NULL},
 };
 
@@ -850,14 +1567,34 @@ static XL_EnumEntry _gl_enum_xl[] = {
 
 int R_lua_gl_init(lua_State *L)
 {
+    XL_initmetatable(L, "R_LuaFloatArray", r_luafloatarray_method_registry_xl);
     XL_initmetatable(L, "R_LuaGlBuffer", r_luaglbuffer_method_registry_xl);
     XL_initmetatable(L, "R_LuaGlProgram", r_luaglprogram_method_registry_xl);
     XL_initmetatable(L, "R_LuaGlTexture", r_luagltexture_method_registry_xl);
+    XL_initmetatable(L, "R_LuaM4Array", r_luam4array_method_registry_xl);
+    XL_initmetatable(L, "R_LuaV2Array", r_luav2array_method_registry_xl);
+    XL_initmetatable(L, "R_LuaV3Array", r_luav3array_method_registry_xl);
+    XL_initmetatable(L, "R_LuaV4Array", r_luav4array_method_registry_xl);
+    XL_initindextable(L, &r_luafloatarray_index_anchor_xl, r_luafloatarray_index_registry_xl);
     XL_initindextable(L, &r_luagltexture_index_anchor_xl, r_luagltexture_index_registry_xl);
+    XL_initindextable(L, &r_luam4array_index_anchor_xl, r_luam4array_index_registry_xl);
+    XL_initindextable(L, &r_luav2array_index_anchor_xl, r_luav2array_index_registry_xl);
+    XL_initindextable(L, &r_luav3array_index_anchor_xl, r_luav3array_index_registry_xl);
+    XL_initindextable(L, &r_luav4array_index_anchor_xl, r_luav4array_index_registry_xl);
+    XL_initnewindextable(L, &r_luafloatarray_newindex_anchor_xl, r_luafloatarray_newindex_registry_xl);
+    XL_initnewindextable(L, &r_luam4array_newindex_anchor_xl, r_luam4array_newindex_registry_xl);
+    XL_initnewindextable(L, &r_luav2array_newindex_anchor_xl, r_luav2array_newindex_registry_xl);
+    XL_initnewindextable(L, &r_luav3array_newindex_anchor_xl, r_luav3array_newindex_registry_xl);
+    XL_initnewindextable(L, &r_luav4array_newindex_anchor_xl, r_luav4array_newindex_registry_xl);
+    XL_initfunctions(L, r_floatarray_function_registry_xl, "R", "FloatArray", (const char *)NULL);
     XL_initfunctions(L, r_gl_function_registry_xl, "R", "GL", (const char *)NULL);
     XL_initfunctions(L, r_gl_buffer_function_registry_xl, "R", "GL", "Buffer", (const char *)NULL);
     XL_initfunctions(L, r_gl_program_function_registry_xl, "R", "GL", "Program", (const char *)NULL);
     XL_initfunctions(L, r_gl_texture_function_registry_xl, "R", "GL", "Texture", (const char *)NULL);
+    XL_initfunctions(L, r_m4array_function_registry_xl, "R", "M4Array", (const char *)NULL);
+    XL_initfunctions(L, r_v2array_function_registry_xl, "R", "V2Array", (const char *)NULL);
+    XL_initfunctions(L, r_v3array_function_registry_xl, "R", "V3Array", (const char *)NULL);
+    XL_initfunctions(L, r_v4array_function_registry_xl, "R", "V4Array", (const char *)NULL);
     XL_initenum(L, _gl_enum_xl, "GL", (const char *)NULL);
     return 0;
 }

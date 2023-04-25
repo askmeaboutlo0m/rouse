@@ -243,6 +243,22 @@ METHOD ... unpack()
     return 3;
 END
 
+FUNCTION R_V3 R_V3:__add(any a, any b)
+    R_LuaGeomType t1 = deconstruct_type(L, a);
+    R_LuaGeomType t2 = deconstruct_type(L, b);
+    switch (TYPES(t1.type, t2.type)) {
+        case TYPES(TYPE_V3, TYPE_V3):
+            RETVAL = R_v3_add(t1.v3, t2.v3);
+            break;
+        default:
+            DIE_WITH_BAD_TYPES(L, "R_V3", "+", a, b);
+    }
+END
+
+METHOD R_V3 lerp(R_V3 b, float t)
+    RETVAL = glms_vec3_lerp(*self, b, t);
+END
+
 SETFROMTABLE set
 
 
@@ -295,6 +311,8 @@ CONSTRUCTOR perspective(float fov, float aspect_ratio, float near,
 
 CONSTRUCTOR ortho(float left, float right, float bottom, float top, float near,
                   float far) = glms_ortho
+
+CONSTRUCTOR lookat(R_V3 eye, R_V3 center, R_V3 up) = glms_lookat
 
 FIELD float m00
 FIELD float m01
@@ -375,7 +393,7 @@ METHOD R_M4 translate_y(float y)
 END
 
 METHOD R_M4 translate_z(float z)
-    RETVAL = glms_translate_y(*self, z);
+    RETVAL = glms_translate_z(*self, z);
 END
 
 METHOD R_M4 translate_xyz(float x, float y, float z)
@@ -426,20 +444,34 @@ END
 
 METHOD R_M4 scale_xyz()
     int argc = lua_gettop(L);
+    R_V3 v3;
     if (argc == 2) {
-        R_V3 *ps = R_CPPCAST(R_V3 *, XL_checkutype(L, 2, "R_V3"));
-        RETVAL   = R_m4_scale_xyz(*self, *ps);
+        R_V3 *pv3 = luaL_testudata(L, 2, "R_V3");
+        if (pv3) {
+            v3 = *pv3;
+        }
+        else {
+            int success;
+            lua_Number s = lua_tonumberx(L, 2, &success);
+            if (success) {
+                v3.x = s;
+                v3.y = s;
+                v3.z = s;
+            }
+            else {
+                R_LUA_DIE(L, "Expected number or R_V3 at argument 2");
+            }
+        }
     }
     else if (argc == 4) {
-        R_V3 s;
-        s.x    = XL_checkfloat(L, 2);
-        s.y    = XL_checkfloat(L, 3);
-        s.z    = XL_checkfloat(L, 4);
-        RETVAL = R_m4_scale_xyz(*self, s);
+        v3.x   = XL_checkfloat(L, 2);
+        v3.y   = XL_checkfloat(L, 3);
+        v3.z   = XL_checkfloat(L, 4);
     }
     else {
         R_LUA_DIE(L, "Expected 1 or 3 arguments, got %d", argc);
     }
+    RETVAL = R_m4_scale_xyz(*self, v3);
 END
 
 METHOD R_M4 inv()
@@ -449,13 +481,13 @@ END
 
 @@PERL
 
-sub permute {
+my sub permute {
     my ($count, $components, @current) = @_;
     return \@current if $count < 1;
-    return map { permute($count - 1, $components, @current, $_) } @$components;
+    return map { __SUB__->($count - 1, $components, @current, $_) } @$components;
 }
 
-sub generate_swizzles {
+my sub generate_swizzles {
     my ($type, @components) = @_;
     print "UTYPE $type\n\n";
     for my $count (2 .. @components) {

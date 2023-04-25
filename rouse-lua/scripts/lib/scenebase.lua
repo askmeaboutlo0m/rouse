@@ -58,7 +58,6 @@ function SceneBase:init_render_function()
 
         local w, h
         if indirect then
-            fb:bind()
             w, h = fb.width, fb.height
         else
             local vp = self.viewport or self:reset_viewport()
@@ -66,6 +65,10 @@ function SceneBase:init_render_function()
         end
 
         self:before_render(nvg, width, height, w, h)
+
+        if indirect then
+            fb:bind()
+        end
         local r, g, b, a = self.clear_color:unpack()
         R.GL.clear(r, g, b, a, 0.0, 0)
         root:draw(nvg, width, height, w, h)
@@ -77,7 +80,7 @@ function SceneBase:init_render_function()
 
         if indirect then
             fb:unbind()
-            R.GL.clear(r, g, b, a, 0.0, 0)
+            R.GL.clear(0, 0, 0, 0, 0.0, 0)
             fr:draw(fb)
             if dump then
                 fb:write_to_stdout()

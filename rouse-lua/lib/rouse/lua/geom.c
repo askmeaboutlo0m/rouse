@@ -4,7 +4,7 @@
 /* Modify the matching .xl file and rebuild.     */
 /*************************************************/
 /*
- * Copyright (c) 2019, 2020, 2021 askmeaboutloom
+ * Copyright (c) 2019 - 2022 askmeaboutloom
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -430,6 +430,37 @@ static int r_v3_method_unpack_xl(lua_State *L)
     return 3;
 }
 
+static int r_v3_method_add_xl(lua_State *L)
+{
+    luaL_checkany(L, 1);
+    int a = 1;
+    luaL_checkany(L, 2);
+    int b = 2;
+    R_V3 RETVAL;
+    R_LuaGeomType t1 = deconstruct_type(L, a);
+    R_LuaGeomType t2 = deconstruct_type(L, b);
+    switch (TYPES(t1.type, t2.type)) {
+        case TYPES(TYPE_V3, TYPE_V3):
+            RETVAL = R_v3_add(t1.v3, t2.v3);
+            break;
+        default:
+            DIE_WITH_BAD_TYPES(L, "R_V3", "+", a, b);
+    }
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
+static int r_v3_method_lerp_xl(lua_State *L)
+{
+    R_V3 *self = R_CPPCAST(R_V3 *, XL_checkutype(L, 1, "R_V3"));
+    R_V3 b = *((R_V3 *)luaL_checkudata(L, 2, "R_V3"));
+    float t = XL_checkfloat(L, 3);
+    R_V3 RETVAL;
+    RETVAL = glms_vec3_lerp(*self, b, t);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_V3), "R_V3", 0);
+    return 1;
+}
+
 static int r_v3_method_set_xl(lua_State *L)
 {
     return XL_setfromtable(L, "R_V3", 1, 2);
@@ -594,6 +625,17 @@ static int r_m4_ortho_xl(lua_State *L)
     float far = XL_checkfloat(L, 6);
     R_M4 RETVAL;
     RETVAL = glms_ortho(left, right, bottom, top, near, far);
+    XL_pushnewutypeuv(L, &RETVAL, sizeof(R_M4), "R_M4", 0);
+    return 1;
+}
+
+static int r_m4_lookat_xl(lua_State *L)
+{
+    R_V3 eye = *((R_V3 *)luaL_checkudata(L, 1, "R_V3"));
+    R_V3 center = *((R_V3 *)luaL_checkudata(L, 2, "R_V3"));
+    R_V3 up = *((R_V3 *)luaL_checkudata(L, 3, "R_V3"));
+    R_M4 RETVAL;
+    RETVAL = glms_lookat(eye, center, up);
     XL_pushnewutypeuv(L, &RETVAL, sizeof(R_M4), "R_M4", 0);
     return 1;
 }
@@ -957,7 +999,7 @@ static int r_m4_method_translate_z_xl(lua_State *L)
     R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
     float z = XL_checkfloat(L, 2);
     R_M4 RETVAL;
-    RETVAL = glms_translate_y(*self, z);
+    RETVAL = glms_translate_z(*self, z);
     XL_pushnewutypeuv(L, &RETVAL, sizeof(R_M4), "R_M4", 0);
     return 1;
 }
@@ -1062,20 +1104,34 @@ static int r_m4_method_scale_xyz_xl(lua_State *L)
     R_M4 *self = R_CPPCAST(R_M4 *, XL_checkutype(L, 1, "R_M4"));
     R_M4 RETVAL;
     int argc = lua_gettop(L);
+    R_V3 v3;
     if (argc == 2) {
-        R_V3 *ps = R_CPPCAST(R_V3 *, XL_checkutype(L, 2, "R_V3"));
-        RETVAL   = R_m4_scale_xyz(*self, *ps);
+        R_V3 *pv3 = luaL_testudata(L, 2, "R_V3");
+        if (pv3) {
+            v3 = *pv3;
+        }
+        else {
+            int success;
+            lua_Number s = lua_tonumberx(L, 2, &success);
+            if (success) {
+                v3.x = s;
+                v3.y = s;
+                v3.z = s;
+            }
+            else {
+                R_LUA_DIE(L, "Expected number or R_V3 at argument 2");
+            }
+        }
     }
     else if (argc == 4) {
-        R_V3 s;
-        s.x    = XL_checkfloat(L, 2);
-        s.y    = XL_checkfloat(L, 3);
-        s.z    = XL_checkfloat(L, 4);
-        RETVAL = R_m4_scale_xyz(*self, s);
+        v3.x   = XL_checkfloat(L, 2);
+        v3.y   = XL_checkfloat(L, 3);
+        v3.z   = XL_checkfloat(L, 4);
     }
     else {
         R_LUA_DIE(L, "Expected 1 or 3 arguments, got %d", argc);
     }
+    RETVAL = R_m4_scale_xyz(*self, v3);
     XL_pushnewutypeuv(L, &RETVAL, sizeof(R_M4), "R_M4", 0);
     return 1;
 }
@@ -4527,6 +4583,7 @@ static int r_v4_newindex_xl(lua_State *L)
 
 static luaL_Reg r_m4_function_registry_xl[] = {
     {"identity", r_m4_identity_xl},
+    {"lookat", r_m4_lookat_xl},
     {"ortho", r_m4_ortho_xl},
     {"perspective", r_m4_perspective_xl},
     {"translation", r_m4_translation_xl},
@@ -5011,9 +5068,11 @@ static luaL_Reg r_v2_method_registry_xl[] = {
 };
 
 static luaL_Reg r_v3_method_registry_xl[] = {
+    {"__add", r_v3_method_add_xl},
     {"__index", r_v3_index_xl},
     {"__newindex", r_v3_newindex_xl},
     {"__tostring", r_v3_method_tostring_xl},
+    {"lerp", r_v3_method_lerp_xl},
     {"set", r_v3_method_set_xl},
     {"unpack", r_v3_method_unpack_xl},
     {NULL, NULL},

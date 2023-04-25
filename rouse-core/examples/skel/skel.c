@@ -199,7 +199,7 @@ static void apply_bone_pose(SceneData *sd, int node_id, R_M4 parent_transform)
     //                              : get_animation_transform(
     //                                     sd->model->animation.values[1],
     //                                     node, sd->seconds);
-    R_M4 current_local_transform = m4_lerp(
+    R_M4 current_local_transform = sd ? R_node_transform(node) : m4_lerp(
         get_animation_transform(R_model_animation_by_id(sd->model, 0), node, sd->seconds),
         get_animation_transform(R_model_animation_by_id(sd->model, 1), node, sd->seconds),
         0.5f);

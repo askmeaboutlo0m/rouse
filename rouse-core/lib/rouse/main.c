@@ -365,6 +365,9 @@ static void init(const R_MainArgs *args)
     unsigned int seed = (unsigned int) time(NULL);
     srand(seed);
     R_debug("srand seed = %u", seed);
+    // Since we need two seed values, we'll use the arguments pointer location.
+    // Lua does it similarly, hoping that ASLR will add some more randomness.
+    R_srand(seed, (uint64_t) args);
 
     json_set_allocation_functions(R_malloc, free);
     R_ease_init();

@@ -22,6 +22,10 @@
  * SOFTWARE.
  */
 
+void R_srand(uint64_t s1, uint64_t s2);
+
+int R_rand(int a, int b);
+
 float R_rand_between(float a, float b);
 
 static inline bool R_enough_seconds_left(float left, float seconds)

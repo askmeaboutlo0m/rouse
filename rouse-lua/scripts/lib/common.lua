@@ -138,7 +138,7 @@ function table.imerge(...)
 end
 
 function table.rollindex(t)
-    return math.random(1, #t)
+    return R.rand(1, #t)
 end
 
 function table.roll(t)

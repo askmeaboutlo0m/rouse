@@ -217,6 +217,24 @@ static int r_al_enabled_staticindex_xl(lua_State *L)
     return 1;
 }
 
+static int r_srand_xl(lua_State *L)
+{
+    unsigned int a = XL_checkuint(L, 1);
+    unsigned int b = XL_checkuint(L, 2);
+    R_srand(a, b);
+    return 0;
+}
+
+static int r_rand_xl(lua_State *L)
+{
+    int a = XL_checkint(L, 1);
+    int b = XL_checkint(L, 2);
+    int RETVAL;
+    RETVAL = R_rand(a, b);
+    XL_pushint(L, RETVAL);
+    return 1;
+}
+
 static int r_rand_between_xl(lua_State *L)
 {
     float a = XL_checkfloat(L, 1);
@@ -313,7 +331,9 @@ static luaL_Reg r_function_registry_xl[] = {
     {"fetch", r_fetch_xl},
     {"fetch_pack", r_fetch_pack_xl},
     {"info", r_info_xl},
+    {"rand", r_rand_xl},
     {"rand_between", r_rand_between_xl},
+    {"srand", r_srand_xl},
     {"timestamp_as_double", r_timestamp_as_double_xl},
     {"warn", r_warn_xl},
     {NULL, NULL},

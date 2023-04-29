@@ -225,6 +225,11 @@ static inline uint32_t R_int2uint32(int x)
     return (uint32_t) x;
 }
 
+static inline uint64_t R_int2uint64(int x)
+{
+    return (uint64_t) x;
+}
+
 static inline unsigned short R_int2ushort(int x)
 {
     return (unsigned short) x;
@@ -278,6 +283,16 @@ static inline uint32_t R_uint2uint32(unsigned int x)
 static inline float R_uint322float(uint32_t x)
 {
     return (float) x;
+}
+
+static inline float R_uint642float(uint64_t x)
+{
+    return (float) x;
+}
+
+static inline int R_uint642int(uint64_t x)
+{
+    return (int) x;
 }
 
 

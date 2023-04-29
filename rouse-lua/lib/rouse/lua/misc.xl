@@ -139,6 +139,10 @@ STATICINDEX bool R.al_enabled
 END
 
 
+FUNCTION void R.srand(unsigned int a, unsigned int b) = R_srand
+
+FUNCTION int R.rand(int a, int b) = R_rand
+
 FUNCTION float R.rand_between(float a, float b) = R_rand_between
 
 

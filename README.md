@@ -20,11 +20,6 @@ There's a few sub-projects here:
 
 * [rouse-tools](rouse-tools) is a collection of miscellaneous scripts.
 
-## Discord
-
-If you actually want to use this and have questions or need help, there's a rouse-devel Discord server you can join:
-
-<https://discord.gg/fhCtYK2>
 
 ## Building
 

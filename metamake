@@ -137,7 +137,8 @@ build_emscripten() {
     cmake_rouse_lua_args '-DBOX2D_CFLAGS="-isystem$EMPREFIX/include"' \
                          '-DBOX2D_LDFLAGS="-L$EMPREFIX/lib"' \
                          '-DBOX2D_LIBS=libbox2d.a' \
-                         '-DCMAKE_CXX_COMPILER="$base/cross/emcxxwrap"'
+                         '-DCMAKE_CXX_COMPILER="$base/cross/emcxxwrap"' \
+                         '-DROUSE_EM_SHELL="$base/cross/shell.html"'
 
     build_all
 }

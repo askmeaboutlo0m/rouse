@@ -15,9 +15,7 @@ function(add_lrouse_executable exe questionable_features)
     endif()
 
     if(ROUSE_EMSCRIPTEN)
-        target_compile_options(${exe} PRIVATE "-sFETCH=1")
-        target_link_options(   ${exe} PRIVATE "-sFETCH=1"
-                                              "-sALLOW_MEMORY_GROWTH=1")
+        target_link_options(${exe} PRIVATE "-sFETCH" "-sALLOW_MEMORY_GROWTH=1")
         set_property(TARGET ${exe} PROPERTY SUFFIX ".html")
     endif()
 endfunction()

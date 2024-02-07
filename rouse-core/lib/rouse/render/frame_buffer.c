@@ -326,6 +326,8 @@ R_FrameBufferOptions R_frame_buffer_2d_options(int width, int height)
     opts.height               = height;
     opts.color_type           = R_FRAME_BUFFER_ATTACHMENT_TEXTURE;
     opts.stencil_type         = R_FRAME_BUFFER_ATTACHMENT_BUFFER;
+    opts.min_filter           = GL_NEAREST;
+    opts.mag_filter           = GL_NEAREST;
     return opts;
 }
 

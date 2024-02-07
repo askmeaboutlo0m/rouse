@@ -58,3 +58,8 @@ add_clang_tidy_if_available(rouse)
 add_asan_if_available(rouse)
 target_link_libraries(rouse PUBLIC nanovg parson ${rouse_openal_libs}
                                    Rouse::cglm Rouse::sdl2 Rouse::sdl2_image)
+
+if(ROUSE_EMSCRIPTEN)
+    # Workaround for https://github.com/emscripten-core/emscripten/issues/16836
+    target_link_options(rouse PUBLIC "-Wl,-u,htonl" "-Wl,-u,fileno")
+endif()

@@ -236,8 +236,9 @@ void R_sequence_tick(R_Sequence *seq, bool rendered, float seconds)
     while (keep_stepping_sequence(seq, rendered, seconds)) {
 #if (ROUSE_MAX_STEPS_PER_TICK > 0)
         if (++step_count >= ROUSE_MAX_STEPS_PER_TICK) {
-            R_die("Sequence %p seems stuck, %d steps in a single tick",
+            R_warn("Sequence %p seems stuck, %d steps in one tick - killing it",
                   (void *)seq, step_count);
+            seq->killed = true;
         }
 #endif
         if (!(seq->current = seq->current->next)) {

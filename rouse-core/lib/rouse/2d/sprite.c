@@ -192,8 +192,9 @@ const char *R_sprite_name(R_Sprite *sprite)
 void R_sprite_name_set(R_Sprite *sprite, const char *name)
 {
     check_sprite(sprite);
-    free(sprite->name);
+    char *old_name = sprite->name;
     sprite->name = R_strdup(name);
+    free(old_name);
 }
 
 

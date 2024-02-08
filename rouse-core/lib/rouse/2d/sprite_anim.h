@@ -44,6 +44,8 @@ void R_tween_sprite_alpha(R_Step *step, R_Sprite *sprite, R_TweenFloat value);
 
 void R_tween_sprite_tint(R_Step *step, R_Sprite *sprite, R_TweenV4 value);
 
+void R_tween_sprite_colorize(R_Step *step, R_Sprite *sprite, R_TweenFloat value);
+
 void R_tween_sprite_base_x(R_Step *step, R_Sprite *sprite, R_TweenFloat value);
 
 void R_tween_sprite_base_y(R_Step *step, R_Sprite *sprite, R_TweenFloat value);

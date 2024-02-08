@@ -26,6 +26,7 @@
 
 @xl
 
+PPTYPE R_BitmapImage
 PPTYPE R_Nvg
 UTYPE R_LuaNvgTransform
 UTYPE NVGcolor
@@ -135,6 +136,24 @@ NEWINDEX any name
         const char *name = luaL_checkstring(L, VALUE);
         R_sprite_name_set(self, name);
     }
+END
+
+
+INDEX <NEW_NULLABLE>R_BitmapImage *gradient_map
+    RETVAL = R_sprite_gradient_map_noinc(self);
+    if (RETVAL) {
+        R_bitmap_image_incref(RETVAL);
+    }
+END
+
+NEWINDEX any gradient_map
+    R_BitmapImage *bi;
+    if (lua_isnil(L, VALUE)) {
+        bi = NULL;
+    } else {
+        bi = XL_checkpptype_nullable(L, VALUE, "R_BitmapImage");
+    }
+    R_sprite_gradient_map_set_inc(self, bi);
 END
 
 
@@ -270,6 +289,7 @@ INDEX float    angle    = R_sprite_angle
 INDEX NVGcolor tint     = R_sprite_tint
 INDEX NVGcolor color    = R_sprite_tint
 INDEX float    alpha    = R_sprite_alpha
+INDEX float    colorize = R_sprite_colorize
 INDEX R_V2     base     = R_sprite_base
 INDEX float    base_x   = R_sprite_base_x
 INDEX float    base_y   = R_sprite_base_y
@@ -296,6 +316,7 @@ NEWINDEX float    angle    = R_sprite_angle_set
 NEWINDEX float    alpha    = R_sprite_alpha_set
 NEWINDEX NVGcolor tint     = R_sprite_tint_set
 NEWINDEX NVGcolor color    = R_sprite_tint_set
+NEWINDEX float    colorize = R_sprite_colorize_set
 NEWINDEX R_V2     base     = R_sprite_base_set
 NEWINDEX float    base_x   = R_sprite_base_x_set
 NEWINDEX float    base_y   = R_sprite_base_y_set

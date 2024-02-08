@@ -288,6 +288,14 @@ void nvgGlobalTint(NVGcontext *ctx, NVGcolor tint);
 // Reads the tint set last by nvgGlobalTint.
 NVGcolor nvgGetGlobalTint(NVGcontext *ctx);
 
+void nvgGlobalColorize(NVGcontext *ctx, float colorize);
+
+float nvgGetGlobalColorize(NVGcontext *ctx);
+
+void nvgGlobalGradientMapImage(NVGcontext *ctx, int image);
+
+int nvgGetGlobalGradientMapImage(NVGcontext *ctx);
+
 //
 // Transforms
 //
@@ -678,9 +686,9 @@ struct NVGparams {
 	void (*renderViewport)(void* uptr, float width, float height, float devicePixelRatio);
 	void (*renderCancel)(void* uptr);
 	void (*renderFlush)(void* uptr);
-	void (*renderFill)(void* uptr, NVGpaint* paint, NVGcompositeOperationState compositeOperation, NVGscissor* scissor, float fringe, const float* bounds, const NVGpath* paths, int npaths);
-	void (*renderStroke)(void* uptr, NVGpaint* paint, NVGcompositeOperationState compositeOperation, NVGscissor* scissor, float fringe, float strokeWidth, const NVGpath* paths, int npaths);
-	void (*renderTriangles)(void* uptr, NVGpaint* paint, NVGcompositeOperationState compositeOperation, NVGscissor* scissor, const NVGvertex* verts, int nverts);
+	void (*renderFill)(void* uptr, NVGpaint* paint, NVGcompositeOperationState compositeOperation, NVGscissor* scissor, float fringe, const float* bounds, const NVGpath* paths, int npaths, float colorize, int gradientMap);
+	void (*renderStroke)(void* uptr, NVGpaint* paint, NVGcompositeOperationState compositeOperation, NVGscissor* scissor, float fringe, float strokeWidth, const NVGpath* paths, int npaths, float colorize, int gradientMap);
+	void (*renderTriangles)(void* uptr, NVGpaint* paint, NVGcompositeOperationState compositeOperation, NVGscissor* scissor, const NVGvertex* verts, int nverts, float colorize, int gradientMap);
 	void (*renderDelete)(void* uptr);
 };
 typedef struct NVGparams NVGparams;

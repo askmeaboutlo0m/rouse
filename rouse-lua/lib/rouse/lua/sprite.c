@@ -503,6 +503,33 @@ static int r_sprite_name_newindex_xl(lua_State *L)
     return 0;
 }
 
+static int r_sprite_gradient_map_index_xl(lua_State *L)
+{
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
+    R_BitmapImage *RETVAL;
+    RETVAL = R_sprite_gradient_map_noinc(self);
+    if (RETVAL) {
+        R_bitmap_image_incref(RETVAL);
+    }
+    XL_pushnewpptypeuv_nullable(L, RETVAL, "R_BitmapImage", 0);
+    return 1;
+}
+
+static int r_sprite_gradient_map_newindex_xl(lua_State *L)
+{
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
+    luaL_checkany(L, 2);
+    int VALUE = 2;
+    R_BitmapImage *bi;
+    if (lua_isnil(L, VALUE)) {
+        bi = NULL;
+    } else {
+        bi = XL_checkpptype_nullable(L, VALUE, "R_BitmapImage");
+    }
+    R_sprite_gradient_map_set_inc(self, bi);
+    return 0;
+}
+
 static int r_sprite_user_newindex_xl(lua_State *L)
 {
     R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
@@ -798,6 +825,15 @@ static int r_sprite_alpha_index_xl(lua_State *L)
     return 1;
 }
 
+static int r_sprite_colorize_index_xl(lua_State *L)
+{
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
+    float RETVAL;
+    RETVAL = R_sprite_colorize(self);
+    XL_pushfloat(L, RETVAL);
+    return 1;
+}
+
 static int r_sprite_base_index_xl(lua_State *L)
 {
     R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
@@ -994,6 +1030,14 @@ static int r_sprite_color_newindex_xl(lua_State *L)
     R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
     NVGcolor VALUE = *((NVGcolor *)luaL_checkudata(L, 2, "NVGcolor"));
     R_sprite_tint_set(self, VALUE);
+    return 0;
+}
+
+static int r_sprite_colorize_newindex_xl(lua_State *L)
+{
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
+    float VALUE = XL_checkfloat(L, 2);
+    R_sprite_colorize_set(self, VALUE);
     return 0;
 }
 
@@ -1400,8 +1444,10 @@ static luaL_Reg r_sprite_index_registry_xl[] = {
     {"base_y", r_sprite_base_y_index_xl},
     {"children", r_sprite_children_index_xl},
     {"color", r_sprite_color_index_xl},
+    {"colorize", r_sprite_colorize_index_xl},
     {"content", r_sprite_content_index_xl},
     {"first_child", r_sprite_first_child_index_xl},
+    {"gradient_map", r_sprite_gradient_map_index_xl},
     {"index", r_sprite_index_index_xl},
     {"matrix", r_sprite_matrix_index_xl},
     {"name", r_sprite_name_index_xl},
@@ -1498,7 +1544,9 @@ static luaL_Reg r_sprite_newindex_registry_xl[] = {
     {"base_x", r_sprite_base_x_newindex_xl},
     {"base_y", r_sprite_base_y_newindex_xl},
     {"color", r_sprite_color_newindex_xl},
+    {"colorize", r_sprite_colorize_newindex_xl},
     {"content", r_sprite_content_newindex_xl},
+    {"gradient_map", r_sprite_gradient_map_newindex_xl},
     {"matrix", r_sprite_matrix_newindex_xl},
     {"name", r_sprite_name_newindex_xl},
     {"origin", r_sprite_origin_newindex_xl},

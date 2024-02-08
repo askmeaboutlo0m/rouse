@@ -79,6 +79,8 @@ struct R_Sprite {
     R_AffineTransform transform;
     float             alpha;
     NVGcolor          tint;
+    float             colorize;
+    R_BitmapImage     *gradient_map;
     /* These id things keep track of which transforms need to be recalculated.
      * This system is heavily inspired by the way PixiJS works. Each sprite
      * keeps track of its local matrix, which is calculated from its own affine
@@ -138,9 +140,10 @@ R_Sprite *R_sprite_new(const char *name)
 #   define IDENTITY_AFFINE_MATRIX {1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f}
     R_Sprite *sprite = R_NEW_INIT_STRUCT(sprite, R_Sprite,
             R_MAGIC_INIT(R_Sprite) 1, R_strdup(name), NULL, NULL, NULL, NULL,
-            true, R_affine_transform(), 1.0f, {{{0.0f, 0.0f, 0.0f, 0.0f}}}, 0,
-            0, 0, 0, IDENTITY_AFFINE_MATRIX, IDENTITY_AFFINE_MATRIX, NULL,
-            R_user_null(), {NULL, NULL, R_user_null()});
+            true, R_affine_transform(), 1.0f, {{{0.0f, 0.0f, 0.0f, 0.0f}}},
+            -1.0f, NULL, 0, 0, 0, 0, IDENTITY_AFFINE_MATRIX,
+            IDENTITY_AFFINE_MATRIX, NULL, R_user_null(),
+            {NULL, NULL, R_user_null()});
     check_sprite(sprite);
     return sprite;
 }
@@ -171,6 +174,7 @@ static void free_user(R_SpriteFreeFn on_free, R_UserData user)
 
 static void free_sprite(R_Sprite *sprite)
 {
+    R_bitmap_image_decref(sprite->gradient_map);
     R_sprite_decref(sprite->tracking);
     free_children(sprite->children);
     free_user(sprite->on_free, sprite->user);
@@ -195,6 +199,23 @@ void R_sprite_name_set(R_Sprite *sprite, const char *name)
     char *old_name = sprite->name;
     sprite->name = R_strdup(name);
     free(old_name);
+}
+
+
+R_BitmapImage *R_sprite_gradient_map_noinc(R_Sprite *sprite)
+{
+    check_sprite(sprite);
+    return sprite->gradient_map;
+}
+
+void R_sprite_gradient_map_set_inc(R_Sprite *sprite, R_BitmapImage *bi_or_null)
+{
+    check_sprite(sprite);
+    if(sprite->gradient_map != bi_or_null) {
+        R_bitmap_image_decref(sprite->gradient_map);
+        sprite->gradient_map =
+            bi_or_null ? R_bitmap_image_incref(bi_or_null) : NULL;
+    }
 }
 
 
@@ -430,6 +451,18 @@ void R_sprite_tint_set(R_Sprite *sprite, NVGcolor value)
 {
     check_sprite(sprite);
     sprite->tint = value;
+}
+
+float R_sprite_colorize(R_Sprite *sprite)
+{
+    check_sprite(sprite);
+    return sprite->colorize;
+}
+
+void R_sprite_colorize_set(R_Sprite *sprite, float value)
+{
+    check_sprite(sprite);
+    sprite->colorize = value;
 }
 
 /* Watch out: this does NOT set the parent_id to a new value! You either need
@@ -747,6 +780,21 @@ static void draw_sprite(R_Sprite *sprite, R_Nvg *nvg,
         nvgGlobalTint(ctx, tint);
     }
 
+    float colorize      = sprite->colorize;
+    bool  need_colorize = colorize >= 0.0f;
+    float prev_colorize;
+    if (need_colorize) {
+        prev_colorize = nvgGetGlobalColorize(ctx);
+        nvgGlobalColorize(ctx, R_CLAMP(colorize, 0.0f, 1.0f));
+    }
+
+    R_BitmapImage *gradient_map = sprite->gradient_map;
+    int prev_gradient_map_handle;
+    if(gradient_map) {
+        prev_gradient_map_handle = nvgGetGlobalGradientMapImage(ctx);
+        nvgGlobalGradientMapImage(ctx, R_bitmap_image_handle(gradient_map));
+    }
+
     draw_self(sprite, nvg, canvas_matrix);
     draw_children(sprite, nvg, canvas_matrix);
 
@@ -755,6 +803,12 @@ static void draw_sprite(R_Sprite *sprite, R_Nvg *nvg,
     }
     if (need_tint) {
         nvgGlobalTint(ctx, prev_tint);
+    }
+    if(need_colorize) {
+        nvgGlobalColorize(ctx, prev_colorize);
+    }
+    if(gradient_map) {
+        nvgGlobalGradientMapImage(ctx, prev_gradient_map_handle);
     }
 }
 

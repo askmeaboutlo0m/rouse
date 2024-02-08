@@ -248,6 +248,14 @@ function SceneBase:figure_out_content(name, content)
     end
 end
 
+function SceneBase:figure_out_gradient_map(name, gradient_map)
+    if type(gradient_map) == "string" then
+        return self:image_asset(gradient_map)
+    else
+        return gradient_map
+    end
+end
+
 function SceneBase:figure_out_parent(parent)
     if parent == nil then
         return self.root
@@ -276,6 +284,11 @@ function SceneBase:add(spec)
         sprite.content = content
     end
 
+    local gradient_map = self:figure_out_gradient_map(name, spec.gradient_map)
+    if gradient_map then
+        sprite.gradient_map = gradient_map
+    end
+
     local parent = self:figure_out_parent(spec.parent)
     if parent then
         local index = spec.index
@@ -297,6 +310,7 @@ function SceneBase:add(spec)
     if spec.angle    then sprite.angle    = spec.angle    end
     if spec.rotation then sprite.rotation = spec.rotation end
     if spec.alpha    then sprite.alpha    = spec.alpha    end
+    if spec.colorize then sprite.colorize = spec.colorize end
 
     local scale_x = spec.scale_x or spec.scale
     local scale_y = spec.scale_y or spec.scale
@@ -375,6 +389,13 @@ function SceneBase:frame(sprite_or_name, asset_or_name)
     local sprite   = self:maybe_look_up_sprite(sprite_or_name)
     local asset    = self:maybe_look_up_image_asset(asset_or_name)
     sprite.content = asset
+    return sprite, asset
+end
+
+function SceneBase:gradient_map(sprite_or_name, asset_or_name)
+    local sprite        = self:maybe_look_up_sprite(sprite_or_name)
+    local asset         = self:maybe_look_up_image_asset(asset_or_name)
+    sprite.gradient_map = asset
     return sprite, asset
 end
 

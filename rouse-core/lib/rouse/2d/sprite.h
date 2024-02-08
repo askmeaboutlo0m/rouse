@@ -119,6 +119,11 @@ const char *R_sprite_name(R_Sprite *sprite);
 void R_sprite_name_set(R_Sprite *sprite, const char *name);
 
 
+R_BitmapImage *R_sprite_gradient_map_noinc(R_Sprite *sprite);
+
+void R_sprite_gradient_map_set_inc(R_Sprite *sprite, R_BitmapImage *bi_or_null);
+
+
 R_UserData R_sprite_user(R_Sprite *sprite);
 
 void R_sprite_user_set(R_Sprite *sprite, R_UserData user,
@@ -174,6 +179,7 @@ float    R_sprite_angle   (R_Sprite *sprite); /* radians */
 float    R_sprite_rotation(R_Sprite *sprite); /* degrees */
 float    R_sprite_alpha   (R_Sprite *sprite);
 NVGcolor R_sprite_tint    (R_Sprite *sprite);
+float    R_sprite_colorize(R_Sprite *sprite); /* <0 inherits */
 R_V2     R_sprite_base    (R_Sprite *sprite);
 float    R_sprite_base_x  (R_Sprite *sprite);
 float    R_sprite_base_y  (R_Sprite *sprite);
@@ -198,6 +204,7 @@ void R_sprite_skew_y_set  (R_Sprite *sprite, float    value);
 void R_sprite_angle_set   (R_Sprite *sprite, float    value); /* radians */
 void R_sprite_alpha_set   (R_Sprite *sprite, float    value);
 void R_sprite_tint_set    (R_Sprite *sprite, NVGcolor value);
+void R_sprite_colorize_set(R_Sprite *sprite, float    value); /* <0 inherits */
 void R_sprite_rotation_set(R_Sprite *sprite, float    value); /* degrees */
 void R_sprite_base_set    (R_Sprite *sprite, R_V2     value);
 void R_sprite_base_x_set  (R_Sprite *sprite, float    value);

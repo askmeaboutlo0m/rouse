@@ -40,6 +40,7 @@ DESTRUCTOR = R_bitmap_image_decref
 INDEX int refs   = R_bitmap_image_refs
 INDEX int width  = R_bitmap_image_width
 INDEX int height = R_bitmap_image_height
+INDEX int handle = R_bitmap_image_handle
 
 
 METHOD void draw(R_Nvg *nvg, R_LuaNvgTransform *m)

@@ -79,6 +79,8 @@ struct NVGstate {
 	int lineCap;
 	float alpha;
 	NVGcolor tint;
+	float colorize;
+	int gradientMap;
 	float xform[6];
 	NVGscissor scissor;
 	float fontSize;
@@ -658,6 +660,8 @@ void nvgReset(NVGcontext* ctx)
 	state->lineJoin = NVG_MITER;
 	state->alpha = 1.0f;
 	state->tint = nvgRGBAf(0.0f, 0.0f, 0.0f, 0.0f);
+	state->colorize = 0.0f;
+	state->gradientMap = 0;
 	nvgTransformIdentity(state->xform);
 
 	state->scissor.extent[0] = -1.0f;
@@ -725,6 +729,30 @@ NVGcolor nvgGetGlobalTint(NVGcontext *ctx)
 {
 	NVGstate* state = nvg__getState(ctx);
 	return state->tint;
+}
+
+void nvgGlobalColorize(NVGcontext *ctx, float colorize)
+{
+	NVGstate* state = nvg__getState(ctx);
+	state->colorize = colorize;
+}
+
+float nvgGetGlobalColorize(NVGcontext *ctx)
+{
+	NVGstate* state = nvg__getState(ctx);
+	return state->colorize;
+}
+
+void nvgGlobalGradientMapImage(NVGcontext *ctx, int image)
+{
+	NVGstate* state = nvg__getState(ctx);
+	state->gradientMap = image;
+}
+
+int nvgGetGlobalGradientMapImage(NVGcontext *ctx)
+{
+	NVGstate* state = nvg__getState(ctx);
+	return state->gradientMap;
 }
 
 void nvgTransform(NVGcontext* ctx, float a, float b, float c, float d, float e, float f)
@@ -2294,7 +2322,7 @@ void nvgFill(NVGcontext* ctx)
 	fillPaint.outerColor.a *= state->alpha;
 
 	ctx->params.renderFill(ctx->params.userPtr, &fillPaint, state->compositeOperation, &state->scissor, ctx->fringeWidth,
-						   ctx->cache->bounds, ctx->cache->paths, ctx->cache->npaths);
+						   ctx->cache->bounds, ctx->cache->paths, ctx->cache->npaths, state->colorize, state->gradientMap);
 
 	// Count triangles
 	for (i = 0; i < ctx->cache->npaths; i++) {
@@ -2338,7 +2366,7 @@ void nvgStroke(NVGcontext* ctx)
 		nvg__expandStroke(ctx, strokeWidth*0.5f, 0.0f, state->lineCap, state->lineJoin, state->miterLimit);
 
 	ctx->params.renderStroke(ctx->params.userPtr, &strokePaint, state->compositeOperation, &state->scissor, ctx->fringeWidth,
-							 strokeWidth, ctx->cache->paths, ctx->cache->npaths);
+							 strokeWidth, ctx->cache->paths, ctx->cache->npaths, state->colorize, state->gradientMap);
 
 	// Count triangles
 	for (i = 0; i < ctx->cache->npaths; i++) {
@@ -2493,7 +2521,7 @@ static void nvg__renderText(NVGcontext* ctx, NVGvertex* verts, int nverts)
 	paint.innerColor.a *= state->alpha;
 	paint.outerColor.a *= state->alpha;
 
-	ctx->params.renderTriangles(ctx->params.userPtr, &paint, state->compositeOperation, &state->scissor, verts, nverts);
+	ctx->params.renderTriangles(ctx->params.userPtr, &paint, state->compositeOperation, &state->scissor, verts, nverts, state->colorize, state->gradientMap);
 
 	ctx->drawCallCount++;
 	ctx->textTriCount += nverts/3;

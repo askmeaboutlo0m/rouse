@@ -133,6 +133,12 @@ int R_bitmap_image_height(R_BitmapImage *bi)
     return bi->height;
 }
 
+int R_bitmap_image_handle(R_BitmapImage *bi)
+{
+    check_bitmap_image(bi);
+    return bi->handle;
+}
+
 
 static NVGpaint make_paint(NVGcontext *ctx, float w, float h, int handle)
 {

@@ -415,6 +415,17 @@ static int r_luatween_method_sprite_alpha_xl(lua_State *L)
     return 1;
 }
 
+static int r_luatween_method_sprite_colorize_xl(lua_State *L)
+{
+    R_LuaTween *self = R_CPPCAST(R_LuaTween *, XL_checkpptype(L, 1, "R_LuaTween"));
+    R_Sprite *sprite = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 2, "R_Sprite"));
+    luaL_checkany(L, 3);
+    int value_fn = 3;
+    R_tween_sprite_colorize(self, sprite, tween_float_get(L, value_fn));
+    lua_settop(L, 1);
+    return 1;
+}
+
 static int r_luatween_method_sprite_base_x_xl(lua_State *L)
 {
     R_LuaTween *self = R_CPPCAST(R_LuaTween *, XL_checkpptype(L, 1, "R_LuaTween"));
@@ -1214,6 +1225,7 @@ static luaL_Reg r_luatween_method_registry_xl[] = {
     {"sprite_angle", r_luatween_method_sprite_angle_xl},
     {"sprite_base_x", r_luatween_method_sprite_base_x_xl},
     {"sprite_base_y", r_luatween_method_sprite_base_y_xl},
+    {"sprite_colorize", r_luatween_method_sprite_colorize_xl},
     {"sprite_origin_x", r_luatween_method_sprite_origin_x_xl},
     {"sprite_origin_y", r_luatween_method_sprite_origin_y_xl},
     {"sprite_pos_x", r_luatween_method_sprite_pos_x_xl},

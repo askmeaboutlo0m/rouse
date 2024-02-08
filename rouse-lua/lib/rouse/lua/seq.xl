@@ -306,7 +306,7 @@ PPTYPE R_LuaTween R.LuaTween 1
 
 @@PERL
 for my $name (qw(origin_x origin_y pos_x pos_y scale_x scale_y skew_x skew_y
-                 angle alpha base_x base_y rotation rel_x rel_y)) {
+                 angle alpha colorize base_x base_y rotation rel_x rel_y)) {
     print "METHOD ... sprite_$name(R_Sprite *sprite, any value_fn)\n";
     print "    R_tween_sprite_$name(self, sprite, tween_float_get(L, value_fn));\n";
     print "    lua_settop(L, 1);\n";

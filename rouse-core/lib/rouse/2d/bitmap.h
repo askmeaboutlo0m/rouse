@@ -37,6 +37,7 @@ int R_bitmap_image_refs(R_BitmapImage *bi);
 
 int R_bitmap_image_width (R_BitmapImage *bi);
 int R_bitmap_image_height(R_BitmapImage *bi);
+int R_bitmap_image_handle(R_BitmapImage *bi);
 
 void R_bitmap_image_draw(R_BitmapImage *bi, NVGcontext *ctx,
                          const float matrix[R_STATIC(6)]);

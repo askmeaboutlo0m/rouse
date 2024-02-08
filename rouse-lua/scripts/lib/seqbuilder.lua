@@ -187,7 +187,7 @@ make_tween_functions("sprite_", true, {
     origin_x = {"ox"}, origin_y = {"oy"}, pos_x = {"x"},
     pos_y = {"y"}, scale_x = {"sx"}, scale_y = {"sy"},
     skew_x = {"kx"}, skew_y = {"ky"}, angle = {"n"},
-    alpha = {"a"}, base_x = {"bx"}, base_y = {"by"},
+    alpha = {"a"}, colorize = {"z"}, base_x = {"bx"}, base_y = {"by"},
     rotation = {"r"}, rel_x = {"rx"}, rel_y = {"ry"},
 })
 

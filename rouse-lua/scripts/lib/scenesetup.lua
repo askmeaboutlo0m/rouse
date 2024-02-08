@@ -143,6 +143,16 @@ function SetupSpec:alpha(alpha)
     return self
 end
 
+function SetupSpec:colorize(colorize)
+    self.spec.colorize = colorize
+    return self
+end
+
+function SetupSpec:gradient_map(gradient_map)
+    self.spec.gradient_map = gradient_map
+    return self
+end
+
 
 local SceneSetup = class()
 

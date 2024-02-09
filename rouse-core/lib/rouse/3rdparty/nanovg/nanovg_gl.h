@@ -405,9 +405,10 @@ static GLNVGtexture* glnvg__allocTexture(GLNVGcontext* gl)
 static GLNVGtexture* glnvg__findTexture(GLNVGcontext* gl, int id)
 {
 	int i;
-	for (i = 0; i < gl->ntextures; i++)
-		if (gl->textures[i].id == id)
-			return &gl->textures[i];
+	if (id != 0)
+		for (i = 0; i < gl->ntextures; i++)
+			if (gl->textures[i].id == id)
+				return &gl->textures[i];
 	return NULL;
 }
 

@@ -29,7 +29,7 @@ shift
     cd "$assetdir"
     find -L . -type f \
         | sort \
-        | perl -ne 'print if /\.(ogg|png|rvg|ttf|json|rmodel)$/i' \
+        | perl -ne 'print if /\.(ogg|png|rvg|ttf|json|rmodel|vert|frag)$/i' \
         | perl -ne 'BEGIN { $base = shift } chomp; print -s, " ", s{\A\.\/}{$base/}r, "\n" unless m{\A\./assetlist\s*\z}' "$base" \
         > assetlist
 )

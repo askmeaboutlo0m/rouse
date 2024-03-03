@@ -311,6 +311,7 @@ function SceneBase:add(spec)
     if spec.rotation then sprite.rotation = spec.rotation end
     if spec.alpha    then sprite.alpha    = spec.alpha    end
     if spec.colorize then sprite.colorize = spec.colorize end
+    if spec.tint     then sprite.tint     = spec.tint     end
 
     local scale_x = spec.scale_x or spec.scale
     local scale_y = spec.scale_y or spec.scale

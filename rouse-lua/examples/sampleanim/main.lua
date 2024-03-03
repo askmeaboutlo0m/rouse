@@ -24,6 +24,7 @@ local PreloadScene = dofile("scripts/lib/preload.lua")
 
 local msaa   = 8
 local fb     = nil
+local linear = true
 local fps    = nil
 local skip   = nil
 local vsync  = nil
@@ -40,6 +41,12 @@ local arg_handlers = {
         pattern  = "^(%d+)x(%d+)$",
         callback = function (width, height)
             fb = {tonumber(width), tonumber(height)}
+        end,
+    },
+    smooth = {
+        pattern  = "^(%d+)$",
+        callback = function (value)
+            linear = tonumber(value) ~= 0
         end,
     },
     framerate = {
@@ -100,7 +107,11 @@ return simple_main_args {
 
                 if fb then
                     args.frame_renderer = R.FrameRenderer.new(false)
-                    args.frame_buffer   = R.FrameBuffer.new_2d(table.unpack(fb))
+                    args.frame_buffer   = R.FrameBuffer.new_2d({
+                        width  = fb[1],
+                        height = fb[2],
+                        filter = linear and "linear" or "nearest",
+                    )
                     args.frame_buffer:unbind()
                 end
 

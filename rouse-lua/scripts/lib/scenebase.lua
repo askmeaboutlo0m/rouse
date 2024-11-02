@@ -389,7 +389,11 @@ end
 function SceneBase:frame(sprite_or_name, asset_or_name)
     local sprite   = self:maybe_look_up_sprite(sprite_or_name)
     local asset    = self:maybe_look_up_image_asset(asset_or_name)
-    sprite.content = asset
+    if asset then
+        sprite.content = asset
+    else
+        sprite.content = nil
+    end
     return sprite, asset
 end
 

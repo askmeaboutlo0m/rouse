@@ -21,6 +21,9 @@
  */
 #include <rouse.h>
 #include <pocketsphinx.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include "lua_inc.h"
 #include "intern.h"
 #include "util.h"
@@ -84,55 +87,25 @@ typedef enum R_LuaPhone {
 
 static int new_ps(lua_State *L)
 {
-    if (lua_getfield(L, 1, "args") != LUA_TTABLE) {
-        R_LUA_DIE(L, "ps_args.args is not a table");
+    lua_getfield(L, 1, "args");
+    const char *args = lua_tostring(L, -1);
+    if (!args) {
+        R_LUA_DIE(L, "ps_args.args is not a string");
     }
 
-    int         table = lua_gettop(L);
-    lua_Integer len   = luaL_len(L, table);
-
-    luaL_Buffer b;
-    luaL_buffinit(L, &b);
-    for (lua_Integer i = 1; i <= len; ++i) {
-        lua_geti(L, table, i);
-        size_t slen;
-        const char *s = lua_tolstring(L, -1, &slen);
-        if (s) {
-            luaL_addlstring(&b, s, slen + 1);
-        }
-        else {
-            R_LUA_DIE(L, "Can't convert ps_args.args[%I] to a string", i);
-        }
-        lua_pop(L, 1);
-    }
-
-    luaL_pushresult(&b);
-    const char *argbuf = lua_tostring(L, -1);
-    size_t     offset = 0;
-
-    const char **argv = R_malloc(sizeof(*argv) * (size_t)(len + 2));
-    argv[0] = "rouse";
-    for (lua_Integer i = 1; i <= len; ++i) {
-        argv[i] = argbuf + offset;
-        lua_geti(L, table, i);
-        size_t slen;
-        lua_tolstring(L, -1, &slen);
-        offset += slen + 1;
-        lua_pop(L, 1);
-    }
-    argv[len + 1] = NULL;
+    ps_config_t *config = ps_config_parse_json(NULL, args);
     lua_pop(L, 1);
-
-    static const arg_t defs[] = {POCKETSPHINX_OPTIONS, CMDLN_EMPTY_OPTION};
-    cmd_ln_t *config = cmd_ln_parse_r(NULL, defs, (int)len + 1,
-                                      (char **)argv, true);
-    free(argv);
     if (!config) {
-        R_LUA_DIE(L, "Error parsing ps_args.args");
+        R_LUA_DIE(L, "Error parsing arguments");
+    }
+
+    const char *json = ps_config_serialize_json(config);
+    if (json) {
+        R_info("Config: %s", json);
     }
 
     ps_decoder_t *ps = ps_init(config);
-    cmd_ln_free_r(config);
+    ps_config_free(config);
     if (!ps) {
         R_LUA_DIE(L, "Error creating Pocketsphinx decoder");
     }
@@ -178,7 +151,7 @@ static int set_up_ps(lua_State *L)
     if (!search) {
         R_LUA_DIE(L, "ps_args.search is not a string");
     }
-    if (ps_set_search(ps, search) != 0) {
+    if (ps_activate_search(ps, search) != 0) {
         R_LUA_DIE(L, "Error setting Pocketsphinx search to '%s'", search);
     }
     lua_pop(L, 1);
@@ -583,6 +556,26 @@ END
 METHOD void pause()
     int i = lua_gettop(L) == 1 ? 1 : luaL_checkinteger(L, 2);
     SDL_PauseAudioDevice(self->dev, i);
+END
+
+METHOD void process()
+    static unsigned char *buffer = NULL;
+    static size_t capacity = 0;
+    if(!buffer) {
+        capacity = (size_t)1049000ULL;
+        buffer = calloc(capacity, 1);
+        fcntl(0, F_SETFL, fcntl(0, F_GETFL) | O_NONBLOCK);
+    }
+
+    ssize_t got = read(0, buffer, capacity);
+    if (got == -1) {
+        int e = errno;
+        if (e != EAGAIN && e != EWOULDBLOCK) {
+            R_warn("Lipsync process error: %s", strerror(e));
+        }
+    } else {
+        on_capture(self, buffer, (int)got);
+    }
 END
 
 

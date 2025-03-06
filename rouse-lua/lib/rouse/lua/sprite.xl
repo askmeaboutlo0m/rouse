@@ -27,10 +27,18 @@
 @xl
 
 PPTYPE R_BitmapImage
+PPTYPE R_FrameBuffer
 PPTYPE R_Nvg
 UTYPE R_LuaNvgTransform
 UTYPE NVGcolor
 UTYPE R_V2
+
+
+PPTYPE R_SpriteComposer R.SpriteComposer
+
+CONSTRUCTOR new() = R_sprite_composer_new
+
+DESTRUCTOR = R_sprite_composer_free
 
 
 UTYPE R_AffineTransform
@@ -136,6 +144,93 @@ NEWINDEX any name
         const char *name = luaL_checkstring(L, VALUE);
         R_sprite_name_set(self, name);
     }
+END
+
+
+INDEX ... isolate
+    int isolate = R_sprite_isolate(self);
+    switch (isolate) {
+    case R_BLEND_DIRECT:
+        lua_pushnil(L);
+        break;
+    case R_BLEND_NORMAL:
+        lua_pushliteral(L, "normal");
+        break;
+    case R_BLEND_ERASE:
+        lua_pushliteral(L, "erase");
+        break;
+    case R_BLEND_RECOLOR:
+        lua_pushliteral(L, "recolor");
+        break;
+    case R_BLEND_MULTIPLY:
+        lua_pushliteral(L, "multiply");
+        break;
+    case R_BLEND_SCREEN:
+        lua_pushliteral(L, "screen");
+        break;
+    case R_BLEND_HARD_LIGHT:
+        lua_pushliteral(L, "hard_light");
+        break;
+    case R_BLEND_OVERLAY:
+        lua_pushliteral(L, "overlay");
+        break;
+    case R_BLEND_ADD:
+        lua_pushliteral(L, "add");
+        break;
+    case R_BLEND_SUBTRACT:
+        lua_pushliteral(L, "subtract");
+        break;
+    case R_BLEND_SHINE:
+        lua_pushliteral(L, "shine");
+        break;
+    default:
+        R_LUA_DIE(L, "Unknown isolate %d", isolate);
+    }
+    return 1;
+END
+
+NEWINDEX any isolate
+    int isolate;
+    if (lua_isnil(L, VALUE)) {
+        isolate = R_BLEND_DIRECT;
+    }
+    else {
+        const char *s = luaL_checkstring(L, VALUE);
+        if (R_str_equal(s, "normal")) {
+            isolate = R_BLEND_NORMAL;
+        }
+        else if (R_str_equal(s, "erase")) {
+            isolate = R_BLEND_ERASE;
+        }
+        else if (R_str_equal(s, "recolor")) {
+            isolate = R_BLEND_RECOLOR;
+        }
+        else if (R_str_equal(s, "multiply")) {
+            isolate = R_BLEND_MULTIPLY;
+        }
+        else if (R_str_equal(s, "screen")) {
+            isolate = R_BLEND_SCREEN;
+        }
+        else if (R_str_equal(s, "hard_light")) {
+            isolate = R_BLEND_HARD_LIGHT;
+        }
+        else if (R_str_equal(s, "overlay")) {
+            isolate = R_BLEND_OVERLAY;
+        }
+        else if (R_str_equal(s, "add")) {
+            isolate = R_BLEND_ADD;
+        }
+        else if (R_str_equal(s, "subtract")) {
+            isolate = R_BLEND_SUBTRACT;
+        }
+        else if (R_str_equal(s, "shine")) {
+            isolate = R_BLEND_SHINE;
+        }
+        else {
+            R_LUA_DIE(L, "Unknown isolate '%s'", s);
+        }
+    }
+    R_sprite_isolate_set(self, isolate);
 END
 
 
@@ -442,6 +537,21 @@ METHOD ... iterate_children()
     return 2;
 END
 
+
+METHOD void draw_composite(R_SpriteComposer *sc, any parent_fb_or_nil,
+                           R_Nvg *nvg, int logical_width, int logical_height,
+                           int target_width, int target_height)
+    R_FrameBuffer *parent_fb;
+    if (lua_isnil(L, parent_fb_or_nil)) {
+        parent_fb = NULL;
+    } else {
+        parent_fb =
+            R_CPPCAST(R_FrameBuffer *, XL_checkpptype_nullable(
+                L, parent_fb_or_nil, "R_FrameBuffer"));
+    }
+    R_sprite_draw_composite(self, sc, parent_fb, nvg, logical_width,
+                            logical_height, target_width, target_height);
+END
 
 METHOD void draw(R_Nvg *nvg, int logical_width, int logical_height,
                  int target_width, int target_height) = R_sprite_draw

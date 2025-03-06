@@ -65,16 +65,7 @@ sub separate {
     );
 
     $ENV{ROUSE_DIRNAME} = $dirname;
-
-    open my $fh, '-|', 'gimp', '-i', '-n', '-b', $script, '-b', '(gimp-quit 1)'
-        or die "can't run gimp: $!\n";
-
-    my $output = do { local $/; <$fh> };
-    close $fh;
-
-    if ($? != 0 || $output !~ /^rouse ok$/m) {
-        die "gimp batch command failed\n";
-    }
+    system "krita", "$file" and die "Failed to run Krita $!";
 }
 
 
@@ -383,8 +374,10 @@ sub assetify {
             world_y => $d->{y} + ($ENV{ROUSE_Y_OFFSET} || 0),
         );
 
-        $a{name}   =~ s/^\@//;
-        $a{parent} = $d->{parent} if $d->{parent};
+        $a{name}    =~ s/^\@//;
+        $a{parent}  = $d->{parent}  if $d->{parent};
+        $a{isolate} = $d->{isolate} if defined ${d}->{isolate};
+        $a{alpha}   = $d->{alpha}   if defined ${d}->{alpha};
 
         if ($d->{frames}) {
             $a{content} = $d->{children}[-1]{name};

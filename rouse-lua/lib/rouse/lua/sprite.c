@@ -30,6 +30,21 @@
 #include "util.h"
 
 
+static int r_spritecomposer_new_xl(lua_State *L)
+{
+    R_SpriteComposer *RETVAL;
+    RETVAL = R_sprite_composer_new();
+    XL_pushnewpptypeuv(L, RETVAL, "R_SpriteComposer", 0);
+    return 1;
+}
+
+static int r_spritecomposer_method_gc_xl(lua_State *L)
+{
+    R_SpriteComposer *self = R_CPPCAST(R_SpriteComposer *, XL_checkpptype_nullable(L, 1, "R_SpriteComposer"));
+    R_sprite_composer_free(self);
+    return 0;
+}
+
 static int r_affinetransform_origin_index_xl(lua_State *L)
 {
     R_AffineTransform *self = R_CPPCAST(R_AffineTransform *, XL_checkutype(L, 1, "R_AffineTransform"));
@@ -500,6 +515,99 @@ static int r_sprite_name_newindex_xl(lua_State *L)
         const char *name = luaL_checkstring(L, VALUE);
         R_sprite_name_set(self, name);
     }
+    return 0;
+}
+
+static int r_sprite_isolate_index_xl(lua_State *L)
+{
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
+    int isolate = R_sprite_isolate(self);
+    switch (isolate) {
+    case R_BLEND_DIRECT:
+        lua_pushnil(L);
+        break;
+    case R_BLEND_NORMAL:
+        lua_pushliteral(L, "normal");
+        break;
+    case R_BLEND_ERASE:
+        lua_pushliteral(L, "erase");
+        break;
+    case R_BLEND_RECOLOR:
+        lua_pushliteral(L, "recolor");
+        break;
+    case R_BLEND_MULTIPLY:
+        lua_pushliteral(L, "multiply");
+        break;
+    case R_BLEND_SCREEN:
+        lua_pushliteral(L, "screen");
+        break;
+    case R_BLEND_HARD_LIGHT:
+        lua_pushliteral(L, "hard_light");
+        break;
+    case R_BLEND_OVERLAY:
+        lua_pushliteral(L, "overlay");
+        break;
+    case R_BLEND_ADD:
+        lua_pushliteral(L, "add");
+        break;
+    case R_BLEND_SUBTRACT:
+        lua_pushliteral(L, "subtract");
+        break;
+    case R_BLEND_SHINE:
+        lua_pushliteral(L, "shine");
+        break;
+    default:
+        R_LUA_DIE(L, "Unknown isolate %d", isolate);
+    }
+    return 1;
+}
+
+static int r_sprite_isolate_newindex_xl(lua_State *L)
+{
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
+    luaL_checkany(L, 2);
+    int VALUE = 2;
+    int isolate;
+    if (lua_isnil(L, VALUE)) {
+        isolate = R_BLEND_DIRECT;
+    }
+    else {
+        const char *s = luaL_checkstring(L, VALUE);
+        if (R_str_equal(s, "normal")) {
+            isolate = R_BLEND_NORMAL;
+        }
+        else if (R_str_equal(s, "erase")) {
+            isolate = R_BLEND_ERASE;
+        }
+        else if (R_str_equal(s, "recolor")) {
+            isolate = R_BLEND_RECOLOR;
+        }
+        else if (R_str_equal(s, "multiply")) {
+            isolate = R_BLEND_MULTIPLY;
+        }
+        else if (R_str_equal(s, "screen")) {
+            isolate = R_BLEND_SCREEN;
+        }
+        else if (R_str_equal(s, "hard_light")) {
+            isolate = R_BLEND_HARD_LIGHT;
+        }
+        else if (R_str_equal(s, "overlay")) {
+            isolate = R_BLEND_OVERLAY;
+        }
+        else if (R_str_equal(s, "add")) {
+            isolate = R_BLEND_ADD;
+        }
+        else if (R_str_equal(s, "subtract")) {
+            isolate = R_BLEND_SUBTRACT;
+        }
+        else if (R_str_equal(s, "shine")) {
+            isolate = R_BLEND_SHINE;
+        }
+        else {
+            R_LUA_DIE(L, "Unknown isolate '%s'", s);
+        }
+    }
+    R_sprite_isolate_set(self, isolate);
     return 0;
 }
 
@@ -1365,6 +1473,30 @@ static int r_sprite_method_iterate_children_xl(lua_State *L)
     return 2;
 }
 
+static int r_sprite_method_draw_composite_xl(lua_State *L)
+{
+    R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
+    R_SpriteComposer *sc = R_CPPCAST(R_SpriteComposer *, XL_checkpptype(L, 2, "R_SpriteComposer"));
+    luaL_checkany(L, 3);
+    int parent_fb_or_nil = 3;
+    R_Nvg *nvg = R_CPPCAST(R_Nvg *, XL_checkpptype(L, 4, "R_Nvg"));
+    int logical_width = XL_checkint(L, 5);
+    int logical_height = XL_checkint(L, 6);
+    int target_width = XL_checkint(L, 7);
+    int target_height = XL_checkint(L, 8);
+    R_FrameBuffer *parent_fb;
+    if (lua_isnil(L, parent_fb_or_nil)) {
+        parent_fb = NULL;
+    } else {
+        parent_fb =
+            R_CPPCAST(R_FrameBuffer *, XL_checkpptype_nullable(
+                L, parent_fb_or_nil, "R_FrameBuffer"));
+    }
+    R_sprite_draw_composite(self, sc, parent_fb, nvg, logical_width,
+                            logical_height, target_width, target_height);
+    return 0;
+}
+
 static int r_sprite_method_draw_xl(lua_State *L)
 {
     R_Sprite *self = R_CPPCAST(R_Sprite *, XL_checkpptype(L, 1, "R_Sprite"));
@@ -1393,6 +1525,11 @@ static int r_sprite_index_xl(lua_State *L)
     return XL_index(L, "R_Sprite", &r_sprite_index_anchor_xl, 1, 2);
 }
 
+static int r_spritecomposer_index_xl(lua_State *L)
+{
+    return XL_index_fallback(L, "R_SpriteComposer", 1, 2);
+}
+
 int r_affinetransform_newindex_anchor_xl;
 static int r_affinetransform_newindex_xl(lua_State *L)
 {
@@ -1407,6 +1544,11 @@ static int r_sprite_newindex_xl(lua_State *L)
 
 static luaL_Reg r_sprite_function_registry_xl[] = {
     {"new", r_sprite_new_xl},
+    {NULL, NULL},
+};
+
+static luaL_Reg r_spritecomposer_function_registry_xl[] = {
+    {"new", r_spritecomposer_new_xl},
     {NULL, NULL},
 };
 
@@ -1449,6 +1591,7 @@ static luaL_Reg r_sprite_index_registry_xl[] = {
     {"first_child", r_sprite_first_child_index_xl},
     {"gradient_map", r_sprite_gradient_map_index_xl},
     {"index", r_sprite_index_index_xl},
+    {"isolate", r_sprite_isolate_index_xl},
     {"matrix", r_sprite_matrix_index_xl},
     {"name", r_sprite_name_index_xl},
     {"next", r_sprite_next_index_xl},
@@ -1500,6 +1643,7 @@ static luaL_Reg r_sprite_method_registry_xl[] = {
     {"add_child_at", r_sprite_method_add_child_at_xl},
     {"child_index", r_sprite_method_child_index_xl},
     {"draw", r_sprite_method_draw_xl},
+    {"draw_composite", r_sprite_method_draw_composite_xl},
     {"iterate_children", r_sprite_method_iterate_children_xl},
     {"orphan", r_sprite_method_orphan_xl},
     {"remove_child", r_sprite_method_remove_child_xl},
@@ -1508,6 +1652,12 @@ static luaL_Reg r_sprite_method_registry_xl[] = {
     {"to_local", r_sprite_method_to_local_xl},
     {"to_world", r_sprite_method_to_world_xl},
     {"track", r_sprite_method_track_xl},
+    {NULL, NULL},
+};
+
+static luaL_Reg r_spritecomposer_method_registry_xl[] = {
+    {"__gc", r_spritecomposer_method_gc_xl},
+    {"__index", r_spritecomposer_index_xl},
     {NULL, NULL},
 };
 
@@ -1547,6 +1697,7 @@ static luaL_Reg r_sprite_newindex_registry_xl[] = {
     {"colorize", r_sprite_colorize_newindex_xl},
     {"content", r_sprite_content_newindex_xl},
     {"gradient_map", r_sprite_gradient_map_newindex_xl},
+    {"isolate", r_sprite_isolate_newindex_xl},
     {"matrix", r_sprite_matrix_newindex_xl},
     {"name", r_sprite_name_newindex_xl},
     {"origin", r_sprite_origin_newindex_xl},
@@ -1578,11 +1729,13 @@ int R_lua_sprite_init(lua_State *L)
 {
     XL_initmetatable(L, "R_AffineTransform", r_affinetransform_method_registry_xl);
     XL_initmetatable(L, "R_Sprite", r_sprite_method_registry_xl);
+    XL_initmetatable(L, "R_SpriteComposer", r_spritecomposer_method_registry_xl);
     XL_initindextable(L, &r_affinetransform_index_anchor_xl, r_affinetransform_index_registry_xl);
     XL_initindextable(L, &r_sprite_index_anchor_xl, r_sprite_index_registry_xl);
     XL_initnewindextable(L, &r_affinetransform_newindex_anchor_xl, r_affinetransform_newindex_registry_xl);
     XL_initnewindextable(L, &r_sprite_newindex_anchor_xl, r_sprite_newindex_registry_xl);
     XL_initfunctions(L, r_sprite_function_registry_xl, "R", "Sprite", (const char *)NULL);
+    XL_initfunctions(L, r_spritecomposer_function_registry_xl, "R", "SpriteComposer", (const char *)NULL);
     return 0;
 }
 

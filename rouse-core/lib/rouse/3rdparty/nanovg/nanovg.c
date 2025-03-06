@@ -425,6 +425,11 @@ void nvgEndFrame(NVGcontext* ctx)
 	}
 }
 
+void nvgFlush(NVGcontext* ctx)
+{
+	ctx->params.renderFlush(ctx->params.userPtr);
+}
+
 NVGcolor nvgRGB(unsigned char r, unsigned char g, unsigned char b)
 {
 	return nvgRGBA(r,g,b,255);

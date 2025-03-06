@@ -22,11 +22,34 @@
  * SOFTWARE.
  */
 
-typedef struct R_FrameRenderer R_FrameRenderer;
+#define R_BLEND_DIRECT     0
+#define R_BLEND_NORMAL     1
+#define R_BLEND_ERASE      2
+#define R_BLEND_RECOLOR    3
+#define R_BLEND_MULTIPLY   4
+#define R_BLEND_SCREEN     5
+#define R_BLEND_HARD_LIGHT 6
+#define R_BLEND_OVERLAY    7
+#define R_BLEND_ADD        8
+#define R_BLEND_SUBTRACT   9
+#define R_BLEND_SHINE      10
 
+
+typedef struct R_FrameRenderer R_FrameRenderer;
 
 R_FrameRenderer *R_frame_renderer_new(bool alpha_blending);
 
 void R_frame_renderer_free(R_FrameRenderer *fr);
 
 void R_frame_renderer_draw(R_FrameRenderer *fr, R_FrameBuffer *fb);
+
+
+typedef struct R_FrameCompositor R_FrameCompositor;
+
+R_FrameCompositor *R_frame_compositor_new(void);
+
+void R_frame_compositor_free(R_FrameCompositor *fc);
+
+void R_frame_compositor_draw(R_FrameCompositor *fc, R_FrameBuffer *fb_bottom,
+                             R_FrameBuffer *fb_top, int blend_mode,
+                             float opacity, bool premultiplied);

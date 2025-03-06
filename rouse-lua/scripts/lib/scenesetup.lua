@@ -153,6 +153,11 @@ function SetupSpec:gradient_map(gradient_map)
     return self
 end
 
+function SetupSpec:isolate(isolate)
+    self.spec.isolate = isolate
+    return self
+end
+
 
 local SceneSetup = class()
 

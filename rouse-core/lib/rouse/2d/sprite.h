@@ -21,6 +21,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+typedef struct R_FrameBuffer R_FrameBuffer;
+
 
 typedef struct R_AffineTransform {
     R_MAGIC_FIELD
@@ -36,6 +38,13 @@ typedef void (*R_SpriteDrawFn)(R_Nvg *, const float[R_STATIC(6)], R_UserData);
 typedef void (*R_SpriteFreeFn)(R_UserData);
 
 typedef struct R_Sprite R_Sprite;
+
+
+typedef struct R_SpriteComposer R_SpriteComposer;
+
+R_SpriteComposer *R_sprite_composer_new(void);
+
+void R_sprite_composer_free(R_SpriteComposer *sc);
 
 
 /*
@@ -117,6 +126,11 @@ int R_sprite_refs(R_Sprite *sprite);
 const char *R_sprite_name(R_Sprite *sprite);
 
 void R_sprite_name_set(R_Sprite *sprite, const char *name);
+
+
+int R_sprite_isolate(R_Sprite *sprite);
+
+void R_sprite_isolate_set(R_Sprite *sprite, int isolate);
 
 
 R_BitmapImage *R_sprite_gradient_map_noinc(R_Sprite *sprite);
@@ -290,6 +304,11 @@ R_Sprite *R_sprite_child_first(R_Sprite *sprite);
 
 R_Sprite *R_sprite_next(R_Sprite *sprite);
 
+
+void R_sprite_draw_composite(R_Sprite *sprite, R_SpriteComposer *sc,
+                             R_FrameBuffer *parent_fb, R_Nvg *nvg,
+                             int logical_width, int logical_height,
+                             int target_width, int target_height);
 
 void R_sprite_draw(R_Sprite *sprite, R_Nvg *nvg,
                    int logical_width, int logical_height,

@@ -100,9 +100,10 @@ return simple_main_args {
             packfile  = {url = "assets.pack", bytes = 436381},
             on_done   = function (scene, preloader)
                 local args = {
-                    scene  = scene,
-                    nvg    = preloader.nvg,
-                    assets = preloader.loaded,
+                    scene           = scene,
+                    nvg             = preloader.nvg,
+                    assets          = preloader.loaded,
+                    sprite_composer = R.SpriteComposer.new(),
                 }
 
                 if fb then

@@ -22,17 +22,18 @@ local SeqBuilder = redofile("scripts/lib/seqbuilder.lua")
 local SceneBase  = class()
 
 function SceneBase:init(args)
-    self.scene          = args.scene   or error("no scene given")
-    self.nvg            = args.nvg     or error("no nvg given")
-    self.width          = args.width   or error("no width given")
-    self.height         = args.height  or error("no height given")
-    self.assets         = args.assets  or {}
-    self.sources        = args.sources or {}
-    self.frame_renderer = args.frame_renderer
-    self.frame_buffer   = args.frame_buffer
-    self.root           = R.Sprite.new("root")
-    self.clear_color    = args.clear_color or R.Nvg.rgbaf(1.0, 1.0, 1.0, 1.0)
-    self.sprites        = {}
+    self.scene           = args.scene   or error("no scene given")
+    self.nvg             = args.nvg     or error("no nvg given")
+    self.width           = args.width   or error("no width given")
+    self.height          = args.height  or error("no height given")
+    self.assets          = args.assets  or {}
+    self.sources         = args.sources or {}
+    self.frame_renderer  = args.frame_renderer
+    self.frame_buffer    = args.frame_buffer
+    self.sprite_composer = args.sprite_composer
+    self.root            = R.Sprite.new("root")
+    self.clear_color     = args.clear_color or R.Nvg.rgbaf(1.0, 1.0, 1.0, 1.0)
+    self.sprites         = {}
     if args.imgui_enabled then
         ImGui.Init()
         self.imgui_enabled = true
@@ -49,6 +50,7 @@ function SceneBase:init_render_function()
     local imgui    = self.imgui_enabled
     local fr       = self.frame_renderer
     local fb       = self.frame_buffer
+    local sc       = self.sprite_composer
     local indirect = fb and fr
     local dump     = rawget(_G, "DUMP_FRAME_BUFFER_EACH_FRAME")
     self.render    = function ()
@@ -71,7 +73,11 @@ function SceneBase:init_render_function()
         end
         local r, g, b, a = self.clear_color:unpack()
         R.GL.clear(r, g, b, a, 0.0, 0)
-        root:draw(nvg, width, height, w, h)
+        if sc then
+            root:draw_composite(sc, fb, nvg, width, height, w, h)
+        else
+            root:draw(nvg, width, height, w, h)
+        end
 
         if imgui then
             ImGui.Render()
@@ -312,6 +318,7 @@ function SceneBase:add(spec)
     if spec.alpha    then sprite.alpha    = spec.alpha    end
     if spec.colorize then sprite.colorize = spec.colorize end
     if spec.tint     then sprite.tint     = spec.tint     end
+    if spec.isolate  then sprite.isolate  = spec.isolate  end
 
     local scale_x = spec.scale_x or spec.scale
     local scale_y = spec.scale_y or spec.scale
@@ -535,16 +542,17 @@ end
 local ErrorScene = class(SceneBase)
 
 function ErrorScene:init(scene, nvg, assets, sources, frame_renderer,
-                         frame_buffer, next_scene_fn)
+                         frame_buffer, sprite_composer, next_scene_fn)
     self.super.init(self, {
-        scene          = scene,
-        nvg            = nvg,
-        assets         = assets,
-        sources        = sources,
-        frame_renderer = frame_renderer,
-        frame_buffer   = frame_buffer,
-        width          = 1280,
-        height         = 720,
+        scene           = scene,
+        nvg             = nvg,
+        assets          = assets,
+        sources         = sources,
+        frame_renderer  = frame_renderer,
+        frame_buffer    = frame_buffer,
+        sprite_composer = sprite_composer,
+        width           = 1280,
+        height          = 720,
     })
     self.clear_color       = R.Nvg.rgbaf(1.0, 0.0, 0.0, 1.0)
     self.next_scene_fn     = next_scene_fn
@@ -582,12 +590,13 @@ function SceneBase:next_scene(next_or_path)
     R.Scene.next(function (scene)
         local success, result = pcall(function ()
             return next_scene_fn {
-                scene          = scene,
-                nvg            = self.nvg,
-                assets         = self.assets,
-                sources        = self.sources,
-                frame_renderer = self.frame_renderer,
-                frame_buffer   = self.frame_buffer,
+                scene           = scene,
+                nvg             = self.nvg,
+                assets          = self.assets,
+                sources         = self.sources,
+                frame_renderer  = self.frame_renderer,
+                frame_buffer    = self.frame_buffer,
+                sprite_composer = self.sprite_composer
             }
         end)
         if success then
@@ -596,7 +605,7 @@ function SceneBase:next_scene(next_or_path)
             R.warn("Error setting scene: %s", result)
             return ErrorScene.new(scene, self.nvg, self.assets, self.sources,
                                   self.frame_renderer, self.frame_buffer,
-                                  next_scene_fn)
+                                  self.sprite_composer, next_scene_fn)
         end
     end)
 end

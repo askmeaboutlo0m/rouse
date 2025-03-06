@@ -87,6 +87,20 @@ class Rouse:
         if vector:
             name = re.sub(r'\s*=svg\s*', "", name)
 
+        isolate_match = re.search(r'\s*isolate=(\w+)\s*', name)
+        if isolate_match:
+            isolate = isolate_match.group(1)
+            name = re.sub(r'\s*isolate=\w+\s*', "", name)
+        else:
+            isolate = None
+
+        alpha_match = re.search(r'\s*alpha=([0-9]+\.[0-9]+)\s*', name)
+        if alpha_match:
+            alpha = float(alpha_match.group(1))
+            name = re.sub(r'\s*alpha=([0-9]+\.[0-9]+)\s*', "", name)
+        else:
+            alpha = None
+
         safe = "{0:0>3}-{1}".format(self.count, re.sub(r'\W', "_", name))
         self.count += 1
 
@@ -95,6 +109,8 @@ class Rouse:
             "png"      : os.path.join(self.dirname, "{0}.png".format(safe)),
             "raster"   : raster,
             "vector"   : vector,
+            "isolate"  : isolate,
+            "alpha"    : alpha,
             "frames"   : bool(match.group(1)),
             "x"        : layer.offsets[0],
             "y"        : layer.offsets[1],

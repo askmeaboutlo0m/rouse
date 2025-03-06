@@ -55,10 +55,15 @@
 #include <assert.h>
 #include <cglm/struct.h>
 #include "../3rdparty/nanovg_inc.h"
+#include "../3rdparty/gles2_inc.h"
 #include <rouse_config.h>
 #include "../common.h"
 #include "../string.h"
 #include "../geom.h"
+#include "../render/gl.h"
+#include "../render/frame_buffer.h"
+#include "../render/frame_renderer.h"
+#include "../render/viewport.h"
 #include "../parse.h"
 #include "nvg.h"
 #include "bitmap.h"
@@ -81,6 +86,7 @@ struct R_Sprite {
     NVGcolor          tint;
     float             colorize;
     R_BitmapImage     *gradient_map;
+    int               isolate;
     /* These id things keep track of which transforms need to be recalculated.
      * This system is heavily inspired by the way PixiJS works. Each sprite
      * keeps track of its local matrix, which is calculated from its own affine
@@ -106,6 +112,130 @@ struct R_Sprite {
         R_UserData        user;
     } content;
 };
+
+
+typedef struct R_SpriteComposerBuffer {
+    R_FrameBuffer *fb;
+    bool reserved;
+} R_SpriteComposerBuffer;
+
+struct R_SpriteComposer {
+    R_MAGIC_FIELD
+    int width;
+    int height;
+    int current;
+    int capacity;
+    int used;
+    R_SpriteComposerBuffer *buffers;
+    R_FrameCompositor *fc;
+};
+
+R_SpriteComposer *R_sprite_composer_new(void)
+{
+    R_SpriteComposer *sc = R_malloc(sizeof(*sc));
+    *sc = (R_SpriteComposer){R_MAGIC_INIT(R_SpriteComposer) 0, 0, 0, 0, -1,
+                             NULL, R_frame_compositor_new()};
+    return sc;
+}
+
+static void sprite_composer_free_buffers(R_SpriteComposer *sc)
+{
+    for (int i = 0, used = sc->used; i < used; ++i) {
+        R_SpriteComposerBuffer *scb = &sc->buffers[i];
+        R_assert(!scb->reserved, "Sprite composer buffer not reserved on free");
+        R_frame_buffer_free(scb->fb);
+    }
+}
+
+void R_sprite_composer_free(R_SpriteComposer *sc)
+{
+    if(sc) {
+        R_MAGIC_CHECK(R_SpriteComposer, sc);
+        R_frame_compositor_free(sc->fc);
+        sprite_composer_free_buffers(sc);
+        free(sc->buffers);
+        free(sc);
+    }
+}
+
+static void sprite_composer_init(R_SpriteComposer *sc, int width, int height)
+{
+    R_MAGIC_CHECK(R_SpriteComposer, sc);
+    if (sc->width != width || sc->height != height) {
+        sprite_composer_free_buffers(sc);
+        sc->width = width;
+        sc->height = height;
+        sc->used = 0;
+    }
+}
+
+
+static R_SpriteComposerBuffer *sprite_composer_buffer_check(
+    R_SpriteComposer *sc, int scbi)
+{
+    R_MAGIC_CHECK(R_SpriteComposer, sc);
+    R_assert(scbi >= 0, "Sprite composer buffer index lower bound");
+    R_assert(scbi < sc->used, "Sprite composer buffer index upper bound");
+    R_SpriteComposerBuffer *scb = &sc->buffers[scbi];
+    R_assert(scb->reserved, "Sprite composer buffer reserved");
+    R_MAGIC_CHECK(R_FrameBuffer, scb->fb);
+    return scb;
+}
+
+static int sprite_composer_buffer_reserve(R_SpriteComposer *sc)
+{
+    R_MAGIC_CHECK(R_SpriteComposer, sc);
+
+    int used = sc->used;
+    for (int i = 0; i < used; ++i) {
+        R_SpriteComposerBuffer *scb = &sc->buffers[i];
+        if (!scb->reserved) {
+            scb->reserved = true;
+            return i;
+        }
+    }
+
+    if (sc->capacity == used) {
+        int new_capacity = sc->capacity * 2;
+        if (new_capacity < 8) {
+            new_capacity = 8;
+        }
+        size_t new_size = sizeof(*sc->buffers) * R_int2size(new_capacity);
+        sc->buffers = R_realloc(sc->buffers, new_size);
+        sc->capacity = new_capacity;
+    }
+    R_assert(sc->capacity > used, "Sprite composer capacity available");
+
+    R_SpriteComposerBuffer *scb = &sc->buffers[used];
+    R_FrameBufferOptions   opts = R_frame_buffer_2d_options(sc->width,
+                                                            sc->height);
+    opts.min_filter = GL_LINEAR;
+    opts.mag_filter = GL_LINEAR;
+    scb->fb         = R_frame_buffer_new(&opts);
+    scb->reserved   = true;
+    sc->used        = used + 1;
+    sprite_composer_buffer_check(sc, used);
+    return used;
+}
+
+static R_FrameBuffer *sprite_composer_buffer_get(R_SpriteComposer *sc, int scbi)
+{
+    return sprite_composer_buffer_check(sc, scbi)->fb;
+}
+
+static int sprite_composer_buffer_bind(R_SpriteComposer *sc, int scbi)
+{
+    int prev = sc->current;
+    R_SpriteComposerBuffer *scb = sprite_composer_buffer_check(sc, scbi);
+    R_frame_buffer_bind(scb->fb);
+    sc->current = scbi;
+    return prev;
+}
+
+static void sprite_composer_buffer_put(R_SpriteComposer *sc, int scbi)
+{
+    sprite_composer_buffer_check(sc, scbi)->reserved = false;
+}
 
 
 R_AffineTransform R_affine_transform(void)
@@ -140,9 +270,9 @@ R_Sprite *R_sprite_new(const char *name)
 #   define IDENTITY_AFFINE_MATRIX {1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f}
     R_Sprite *sprite = R_NEW_INIT_STRUCT(sprite, R_Sprite,
             R_MAGIC_INIT(R_Sprite) 1, R_strdup(name), NULL, NULL, NULL, NULL,
-            true, R_affine_transform(), 1.0f, {{{0.0f, 0.0f, 0.0f, 0.0f}}},
-            -1.0f, NULL, 0, 0, 0, 0, IDENTITY_AFFINE_MATRIX,
-            IDENTITY_AFFINE_MATRIX, NULL, R_user_null(),
+            true, R_affine_transform(), 1.0f,
+            {{{0.0f, 0.0f, 0.0f, 0.0f}}}, -1.0f, NULL, 0, 0, 0, 0, 0,
+            IDENTITY_AFFINE_MATRIX, IDENTITY_AFFINE_MATRIX, NULL, R_user_null(),
             {NULL, NULL, R_user_null()});
     check_sprite(sprite);
     return sprite;
@@ -199,6 +329,19 @@ void R_sprite_name_set(R_Sprite *sprite, const char *name)
     char *old_name = sprite->name;
     sprite->name = R_strdup(name);
     free(old_name);
+}
+
+
+int R_sprite_isolate(R_Sprite *sprite)
+{
+    check_sprite(sprite);
+    return sprite->isolate;
+}
+
+void R_sprite_isolate_set(R_Sprite *sprite, int isolate)
+{
+    check_sprite(sprite);
+    sprite->isolate = isolate;
 }
 
 
@@ -744,29 +887,31 @@ static void draw_self(R_Sprite *sprite, R_Nvg *nvg,
     }
 }
 
-static void draw_sprite(R_Sprite *sprite, R_Nvg *nvg,
+static void draw_sprite(R_SpriteComposer *sc, R_Sprite *sprite, R_Nvg *nvg,
                         const float canvas_matrix[static 6]);
 
-static void draw_children(R_Sprite *sprite, R_Nvg *nvg,
+static void draw_children(R_SpriteComposer *sc, R_Sprite *sprite, R_Nvg *nvg,
                           const float canvas_matrix[static 6])
 {
     for (R_Sprite *child = sprite->children; child; child = child->next) {
-        draw_sprite(child, nvg, canvas_matrix);
+        draw_sprite(sc, child, nvg, canvas_matrix);
     }
 }
 
-static void draw_sprite(R_Sprite *sprite, R_Nvg *nvg,
+static void draw_sprite(R_SpriteComposer *sc, R_Sprite *sprite, R_Nvg *nvg,
                         const float canvas_matrix[static 6])
 {
     R_MAGIC_CHECK(R_Sprite, sprite);
     NVGcontext *ctx = R_nvg_context(nvg);
 
+    int   isolate    = sc ? sprite->isolate : R_BLEND_DIRECT;
     float alpha      = sprite->alpha;
-    bool  need_alpha = alpha < 1.0;
+    bool  need_alpha = isolate || alpha < 1.0;
     float prev_alpha;
     if (need_alpha) {
         prev_alpha = nvgGetGlobalAlpha(ctx);
-        nvgGlobalAlpha(ctx, R_CLAMP(alpha * prev_alpha, 0.0f, 1.0f));
+        nvgGlobalAlpha(
+            ctx, isolate ? 1.0f : R_CLAMP(alpha * prev_alpha, 0.0f, 1.0f));
     }
 
     NVGcolor tint      = sprite->tint;
@@ -795,8 +940,36 @@ static void draw_sprite(R_Sprite *sprite, R_Nvg *nvg,
         nvgGlobalGradientMapImage(ctx, R_bitmap_image_handle(gradient_map));
     }
 
-    draw_self(sprite, nvg, canvas_matrix);
-    draw_children(sprite, nvg, canvas_matrix);
+    if (isolate == 0) {
+        draw_self(sprite, nvg, canvas_matrix);
+        draw_children(sc, sprite, nvg, canvas_matrix);
+    } else {
+        nvgFlush(ctx);
+        int scbi = sprite_composer_buffer_reserve(sc);
+        int prev_scbi = sprite_composer_buffer_bind(sc, scbi);
+        // Clear parameters already set in R_sprite_composite_draw.
+        R_GL(glClear,
+             GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+        draw_self(sprite, nvg, canvas_matrix);
+        draw_children(sc, sprite, nvg, canvas_matrix);
+        nvgFlush(ctx);
+        if (isolate == R_BLEND_NORMAL) {
+            sprite_composer_buffer_bind(sc, prev_scbi);
+            R_frame_compositor_draw(
+                sc->fc, sprite_composer_buffer_get(sc, scbi), NULL,
+                R_BLEND_DIRECT, alpha, false);
+            sprite_composer_buffer_put(sc, scbi);
+        } else {
+            int target_scbi = sprite_composer_buffer_reserve(sc);
+            sprite_composer_buffer_bind(sc, target_scbi);
+            R_frame_compositor_draw(
+                sc->fc, sprite_composer_buffer_get(sc, prev_scbi),
+                sprite_composer_buffer_get(sc, scbi), isolate, alpha,
+                false);
+            sprite_composer_buffer_put(sc, prev_scbi);
+            sprite_composer_buffer_put(sc, scbi);
+        }
+    }
 
     if (need_alpha) {
         nvgGlobalAlpha(ctx, prev_alpha);
@@ -812,9 +985,10 @@ static void draw_sprite(R_Sprite *sprite, R_Nvg *nvg,
     }
 }
 
-void R_sprite_draw(R_Sprite *sprite, R_Nvg *nvg,
-                   int logical_width, int logical_height,
-                   int target_width, int target_height)
+void R_sprite_draw_composite(R_Sprite *sprite, R_SpriteComposer *sc,
+                             R_FrameBuffer *parent_fb, R_Nvg *nvg,
+                             int logical_width, int logical_height,
+                             int target_width, int target_height)
 {
     check_sprite(sprite);
     if (sprite->parent) {
@@ -823,15 +997,44 @@ void R_sprite_draw(R_Sprite *sprite, R_Nvg *nvg,
         update_world(sprite->parent, true);
     }
 
-    float w = R_int2float(target_width);
-    float h = R_int2float(target_height);
+    float lw = R_int2float(logical_width);
+    float lh = R_int2float(logical_height);
+    float tw = R_int2float(target_width);
+    float th = R_int2float(target_height);
 
-    float matrix[6];
-    nvgTransformScale(matrix, w / R_int2float(logical_width),
-                              h / R_int2float(logical_height));
+    float w, h, matrix[6];
+    if (sc) {
+        w = lw;
+        h = lh;
+        nvgTransformIdentity(matrix);
+        sprite_composer_init(sc, logical_width, logical_height);
+        int scbi = sprite_composer_buffer_reserve(sc);
+        sprite_composer_buffer_bind(sc, scbi);
+        R_gl_clear(0.0f, 0.0f, 0.0f, 0.0f, 0, 0);
+    } else {
+        w = tw;
+        h = th;
+        nvgTransformScale(matrix, tw / lw, th / lh);
+    }
 
     NVGcontext *ctx = R_nvg_context(nvg);
     nvgBeginFrame(ctx, w, h, 1.0f);
-    draw_sprite(sprite, nvg, matrix);
+    draw_sprite(sc, sprite, nvg, matrix);
     nvgEndFrame(ctx);
+
+    if(sc) {
+        R_frame_buffer_bind(parent_fb);
+        int scbi = sc->current;
+        R_frame_compositor_draw(sc->fc, sprite_composer_buffer_get(sc, scbi),
+                                NULL, R_BLEND_DIRECT, 1.0f, true);
+        sprite_composer_buffer_put(sc, scbi);
+    }
+}
+
+void R_sprite_draw(R_Sprite *sprite, R_Nvg *nvg,
+                   int logical_width, int logical_height,
+                   int target_width, int target_height)
+{
+    R_sprite_draw_composite(sprite, NULL, NULL, nvg, logical_width,
+                            logical_height, target_width, target_height);
 }
